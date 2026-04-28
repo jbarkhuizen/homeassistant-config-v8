@@ -1,0 +1,301 @@
+# =============================================================================
+# PACKAGE: Solar Weekly Summary Metrics
+# Builds weekly-capable metrics using integration and statistics sensors.
+# =============================================================================
+
+# 1) Template power split for Grid Import/Export from signed grid power (W)
+template:
+  - sensor:
+      - name: "deyeinvertercombined_grid_import_power"
+        unique_id: deyeinvertercombined_grid_import_power
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: >
+          {% set g = states('sensor.deyeinvertercombined_grid_power_ct_clamp') | float(0) %}
+          {{ [g, 0] | max }}
+
+      - name: "deyeinvertercombined_grid_export_power"
+        unique_id: deyeinvertercombined_grid_export_power
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: >
+          {% set g = states('sensor.deyeinvertercombined_grid_power_ct_clamp') | float(0) %}
+          {{ (0 - [g, 0] | min) }}
+
+# 2) Cumulative energy (kWh) via integration of power (W)
+sensor:
+  - platform: integration
+    name: solar_total_pv_energy
+    unique_id: solar_total_pv_energy
+    source: sensor.deyeinvertercombined_pv_power
+    method: left
+    unit_time: h
+    unit_prefix: k
+    round: 2
+
+  - platform: integration
+    name: solar_total_load_energy
+    unique_id: solar_total_load_energy
+    source: sensor.deyeinvertercombined_inverter_output_power
+    method: left
+    unit_time: h
+    unit_prefix: k
+    round: 2
+
+  - platform: integration
+    name: solar_total_grid_import_energy
+    unique_id: solar_total_grid_import_energy
+    source: sensor.deyeinvertercombined_grid_import_power
+    method: left
+    unit_time: h
+    unit_prefix: k
+    round: 2
+
+  - platform: integration
+    name: solar_total_grid_export_energy
+    unique_id: solar_total_grid_export_energy
+    source: sensor.deyeinvertercombined_grid_export_power
+    method: left
+    unit_time: h
+    unit_prefix: k
+    round: 2
+
+  # 3) Rolling-window weekly (7d) and prior-week via 14d delta
+  - platform: statistics
+    name: solar_pv_energy_change_7d
+    unique_id: solar_pv_energy_change_7d
+    entity_id: sensor.solar_total_pv_energy
+    state_characteristic: change
+    max_age:
+      days: 7
+    sampling_size: 10000
+
+  - platform: statistics
+    name: solar_pv_energy_change_14d
+    unique_id: solar_pv_energy_change_14d
+    entity_id: sensor.solar_total_pv_energy
+    state_characteristic: change
+    max_age:
+      days: 14
+    sampling_size: 20000
+
+  - platform: statistics
+    name: solar_load_energy_change_7d
+    unique_id: solar_load_energy_change_7d
+    entity_id: sensor.solar_total_load_energy
+    state_characteristic: change
+    max_age:
+      days: 7
+    sampling_size: 10000
+
+  - platform: statistics
+    name: solar_load_energy_change_14d
+    unique_id: solar_load_energy_change_14d
+    entity_id: sensor.solar_total_load_energy
+    state_characteristic: change
+    max_age:
+      days: 14
+    sampling_size: 20000
+
+  - platform: statistics
+    name: solar_grid_import_energy_change_7d
+    unique_id: solar_grid_import_energy_change_7d
+    entity_id: sensor.solar_total_grid_import_energy
+    state_characteristic: change
+    max_age:
+      days: 7
+    sampling_size: 10000
+
+  - platform: statistics
+    name: solar_grid_import_energy_change_14d
+    unique_id: solar_grid_import_energy_change_14d
+    entity_id: sensor.solar_total_grid_import_energy
+    state_characteristic: change
+    max_age:
+      days: 14
+    sampling_size: 20000
+
+  - platform: statistics
+    name: solar_grid_export_energy_change_7d
+    unique_id: solar_grid_export_energy_change_7d
+    entity_id: sensor.solar_total_grid_export_energy
+    state_characteristic: change
+    max_age:
+      days: 7
+    sampling_size: 10000
+
+  - platform: statistics
+    name: solar_grid_export_energy_change_14d
+    unique_id: solar_grid_export_energy_change_14d
+    entity_id: sensor.solar_total_grid_export_energy
+    state_characteristic: change
+    max_age:
+      days: 14
+    sampling_size: 20000
+
+# 4) Derived “prior 7d”, delta and efficiency KPIs for dashboard display
+template:
+  - sensor:
+      # Prior 7d = change_14d - change_7d (guarded non-negative)
+      - name: "solar_pv_energy_change_prior_7d"
+        unique_id: solar_pv_energy_change_prior_7d
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: measurement
+        state: >
+          {% set v = (states('sensor.solar_pv_energy_change_14d')|float(0) - states('sensor.solar_pv_energy_change_7d')|float(0)) %}
+          {{ [v, 0] | max | round(2) }}
+
+      - name: "solar_load_energy_change_prior_7d"
+        unique_id: solar_load_energy_change_prior_7d
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: measurement
+        state: >
+          {% set v = (states('sensor.solar_load_energy_change_14d')|float(0) - states('sensor.solar_load_energy_change_7d')|float(0)) %}
+          {{ [v, 0] | max | round(2) }}
+
+      - name: "solar_grid_import_energy_change_prior_7d"
+        unique_id: solar_grid_import_energy_change_prior_7d
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: measurement
+        state: >
+          {% set v = (states('sensor.solar_grid_import_energy_change_14d')|float(0) - states('sensor.solar_grid_import_energy_change_7d')|float(0)) %}
+          {{ [v, 0] | max | round(2) }}
+
+      - name: "solar_grid_export_energy_change_prior_7d"
+        unique_id: solar_grid_export_energy_change_prior_7d
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: measurement
+        state: >
+          {% set v = (states('sensor.solar_grid_export_energy_change_14d')|float(0) - states('sensor.solar_grid_export_energy_change_7d')|float(0)) %}
+          {{ [v, 0] | max | round(2) }}
+
+      # Deltas (kWh) and Delta % (vs prior 7d)
+      - name: "solar_pv_energy_delta_7d"
+        unique_id: solar_pv_energy_delta_7d
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: measurement
+        state: >
+          {{ (states('sensor.solar_pv_energy_change_7d')|float(0) - states('sensor.solar_pv_energy_change_prior_7d')|float(0)) | round(2) }}
+
+      - name: "solar_pv_energy_delta_pct_7d"
+        unique_id: solar_pv_energy_delta_pct_7d
+        unit_of_measurement: "%"
+        state_class: measurement
+        state: >
+          {% set prior = states('sensor.solar_pv_energy_change_prior_7d')|float(0) %}
+          {% set d = states('sensor.solar_pv_energy_delta_7d')|float(0) %}
+          {% if prior > 0 %}{{ (100 * d / prior) | round(1) }}{% else %}0{% endif %}
+
+      - name: "solar_load_energy_delta_7d"
+        unique_id: solar_load_energy_delta_7d
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: measurement
+        state: >
+          {{ (states('sensor.solar_load_energy_change_7d')|float(0) - states('sensor.solar_load_energy_change_prior_7d')|float(0)) | round(2) }}
+
+      - name: "solar_load_energy_delta_pct_7d"
+        unique_id: solar_load_energy_delta_pct_7d
+        unit_of_measurement: "%"
+        state_class: measurement
+        state: >
+          {% set prior = states('sensor.solar_load_energy_change_prior_7d')|float(0) %}
+          {% set d = states('sensor.solar_load_energy_delta_7d')|float(0) %}
+          {% if prior > 0 %}{{ (100 * d / prior) | round(1) }}{% else %}0{% endif %}
+
+      - name: "solar_grid_import_energy_delta_7d"
+        unique_id: solar_grid_import_energy_delta_7d
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: measurement
+        state: >
+          {{ (states('sensor.solar_grid_import_energy_change_7d')|float(0) - states('sensor.solar_grid_import_energy_change_prior_7d')|float(0)) | round(2) }}
+
+      - name: "solar_grid_import_energy_delta_pct_7d"
+        unique_id: solar_grid_import_energy_delta_pct_7d
+        unit_of_measurement: "%"
+        state_class: measurement
+        state: >
+          {% set prior = states('sensor.solar_grid_import_energy_change_prior_7d')|float(0) %}
+          {% set d = states('sensor.solar_grid_import_energy_delta_7d')|float(0) %}
+          {% if prior > 0 %}{{ (100 * d / prior) | round(1) }}{% else %}0{% endif %}
+
+      - name: "solar_grid_export_energy_delta_7d"
+        unique_id: solar_grid_export_energy_delta_7d
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: measurement
+        state: >
+          {{ (states('sensor.solar_grid_export_energy_change_7d')|float(0) - states('sensor.solar_grid_export_energy_change_prior_7d')|float(0)) | round(2) }}
+
+      - name: "solar_grid_export_energy_delta_pct_7d"
+        unique_id: solar_grid_export_energy_delta_pct_7d
+        unit_of_measurement: "%"
+        state_class: measurement
+        state: >
+          {% set prior = states('sensor.solar_grid_export_energy_change_prior_7d')|float(0) %}
+          {% set d = states('sensor.solar_grid_export_energy_delta_7d')|float(0) %}
+          {% if prior > 0 %}{{ (100 * d / prior) | round(1) }}{% else %}0{% endif %}
+
+      # Efficiency KPIs
+      - name: "solar_self_consumption_7d"
+        unique_id: solar_self_consumption_7d
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: measurement
+        state: >
+          {{ (states('sensor.solar_pv_energy_change_7d')|float(0) - states('sensor.solar_grid_export_energy_change_7d')|float(0)) | round(2) }}
+
+      - name: "solar_self_consumption_prior_7d"
+        unique_id: solar_self_consumption_prior_7d
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: measurement
+        state: >
+          {{ (states('sensor.solar_pv_energy_change_prior_7d')|float(0) - states('sensor.solar_grid_export_energy_change_prior_7d')|float(0)) | round(2) }}
+
+      - name: "solar_grid_dependency_7d"
+        unique_id: solar_grid_dependency_7d
+        unit_of_measurement: "%"
+        state_class: measurement
+        state: >
+          {% set imp = states('sensor.solar_grid_import_energy_change_7d')|float(0) %}
+          {% set load = states('sensor.solar_load_energy_change_7d')|float(0) %}
+          {% if load > 0 %}{{ (100 * imp / load) | round(1) }}{% else %}0{% endif %}
+
+      - name: "solar_grid_dependency_prior_7d"
+        unique_id: solar_grid_dependency_prior_7d
+        unit_of_measurement: "%"
+        state_class: measurement
+        state: >
+          {% set imp = states('sensor.solar_grid_import_energy_change_prior_7d')|float(0) %}
+          {% set load = states('sensor.solar_load_energy_change_prior_7d')|float(0) %}
+          {% if load > 0 %}{{ (100 * imp / load) | round(1) }}{% else %}0{% endif %}
+
+      - name: "solar_weekly_verdict"
+        unique_id: solar_weekly_verdict
+        state: >
+          {% set load_delta = states('sensor.solar_load_energy_delta_7d')|float(0) %}
+          {% set dep_7 = states('sensor.solar_grid_dependency_7d')|float(0) %}
+          {% set dep_p = states('sensor.solar_grid_dependency_prior_7d')|float(0) %}
+          {% set pv_delta = states('sensor.solar_pv_energy_delta_7d')|float(0) %}
+          {% if load_delta < 0 %}Load down
+          {% elif dep_7 < dep_p %}Grid dependency down
+          {% elif pv_delta > 0 %}PV up
+          {% else %}Stable{% endif %}
+        icon: >
+          {% set load_delta = states('sensor.solar_load_energy_delta_7d')|float(0) %}
+          {% set dep_7 = states('sensor.solar_grid_dependency_7d')|float(0) %}
+          {% set dep_p = states('sensor.solar_grid_dependency_prior_7d')|float(0) %}
+          {% set pv_delta = states('sensor.solar_pv_energy_delta_7d')|float(0) %}
+          {% if load_delta < 0 %}mdi:trending-down
+          {% elif dep_7 < dep_p %}mdi:power-plug-off
+          {% elif pv_delta > 0 %}mdi:solar-power-variant
+          {% else %}mdi:equal{% endif %}
