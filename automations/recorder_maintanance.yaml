@@ -1,0 +1,20 @@
+# Recorder & Database Health Maintenance
+#
+# Daily at 09h00:
+#   - Compare current DB size vs baseline (baseline stored at previous 09h00)
+#   - If percent growth > threshold (input_number.homeassistant_db_growth_threshold_percent)
+#     AND absolute increase > 250 MB:
+#       -> Persistent notification
+#       -> Trigger recorder.purge (keep_days: 30, repack: true)
+#   - Update baseline to current size
+#
+# Startup:
+#   - Initialize baseline if zero and DB size > 0
+#
+# Entities required:
+#   sensor.homeassistant_db_size_mb
+#   input_number.homeassistant_db_baseline_mb
+#   input_number.homeassistant_db_growth_threshold_percent
+#
+# Services used:
+#   recorder.purge

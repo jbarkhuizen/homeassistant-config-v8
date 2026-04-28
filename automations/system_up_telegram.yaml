@@ -1,0 +1,60 @@
+# ==============================================================================
+# System Up - Telegram + HA Notification (Daily)
+# File: automations/system_up_telegram.yaml
+# Purpose: Daily smoke test that Telegram notifications are working.
+# Schedule: 08:00 (within 06:00–09:00 requirement)
+# ==============================================================================
+
+- id: "morning_test_telegram_system_check"
+  alias: "Morning Test Telegram - System Check"
+  description: "Sends a Telegram message every morning at 08:00 to verify the system + Telegram notifications are operational"
+
+  trigger:
+    - platform: time
+      at: "08:00:00"
+
+  condition: []
+
+  action:
+    - variables:
+        now_str: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+        uptime_str: >-
+          {% set u = states('sensor.uptime') %}
+          {% if u in ['unknown', 'unavailable', 'None', ''] %}
+            N/A
+          {% else %}
+            {{ u }}
+          {% endif %}
+
+    # Telegram
+    - service: telegram_bot.send_message
+      data:
+        chat_id: 6167623299
+        message: >-
+          ✅ *Home Assistant System Check (Telegram)*
+
+          HA is up and running.
+
+          • Time: {{ now_str }}
+          • Uptime: {{ uptime_str }}
+          • Local: http://192.168.1.30:8123
+          • Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
+
+        parse_mode: markdown
+
+    # Home Assistant Notification (Persistent)
+    - service: persistent_notification.create
+      data:
+        title: "✅ Home Assistant - Telegram Check OK"
+        message: >-
+          Telegram smoke test sent successfully at {{ now_str }}.
+          This confirms the Telegram notification channel is working.
+        notification_id: "telegram_smoke_test_ok"
+
+    # Audit log
+    - service: system_log.write
+      data:
+        message: "Telegram system check sent at {{ now_str }}."
+        level: info
+
+  mode: single
