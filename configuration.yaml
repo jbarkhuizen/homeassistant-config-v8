@@ -148,8 +148,10 @@ command_line:
 
   - sensor:
       name: Home Assistant IP Bans Count
-      command: "grep -c 'ip_address' /config/ip_bans.yaml 2>/dev/null || echo 0"
-      value_template: "{{ value | int }}"
+      # FIX: Always output a single integer; prevents "0\n0" parsing issue
+      command: "awk '/ip_address:/{c++} END{print c+0}' /config/ip_bans.yaml 2>/dev/null"
+      # FIX: forgiving conversion even if unexpected output occurs
+      value_template: "{{ value | int(0) }}"
       unit_of_measurement: "bans"
       scan_interval: 600
 
