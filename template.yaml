@@ -16,7 +16,6 @@
 #     - trigger: ...
 # ==============================================================================
 
-template:
   # ---------------------------------------------------------------------------
   # SmartHome Integrations (Deye / Sunsynk helpers)
   # Source: https://github.com/tomatensaus/DeyeSolarDesktop/blob/main/template.yaml
@@ -456,24 +455,76 @@ template:
 
   # Trigger-based template sensor: Backup Health Status
   - trigger:
-      - platform: event
-        event_type: backup_health_cycle_complete
+    - platform: event
+      event_type: backup_health_cycle_complete
     sensor:
       - name: "Backup Health Status"
         unique_id: backup_health_status
+
         icon: >
-          {% set status = trigger.event.data.status %}
+          {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+            {% set status = trigger.event.data.status | default('unknown') %}
+          {% else %}
+            {% set status = 'unknown' %}
+          {% endif %}
           {% if status == 'success' %}mdi:backup-restore
           {% elif status == 'warning' %}mdi:progress-alert
           {% elif status == 'failure' %}mdi:alert-circle
           {% else %}mdi:progress-clock{% endif %}
-        state: "{{ trigger.event.data.status }}"
+
+        state: >
+          {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+            {{ trigger.event.data.status | default('unknown') }}
+          {% else %}
+            unknown
+          {% endif %}
+
         attributes:
-          last_run: "{{ trigger.event.data.last_run }}"
-          last_success: "{{ trigger.event.data.last_success }}"
-          last_attempt: "{{ trigger.event.data.last_attempt }}"
-          next_backup: "{{ trigger.event.data.next_backup }}"
-          age_hours: "{{ trigger.event.data.age_hours }}"
-          manager_state: "{{ trigger.event.data.manager_state }}"
-          status_detail: "{{ trigger.event.data.status_detail }}"
-          threshold_hours: "{{ trigger.event.data.threshold_hours }}"
+          last_run: >
+            {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+              {{ trigger.event.data.last_run | default('') }}
+            {% else %}
+              ""
+            {% endif %}
+          last_success: >
+            {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+              {{ trigger.event.data.last_success | default('') }}
+            {% else %}
+              ""
+            {% endif %}
+          last_attempt: >
+            {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+              {{ trigger.event.data.last_attempt | default('') }}
+            {% else %}
+              ""
+            {% endif %}
+          next_backup: >
+            {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+              {{ trigger.event.data.next_backup | default('') }}
+            {% else %}
+              ""
+            {% endif %}
+          age_hours: >
+            {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+              {{ trigger.event.data.age_hours | default('') }}
+            {% else %}
+              ""
+            {% endif %}
+          manager_state: >
+            {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+              {{ trigger.event.data.manager_state | default('') }}
+            {% else %}
+              ""
+            {% endif %}
+          status_detail: >
+            {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+              {{ trigger.event.data.status_detail | default('') }}
+            {% else %}
+              ""
+            {% endif %}
+          threshold_hours: >
+            {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+              {{ trigger.event.data.threshold_hours | default('') }}
+            {% else %}
+              ""
+            {% endif %}
