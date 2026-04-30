@@ -2,6 +2,7 @@
 
 from decimal import Decimal, InvalidOperation
 import logging
+import math
 import voluptuous as vol
 
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
@@ -15,7 +16,6 @@ from homeassistant.helpers import (
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.restore_state import RestoreEntity
-from homeassistant.helpers.template import is_number
 from homeassistant.util.dt import now
 
 try:
@@ -90,9 +90,23 @@ def interval_display_name(interval: str) -> str:
     return interval.replace("_", " ").title()
 
 
+def _is_finite_number(value) -> bool:
+    """Return True when value coerces to a finite float.
+
+    Local replacement for ``homeassistant.helpers.template.is_number``,
+    which was relocated into a Jinja2 extension in HA 2026.5 (PR #167280)
+    and is no longer importable.  Mirrors the original behaviour
+    (rejects ``inf``/``nan`` and unparseable values).
+    """
+    try:
+        return math.isfinite(float(value))
+    except (TypeError, ValueError):
+        return False
+
+
 def validate_is_number(value):
     """Validate value is a number."""
-    if is_number(value):
+    if _is_finite_number(value):
         return value
     raise vol.Invalid("Value is not a number")
 
@@ -148,6 +162,39 @@ def _state_to_float(state) -> float | None:
         return float(state.state)
     except (TypeError, ValueError):
         return None
+
+
+def _last_reset_changed(old_state, new_state) -> bool:
+    """Detect a source-sensor reset via the ``last_reset`` attribute.
+
+    Canonical signal for ``state_class=total`` resetting sensors (e.g. HA's
+    ``utility_meter`` helper). Returns True when ``new_state.last_reset`` is
+    set and differs from ``old_state.last_reset``.
+    """
+    if old_state is None or new_state is None:
+        return False
+    old_lr = old_state.attributes.get("last_reset")
+    new_lr = new_state.attributes.get("last_reset")
+    return new_lr is not None and old_lr != new_lr
+
+
+def _source_decremented_total_increasing(
+    current_state, last_known: float | None
+) -> bool:
+    """Detect a source-sensor reset via decrement on a ``total_increasing`` sensor.
+
+    Per HA convention any decrease on a ``total_increasing`` sensor is a reset.
+    Covers ESPHome ``total_daily_energy`` and most polling integrations that
+    skip the explicit ``0`` reading (e.g. Deye Modbus).
+    """
+    if current_state is None or last_known is None:
+        return False
+    if current_state.attributes.get("state_class") != "total_increasing":
+        return False
+    try:
+        return float(current_state.state) < last_known
+    except (TypeError, ValueError):
+        return False
 
 
 async def register_entity_services():
@@ -498,9 +545,8 @@ class EnergyCostSensor(RestoreEntity, BaseUtilitySensor):
         """Handle price sensor state changes."""
         try:
             old_price_state = event.data.get("old_state")
-            current_energy = _state_to_float(
-                self.hass.states.get(self._energy_sensor_id)
-            )
+            energy_state = self.hass.states.get(self._energy_sensor_id)
+            current_energy = _state_to_float(energy_state)
             price = _state_to_float(old_price_state)
 
             if current_energy is None or price is None:
@@ -513,6 +559,15 @@ class EnergyCostSensor(RestoreEntity, BaseUtilitySensor):
             if self._last_energy_reading is None:
                 _LOGGER.debug(
                     "Initializing energy baseline from current reading during price update."
+                )
+                self._last_energy_reading = current_energy
+            elif _source_decremented_total_increasing(
+                energy_state, self._last_energy_reading
+            ):
+                _LOGGER.debug(
+                    "Source sensor reset detected during price update. "
+                    "Re-initialising baseline to %s.",
+                    current_energy,
                 )
                 self._last_energy_reading = current_energy
             else:
@@ -539,6 +594,7 @@ class EnergyCostSensor(RestoreEntity, BaseUtilitySensor):
         """Update the energy costs using the latest sensor states, adding both incremental as decremental costs."""
         try:
             new_state = event.data.get("new_state")
+            old_state = event.data.get("old_state")
             current_energy = _state_to_float(new_state)
             price_state = self.hass.states.get(self._price_sensor_id)
             price = _state_to_float(price_state)
@@ -553,10 +609,18 @@ class EnergyCostSensor(RestoreEntity, BaseUtilitySensor):
             if self._cumulative_cost is None:
                 self._cumulative_cost = float(self._state)
 
-            if current_energy == 0 or self._last_energy_reading is None:
+            source_was_reset = (
+                current_energy == 0
+                or _last_reset_changed(old_state, new_state)
+                or _source_decremented_total_increasing(
+                    new_state, self._last_energy_reading
+                )
+            )
+            if source_was_reset or self._last_energy_reading is None:
                 _LOGGER.debug(
-                    "No previous energy reading or source sensor reset to zero. "
-                    "Initialising baseline."
+                    "Source sensor reset detected or baseline missing. "
+                    "Re-initialising baseline to %s.",
+                    current_energy,
                 )
                 self._last_energy_reading = current_energy
                 return

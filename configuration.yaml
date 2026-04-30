@@ -9,18 +9,18 @@ default_config:
 
 homeassistant:
   # Basic instance information
-  name: "Smart Home - Pierre van Ryneveld"
-  latitude: -25.84051
-  longitude: 28.24814
-  elevation: 1519
+  name: !secret home_name
+  latitude: !secret home_latitude
+  longitude: !secret home_longitude
+  elevation: !secret home_elevation
   unit_system: metric
   time_zone: Africa/Johannesburg
   country: ZA
   currency: ZAR
   
   # Network configuration for your static IP setup
-  internal_url: "http://192.168.1.30:8123"
-  external_url: "https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/"
+  internal_url: "http://192.168.1.31:8123"
+  external_url: !secret ha_external_url
   
   # File system access
   allowlist_external_dirs:
@@ -107,8 +107,8 @@ http:
   
   # CORS configuration for your static IP and local access
   cors_allowed_origins:
-    - "https://192.168.1.30:8123"
-    - "http://192.168.1.30:8123"
+    - !secret ha_internal_url_ssl
+    - !secret ha_internal_url
     - "http://localhost:8123"
     - "http://127.0.0.1:8123"
     - "https://my.home-assistant.io"

@@ -1,0 +1,172 @@
+{
+  "title": "Sunlight Visualizer",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Konfiguration av Sunlight Visualizer",
+        "description": "Konfigurera integrationen Sunlight Visualizer. Aktiv plats: {location_name} ({latitude}, {longitude}) via {location_source}",
+        "data": {
+          "location_source": "Platskälla",
+          "location_zone_entity": "Zon-override",
+          "use_custom_angle": "Använd egen vinkel (istället för kompassriktning)",
+          "direction": "Kompassriktning (Välj den riktning som din ytterdörr vetter mot)",
+          "roof_direction": "Taksidans riktning (nedförsida)",
+          "roof_power_entity": "Takets effektsensor (valfri)",
+          "roof_power_enabled": "Aktivera takets effektvärde",
+          "roof_power_invert": "Invertera effekt (tvinga positivt)",
+          "fixed_sun_rotation_enabled": "Fixed sun position, azimuth. (Rotate scene)",
+          "auto_rotate_speed": "Auto-roteringshastighet (grader/sek)",
+          "house_angle": "Husvinkel (grader, 0° = front mot norr)",
+          "ceiling_tilt": "Taklutning (0–90°, 0 = horisontell)",
+          "update_interval": "Uppdateringsintervall (minuter)"
+        },
+        "data_description": {
+          "location_source": "Välj Home Assistant-plats (standard) eller en anpassad zon.",
+          "location_zone_entity": "Välj en zon som override, eller välj Use Home (default). Om zonen saknas/inte är tillgänglig används Home automatiskt.",
+          "use_custom_angle": "Markera för att ange exakt vinkel, avmarkera för att välja kompassriktning",
+          "direction": "Välj kompassriktning (N, NE, E, osv.) den riktning som din ytterdörr vetter mot.",
+          "roof_direction": "Välj vilken sida av huset taket lutar ned mot",
+          "roof_power_entity": "Välj effektsensor som visas under takets % (W/kW)",
+          "roof_power_enabled": "Visa effektvärde under takets %",
+          "roof_power_invert": "Invertera effektvärden (om sensorn är negativ)",
+          "fixed_sun_rotation_enabled": "Keep sun azimuth visually fixed and rotate the scene instead",
+          "auto_rotate_speed": "Standardhastighet för auto-rotation i kortet (1–90 grader/sek)",
+          "house_angle": "Vinkel för husets front i förhållande till norr (0–359°)",
+          "ceiling_tilt": "Lutningsvinkel för tak/solpaneler (0° = plant, 90° = vertikalt)",
+          "update_interval": "Hur ofta solens position beräknas om (1–60 minuter)"
+        }
+      }
+    },
+    "error": {
+      "invalid_latitude": "Latitud måste vara mellan -90 och 90 grader",
+      "invalid_longitude": "Longitud måste vara mellan -180 och 180 grader",
+      "invalid_house_angle": "Husvinkel måste vara mellan 0 och 360 grader",
+      "invalid_ceiling_tilt": "Taklutning måste vara mellan 0 och 90 grader",
+      "invalid_update_interval": "Uppdateringsintervallet måste vara mellan 1 och 60 minuter",
+      "invalid_auto_rotate_speed": "Auto-roteringshastigheten måste vara mellan 1 och 90 grader/sek",
+      "invalid_force_sun_azimuth": "Tvingad solazimut måste vara mellan 0 och 359 grader",
+      "invalid_force_sun_elevation": "Tvingad solhöjd måste vara mellan −90 och 90 grader",
+      "invalid_coordinates": "Ange giltiga decimaltal för koordinater",
+      "latitude_out_of_range": "Latitud måste vara mellan -90° och 90°",
+      "longitude_out_of_range": "Longitud måste vara mellan -180° och 180°",
+      "direction_required": "Välj en kompassriktning när egen vinkel inte används",
+      "unknown": "Ett oväntat fel inträffade"
+    },
+    "abort": {
+      "single_instance_allowed": "Endast en konfiguration av Sunlight Visualizer är tillåten."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Alternativ för Sunlight Visualizer",
+        "description": "Uppdatera konfigurationen för Sunlight Visualizer. Aktiv plats: {location_name} ({current_lat}, {current_lon}) via {source}",
+        "data": {
+          "location_source": "Platskälla",
+          "location_zone_entity": "Zon-override",
+          "use_custom_angle": "Använd egen vinkel (istället för kompassriktning)",
+          "direction": "Kompassriktning (Välj den riktning som din ytterdörr vetter mot)",
+          "roof_direction": "Taksidans riktning (nedförsida)",
+          "roof_power_entity": "Takets effektsensor (valfri)",
+          "roof_power_enabled": "Aktivera takets effektvärde",
+          "roof_power_invert": "Invertera effekt (tvinga positivt)",
+          "fixed_sun_rotation_enabled": "Fixed sun position, azimuth. (Rotate scene)",
+          "force_sun_fallback": "Tvinga sol‑fallback",
+          "force_sun_azimuth": "Tvinga solazimut",
+          "force_sun_elevation": "Tvinga solhöjd",
+          "auto_rotate_speed": "Auto-roteringshastighet (grader/sek)",
+          "house_angle": "Husvinkel (grader, 0° = front mot norr)",
+          "ceiling_tilt": "Taklutning (0–90°, 0 = horisontell)",
+          "update_interval": "Uppdateringsintervall (minuter)"
+        },
+        "data_description": {
+          "location_source": "Välj Home Assistant-plats (standard) eller en anpassad zon.",
+          "location_zone_entity": "Välj en zon som override, eller välj Use Home (default). Om zonen saknas/inte är tillgänglig används Home automatiskt.",
+          "use_custom_angle": "Markera för att ange exakt vinkel, avmarkera för att välja kompassriktning",
+          "direction": "Välj kompassriktning (N, NE, E, osv.) den riktning som din ytterdörr vetter mot.",
+          "roof_direction": "Välj vilken sida av huset taket lutar ned mot",
+          "roof_power_entity": "Välj effektsensor som visas under takets % (W/kW)",
+          "roof_power_enabled": "Visa effektvärde under takets %",
+          "roof_power_invert": "Invertera effektvärden (om sensorn är negativ)",
+          "fixed_sun_rotation_enabled": "Keep sun azimuth visually fixed and rotate the scene instead",
+          "force_sun_fallback": "Tvinga fallback‑solvärden (test)",
+          "force_sun_azimuth": "Azimut som används vid tvingad fallback (0–359°)",
+          "force_sun_elevation": "Höjd som används vid tvingad fallback (−90° till 90°)",
+          "auto_rotate_speed": "Standardhastighet för auto-rotation i kortet (1–90 grader/sek)",
+          "house_angle": "Vinkel för husets front i förhållande till norr (0–359°)",
+          "ceiling_tilt": "Lutningsvinkel för tak/solpaneler (0° = plant, 90° = vertikalt)",
+          "update_interval": "Hur ofta solens position beräknas om (1–60 minuter)"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_options": {
+      "name": "Sätt alternativ",
+      "description": "Uppdatera Sunlight Visualizer-alternativ för den aktiva konfigurationsposten.",
+      "fields": {
+        "entry_id": {
+          "name": "ID för konfigurationspost",
+          "description": "Valfritt. Om utelämnat används den första Sunlight Visualizer-posten."
+        },
+        "house_angle": {
+          "name": "Husvinkel",
+          "description": "Frontväggens riktning i grader (0-359)."
+        },
+        "ceiling_tilt": {
+          "name": "Taklutning",
+          "description": "Takets lutningsvinkel i grader (0-90)."
+        },
+        "roof_direction": {
+          "name": "Takriktning",
+          "description": "Sidan där taket lutar ned."
+        },
+        "camera_rotation_h": {
+          "name": "Kamerarotation H",
+          "description": "Horisontell kamerarotation i grader (0-359)."
+        },
+        "camera_rotation_v": {
+          "name": "Kamerarotation V",
+          "description": "Vertikal kamerarotation i grader (0-90)."
+        },
+        "fixed_sun_azimuth": {
+          "name": "Fast solazimut",
+          "description": "Fast solazimut för kortets visuella fixed-sun-läge (0-359)."
+        },
+        "fixed_sun_rotation_enabled": {
+          "name": "Fixed sun position, azimuth. (Rotate scene)",
+          "description": "Keep sun azimuth visually fixed and rotate the scene instead"
+        },
+        "auto_rotate_speed": {
+          "name": "Auto-roteringshastighet",
+          "description": "Kortets auto-roteringshastighet i grader per sekund (1-90)."
+        },
+        "roof_power_entity": {
+          "name": "Takets effektsensor",
+          "description": "Valfri effektsensor som visas under takets procentvärde."
+        },
+        "roof_power_enabled": {
+          "name": "Aktivera takets effektetikett",
+          "description": "Visa eller dölj takets effektetikett."
+        },
+        "roof_power_invert": {
+          "name": "Invertera takets effektvärde",
+          "description": "Invertera effektvärdet (användbart för sensorer med negativ export)."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "solar_alignment_status": {
+        "name": "Soltakets Inriktningsstatus",
+        "state": {
+          "at_peak": "Vid topp",
+          "approaching": "Närmar sig",
+          "declining": "Avtar",
+          "unknown": "Okänd"
+        }
+      }
+    }
+  }
+}
