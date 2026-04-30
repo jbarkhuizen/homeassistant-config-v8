@@ -55,7 +55,7 @@
           📊 Achievement: {{ ((states('sensor.deyeinvertermaster_summary_day_pv1') | float(0) + states('sensor.deyeinvertermaster_summary_day_pv2') | float(0)) / states('input_number.solar_generation_target') | float(25) * 100) | round(1) }}%
 
 
-          🌐 http://192.168.1.30:8123
+          🌐 http://192.168.1.31:8123
     # Email Notification Service
     - service: notify.email_alerts_jbarkhuizen_gmail_com
       data:
@@ -84,7 +84,7 @@
           Grid Export: {{ states('sensor.deyeinvertermaster_summary_day_grid_export_sell') | float(0) | round(2) }} kWh
 
 
-          System: http://192.168.1.30:8123
+          System: http://192.168.1.31:8123
 
     - service: system_log.write
       data:
@@ -187,7 +187,7 @@
 
           Have a productive week ahead!
 
-          System: http://192.168.1.30:8123
+          System: http://192.168.1.31:8123
 
     # Log the report
     - service: system_log.write
@@ -294,7 +294,7 @@
 
           Keep up the excellent work!
 
-          System: http://192.168.1.30:8123
+          System: http://192.168.1.31:8123
 
     # Log the celebration
     - service: system_log.write
@@ -413,7 +413,7 @@
 
           Monitor the system and check again tomorrow.
 
-          System: http://192.168.1.30:8123
+          System: http://192.168.1.31:8123
 
     # Log the alert
     - service: system_log.write
@@ -579,7 +579,7 @@
 
           Monitor the system and investigate potential causes.
 
-          System: http://192.168.1.30:8123
+          System: http://192.168.1.31:8123
 
     # Log the alert
     - service: system_log.write
@@ -666,7 +666,7 @@
           Financial Value: ZAR {{ ((states('sensor.deyeinvertermaster_summary_total_pv1_fix') | float(0) + states('sensor.deyeinvertermaster_summary_total_pv2_fix') | float(0)) * 2.50) | round(2) }}
 
 
-          System: http://192.168.1.30:8123
+          System: http://192.168.1.31:8123
 
         mode: single
 #===============================================================================

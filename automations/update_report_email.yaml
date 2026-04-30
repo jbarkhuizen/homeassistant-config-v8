@@ -107,7 +107,7 @@
 
           🕐 Checked: {{ state_attr('sensor.home_assistant_updates_summary', 'last_checked') | default(now().strftime('%Y-%m-%d %H:%M:%S')) }}
 
-          🌐 IP: 192.168.1.30:8123
+          🌐 IP: 192.168.1.31:8123
 
           📅 {{ now().strftime('%A, %d %B %Y at %H:%M') }}
 
@@ -388,7 +388,7 @@
 
           Restart Required: {{ restart_required }}
 
-          IP: 192.168.1.30:8123
+          IP: 192.168.1.31:8123
           Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
 
   mode: single

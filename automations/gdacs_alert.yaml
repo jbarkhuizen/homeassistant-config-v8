@@ -78,7 +78,7 @@
 
           ⏰ Alert Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
 
-          🌐 Home Assistant: http://192.168.1.30:8123
+          🌐 Home Assistant: http://192.168.1.31:8123
         parse_mode: markdown
 
     # Action 3: Send Email notification with comprehensive details
@@ -147,7 +147,7 @@
 
           ================================================================================
 
-          Home Assistant System: http://192.168.1.30:8123
+          Home Assistant System: http://192.168.1.31:8123
           Cloud URL: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
 
     # Action 4: Create persistent notification in Home Assistant UI

@@ -50,7 +50,7 @@
     - variables:
         pv_now: "{{ states('sensor.deyeinvertercombined_pv_power')|float(0) }}"
         threshold_off: 2500
-        local_url: "http://192.168.1.30:8123/"
+        local_url: "http://192.168.1.31:8123/"
         cloud_url: "https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/"
 
     - service: switch.turn_off
@@ -144,7 +144,7 @@
     - variables:
         pv_now: "{{ states('sensor.deyeinvertercombined_pv_power')|float(0) }}"
         threshold_on: 3599
-        local_url: "http://192.168.1.30:8123/"
+        local_url: "http://192.168.1.31:8123/"
         cloud_url: "https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/"
 
     - service: switch.turn_on

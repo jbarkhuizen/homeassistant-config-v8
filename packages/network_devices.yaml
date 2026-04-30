@@ -44,7 +44,7 @@ template:
             {# Add Home Assistant #}
             {% set ha_device = {
               'name': 'Home Assistant Server',
-              'ip': '192.168.1.30',
+              'ip': '192.168.1.31',
               'status': 'Online',
               'type': 'Server',
               'vendor': 'Home Assistant',

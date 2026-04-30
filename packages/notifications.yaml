@@ -16,7 +16,7 @@ script:
           message: |
             Email basic test - {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
             Service: notify.email_ha
-            From: Home Assistant (192.168.1.30:8123)
+            From: Home Assistant (192.168.1.31:8123)
 
   # Test basic Telegram functionality (to BarkieHome and JohanBarkhuizen)
   test_telegram_basic:

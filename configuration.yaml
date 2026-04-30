@@ -17,11 +17,11 @@ homeassistant:
   time_zone: Africa/Johannesburg
   country: ZA
   currency: ZAR
-  
+
   # Network configuration for your static IP setup
   internal_url: !secret ha_internal_url
   external_url: !secret ha_external_url
-  
+
   # File system access
   allowlist_external_dirs:
     - "/config/sensor_report"
@@ -45,7 +45,7 @@ frontend:
 # Text to Speech
 # ==============================================================================
 tts:
-  - platform: google_translate  
+  - platform: google_translate
     service_name: google_say
 
 # ==============================================================================
@@ -104,7 +104,7 @@ http:
     - 192.168.1.0/24
     - 127.0.0.1
     - ::1
-  
+
   # CORS configuration for your static IP and local access
   cors_allowed_origins:
     - !secret ha_internal_url_ssl
@@ -112,18 +112,18 @@ http:
     - "http://localhost:8123"
     - "http://127.0.0.1:8123"
     - "https://my.home-assistant.io"
-  
+
   # Security settings
   login_attempts_threshold: 5
   ip_ban_enabled: true
   use_x_frame_options: true
-  
+
   # SSL profile for better security
   ssl_profile: modern
 
 # ==============================================================================
 # Pyscript Integration
-# ==============================================================================  
+# ==============================================================================
 pyscript:
   allow_all_imports: true
   hass_is_global: true
@@ -245,8 +245,8 @@ input_number:
 # Shell Commands
 # ==============================================================================
 shell_command:
-  git_commit: '/config/scripts/git_commit_1.sh'
-  git_commit_bash: '/bin/bash /config/scripts/git_commit_1.sh'
+  git_commit: "/config/scripts/git_commit_1.sh"
+  git_commit_bash: "/bin/bash /config/scripts/git_commit_1.sh"
   save_commit_message: 'bash -c "printf %s \"{{ message }}\" > /config/.last_commit_message"'
   backup_config: >
     cp -r /config /backup/ha-config-$(date +%Y%m%d_%H%M%S)
@@ -257,11 +257,11 @@ shell_command:
   restart_deye_integration: >
     curl -X POST -H "Authorization: Bearer !secret ha_long_lived_token" \
     -H "Content-Type: application/json" \
-    http://192.168.1.30:8123/api/config/config_entries/reload
+    http://192.168.1.31:8123/api/config/config_entries/reload
   restart_homeassistant: >
     curl -X POST -H "Authorization: Bearer !secret ha_long_lived_token" \
     -H "Content-Type: application/json" \
-    http://192.168.1.30:8123/api/services/homeassistant/restart
+    http://192.168.1.31:8123/api/services/homeassistant/restart
   cleanup_logs: >
     find /config -name "home-assistant.log*" -mtime +7 -delete &&
     find /config -name "*.log" -size +10M -delete
@@ -297,17 +297,17 @@ logger:
     homeassistant.config: info
     homeassistant.components.smtp: debug
     aiosmtplib: debug
-    
+
     # Automation & Scripts - Info level for troubleshooting
     homeassistant.components.automation: info
     homeassistant.components.script: info
-    
+
     # Integration-specific
     homeassistant.components.mqtt: info
     homeassistant.components.tuya: info
     homeassistant.components.telegram: info
     homeassistant.components.notify: info
-    
+
     # Custom Components - Reduce only problematic ones to error
     custom_components.alexa_media: warning
     custom_components.localtuya: warning
@@ -317,28 +317,28 @@ logger:
     custom_components.sunsunk: info
     custom_components.sonoff: info
     custom_components.hacs: info
-    
+
     # Database & History - Keep at warning
     homeassistant.components.recorder: warning
     homeassistant.components.history: warning
     homeassistant.components.influxdb: info
-    
+
     # Network - Info for device tracking
     homeassistant.components.network: info
     homeassistant.components.websocket: warning
-    
+
     # System Health
     homeassistant.components.system_health: warning
     homeassistant.components.updater: warning
     homeassistant.components.homeassistant: info
-    
+
     # Utilities
     homeassistant.util.dt: warning
     homeassistant.util.yaml: warning
     homeassistant.helpers.entity: warning
     homeassistant.helpers.entity_registry: warning
     homeassistant.helpers.device_registry: warning
-    
+
     # External Libraries
     urllib3.connectionpool: error
     requests.packages.urllib3.connectionpool: error

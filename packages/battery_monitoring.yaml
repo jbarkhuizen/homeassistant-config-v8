@@ -328,7 +328,7 @@ automation:
                   • Plan battery replacement soon
                   • Monitor device functionality
 
-                  🏠 System: 192.168.1.30:8123
+                  🏠 System: 192.168.1.31:8123
                   📅 {{ now().strftime('%A, %d %B %Y %H:%M') }}
                 parse_mode: markdown
 
@@ -341,44 +341,44 @@ automation:
                   ================================================================================
                   LOW BATTERY ALERT
                   ================================================================================
-                  
+
                   Device Battery Running Low
-                  
+
                   --------------------------------------------------------------------------------
                   DEVICE INFORMATION
                   --------------------------------------------------------------------------------
-                  
+
                   Device Name: {{ repeat.item.name | replace(' Battery', '') }}
                   Current Battery Level: {{ repeat.item.battery | round(1) }}%
                   Low Battery Threshold: {{ states('input_number.battery_low_threshold') }}%
                   Status: Battery level has dropped below threshold
-                  
+
                   --------------------------------------------------------------------------------
                   ACTION REQUIRED
                   --------------------------------------------------------------------------------
-                  
+
                   Please take the following actions:
 
                   1. Continue monitoring device functionality
                   2. Check device is still operating correctly
-                  
+
                   --------------------------------------------------------------------------------
                   DEVICE DETAILS
                   --------------------------------------------------------------------------------
-                  
+
                   Entity ID: {{ repeat.item.entity_id }}
                   Battery Percentage: {{ repeat.item.battery | round(1) }}%
                   Alert Triggered: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
-                  
+
                   --------------------------------------------------------------------------------
                   SYSTEM INFORMATION
                   --------------------------------------------------------------------------------
-                  
-                  Home Assistant System: http://192.168.1.30:8123
+
+                  Home Assistant System: http://192.168.1.31:8123
                   Cloud Access: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
-                  
+
                   This is an automated notification from your Home Assistant battery monitoring system.
-                  
+
                   ================================================================================
             # Log Event
             - service: system_log.write
@@ -455,7 +455,7 @@ automation:
 
                   📦 *Replacement Priority:* HIGH
 
-                  🏠 System: 192.168.1.30:8123
+                  🏠 System: 192.168.1.31:8123
                   📅 {{ now().strftime('%A, %d %B %Y %H:%M') }}
                 parse_mode: markdown
 
@@ -484,7 +484,7 @@ automation:
 
                   Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
 
-                  Home Assistant: http://192.168.1.30:8123
+                  Home Assistant: http://192.168.1.31:8123
 
             # Log Critical Event
             - service: system_log.write
@@ -591,7 +591,7 @@ automation:
             • Order batteries for low devices
             • Keep spare batteries on hand
 
-            🏠 System: 192.168.1.30:8123
+            🏠 System: 192.168.1.31:8123
           parse_mode: markdown
 
       # Send Email Report with HTML Table
@@ -710,7 +710,7 @@ automation:
 
             This is an automated weekly report sent every Saturday at 09:00.
 
-            Home Assistant: http://192.168.1.30:8123
+            Home Assistant: http://192.168.1.31:8123
             Generated: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
 
       # Log Weekly Report
@@ -762,7 +762,7 @@ automation:
 
             📊 System Health: {{ states('sensor.battery_system_health_score') }}%
 
-            🏠 System: 192.168.1.30:8123
+            🏠 System: 192.168.1.31:8123
             📅 {{ now().strftime('%A, %d %B %Y') }}
           parse_mode: markdown
 

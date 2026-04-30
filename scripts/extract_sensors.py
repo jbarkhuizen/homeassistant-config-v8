@@ -5,7 +5,7 @@
 # Purpose: Export current HA states to daily CSV for archival/reporting
 # Output:  /config/sensor_reports/sensors_YYYYMMDD.csv
 # Auth:    Reads ha_long_lived_token from /config/secrets.yaml
-# URL:     Defaults to http://192.168.1.30:8123 (override with HA_URL env var)
+# URL:     Defaults to http://192.168.1.31:8123 (override with HA_URL env var)
 # ==============================================================================
 
 import os
@@ -23,7 +23,7 @@ except Exception as e:
 
 CONFIG_DIR = "/config"
 SECRETS_PATH = os.path.join(CONFIG_DIR, "secrets.yaml")
-DEFAULT_URL = os.environ.get("HA_URL", "http://192.168.1.30:8123")
+DEFAULT_URL = os.environ.get("HA_URL", "http://192.168.1.31:8123")
 REPORT_DIR = os.path.join(CONFIG_DIR, "sensor_reports")
 
 

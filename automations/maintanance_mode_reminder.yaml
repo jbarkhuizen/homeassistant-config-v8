@@ -32,7 +32,7 @@
             {{ minutes_on }}m
           {% endif %}
         cloud_url: "https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/"
-        local_url: "http://192.168.1.30:8123/"
+        local_url: "http://192.168.1.31:8123/"
 
     # Persistent notification in UI
     - service: persistent_notification.create

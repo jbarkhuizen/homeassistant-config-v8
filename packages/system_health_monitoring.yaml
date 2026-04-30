@@ -197,7 +197,7 @@ automation:
             • Check system logs for errors
             • Consider restarting HA if issue persists
 
-            🌐 IP: 192.168.1.30:8123
+            🌐 IP: 192.168.1.31:8123
             📅 {{ now().strftime('%A, %d %B %Y %H:%M') }}
           parse_mode: markdown
 
@@ -224,7 +224,7 @@ automation:
             4. Consider restarting if issue persists
 
             Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
-            IP: 192.168.1.30:8123
+            IP: 192.168.1.31:8123
 
       # Log to System
       - service: system_log.write
@@ -395,7 +395,7 @@ automation:
             ✅ No critical issues detected
             {% endif %}
 
-            🌐 System: 192.168.1.30:8123
+            🌐 System: 192.168.1.31:8123
             📅 {{ now().strftime('%A, %d %B %Y') }}
           parse_mode: markdown
 
@@ -436,7 +436,7 @@ automation:
 
             ================================================================================
 
-            Home Assistant: http://192.168.1.30:8123
+            Home Assistant: http://192.168.1.31:8123
 
       # Log Daily Report
       - service: system_log.write

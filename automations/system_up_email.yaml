@@ -30,7 +30,7 @@
 
           ---
           Sent from Home Assistant
-          IP: 192.168.1.30:8123
+          IP: 192.168.1.31:8123
         html: >
           <!DOCTYPE html>
           <html>
@@ -61,7 +61,7 @@
                   <ul>
                     <li><strong>Time:</strong> {{ now().strftime('%H:%M:%S') }}</li>
                     <li><strong>Date:</strong> {{ now().strftime('%A, %d %B %Y') }}</li>
-                    <li><strong>System IP:</strong> 192.168.1.30:8123</li>
+                    <li><strong>System IP:</strong> 192.168.1.31:8123</li>
                   </ul>
                 </div>
                 <p>All automation services are functioning normally.</p>
