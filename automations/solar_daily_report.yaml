@@ -29,10 +29,10 @@
           {% from 'solar_daily_report.jinja' import solar_daily_report_email %}
           {{ solar_daily_report_email() }}
 
-    # Telegram — replace 6167623299 with your real chat_id, or use !secret telegram_chat_id
+    # Telegram — replace !secret telegram_chat_id_2 with your real chat_id, or use !secret telegram_chat_id
     - service: telegram_bot.send_message
       data:
-        chat_id: 6167623299
+        chat_id: !secret telegram_chat_id_2
         message: >-
           {% from 'solar_daily_report.jinja' import solar_daily_report_telegram %}
           {{ solar_daily_report_telegram() }}

@@ -93,7 +93,7 @@
             - service: telegram_bot.send_message
               data:
                 target:
-                  - 6167623299
+                  - !secret telegram_chat_id_2
                 message: >-
                   {% from 'mqtt_broker_notifications.jinja' import mqtt_broker_telegram %}
                   {{ mqtt_broker_telegram(True) }}
@@ -139,7 +139,7 @@
             - service: telegram_bot.send_message
               data:
                 target:
-                  - 6167623299
+                  - !secret telegram_chat_id_2
                 message: >-
                   {% from 'mqtt_broker_notifications.jinja' import mqtt_broker_telegram %}
                   {{ mqtt_broker_telegram(False) }}

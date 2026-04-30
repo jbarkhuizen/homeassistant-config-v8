@@ -72,10 +72,10 @@
           Managed by: Solar pool pump automation
         notification_id: "pool_pump_solar_manager"
 
-    # Telegram — replace 6167623299 with your chat_id or use !secret
+    # Telegram — replace !secret telegram_chat_id_2 with your chat_id or use !secret
     - service: telegram_bot.send_message
       data:
-        chat_id: 6167623299
+        chat_id: !secret telegram_chat_id_2
         message: >-
           🛑 *Pool Pump OFF — PV low*
           PV: {{ pv_now | round(0) }} W (< {{ threshold_off }} W for 15 min)
@@ -166,10 +166,10 @@
           Managed by: Solar pool pump automation
         notification_id: "pool_pump_solar_manager"
 
-    # Telegram — replace 6167623299 with your chat_id or use !secret
+    # Telegram — replace !secret telegram_chat_id_2 with your chat_id or use !secret
     - service: telegram_bot.send_message
       data:
-        chat_id: 6167623299
+        chat_id: !secret telegram_chat_id_2
         message: >-
           ✅ *Pool Pump ON — PV sufficient*
           PV: {{ pv_now | round(0) }} W (> {{ threshold_on }} W for 15 min)

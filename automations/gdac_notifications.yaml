@@ -43,7 +43,7 @@
     - service: telegram_bot.send_message
       data:
         target:
-          - 6167623299
+          - !secret telegram_chat_id_2
         message: >-
           {% from 'gdacs_notifications.jinja' import gdacs_daily_telegram %}
           {{ gdacs_daily_telegram() }}
@@ -90,7 +90,7 @@
     - service: telegram_bot.send_message
       data:
         target:
-          - 6167623299
+          - !secret telegram_chat_id_2
         message: >-
           {% from 'gdacs_notifications.jinja' import gdacs_high_alert_telegram %}
           {{ gdacs_high_alert_telegram() }}

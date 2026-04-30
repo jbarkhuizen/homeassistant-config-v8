@@ -25,7 +25,7 @@ automation:
               - service: telegram_bot.send_message
                 data:
                   message: "I got a message from chatID: {{ trigger.event.data.chat_id }}"
-                  chat_id: 6167623299
+                  chat_id: !secret telegram_chat_id_2
 
           - conditions:
               - condition: trigger
@@ -35,7 +35,7 @@ automation:
               - service: telegram_bot.send_message
                 data:
                   message: command1 was understood and I will action it now
-                  chat_id: 6167623299
+                  chat_id: !secret telegram_chat_id_2
 
               - service: input_boolean.turn_on
                 data: {}
@@ -82,7 +82,7 @@ automation:
               # Telegram Notification Service
               - service: telegram_bot.send_message
                 data:
-                  chat_id: 6167623299
+                  chat_id: !secret telegram_chat_id_2
                   message: "Loadshedding finished with battery SOC: {{ states('sensor.deyeinvertermaster_battery_soc') }}%"
 
           - conditions:
@@ -94,7 +94,7 @@ automation:
               # Telegram Notification Service
               - service: telegram_bot.send_message
                 data:
-                  chat_id: 6167623299
+                  chat_id: !secret telegram_chat_id_2
                   message: "Loadshedding started with battery SOC: {{ states('sensor.deyeinvertermaster_battery_soc') }}%"
 
           - conditions:
@@ -107,7 +107,7 @@ automation:
               # Telegram Notification Service
               - service: telegram_bot.send_message
                 data:
-                  chat_id: 6167623299
+                  chat_id: !secret telegram_chat_id_2
                   message: "Grid down and battery below 20%"
 
     mode: single
@@ -126,7 +126,7 @@ automation:
       # Telegram Notification Service
       - service: telegram_bot.send_message
         data:
-          chat_id: 6167623299
+          chat_id: !secret telegram_chat_id_2
           message: "Battery below 20%"
 
     mode: single

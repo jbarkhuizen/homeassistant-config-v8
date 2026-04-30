@@ -94,10 +94,10 @@
 
           (End of added Solar Forecast section)
 
-    # Telegram — replace 6167623299 with your real chat_id or !secret
+    # Telegram — replace !secret telegram_chat_id_2 with your real chat_id or !secret
     - service: telegram_bot.send_message
       data:
-        chat_id: 6167623299
+        chat_id: !secret telegram_chat_id_2
         message: >-
           {% from 'system_overview_notifications.jinja' import system_morning_overview_telegram %}
           {{ system_morning_overview_telegram() }}

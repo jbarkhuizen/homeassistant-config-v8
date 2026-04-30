@@ -49,11 +49,11 @@
           Toggle in: Settings → Devices & Services → Helpers → input_boolean.maintenance_mode
         notification_id: "maintenance_mode_reminder"
 
-    # Telegram — replace 6167623299 with your real chat_id, or use !secret telegram_chat_id
+    # Telegram — replace !secret telegram_chat_id_2 with your real chat_id, or use !secret telegram_chat_id
     - service: telegram_bot.send_message
       data:
         target:
-          - 6167623299
+          - !secret telegram_chat_id_2
         message: >-
           ⚠️ Maintenance Mode is still ON ({{ duration_hm }}).
           Some scheduled automations may be suppressed.

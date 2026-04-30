@@ -29,7 +29,7 @@
     # Telegram
     - service: telegram_bot.send_message
       data:
-        chat_id: 6167623299
+        chat_id: !secret telegram_chat_id_2
         message: >-
           ✅ *Home Assistant System Check (Telegram)*
 
@@ -37,8 +37,8 @@
 
           • Time: {{ now_str }}
           • Uptime: {{ uptime_str }}
-          • Local: http://192.168.1.30:8123
-          • Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
+          • Local: {{ states('sensor.hass_io_info') }}
+          • Cloud: !secret ha_external_url
 
         parse_mode: markdown
 

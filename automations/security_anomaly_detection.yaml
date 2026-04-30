@@ -71,7 +71,7 @@
             - service: telegram_bot.send_message
               data:
                 target:
-                  - 6167623299
+                  - !secret telegram_chat_id_2
                 message: >-
                   ❗ *Security: Bad Logins Spike*
                   {{ detail }}

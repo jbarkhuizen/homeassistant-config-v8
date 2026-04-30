@@ -154,7 +154,7 @@ automation:
       # Telegram Notification Service
       - service: telegram_bot.send_message
         data:
-          chat_id: 6167623299
+          chat_id: !secret telegram_chat_id_2
           message: >-
             ☀️ *Solar Power Optimization*
 
@@ -210,7 +210,7 @@ automation:
             Reason: {% if now().hour >= 17 %}Outside operating hours{% else %}Solar power below threshold{% endif %}
       - service: telegram_bot.send_message
         data:
-          chat_id: 6167623299
+          chat_id: !secret telegram_chat_id_2
           message: >-
             🌙 *Solar Power Optimization*
 
@@ -262,7 +262,7 @@ automation:
       # Telegram Notification Service
       - service: telegram_bot.send_message
         data:
-          chat_id: 6167623299
+          chat_id: !secret telegram_chat_id_2
           message: >-
             🌅 *Solar Power - Morning Check*
 
@@ -302,7 +302,7 @@ automation:
       # Telegram Notification Service
       - service: telegram_bot.send_message
         data:
-          chat_id: 6167623299
+          chat_id: !secret telegram_chat_id_2
           message: >-
             🕔 *Solar Power - End of Day*
 
@@ -335,7 +335,7 @@ automation:
             Devices will not be automatically controlled until re-enabled.
       - service: telegram_bot.send_message
         data:
-          chat_id: 6167623299
+          chat_id: !secret telegram_chat_id_2
           message: >-
             ⚠️ *Solar Power Optimization*
 

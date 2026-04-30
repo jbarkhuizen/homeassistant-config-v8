@@ -268,7 +268,7 @@
                 notification_id: "auto_update_failure"
             - service: telegram_bot.send_message
               data:
-                chat_id: 6167623299
+                chat_id: !secret telegram_chat_id_2
                 message: >-
                   ❌ *Auto Update Failure*  
                   Pre: {{ pre_count }} | Post: {{ post_count }}  
@@ -292,7 +292,7 @@
                 notification_id: "auto_update_partial"
             - service: telegram_bot.send_message
               data:
-                chat_id: 6167623299
+                chat_id: !secret telegram_chat_id_2
                 message: >-
                   ⚠️ *Auto Update Partial*  
                   Pre: {{ pre_count }} | Post: {{ post_count }}  
@@ -316,7 +316,7 @@
                 notification_id: "auto_update_success"
             - service: telegram_bot.send_message
               data:
-                chat_id: 6167623299
+                chat_id: !secret telegram_chat_id_2
                 message: >-
                   ✅ *Auto Update Success*  
                   Pre: {{ pre_count }} | Post: {{ post_count }}  

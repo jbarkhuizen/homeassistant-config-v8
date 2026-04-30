@@ -104,7 +104,7 @@ def get_unavailable_entities():
 # This will run automatically every 5 minutes
 #===============================================================================
 
-@time_trigger("cron(*/5 * * * *)")
+@time_trigger("cron(*/30 * * * *)")
 def auto_check_unavailable_entities():
     """
     Automatically check for unavailable entities every 5 minutes.
