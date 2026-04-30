@@ -19,7 +19,7 @@ homeassistant:
   currency: ZAR
   
   # Network configuration for your static IP setup
-  internal_url: "http://192.168.1.31:8123"
+  internal_url: !secret ha_internal_url
   external_url: !secret ha_external_url
   
   # File system access
