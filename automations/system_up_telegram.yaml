@@ -1,13 +1,15 @@
-# ==============================================================================
-# System Up - Telegram + HA Notification (Daily)
+#===============================================================================
+# System Up - Telegram + Email + Mobile Push + Persistent + HA Notification (Daily)
 # File: automations/system_up_telegram.yaml
-# Purpose: Daily smoke test that Telegram notifications are working.
+# Updated: 2026-05-01
+# Purpose: Daily smoke test that all notification channels are working.
 # Schedule: 08:00 (within 06:00–09:00 requirement)
-# ==============================================================================
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
+#===============================================================================
 
 - id: "morning_test_telegram_system_check"
   alias: "Morning Test Telegram - System Check"
-  description: "Sends a Telegram message every morning at 08:00 to verify the system + Telegram notifications are operational"
+  description: "Sends daily system check at 08:00 via Telegram, Email, Mobile Push and Persistent Notification to verify all channels are operational"
 
   trigger:
     - platform: time
@@ -18,6 +20,7 @@
   action:
     - variables:
         now_str: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+        date_str: "{{ now().strftime('%A, %d %B %Y') }}"
         uptime_str: >-
           {% set u = states('sensor.uptime') %}
           {% if u in ['unknown', 'unavailable', 'None', ''] %}
@@ -26,7 +29,7 @@
             {{ u }}
           {% endif %}
 
-    # Telegram
+    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         chat_id: !secret telegram_chat_id_2
@@ -35,26 +38,87 @@
 
           HA is up and running.
 
-          • Time: {{ now_str }}
-          • Uptime: {{ uptime_str }}
-          • Local: {{ states('sensor.hass_io_info') }}
-          • Cloud: !secret ha_external_url
+          📅 Date: {{ date_str }}
+          ⏰ Time: {{ now_str }}
+          ⏱️ Uptime: {{ uptime_str }}
+          🌐 Local: http://192.168.1.31:8123
+          ☁️ Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
 
+          🟢 All systems operational.
         parse_mode: markdown
 
-    # Home Assistant Notification (Persistent)
+    # --- Email ---
+    - service: notify.email_ha
+      data:
+        title: "✅ Home Assistant — Telegram System Check OK (08:00)"
+        message: |
+          HOME ASSISTANT DAILY SYSTEM CHECK — TELEGRAM VERIFIED
+
+          Good morning!
+
+          This email confirms that the daily system check at 08:00 was completed
+          successfully and the Telegram notification channel is working correctly.
+
+          System Details:
+          - Date: {{ date_str }}
+          - Time: {{ now_str }}
+          - Uptime: {{ uptime_str }}
+          - Local IP: 192.168.1.31:8123
+          - Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
+
+          Channels Verified:
+          - Telegram: Sent to chat_id_2
+          - Email: This message
+          - Mobile Push: Sent to SM-G996B
+          - Persistent: Created in HA dashboard
+
+          All systems operational.
+
+          ---
+          Sent from Home Assistant
+          IP: 192.168.1.31:8123
+
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "✅ HA Telegram Check OK"
+        message: "Daily Telegram system check passed — {{ date_str }} {{ now().strftime('%H:%M') }} — All channels operational."
+        data:
+          channel: "System Status"
+          importance: default
+          group: "ha-system-check"
+          color: "#4CAF50"
+          icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- Persistent Notification ---
     - service: persistent_notification.create
       data:
-        title: "✅ Home Assistant - Telegram Check OK"
+        title: "✅ Telegram System Check OK (08:00)"
         message: >-
-          Telegram smoke test sent successfully at {{ now_str }}.
-          This confirms the Telegram notification channel is working.
+          Telegram smoke test completed successfully at {{ now_str }}.
+
+          ✅ Telegram — Sent to chat_id_2
+          ✅ Email — Sent via notify.email_ha
+          ✅ Mobile Push — Sent to SM-G996B
+          ✅ System is operational
+
+          Date: {{ date_str }}
+          Uptime: {{ uptime_str }}
+          Local: http://192.168.1.31:8123
         notification_id: "telegram_smoke_test_ok"
 
-    # Audit log
+    # --- System Log ---
     - service: system_log.write
       data:
-        message: "Telegram system check sent at {{ now_str }}."
+        message: >-
+          Morning Telegram system check sent at {{ now_str }} via Telegram, Email, Mobile Push and Persistent Notification.
         level: info
 
   mode: single
+#===============================================================================
+# END OF SYSTEM UP - TELEGRAM SYSTEM CHECK
+#===============================================================================

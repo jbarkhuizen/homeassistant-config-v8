@@ -1,9 +1,10 @@
 #===============================================================================
 # PREPAID ELECTRICITY METER MONITORING & AUTOMATION
-# File: packages/prepaid_meter_automation.yaml
-# Created: 2025-10-14
+# File: automations/prepaid_meter_automations.yaml
+# Updated: 2026-05-01
 # Description: Comprehensive monitoring system for prepaid electricity meter
 #              with multi-level alerts and emergency load shedding
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
 #===============================================================================
 
 #-----------------------------------------------------------------------------
@@ -11,7 +12,7 @@
 #-----------------------------------------------------------------------------
 - id: prepaid_meter_daily_status
   alias: "Prepaid Meter: Daily Status Report at 09:00"
-  description: "Daily prepaid meter status report via Telegram and Email"
+  description: "Daily prepaid meter status report via Telegram, Email, Mobile Push and Persistent Notification"
 
   trigger:
     - platform: time
@@ -26,8 +27,7 @@
         daily_average: "{{ states('sensor.deyeinvertermaster_summary_daily_grid_import_buy') | float(1) }}"
         days_remaining: "{{ (units_left / daily_average) | round(1) if daily_average > 0 else 0 }}"
 
-    # Send Telegram Report
-    # Telegram Notification Service
+    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
@@ -57,8 +57,7 @@
           📅 {{ now().strftime('%A, %d %B %Y') }}
         parse_mode: markdown
 
-    # Send Email Report
-    # Email Notification Service
+    # --- Email ---
     - service: notify.email_alerts_jbarkhuizen_gmail_com
       data:
         title: >-
@@ -144,11 +143,63 @@
 
           System: http://192.168.1.31:8123
 
-    # Log the status
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "⚡ Prepaid Meter Daily Status"
+        message: >-
+          🔋 {{ states('sensor.prepaid_units_left') }} kWh remaining (~{{ days_remaining }} days) |
+          {% if units_left < states('input_number.prepaid_meter_critical_threshold') | float %}
+          🔴 CRITICAL — Recharge urgently!
+          {% elif units_left < states('input_number.prepaid_meter_warning_threshold') | float %}
+          🟡 LOW — Consider recharging soon
+          {% else %}
+          ✅ Balance healthy
+          {% endif %}
+        data:
+          channel: "Prepaid Meter"
+          importance: >-
+            {% if units_left < states('input_number.prepaid_meter_critical_threshold') | float %}
+            high
+            {% else %}
+            default
+            {% endif %}
+          group: "ha-prepaid"
+          color: >-
+            {% if units_left < states('input_number.prepaid_meter_critical_threshold') | float %}
+            #F44336
+            {% elif units_left < states('input_number.prepaid_meter_warning_threshold') | float %}
+            #FF9800
+            {% else %}
+            #4CAF50
+            {% endif %}
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- Persistent Notification ---
+    - service: persistent_notification.create
+      data:
+        title: "⚡ Prepaid Meter Daily Status (09:00)"
+        message: >-
+          Daily prepaid meter status at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+          🔋 Units Remaining: {{ states('sensor.prepaid_units_left') }} kWh
+          📅 Days Remaining: ~{{ days_remaining }} days
+          📊 Yesterday's Usage: {{ states('sensor.deyeinvertermaster_summary_daily_grid_import_buy') }} kWh
+
+          Thresholds:
+          🟡 Warning: {{ states('input_number.prepaid_meter_warning_threshold') }} kWh
+          🟠 Critical: {{ states('input_number.prepaid_meter_critical_threshold') }} kWh
+          🔴 Emergency: {{ states('input_number.prepaid_meter_emergency_threshold') }} kWh
+        notification_id: "prepaid_meter_daily_status"
+
+    # --- System Log ---
     - service: system_log.write
       data:
         message: >-
-          Prepaid meter daily status: {{ states('sensor.prepaid_units_left') }} kWh remaining
+          Prepaid meter daily status: {{ states('sensor.prepaid_units_left') }} kWh remaining (~{{ days_remaining }} days).
         level: info
 
   mode: single
@@ -172,7 +223,7 @@
       above: input_number.prepaid_meter_critical_threshold
 
   action:
-    # Send Telegram Warning
+    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
@@ -195,9 +246,48 @@
           📅 {{ now().strftime('%A, %d %B %Y at %H:%M') }}
         parse_mode: markdown
 
-    # Send Persistent Notification
-    # Persistant Notification Service
-    - service: notify.persistent_notification
+    # --- Email ---
+    - service: notify.email_alerts_jbarkhuizen_gmail_com
+      data:
+        title: "🟡 WARNING: Prepaid Meter Low Balance — {{ now().strftime('%Y-%m-%d') }}"
+        message: >-
+          PREPAID METER LOW BALANCE WARNING
+
+          Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
+
+          ================================================================================
+
+          WARNING: Your prepaid meter balance has dropped below the warning threshold.
+
+          Current Balance: {{ states('sensor.prepaid_units_left') }} kWh
+          Warning Threshold: {{ states('input_number.prepaid_meter_warning_threshold') }} kWh
+          Yesterday's Usage: {{ states('sensor.deyeinvertermaster_summary_daily_grid_import_buy') }} kWh
+
+          RECOMMENDATION:
+          Consider recharging your prepaid meter soon to avoid power interruption.
+          Next alert will trigger at {{ states('input_number.prepaid_meter_critical_threshold') }} kWh.
+
+          ================================================================================
+
+          System: http://192.168.1.31:8123
+
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "🟡 Prepaid Meter Low Balance Warning"
+        message: "Balance: {{ states('sensor.prepaid_units_left') }} kWh — Below warning threshold of {{ states('input_number.prepaid_meter_warning_threshold') }} kWh. Consider recharging soon."
+        data:
+          channel: "Prepaid Meter"
+          importance: high
+          group: "ha-prepaid"
+          color: "#FF9800"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- Persistent Notification ---
+    - service: persistent_notification.create
       data:
         title: "🟡 Prepaid Meter Low Balance Warning"
         message: >
@@ -207,10 +297,10 @@
           Please consider recharging soon to avoid power interruption.
         notification_id: prepaid_meter_warning
 
-    # Log Warning
+    # --- System Log ---
     - service: system_log.write
       data:
-        message: "Prepaid Meter Warning: Balance at {{ states('sensor.prepaid_units_left') }} kWh"
+        message: "Prepaid Meter Warning: Balance at {{ states('sensor.prepaid_units_left') }} kWh — below warning threshold."
         level: warning
 
   mode: single
@@ -234,8 +324,7 @@
       above: input_number.prepaid_meter_emergency_threshold
 
   action:
-    # Send Telegram Critical Alert
-    # Telegram Notification Service
+    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
@@ -263,8 +352,7 @@
           📅 {{ now().strftime('%A, %d %B %Y at %H:%M') }}
         parse_mode: markdown
 
-    # Send Email Alert
-    # Email Notification Service
+    # --- Email ---
     - service: notify.email_alerts_jbarkhuizen_gmail_com
       data:
         title: "🟠 CRITICAL: Prepaid Meter Balance Low"
@@ -284,9 +372,23 @@
 
           Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
 
-    # Send Persistent Notification
-    # Persistant Notification Service
-    - service: notify.persistent_notification
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "🟠 CRITICAL: Prepaid Meter Balance"
+        message: "CRITICAL: {{ states('sensor.prepaid_units_left') }} kWh remaining! Recharge IMMEDIATELY. Emergency load shedding activates at {{ states('input_number.prepaid_meter_emergency_threshold') }} kWh."
+        data:
+          channel: "Prepaid Meter"
+          importance: high
+          group: "ha-prepaid"
+          color: "#FF5722"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- Persistent Notification ---
+    - service: persistent_notification.create
       data:
         title: "🟠 CRITICAL: Prepaid Meter Balance"
         message: >
@@ -296,7 +398,7 @@
           Emergency load shedding activates at {{ states('input_number.prepaid_meter_emergency_threshold') }} kWh.
         notification_id: prepaid_meter_critical
 
-    # Log Critical Alert
+    # --- System Log ---
     - service: system_log.write
       data:
         message: "CRITICAL: Prepaid Meter at {{ states('sensor.prepaid_units_left') }} kWh - Immediate recharge required"
@@ -324,8 +426,7 @@
       target:
         entity_id: input_boolean.prepaid_meter_emergency_mode
 
-    # Send URGENT Telegram Alert
-    # Telegram Notification Service
+    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
@@ -355,8 +456,7 @@
           📅 {{ now().strftime('%A, %d %B %Y at %H:%M') }}
         parse_mode: markdown
 
-    # Send Multiple Email Alerts
-    # Email Notification Service
+    # --- Email ---
     - service: notify.email_alerts_jbarkhuizen_gmail_com
       data:
         title: "🔴 EMERGENCY: Prepaid Meter - Load Shedding Active"
@@ -377,9 +477,23 @@
 
           Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
 
-    # Persistent Notification
-    # Persistant Notification Service
-    - service: notify.persistent_notification
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "🔴 EMERGENCY: Load Shedding ACTIVE"
+        message: "EMERGENCY! {{ states('sensor.prepaid_units_left') }} kWh left. Load shedding ACTIVATED. RECHARGE IMMEDIATELY — power outage imminent!"
+        data:
+          channel: "Prepaid Meter"
+          importance: high
+          group: "ha-prepaid"
+          color: "#F44336"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA NOW"
+              uri: "http://192.168.1.31:8123"
+
+    # --- Persistent Notification ---
+    - service: persistent_notification.create
       data:
         title: "🔴 EMERGENCY: Load Shedding Active"
         message: >
@@ -435,7 +549,7 @@
       target:
         entity_id: input_boolean.energy_saving_mode
 
-    # Log Emergency
+    # --- System Log ---
     - service: system_log.write
       data:
         message: "EMERGENCY: Load shedding activated - Prepaid meter at {{ states('sensor.prepaid_units_left') }} kWh"
@@ -468,8 +582,7 @@
       target:
         entity_id: input_boolean.prepaid_meter_emergency_mode
 
-    # Send Recovery Notification
-    # Telegram Notification Service
+    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
@@ -496,15 +609,61 @@
           📅 {{ now().strftime('%A, %d %B %Y at %H:%M') }}
         parse_mode: markdown
 
-    # Clear Persistent Notifications
-    # Persistant Notification Service
-    - service: notify.persistent_notification
+    # --- Email ---
+    - service: notify.email_alerts_jbarkhuizen_gmail_com
+      data:
+        title: "✅ Prepaid Meter Recharged — Emergency Mode Deactivated"
+        message: >-
+          PREPAID METER RECHARGED — SYSTEM RESTORED
+
+          Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
+
+          ================================================================================
+
+          GOOD NEWS: Your prepaid meter has been successfully recharged.
+
+          New Balance: {{ states('sensor.prepaid_units_left') }} kWh
+          Emergency Mode: DEACTIVATED
+          Normal Operations: RESTORED
+
+          SYSTEM STATUS:
+          - Emergency mode has been turned off
+          - Inverter restored to automatic mode
+          - All systems returning to normal operation
+
+          RECOMMENDED NEXT STEPS:
+          1. Review your recent usage patterns
+          2. Consider adjusting warning thresholds if needed
+          3. Keep a buffer above the warning level going forward
+
+          ================================================================================
+
+          System: http://192.168.1.31:8123
+
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "✅ Prepaid Meter Recharged!"
+        message: "🎉 Emergency mode deactivated. New balance: {{ states('sensor.prepaid_units_left') }} kWh. All systems returning to normal."
+        data:
+          channel: "Prepaid Meter"
+          importance: default
+          group: "ha-prepaid"
+          color: "#4CAF50"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- Persistent Notification ---
+    - service: persistent_notification.create
       data:
         title: "✅ Prepaid Meter Recharged"
         message: >
           Your prepaid meter has been successfully recharged.
           Current balance: {{ states('sensor.prepaid_units_left') }} kWh.
           Emergency mode has been deactivated.
+          All systems returning to normal.
         notification_id: prepaid_meter_recovery
 
     # Restore inverter to automatic mode
@@ -514,10 +673,10 @@
       target:
         entity_id: select.deyeinvertermaster_load_limit_exp_ess_non_ess
 
-    # Log Recovery
+    # --- System Log ---
     - service: system_log.write
       data:
-        message: "Prepaid Meter Recharged: {{ states('sensor.prepaid_units_left') }} kWh - Emergency mode deactivated"
+        message: "Prepaid Meter Recharged: {{ states('sensor.prepaid_units_left') }} kWh - Emergency mode deactivated. All systems restored."
         level: info
 
   mode: single
@@ -539,8 +698,7 @@
       value_template: "{{ trigger.to_state.state | float > trigger.from_state.state | float }}"
 
   action:
-    # Send Confirmation
-    # Telegram Notofication Service
+    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
@@ -560,10 +718,62 @@
           📅 {{ now().strftime('%A, %d %B %Y at %H:%M') }}
         parse_mode: markdown
 
-    # Log Recharge
+    # --- Email ---
+    - service: notify.email_alerts_jbarkhuizen_gmail_com
+      data:
+        title: "💳 Prepaid Meter Recharge Confirmed — {{ now().strftime('%Y-%m-%d') }}"
+        message: >-
+          PREPAID METER RECHARGE CONFIRMED
+
+          Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
+
+          ================================================================================
+
+          RECHARGE SUCCESSFUL
+
+          Units Added: {{ (trigger.to_state.state | float - trigger.from_state.state | float) | round(2) }} kWh
+          New Balance: {{ states('sensor.prepaid_units_left') }} kWh
+          Total Purchased: {{ trigger.to_state.state }} kWh
+
+          USAGE INSIGHTS:
+          Yesterday's Usage: {{ states('sensor.deyeinvertermaster_summary_daily_grid_import_buy') }} kWh
+          Estimated Days Remaining: ~{{ (states('sensor.prepaid_units_left') | float / (states('sensor.deyeinvertermaster_summary_daily_grid_import_buy') | float)) | round(1) }} days
+
+          ================================================================================
+
+          System: http://192.168.1.31:8123
+
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "💳 Prepaid Meter Recharged"
+        message: "✅ {{ (trigger.to_state.state | float - trigger.from_state.state | float) | round(2) }} kWh added. New balance: {{ states('sensor.prepaid_units_left') }} kWh (~{{ (states('sensor.prepaid_units_left') | float / (states('sensor.deyeinvertermaster_summary_daily_grid_import_buy') | float)) | round(1) }} days)."
+        data:
+          channel: "Prepaid Meter"
+          importance: default
+          group: "ha-prepaid"
+          color: "#4CAF50"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- Persistent Notification ---
+    - service: persistent_notification.create
+      data:
+        title: "💳 Prepaid Meter Recharge Confirmed"
+        message: >-
+          Recharge detected at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+          Units Added: {{ (trigger.to_state.state | float - trigger.from_state.state | float) | round(2) }} kWh
+          New Balance: {{ states('sensor.prepaid_units_left') }} kWh
+          Estimated Days: ~{{ (states('sensor.prepaid_units_left') | float / (states('sensor.deyeinvertermaster_summary_daily_grid_import_buy') | float)) | round(1) }} days
+        notification_id: prepaid_meter_recharge_confirmed
+
+    # --- System Log ---
     - service: system_log.write
       data:
-        message: "Prepaid Meter Recharged: {{ (trigger.to_state.state | float - trigger.from_state.state | float) | round(2) }} kWh added"
+        message: "Prepaid Meter Recharged: {{ (trigger.to_state.state | float - trigger.from_state.state | float) | round(2) }} kWh added. New balance: {{ states('sensor.prepaid_units_left') }} kWh."
         level: info
 
   mode: single

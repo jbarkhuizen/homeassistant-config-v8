@@ -1,11 +1,16 @@
 #===============================================================================
-# SOLAR: Daily Solar & Inverter Report (08:25) — Email + Telegram
+# SOLAR: Daily Solar & Inverter Report (08:25)
+# File: automations/solar_daily_report.yaml
+# Updated: 2026-05-01
+# - Runs daily at 08:25 (inside 06:00–09:00 window)
+# - Guarded by Maintenance Mode (must be OFF)
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
 #===============================================================================
 - id: solar_daily_report_0825
-  alias: "Solar: Daily Solar & Inverter Report 08:25 (Email + Telegram)"
+  alias: "Solar: Daily Solar & Inverter Report 08:25 (Email + Telegram + Mobile Push + Persistent)"
   description: >
-    Sends a daily solar & inverter summary at 08:25 via Email and Telegram.
-    Guarded by Maintenance Mode (must be OFF).
+    Sends a daily solar & inverter summary at 08:25 via Email, Telegram, Mobile Push
+    and Persistent Notification. Guarded by Maintenance Mode (must be OFF).
 
   trigger:
     - platform: time
@@ -17,11 +22,50 @@
       state: "off"
 
   action:
-    # Small delay to ensure morning values have stabilized
+    # Small delay to ensure morning values have stabilised
     - delay:
         seconds: 10
 
-    # Email
+    # Variables for Mobile Push and Persistent summary
+    - variables:
+        pv1_today: "{{ states('sensor.deyeinvertermaster_summary_day_pv1') | float(0) | round(2) }}"
+        pv2_today: "{{ states('sensor.deyeinvertermaster_summary_day_pv2') | float(0) | round(2) }}"
+        total_today: "{{ (states('sensor.deyeinvertermaster_summary_day_pv1') | float(0) + states('sensor.deyeinvertermaster_summary_day_pv2') | float(0)) | round(2) }}"
+        battery_soc: >-
+          {% set soc = states('sensor.deyeinvertermaster_battery_soc') %}
+          {% if soc in ['unknown','unavailable','None',''] %}
+            N/A
+          {% else %}
+            {{ soc | float(0) | round(0) }}%
+          {% endif %}
+        grid_power: >-
+          {% set gp = states('sensor.deyeinvertercombined_grid_power') %}
+          {% if gp in ['unknown','unavailable','None',''] %}
+            N/A
+          {% else %}
+            {{ gp | float(0) | round(0) }} W
+          {% endif %}
+        pv_power_now: >-
+          {% set pv = states('sensor.deyeinvertercombined_pv_power') %}
+          {% if pv in ['unknown','unavailable','None',''] %}
+            N/A
+          {% else %}
+            {{ pv | float(0) | round(0) }} W
+          {% endif %}
+        load_power: >-
+          {% set lp = states('sensor.deyeinvertercombined_load_power') %}
+          {% if lp in ['unknown','unavailable','None',''] %}
+            N/A
+          {% else %}
+            {{ lp | float(0) | round(0) }} W
+          {% endif %}
+        target: "{{ states('input_number.solar_generation_target') | float(25) }}"
+        achievement: >-
+          {% set t = (states('sensor.deyeinvertermaster_summary_day_pv1') | float(0) + states('sensor.deyeinvertermaster_summary_day_pv2') | float(0)) %}
+          {% set tgt = states('input_number.solar_generation_target') | float(25) %}
+          {{ (t / tgt * 100) | round(1) if tgt > 0 else 0 }}
+
+    # --- Email ---
     - service: notify.email_notification_jbarkhuizen_gmail_com
       data:
         title: "🔆 Solar & Inverter — {{ now().strftime('%Y-%m-%d') }}"
@@ -29,7 +73,7 @@
           {% from 'solar_daily_report.jinja' import solar_daily_report_email %}
           {{ solar_daily_report_email() }}
 
-    # Telegram — replace !secret telegram_chat_id_2 with your real chat_id, or use !secret telegram_chat_id
+    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         chat_id: !secret telegram_chat_id_2
@@ -38,11 +82,61 @@
           {{ solar_daily_report_telegram() }}
         parse_mode: markdown
 
-    # Log for auditing
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "🔆 Solar Report — {{ now().strftime('%d %b %Y') }} 08:25"
+        message: >-
+          ☀️ PV Today: {{ total_today }} kWh ({{ achievement }}% of {{ target }} kWh target)
+          | PV1: {{ pv1_today }} kWh | PV2: {{ pv2_today }} kWh
+          | 🔋 SOC: {{ battery_soc }}
+          | ⚡ Now: {{ pv_power_now }} PV | {{ load_power }} Load
+        data:
+          channel: "Solar Reports"
+          importance: default
+          group: "ha-solar"
+          color: "#FF9800"
+          icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- Persistent Notification ---
+    - service: persistent_notification.create
+      data:
+        title: "🔆 Solar Daily Report (08:25) — {{ now().strftime('%d %b %Y') }}"
+        message: >-
+          Solar & inverter daily report sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+          ☀️ Solar Production Today:
+          • PV1: {{ pv1_today }} kWh
+          • PV2: {{ pv2_today }} kWh
+          • Total: {{ total_today }} kWh
+          • Target: {{ target }} kWh ({{ achievement }}% achieved)
+
+          ⚡ Current System Status:
+          • PV Power Now: {{ pv_power_now }}
+          • Load Power: {{ load_power }}
+          • Grid Power: {{ grid_power }}
+          • Battery SOC: {{ battery_soc }}
+
+          ✅ Email sent — notify.email_notification_jbarkhuizen_gmail_com
+          ✅ Telegram sent — chat_id_2
+          ✅ Mobile Push sent — SM-G996B
+        notification_id: "solar_daily_report_0825"
+
+    # --- System Log ---
     - service: system_log.write
       data:
         message: >-
           Solar Daily Report sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+          PV Total: {{ total_today }} kWh ({{ achievement }}% of {{ target }} kWh target).
+          PV1: {{ pv1_today }} kWh, PV2: {{ pv2_today }} kWh.
+          Battery SOC: {{ battery_soc }}. Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
         level: info
 
   mode: single
+#===============================================================================
+# END OF SOLAR DAILY REPORT
+#===============================================================================

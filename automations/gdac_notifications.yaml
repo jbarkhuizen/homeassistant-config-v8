@@ -1,38 +1,86 @@
 # =============================================================================
 # AUTOMATIONS: GDACS Notifications (06:00–09:00 window)
+# File: automations/gdac_notifications.yaml
+# Updated: 2026-05-01
 # - 06:35 Daily Summary
 # - 08:05 High Severity Alert (if any event meets min severity within radius)
 # - Guarded by Maintenance Mode
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
 # =============================================================================
 
+#-----------------------------------------------------------------------------
 # Daily Summary at 06:35
+#-----------------------------------------------------------------------------
 - id: gdacs_daily_summary_0635
-  alias: "GDACS: Daily Summary (06:35)"
-  description: "Sends a daily GDACS summary via Email, Telegram, and Persistent Notification."
+  alias: "GDACS: Daily Summary (06:35) — All Channels"
+  description: >
+    Sends a daily GDACS summary at 06:35 via Email, Telegram, Mobile Push,
+    Persistent Notification and System Log. Guarded by Maintenance Mode.
+
   trigger:
     - platform: time
       at: "06:35:00"
+
   condition:
     - condition: state
       entity_id: input_boolean.maintenance_mode
       state: "off"
+
   action:
+    # Variables for Mobile Push and enhanced Persistent
+    - variables:
+        total_events: >-
+          {% set v = states('sensor.gdacs_events_within_radius') %}
+          {% if v in ['unknown','unavailable','None',''] %}N/A{% else %}{{ v }}{% endif %}
+        red_events: >-
+          {% set v = states('sensor.gdacs_events_red_within_radius') %}
+          {% if v in ['unknown','unavailable','None',''] %}0{% else %}{{ v }}{% endif %}
+        orange_events: >-
+          {% set v = states('sensor.gdacs_events_orange_within_radius') %}
+          {% if v in ['unknown','unavailable','None',''] %}0{% else %}{{ v }}{% endif %}
+        green_events: >-
+          {% set v = states('sensor.gdacs_events_green_within_radius') %}
+          {% if v in ['unknown','unavailable','None',''] %}0{% else %}{{ v }}{% endif %}
+        highest_severity: >-
+          {% set v = states('sensor.gdacs_highest_severity_within_radius') %}
+          {% if v in ['unknown','unavailable','None',''] %}None{% else %}{{ v }}{% endif %}
+        nearest_event: >-
+          {% set v = states('sensor.gdacs_nearest_event') %}
+          {% if v in ['unknown','unavailable','None',''] %}None{% else %}{{ v }}{% endif %}
+        radius_km: "{{ states('input_number.gdacs_radius_km') | default('N/A') }}"
+        min_severity: "{{ states('input_select.gdacs_min_severity') | default('N/A') }}"
+        alert_color: >-
+          {% set sev = states('sensor.gdacs_highest_severity_within_radius') | lower %}
+          {% if sev == 'red' %}#F44336
+          {% elif sev == 'orange' %}#FF9800
+          {% else %}#4CAF50
+          {% endif %}
+        push_importance: >-
+          {% set sev = states('sensor.gdacs_highest_severity_within_radius') | lower %}
+          {% if sev == 'red' %}high{% elif sev == 'orange' %}default{% else %}min{% endif %}
+
+    # --- Persistent Notification ---
     - service: persistent_notification.create
       data:
-        title: "GDACS — Daily Summary"
+        title: "🌍 GDACS Daily Summary (06:35) — {{ now().strftime('%d %b %Y') }}"
         message: >-
-          Radius: {{ states('input_number.gdacs_radius_km') }} km
-          Min Severity: {{ states('input_select.gdacs_min_severity') }}
+          GDACS daily summary at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
 
-          Counts:
-          • Total: {{ states('sensor.gdacs_events_within_radius') }}
-          • Red: {{ states('sensor.gdacs_events_red_within_radius') }}
-          • Orange: {{ states('sensor.gdacs_events_orange_within_radius') }}
-          • Green: {{ states('sensor.gdacs_events_green_within_radius') }}
-          • Highest: {{ states('sensor.gdacs_highest_severity_within_radius') }}
-          • Nearest: {{ states('sensor.gdacs_nearest_event') }}
+          🌐 Monitoring Settings:
+          • Radius: {{ radius_km }} km
+          • Min Severity: {{ min_severity }}
+
+          📊 Event Counts:
+          • Total: {{ total_events }}
+          • 🔴 Red: {{ red_events }}
+          • 🟠 Orange: {{ orange_events }}
+          • 🟢 Green: {{ green_events }}
+
+          🔺 Highest Severity: {{ highest_severity }}
+          📍 Nearest Event: {{ nearest_event }}
         notification_id: gdacs_daily_summary
 
+    # --- Email ---
     - service: notify.email_notification_jbarkhuizen_gmail_com
       data:
         title: "🌍 GDACS — Daily Summary"
@@ -40,6 +88,7 @@
           {% from 'gdacs_notifications.jinja' import gdacs_daily_email %}
           {{ gdacs_daily_email() }}
 
+    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         target:
@@ -49,20 +98,51 @@
           {{ gdacs_daily_telegram() }}
         parse_mode: markdown
 
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "🌍 GDACS Daily Summary — {{ now().strftime('%d %b %Y') }}"
+        message: >-
+          Radius: {{ radius_km }}km | Severity: {{ min_severity }}
+          | Total: {{ total_events }} events (🔴 {{ red_events }} / 🟠 {{ orange_events }} / 🟢 {{ green_events }})
+          | Highest: {{ highest_severity }} | Nearest: {{ nearest_event }}
+        data:
+          channel: "GDACS"
+          importance: "{{ push_importance }}"
+          group: "ha-gdacs"
+          color: "{{ alert_color }}"
+          icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- System Log ---
     - service: system_log.write
       data:
-        message: "GDACS Daily Summary sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}."
+        message: >-
+          GDACS Daily Summary sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+          Total: {{ total_events }}, Red: {{ red_events }}, Orange: {{ orange_events }}, Green: {{ green_events }}.
+          Highest: {{ highest_severity }}, Nearest: {{ nearest_event }}.
+          Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
         level: info
 
   mode: single
 
+#-----------------------------------------------------------------------------
 # High Severity Alert at 08:05 if active
+#-----------------------------------------------------------------------------
 - id: gdacs_high_severity_alert_0805
-  alias: "GDACS: High Severity Alert (08:05)"
-  description: "Sends a high severity GDACS alert if events within radius meet minimum severity."
+  alias: "GDACS: High Severity Alert (08:05) — All Channels"
+  description: >
+    Sends a high severity GDACS alert at 08:05 if events within radius meet
+    minimum severity. Sends via Email, Telegram, Mobile Push, Persistent
+    Notification and System Log. Guarded by Maintenance Mode and alert binary sensor.
+
   trigger:
     - platform: time
       at: "08:05:00"
+
   condition:
     - condition: state
       entity_id: input_boolean.maintenance_mode
@@ -70,16 +150,59 @@
     - condition: state
       entity_id: binary_sensor.gdacs_alert_active
       state: "on"
+
   action:
+    # Variables for Mobile Push and enhanced Persistent
+    - variables:
+        highest_severity: >-
+          {% set v = states('sensor.gdacs_highest_severity_within_radius') %}
+          {% if v in ['unknown','unavailable','None',''] %}Unknown{% else %}{{ v }}{% endif %}
+        nearest_event: >-
+          {% set v = states('sensor.gdacs_nearest_event') %}
+          {% if v in ['unknown','unavailable','None',''] %}Unknown{% else %}{{ v }}{% endif %}
+        min_severity: "{{ states('input_select.gdacs_min_severity') | default('N/A') }}"
+        red_events: >-
+          {% set v = states('sensor.gdacs_events_red_within_radius') %}
+          {% if v in ['unknown','unavailable','None',''] %}0{% else %}{{ v }}{% endif %}
+        orange_events: >-
+          {% set v = states('sensor.gdacs_events_orange_within_radius') %}
+          {% if v in ['unknown','unavailable','None',''] %}0{% else %}{{ v }}{% endif %}
+        total_events: >-
+          {% set v = states('sensor.gdacs_events_within_radius') %}
+          {% if v in ['unknown','unavailable','None',''] %}N/A{% else %}{{ v }}{% endif %}
+        radius_km: "{{ states('input_number.gdacs_radius_km') | default('N/A') }}"
+        alert_color: >-
+          {% set sev = states('sensor.gdacs_highest_severity_within_radius') | lower %}
+          {% if sev == 'red' %}#B71C1C{% else %}#FF9800{% endif %}
+
+    # --- Persistent Notification ---
     - service: persistent_notification.create
       data:
-        title: "GDACS — High Severity Nearby"
+        title: "🚨 GDACS High Severity Alert (08:05) — {{ now().strftime('%d %b %Y') }}"
         message: >-
-          Min Severity: {{ states('input_select.gdacs_min_severity') }}
-          Highest: {{ states('sensor.gdacs_highest_severity_within_radius') }}
-          Nearest: {{ states('sensor.gdacs_nearest_event') }}
+          GDACS high severity alert active at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+          🚨 Alert Status: ACTIVE
+          🌐 Radius: {{ radius_km }} km
+          🔺 Min Severity: {{ min_severity }}
+          🔺 Highest Severity: {{ highest_severity }}
+          📍 Nearest Event: {{ nearest_event }}
+
+          📊 Event Breakdown:
+          • 🔴 Red: {{ red_events }}
+          • 🟠 Orange: {{ orange_events }}
+          • Total in Radius: {{ total_events }}
+
+          ⚠️ Recommended Actions:
+          • Review the full GDACS report in the Email or Telegram notification
+          • Monitor official disaster management channels
+          • Take appropriate precautions based on event type and severity
+          • Check https://www.gdacs.org for full event details
+
+          🌐 192.168.1.31:8123
         notification_id: gdacs_high_alert
 
+    # --- Email ---
     - service: notify.email_notification_jbarkhuizen_gmail_com
       data:
         title: "🚨 GDACS High Severity Alert"
@@ -87,6 +210,7 @@
           {% from 'gdacs_notifications.jinja' import gdacs_high_alert_email %}
           {{ gdacs_high_alert_email() }}
 
+    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         target:
@@ -96,9 +220,37 @@
           {{ gdacs_high_alert_telegram() }}
         parse_mode: markdown
 
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "🚨 GDACS High Severity Alert — {{ highest_severity }}"
+        message: >-
+          Active alert within {{ radius_km }}km radius.
+          Highest: {{ highest_severity }} | Nearest: {{ nearest_event }}
+          | 🔴 Red: {{ red_events }} | 🟠 Orange: {{ orange_events }}
+          | Total: {{ total_events }} events. Check email for full details.
+        data:
+          channel: "GDACS"
+          importance: high
+          group: "ha-gdacs"
+          color: "{{ alert_color }}"
+          icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- System Log ---
     - service: system_log.write
       data:
-        message: "GDACS High Severity Alert sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}."
+        message: >-
+          GDACS High Severity Alert sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+          Highest: {{ highest_severity }}, Nearest: {{ nearest_event }},
+          Red: {{ red_events }}, Orange: {{ orange_events }}, Total: {{ total_events }}.
+          Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
         level: warning
 
   mode: single
+# =============================================================================
+# END OF GDACS NOTIFICATIONS
+# =============================================================================

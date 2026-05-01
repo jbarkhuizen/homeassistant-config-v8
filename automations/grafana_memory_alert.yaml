@@ -1,16 +1,139 @@
-# 1. Automation: Alert if Grafana memory usage is high
+#===============================================================================
+# GRAFANA: Memory High Alert
+# File: automations/grafana_memory_alert.yaml
+# Updated: 2026-05-01
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
+#===============================================================================
 
-- alias: "Grafana Memory High Alert"
-  description: "Sends a persistent notification if Grafana memory usage exceeds 80%."
+- id: grafana_memory_high_alert
+  alias: "Grafana Memory High Alert"
+  description: >
+    Sends alerts via Email, Telegram, Mobile Push, Persistent Notification and
+    System Log if Grafana memory usage exceeds 80%.
+
   trigger:
     - platform: numeric_state
       entity_id: sensor.grafana_memory_percent
       above: 80
+      for:
+        minutes: 5
+
+  condition: []
+
   action:
-    - service: notify.persistent_notification
+    - variables:
+        mem_pct: "{{ states('sensor.grafana_memory_percent') | float(0) | round(1) }}"
+        cpu_pct: >-
+          {% set v = states('sensor.grafana_cpu_percent') %}
+          {% if v in ['unknown','unavailable','None',''] %}N/A{% else %}{{ v | float(0) | round(1) }}%{% endif %}
+        risk_level: >-
+          {% set m = states('sensor.grafana_memory_percent') | float(0) %}
+          {% if m >= 95 %}CRITICAL{% elif m >= 90 %}HIGH{% else %}ELEVATED{% endif %}
+        alert_color: >-
+          {% set m = states('sensor.grafana_memory_percent') | float(0) %}
+          {% if m >= 95 %}#B71C1C{% elif m >= 90 %}#F44336{% else %}#FF9800{% endif %}
+
+    # --- Persistent Notification ---
+    - service: persistent_notification.create
       data:
-        title: "Grafana Memory Usage High"
-        message: >
-          Grafana memory usage is above 80%. Please check your Grafana server for potential performance issues
-          that may impact your energy monitoring dashboards.
+        title: "🟠 Grafana Memory High — {{ risk_level }} ({{ now().strftime('%d %b %Y %H:%M') }})"
+        message: >-
+          Grafana memory usage alert at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+          📊 Grafana Resource Status:
+          • Memory Usage: {{ mem_pct }}% (threshold: 80%)
+          • Risk Level: {{ risk_level }}
+          • CPU Usage: {{ cpu_pct }}
+
+          ⚠️ Recommended Actions:
+          • Check Grafana dashboards for runaway queries
+          • Reduce dashboard refresh intervals if set too low
+          • Review InfluxDB retention and query complexity
+          • Consider restarting Grafana add-on from Supervisor
+          • If persistent, reduce number of active dashboard panels
+
+          🌐 192.168.1.31:8123
+        notification_id: "grafana_memory_high_alert"
+
+    # --- Telegram ---
+    - service: telegram_bot.send_message
+      data:
+        chat_id: !secret telegram_chat_id_2
+        message: >-
+          🟠 *Grafana Memory High — {{ risk_level }}*
+
+          📊 Memory: {{ mem_pct }}% (above 80% for 5 min)
+          💻 CPU: {{ cpu_pct }}
+          ⚠️ Risk Level: *{{ risk_level }}*
+
+          Check Grafana dashboards and consider restarting the add-on if memory
+          does not reduce within 15 minutes.
+          _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+          🌐 192.168.1.31:8123
+        parse_mode: markdown
+
+    # --- Email ---
+    - service: notify.email_notification_jbarkhuizen_gmail_com
+      data:
+        title: "🟠 Grafana Memory High — {{ risk_level }} ({{ now().strftime('%Y-%m-%d %H:%M') }})"
+        message: >-
+          GRAFANA MEMORY HIGH ALERT
+
+          Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
+
+          ================================================================================
+
+          ALERT DETAILS
+
+          Memory Usage: {{ mem_pct }}% (threshold: 80%, sustained 5 minutes)
+          CPU Usage: {{ cpu_pct }}
+          Risk Level: {{ risk_level }}
+
+          IMPACT:
+          High Grafana memory usage can impact your energy monitoring dashboards,
+          slow down panel loading, and potentially cause the add-on to crash.
+
+          RECOMMENDED ACTIONS:
+          1. Check all active Grafana dashboards for complex or runaway queries
+          2. Reduce auto-refresh intervals on dashboards (min 30 seconds recommended)
+          3. Review InfluxDB query complexity and data retention settings
+          4. Consider restarting Grafana from Supervisor → Add-ons → Grafana → Restart
+          5. If problem persists after restart, reduce the number of active dashboard panels
+
+          ================================================================================
+
+          System: http://192.168.1.31:8123
+          Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
+
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "🟠 Grafana Memory High — {{ risk_level }}"
+        message: >-
+          Memory: {{ mem_pct }}% (above 80% for 5 min). Risk: {{ risk_level }}.
+          Check dashboards and consider restarting Grafana add-on.
+        data:
+          channel: "System Health"
+          importance: high
+          group: "ha-system-health"
+          color: "{{ alert_color }}"
+          icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- System Log ---
+    - service: system_log.write
+      data:
+        message: >-
+          Grafana Memory High Alert: {{ mem_pct }}% (above 80% for 5 min),
+          CPU: {{ cpu_pct }}, Risk: {{ risk_level }}
+          at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+          Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
+        level: warning
+
   mode: single
+#===============================================================================
+# END OF GRAFANA MEMORY ALERT
+#===============================================================================

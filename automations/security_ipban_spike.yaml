@@ -1,51 +1,232 @@
 #===============================================================================
 # SECURITY: IP Ban Spike Detector (06:14)
-# Runs BEFORE your existing 06:15 baseline-update automation.
+# File: automations/security_ipban_spike.yaml
+# Updated: 2026-05-01
+# Runs BEFORE the 06:15 baseline-update automation.
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
 #===============================================================================
 
 - id: security_ip_bans_spike_0614
   alias: "Security - IP Ban Spike Alert (06:14)"
   description: >
     Compares today's current IP bans vs yesterday's baseline; if increase >= threshold,
-    sends Telegram + persistent notification. Does not modify the baseline.
+    sends alerts via Email, Telegram, Mobile Push, Persistent Notification and System Log.
+    Does not modify the baseline.
+
   trigger:
     - platform: time
       at: "06:14:00"
+
   mode: single
+
   action:
     - variables:
         threshold: 1
         current: "{{ states('sensor.home_assistant_ip_bans_count') | int(0) }}"
         baseline: "{{ states('input_number.ipbans_previous_count') | int(0) }}"
         diff: "{{ (current - baseline) | int }}"
-        detail: >
+        detail: >-
           Baseline: {{ baseline }} | Current: {{ current }} | Increase: {{ diff }} | Threshold: {{ threshold }}
+        risk_level: >-
+          {% if diff >= 10 %}CRITICAL
+          {% elif diff >= 5 %}HIGH
+          {% elif diff >= 1 %}ELEVATED
+          {% else %}NORMAL
+          {% endif %}
+        risk_color: >-
+          {% if diff >= 10 %}#B71C1C
+          {% elif diff >= 5 %}#F44336
+          {% elif diff >= 1 %}#FF9800
+          {% else %}#4CAF50
+          {% endif %}
+
     - choose:
+        #-------------------------------------------------------------------
+        # SPIKE DETECTED — diff >= threshold (any new IP ban)
+        #-------------------------------------------------------------------
         - conditions:
             - condition: template
               value_template: "{{ diff >= threshold }}"
           sequence:
+            # --- Persistent Notification ---
             - service: persistent_notification.create
               data:
-                title: "Security: IP Ban Spike Detected"
-                message: >
-                  New IP bans detected since yesterday.
-                  {{ detail }}
-                  Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+                title: "🚨 Security: IP Ban Spike — {{ risk_level }} (06:14 {{ now().strftime('%d %b %Y') }})"
+                message: >-
+                  New IP bans detected since yesterday at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+                  🔐 IP Ban Alert Details:
+                  • Risk Level: {{ risk_level }}
+                  • Baseline (yesterday): {{ baseline }}
+                  • Current Count: {{ current }}
+                  • New Bans: {{ diff }} (threshold: {{ threshold }})
+
+                  ⚠️ Recommended Actions:
+                  • Check Settings → Security → IP Ban log in HA
+                  • Review /config/ip_bans.yaml for recently banned IPs
+                  • Check /config/home-assistant.log for authentication failures
+                  • If source appears coordinated, review firewall rules
+                  • Consider restricting external access if attacks persist
+                  • Verify no legitimate devices were accidentally banned
+
+                  🌐 192.168.1.31:8123
+                  ☁️ https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
                 notification_id: "security_ip_bans_spike"
+
+            # --- Telegram ---
             - service: telegram_bot.send_message
               data:
                 chat_id: !secret telegram_chat_id_2
                 message: >-
-                  ❗ *Security: IP Ban Spike*
-                  {{ detail }}
+                  🚨 *Security: IP Ban Spike — {{ risk_level }}*
+
+                  🔐 Baseline: {{ baseline }} | Current: {{ current }}
+                  📈 New Bans: {{ diff }} (threshold: {{ threshold }})
+                  ⚠️ Risk Level: *{{ risk_level }}*
+
+                  Check HA Security → IP Ban log immediately.
                   _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+                  🌐 192.168.1.31:8123
                 parse_mode: markdown
+
+            # --- Email ---
+            - service: notify.email_notification_jbarkhuizen_gmail_com
+              data:
+                title: "🚨 Security: IP Ban Spike — {{ risk_level }} ({{ now().strftime('%Y-%m-%d') }})"
+                message: >-
+                  SECURITY ALERT — IP BAN SPIKE DETECTED
+
+                  Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
+
+                  ================================================================================
+
+                  ALERT DETAILS
+
+                  Risk Level: {{ risk_level }}
+                  {{ detail }}
+
+                  WHAT THIS MEANS:
+                  Home Assistant has automatically banned {{ diff }} new IP address(es) since yesterday
+                  due to repeated failed authentication attempts.
+
+                  RECOMMENDED ACTIONS:
+                  1. Check Settings → Security → IP Ban log in Home Assistant
+                  2. Review /config/ip_bans.yaml for the recently banned IP addresses
+                  3. Check /config/home-assistant.log for authentication failure details
+                  4. If the source appears coordinated, review your firewall and router rules
+                  5. Consider restricting external access temporarily if attacks persist
+                  6. Verify no legitimate devices or users were accidentally banned
+                  7. If a legitimate device was banned, remove it from ip_bans.yaml and restart HA
+
+                  ================================================================================
+
+                  System: http://192.168.1.31:8123
+                  Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
+
+            # --- Mobile Push ---
+            - service: notify.mobile_app_sm_g996b
+              data:
+                title: "🚨 IP Ban Spike — {{ risk_level }} ({{ diff }} new ban(s))"
+                message: >-
+                  {{ diff }} new IP ban(s) detected (baseline: {{ baseline }}, current: {{ current }}).
+                  Risk: {{ risk_level }}. Check HA Security → IP Ban log immediately.
+                data:
+                  channel: "Security"
+                  importance: high
+                  group: "ha-security"
+                  color: "{{ risk_color }}"
+                  actions:
+                    - action: "OPEN_HA"
+                      title: "Open HA Security"
+                      uri: "http://192.168.1.31:8123/config/auth"
+
+            # --- System Log ---
+            - service: system_log.write
+              data:
+                message: >-
+                  Security IP BAN SPIKE: {{ diff }} new bans (baseline: {{ baseline }}, current: {{ current }},
+                  threshold: {{ threshold }}, risk: {{ risk_level }}).
+                  Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
+                level: warning
+
+        #-------------------------------------------------------------------
+        # NO SPIKE — diff < threshold (all clear)
+        #-------------------------------------------------------------------
         - conditions:
             - condition: template
               value_template: "{{ diff < threshold }}"
           sequence:
+            # --- Persistent Notification ---
+            - service: persistent_notification.create
+              data:
+                title: "✅ Security: IP Bans OK (06:14 {{ now().strftime('%d %b %Y') }})"
+                message: >-
+                  Daily IP ban check completed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+                  ✅ No new IP bans detected — security status is normal.
+
+                  🔐 Check Details:
+                  • Baseline (yesterday): {{ baseline }}
+                  • Current Count: {{ current }}
+                  • New Bans: {{ diff }} (threshold: {{ threshold }})
+                  • Risk Level: NORMAL
+                notification_id: "security_ip_bans_ok"
+
+            # --- Telegram ---
+            - service: telegram_bot.send_message
+              data:
+                chat_id: !secret telegram_chat_id_2
+                message: >-
+                  ✅ *Security: IP Bans OK (06:14)*
+
+                  No new IP bans detected today.
+                  Baseline: {{ baseline }} | Current: {{ current }} | New Bans: {{ diff }}
+                  Threshold: {{ threshold }} | Status: NORMAL
+
+                  _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+                parse_mode: markdown
+
+            # --- Email ---
+            - service: notify.email_notification_jbarkhuizen_gmail_com
+              data:
+                title: "✅ Security: IP Bans OK — {{ now().strftime('%Y-%m-%d') }}"
+                message: >-
+                  SECURITY DAILY CHECK — NO IP BAN SPIKE
+
+                  Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
+
+                  ================================================================================
+
+                  DAILY IP BAN CHECK: NORMAL
+
+                  Baseline (yesterday): {{ baseline }}
+                  Current Count: {{ current }}
+                  New Bans: {{ diff }}
+                  Threshold: {{ threshold }}
+                  Risk Level: NORMAL
+
+                  No action required. No new IP bans detected since yesterday.
+
+                  ================================================================================
+
+                  System: http://192.168.1.31:8123
+
+            # --- Mobile Push ---
+            - service: notify.mobile_app_sm_g996b
+              data:
+                title: "✅ IP Ban Check OK (06:14)"
+                message: "IP bans: baseline {{ baseline }}, current {{ current }}, new bans {{ diff }}. No spike detected. All clear."
+                data:
+                  channel: "Security"
+                  importance: min
+                  group: "ha-security"
+                  color: "#4CAF50"
+
+            # --- System Log ---
             - service: system_log.write
               data:
                 message: "IP bans OK at 06:14 — {{ detail }}"
                 level: info
+#===============================================================================
+# END OF SECURITY IP BAN SPIKE DETECTOR
+#===============================================================================

@@ -1,5 +1,7 @@
 #===============================================================================
 # SOLAR: Pool Pump Management by PV Production (06:00–18:00)
+# File: automations/pool_pump_solar_management.yaml
+# Updated: 2026-05-01
 # - Turn OFF if PV < 2500 W for 15 min
 # - Turn ON  if PV > 3599 W for 15 min
 # - Acts only between 06:00 and 18:00 local time
@@ -8,7 +10,7 @@
 # - Uses:
 #     PV sensor: sensor.deyeinvertercombined_pv_power (W)
 #     Pump switch: switch.pool_pump
-# - Notifies: Persistent Notification + Telegram + Email + System Log
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
 #===============================================================================
 
 #----------------------------------------------------------------------------
@@ -19,6 +21,7 @@
   description: >
     If PV production drops below 2500 W (sustained 15 minutes) during 06:00–18:00,
     turn the pool pump OFF (if it is running). Guarded by Maintenance Mode.
+    Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent, System Log.
 
   trigger:
     # Primary trigger: PV falls and stays below threshold for 15 minutes
@@ -44,63 +47,120 @@
       state: "on"
     # Ensure PV is indeed below threshold (covers the periodic trigger)
     - condition: template
-      value_template: "{{ states('sensor.deyeinvertercombined_pv_power')|float(0) < 2500 }}"
+      value_template: "{{ states('sensor.deyeinvertercombined_pv_power') | float(0) < 2500 }}"
 
   action:
     - variables:
-        pv_now: "{{ states('sensor.deyeinvertercombined_pv_power')|float(0) }}"
+        pv_now: "{{ states('sensor.deyeinvertercombined_pv_power') | float(0) | round(0) }}"
         threshold_off: 2500
+        battery_soc: >-
+          {% set soc = states('sensor.deyeinvertermaster_battery_soc') %}
+          {% if soc in ['unknown','unavailable','None',''] %}N/A{% else %}{{ soc | float(0) | round(0) }}%{% endif %}
+        load_power: >-
+          {% set lp = states('sensor.deyeinvertercombined_load_power') %}
+          {% if lp in ['unknown','unavailable','None',''] %}N/A{% else %}{{ lp | float(0) | round(0) }} W{% endif %}
         local_url: "http://192.168.1.31:8123/"
         cloud_url: "https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/"
 
+    # Turn OFF the pool pump
     - service: switch.turn_off
       target:
         entity_id: switch.pool_pump
 
-    # UI notification
+    # --- Persistent Notification ---
     - service: persistent_notification.create
       data:
-        title: "Pool Pump OFF — PV low"
+        title: "🛑 Pool Pump OFF — PV Low ({{ now().strftime('%d %b %Y %H:%M') }})"
         message: >-
-          Pool pump turned OFF because PV stayed below {{ threshold_off }} W for 15 minutes.
-          Current PV: {{ pv_now | round(0) }} W.
+          Pool pump turned OFF at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
 
-          Quick links:
-          • Local: {{ local_url }}
-          • Cloud: {{ cloud_url }}
+          ☀️ Reason: PV stayed below {{ threshold_off }} W for 15 minutes.
 
-          Managed by: Solar pool pump automation
+          📊 Current System Status:
+          • PV Power Now: {{ pv_now }} W (threshold: {{ threshold_off }} W)
+          • Battery SOC: {{ battery_soc }}
+          • Load Power: {{ load_power }}
+
+          🔄 Pool pump will restart automatically when PV exceeds 3599 W
+          sustained for 15 minutes between 06:00 and 18:00.
+
+          🌐 Local: {{ local_url }}
+          ☁️ Cloud: {{ cloud_url }}
         notification_id: "pool_pump_solar_manager"
 
-    # Telegram — replace !secret telegram_chat_id_2 with your chat_id or use !secret
+    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         chat_id: !secret telegram_chat_id_2
         message: >-
-          🛑 *Pool Pump OFF — PV low*
-          PV: {{ pv_now | round(0) }} W (< {{ threshold_off }} W for 15 min)
-          {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          🛑 *Pool Pump OFF — PV Low*
+
+          ☀️ PV: {{ pv_now }} W (below {{ threshold_off }} W for 15 min)
+          🔋 Battery SOC: {{ battery_soc }}
+          ⚡ Load: {{ load_power }}
+
+          Pool pump will restart when PV > 3599 W for 15 min.
+          _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+          🌐 {{ local_url }}
         parse_mode: markdown
 
-    # Email
+    # --- Email ---
     - service: notify.email_notification_jbarkhuizen_gmail_com
       data:
-        title: "Pool Pump OFF — PV low"
+        title: "🛑 Pool Pump OFF — PV Low ({{ now().strftime('%Y-%m-%d %H:%M') }})"
         message: >-
-          Pool pump turned OFF because PV stayed below {{ threshold_off }} W for 15 minutes.
-          Current PV: {{ pv_now | round(0) }} W.
-          Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          POOL PUMP TURNED OFF — PV INSUFFICIENT
 
-          Managed by: Solar pool pump automation
-          Local: {{ local_url }}
+          Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
+
+          ================================================================================
+
+          REASON: PV power stayed below {{ threshold_off }} W for 15 consecutive minutes.
+
+          CURRENT SYSTEM STATUS:
+          • PV Power Now: {{ pv_now }} W (threshold: {{ threshold_off }} W)
+          • Battery SOC: {{ battery_soc }}
+          • Load Power: {{ load_power }}
+
+          WHAT HAPPENS NEXT:
+          The pool pump will restart automatically when PV production exceeds
+          3599 W for 15 consecutive minutes between 06:00 and 18:00.
+
+          No manual action is required unless you wish to override.
+
+          ================================================================================
+
+          Managed by: Solar Pool Pump Automation
+          System: {{ local_url }}
           Cloud: {{ cloud_url }}
 
-    # System log
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "🛑 Pool Pump OFF — PV Low"
+        message: >-
+          PV: {{ pv_now }} W (below {{ threshold_off }} W for 15 min).
+          Battery SOC: {{ battery_soc }} | Load: {{ load_power }}.
+          Pump restarts when PV > 3599 W for 15 min.
+        data:
+          channel: "Pool Pump"
+          importance: default
+          group: "ha-pool"
+          color: "#FF5722"
+          icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- System Log ---
     - service: system_log.write
       data:
         message: >-
-          Pool Pump OFF due to low PV: {{ pv_now | round(0) }} W (< {{ threshold_off }} W for 15 min)
-          at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          Pool Pump OFF: PV {{ pv_now }} W (below {{ threshold_off }} W for 15 min)
+          at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+          Battery SOC: {{ battery_soc }}, Load: {{ load_power }}.
+          Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
         level: info
 
   mode: single
@@ -113,6 +173,7 @@
   description: >
     If PV production rises above 3599 W (sustained 15 minutes) during 06:00–18:00,
     turn the pool pump ON (if it is OFF). Guarded by Maintenance Mode.
+    Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent, System Log.
 
   trigger:
     # Primary trigger: PV rises and stays above threshold for 15 minutes
@@ -138,63 +199,123 @@
       state: "off"
     # Ensure PV is indeed above threshold (covers the periodic trigger)
     - condition: template
-      value_template: "{{ states('sensor.deyeinvertercombined_pv_power')|float(0) > 3599 }}"
+      value_template: "{{ states('sensor.deyeinvertercombined_pv_power') | float(0) > 3599 }}"
 
   action:
     - variables:
-        pv_now: "{{ states('sensor.deyeinvertercombined_pv_power')|float(0) }}"
+        pv_now: "{{ states('sensor.deyeinvertercombined_pv_power') | float(0) | round(0) }}"
         threshold_on: 3599
+        battery_soc: >-
+          {% set soc = states('sensor.deyeinvertermaster_battery_soc') %}
+          {% if soc in ['unknown','unavailable','None',''] %}N/A{% else %}{{ soc | float(0) | round(0) }}%{% endif %}
+        load_power: >-
+          {% set lp = states('sensor.deyeinvertercombined_load_power') %}
+          {% if lp in ['unknown','unavailable','None',''] %}N/A{% else %}{{ lp | float(0) | round(0) }} W{% endif %}
         local_url: "http://192.168.1.31:8123/"
         cloud_url: "https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/"
 
+    # Turn ON the pool pump
     - service: switch.turn_on
       target:
         entity_id: switch.pool_pump
 
-    # UI notification
+    # --- Persistent Notification ---
     - service: persistent_notification.create
       data:
-        title: "Pool Pump ON — PV sufficient"
+        title: "✅ Pool Pump ON — PV Sufficient ({{ now().strftime('%d %b %Y %H:%M') }})"
         message: >-
-          Pool pump turned ON because PV stayed above {{ threshold_on }} W for 15 minutes.
-          Current PV: {{ pv_now | round(0) }} W.
+          Pool pump turned ON at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
 
-          Quick links:
-          • Local: {{ local_url }}
-          • Cloud: {{ cloud_url }}
+          ☀️ Reason: PV stayed above {{ threshold_on }} W for 15 minutes.
 
-          Managed by: Solar pool pump automation
+          📊 Current System Status:
+          • PV Power Now: {{ pv_now }} W (threshold: {{ threshold_on }} W)
+          • Battery SOC: {{ battery_soc }}
+          • Load Power: {{ load_power }}
+
+          🔄 Pool pump will turn OFF automatically if PV drops below 2500 W
+          sustained for 15 minutes.
+
+          🌐 Local: {{ local_url }}
+          ☁️ Cloud: {{ cloud_url }}
         notification_id: "pool_pump_solar_manager"
 
-    # Telegram — replace !secret telegram_chat_id_2 with your chat_id or use !secret
+    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         chat_id: !secret telegram_chat_id_2
         message: >-
-          ✅ *Pool Pump ON — PV sufficient*
-          PV: {{ pv_now | round(0) }} W (> {{ threshold_on }} W for 15 min)
-          {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          ✅ *Pool Pump ON — PV Sufficient*
+
+          ☀️ PV: {{ pv_now }} W (above {{ threshold_on }} W for 15 min)
+          🔋 Battery SOC: {{ battery_soc }}
+          ⚡ Load: {{ load_power }}
+
+          Pool pump will stop if PV drops below 2500 W for 15 min.
+          _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+          🌐 {{ local_url }}
         parse_mode: markdown
 
-    # Email
+    # --- Email ---
     - service: notify.email_notification_jbarkhuizen_gmail_com
       data:
-        title: "Pool Pump ON — PV sufficient"
+        title: "✅ Pool Pump ON — PV Sufficient ({{ now().strftime('%Y-%m-%d %H:%M') }})"
         message: >-
-          Pool pump turned ON because PV stayed above {{ threshold_on }} W for 15 minutes.
-          Current PV: {{ pv_now | round(0) }} W.
-          Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          POOL PUMP TURNED ON — PV SUFFICIENT
 
-          Managed by: Solar pool pump automation
-          Local: {{ local_url }}
+          Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
+
+          ================================================================================
+
+          REASON: PV power stayed above {{ threshold_on }} W for 15 consecutive minutes.
+
+          CURRENT SYSTEM STATUS:
+          • PV Power Now: {{ pv_now }} W (threshold: {{ threshold_on }} W)
+          • Battery SOC: {{ battery_soc }}
+          • Load Power: {{ load_power }}
+
+          WHAT HAPPENS NEXT:
+          The pool pump will turn OFF automatically if PV production drops below
+          2500 W for 15 consecutive minutes.
+
+          No manual action is required unless you wish to override.
+
+          ================================================================================
+
+          Managed by: Solar Pool Pump Automation
+          System: {{ local_url }}
           Cloud: {{ cloud_url }}
 
-    # System log
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "✅ Pool Pump ON — PV Sufficient"
+        message: >-
+          PV: {{ pv_now }} W (above {{ threshold_on }} W for 15 min).
+          Battery SOC: {{ battery_soc }} | Load: {{ load_power }}.
+          Pump stops if PV drops below 2500 W for 15 min.
+        data:
+          channel: "Pool Pump"
+          importance: default
+          group: "ha-pool"
+          color: "#4CAF50"
+          icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- System Log ---
     - service: system_log.write
       data:
         message: >-
-          Pool Pump ON due to sufficient PV: {{ pv_now | round(0) }} W (> {{ threshold_on }} W for 15 min)
-          at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          Pool Pump ON: PV {{ pv_now }} W (above {{ threshold_on }} W for 15 min)
+          at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+          Battery SOC: {{ battery_soc }}, Load: {{ load_power }}.
+          Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
         level: info
 
   mode: single
+#===============================================================================
+# END OF SOLAR POOL PUMP MANAGEMENT
+#===============================================================================

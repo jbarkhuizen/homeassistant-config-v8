@@ -1,14 +1,18 @@
 #===============================================================================
 # SYSTEM: Daily Git Snapshot (08:55)
+# File: automations/git_snapshot_0855.yaml
+# Updated: 2026-05-01
 # - Builds a concise commit message and commits/pushes the /config repo.
 # - Guarded by Maintenance Mode (must be OFF).
 # - Trigger inside 06:00–09:00 window.
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
 #===============================================================================
 - id: system_git_snapshot_0855
   alias: "System: Git Snapshot 08:55 (Commit + Push)"
   description: >
     At 08:55, save a concise summary commit message, then commit and push the
     current /config repository to Git. Skips when Maintenance Mode is ON.
+    Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent, System Log.
 
   trigger:
     - platform: time
@@ -20,7 +24,7 @@
       state: "off"
 
   action:
-    # Collect summary details for the commit message (one line)
+    # Collect summary details for the commit message
     - variables:
         updates_total: "{{ state_attr('sensor.home_assistant_updates_summary', 'total_updates') | default(0) }}"
         backup_state: "{{ states('sensor.backup_backup_manager_state') | default('unknown') }}"
@@ -50,6 +54,8 @@
           updates={{ updates_total }},
           backup={{ backup_state }}/last_ok={{ backup_last_ok }},
           addons_down={{ addons_down }}{% if addons_down > 0 %}({{ addons_down_list | join('/') }}){% endif %}
+        snapshot_color: >-
+          {% if addons_down | int(0) > 0 %}#FF9800{% else %}#4CAF50{% endif %}
 
     # Save commit message to /config/.last_commit_message
     - service: shell_command.save_commit_message
@@ -59,11 +65,116 @@
     # Run the Git commit (and push) script via bash wrapper
     - service: shell_command.git_commit_bash
 
-    # Audit log
+    # --- Persistent Notification ---
+    - service: persistent_notification.create
+      data:
+        title: "📦 Git Snapshot Complete (08:55) — {{ now().strftime('%d %b %Y') }}"
+        message: >-
+          Daily git snapshot completed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+          📋 Commit Message:
+          {{ msg }}
+
+          📊 System Status at Snapshot:
+          • Updates Pending: {{ updates_total }}
+          • Backup State: {{ backup_state }}
+          • Last Successful Backup: {{ backup_last_ok }}
+          • Add-ons Down: {{ addons_down }}{% if addons_down | int(0) > 0 %} — {{ addons_down_list | join(', ') }}{% endif %}
+
+          🔗 Repository: https://github.com/jbarkhuizen/homeassistant-config-v8
+          🌐 192.168.1.31:8123
+        notification_id: "git_snapshot_0855"
+
+    # --- Telegram ---
+    - service: telegram_bot.send_message
+      data:
+        chat_id: !secret telegram_chat_id_2
+        message: >-
+          📦 *Git Snapshot Complete (08:55)*
+
+          ✅ Config committed and pushed to GitHub.
+
+          📋 Commit: `{{ msg }}`
+
+          📊 Status:
+          • Updates Pending: {{ updates_total }}
+          • Backup: {{ backup_state }}
+          • Add-ons Down: {{ addons_down }}{% if addons_down | int(0) > 0 %} — {{ addons_down_list | join(', ') }}{% endif %}
+
+          🔗 https://github.com/jbarkhuizen/homeassistant-config-v8
+          _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+        parse_mode: markdown
+
+    # --- Email ---
+    - service: notify.email_notification_jbarkhuizen_gmail_com
+      data:
+        title: "📦 Git Snapshot Complete — {{ now().strftime('%Y-%m-%d %H:%M') }}"
+        message: >-
+          DAILY GIT SNAPSHOT COMPLETE
+
+          Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
+
+          ================================================================================
+
+          COMMIT DETAILS
+
+          Commit Message:
+          {{ msg }}
+
+          Repository: https://github.com/jbarkhuizen/homeassistant-config-v8
+
+          ================================================================================
+
+          SYSTEM STATUS AT SNAPSHOT TIME
+
+          Updates Pending: {{ updates_total }}
+          Backup State: {{ backup_state }}
+          Last Successful Backup: {{ backup_last_ok }}
+          Add-ons Down: {{ addons_down }}{% if addons_down | int(0) > 0 %}
+          Down Add-ons: {{ addons_down_list | join(', ') }}{% endif %}
+
+          ADD-ON STATUS:
+          {% for name, ent in addons %}
+          • {{ name }}: {{ 'Running ✅' if states(ent) in ['on','True'] else 'Down ❌' }}
+          {% endfor %}
+
+          ================================================================================
+
+          System: http://192.168.1.31:8123
+          Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
+
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: >-
+          {% if addons_down | int(0) > 0 %}⚠️ Git Snapshot Done — {{ addons_down }} Add-on(s) Down
+          {% else %}📦 Git Snapshot Done — All OK
+          {% endif %}
+        message: >-
+          Config pushed to GitHub at {{ now().strftime('%H:%M') }}.
+          Updates: {{ updates_total }} | Backup: {{ backup_state }}
+          {% if addons_down | int(0) > 0 %}| ⚠️ Down: {{ addons_down_list | join(', ') }}{% else %}| All add-ons running ✅{% endif %}
+        data:
+          channel: "System Status"
+          importance: >-
+            {% if addons_down | int(0) > 0 %}default{% else %}min{% endif %}
+          group: "ha-git"
+          color: "{{ snapshot_color }}"
+          icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- System Log ---
     - service: system_log.write
       data:
         message: >-
-          Git snapshot invoked at {{ now().strftime('%Y-%m-%d %H:%M:%S') }} with message: {{ msg }}
+          Git snapshot invoked at {{ now().strftime('%Y-%m-%d %H:%M:%S') }} with message: {{ msg }}.
+          Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
         level: info
 
   mode: single
+#===============================================================================
+# END OF DAILY GIT SNAPSHOT
+#===============================================================================

@@ -1,7 +1,12 @@
+#===============================================================================
 # Morning Test Email - Verifies System is Running
+# File: automations/system_up_email.yaml
+# Updated: 2026-05-01
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
+#===============================================================================
 - id: "morning_test_email_system_check"
   alias: "Morning Test Email - System Check"
-  description: "Sends a test email every morning at 08:00 to verify the system is operational"
+  description: "Sends a daily system check via Email, Telegram, Mobile Push and Persistent Notification at 08:00 to verify all channels are operational"
 
   trigger:
     - platform: time
@@ -10,7 +15,7 @@
   condition: []
 
   action:
-    # Email Notification Service (stable alias)
+    # --- Email ---
     - service: notify.email_ha
       data:
         title: "✅ Home Assistant - System Status OK"
@@ -72,3 +77,64 @@
             </div>
           </body>
           </html>
+
+    # --- Telegram ---
+    - service: telegram_bot.send_message
+      data:
+        chat_id: !secret telegram_chat_id_2
+        message: >-
+          ✅ *Home Assistant — System Check OK (08:00)*
+
+          Good morning! HA is up and running.
+
+          📅 Date: {{ now().strftime('%A, %d %B %Y') }}
+          ⏰ Time: {{ now().strftime('%H:%M:%S') }}
+          ⏱️ Uptime: {{ states('sensor.uptime') if states('sensor.uptime') not in ['unknown','unavailable'] else 'N/A' }}
+          🌐 IP: 192.168.1.31:8123
+
+          🟢 All systems operational.
+        parse_mode: markdown
+
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "✅ HA System Check OK"
+        message: "Good morning! HA is running — {{ now().strftime('%A, %d %B %Y %H:%M') }} — All systems operational."
+        data:
+          channel: "System Status"
+          importance: default
+          group: "ha-system-check"
+          color: "#4CAF50"
+          icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- Persistent Notification ---
+    - service: persistent_notification.create
+      data:
+        title: "✅ System Check OK (08:00)"
+        message: >-
+          Home Assistant daily system check completed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+          ✅ Email sent — notify.email_ha
+          ✅ Telegram sent — chat_id_2
+          ✅ Mobile Push sent — SM-G996B
+          ✅ System is operational
+
+          Date: {{ now().strftime('%A, %d %B %Y') }}
+          Uptime: {{ states('sensor.uptime') if states('sensor.uptime') not in ['unknown','unavailable'] else 'N/A' }}
+        notification_id: "morning_system_check"
+
+    # --- System Log ---
+    - service: system_log.write
+      data:
+        message: >-
+          Morning system check sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }} via Email, Telegram, Mobile Push and Persistent Notification.
+        level: info
+
+  mode: single
+#===============================================================================
+# END OF MORNING TEST EMAIL - SYSTEM CHECK
+#===============================================================================

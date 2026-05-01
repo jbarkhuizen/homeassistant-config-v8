@@ -1,15 +1,18 @@
 #===============================================================================
 # DAILY UPDATE REPORT AUTOMATIONS
 # File: automations/update_report_email.yaml
+# Updated: 2026-05-01
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
 #===============================================================================
 
 #-----------------------------------------------------------------------------
-# 1) DAILY UPDATE REPORT - EMAIL NOTIFICATION (08:00)
+# 1) DAILY UPDATE REPORT - ALL CHANNELS (08:00)
 #    Guarded by Maintenance Mode
+#    Runs daily if updates available, or every Monday regardless
 #-----------------------------------------------------------------------------
 - id: daily_update_status_report_email
-  alias: "System: Daily Update Status Report at 08:00 (Email)"
-  description: "Send daily report of available updates via Email at 08:00"
+  alias: "System: Daily Update Status Report at 08:00 (All Channels)"
+  description: "Send daily report of available updates via Email, Telegram, Mobile Push and Persistent at 08:00"
 
   trigger:
     - platform: time
@@ -31,6 +34,14 @@
     - delay:
         seconds: 10
 
+    # Variables for Mobile Push and Persistent
+    - variables:
+        total_updates: "{{ state_attr('sensor.home_assistant_updates_summary', 'total_updates') | int(0) }}"
+        has_critical: "{{ state_attr('sensor.home_assistant_updates_summary', 'has_critical_updates') | default(false) | bool }}"
+        friendly_summary: "{{ state_attr('sensor.home_assistant_updates_summary', 'friendly_summary') | default('No summary available') }}"
+        updates_list: "{{ state_attr('sensor.home_assistant_updates_summary', 'updates_list') | default([]) }}"
+
+    # --- Email ---
     - service: notify.email_notification_jbarkhuizen_gmail_com
       data:
         title: "📊 Daily Home Assistant Update Report - {{ now().strftime('%Y-%m-%d') }}"
@@ -111,10 +122,100 @@
 
           📅 {{ now().strftime('%A, %d %B %Y at %H:%M') }}
 
+    # --- Telegram ---
+    - service: telegram_bot.send_message
+      data:
+        chat_id: !secret telegram_chat_id_2
+        message: >-
+          {% if total_updates > 0 %}
+          {% if has_critical %}🚨{% else %}📊{% endif %} *Daily Update Report — {{ now().strftime('%d %b %Y') }}*
+
+          {% if has_critical %}⚠️ *CRITICAL UPDATES AVAILABLE* ⚠️{% endif %}
+
+          📦 Total Updates: {{ total_updates }}
+
+          *Available Updates:*
+          {% for u in updates_list %}• {{ u }}
+          {% endfor %}
+
+          🕐 Checked: {{ now().strftime('%H:%M:%S') }}
+          🌐 192.168.1.31:8123
+          {% else %}
+          📊 *Daily Update Report — {{ now().strftime('%d %b %Y') }}*
+
+          ✅ No updates available. All components are up to date.
+
+          🕐 Checked: {{ now().strftime('%H:%M:%S') }}
+          🌐 192.168.1.31:8123
+          {% endif %}
+        parse_mode: markdown
+
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: >-
+          {% if has_critical %}🚨 CRITICAL Updates Available!
+          {% elif total_updates > 0 %}📦 {{ total_updates }} Update(s) Available
+          {% else %}✅ HA Updates — All Up To Date
+          {% endif %}
+        message: >-
+          {% if total_updates > 0 %}
+          {{ total_updates }} update(s) pending.
+          {% if has_critical %}⚠️ CRITICAL updates require immediate attention!{% endif %}
+          {{ friendly_summary }}
+          {% else %}
+          All components are up to date as of {{ now().strftime('%H:%M') }}.
+          {% endif %}
+        data:
+          channel: "System Updates"
+          importance: >-
+            {% if has_critical %}high{% elif total_updates > 0 %}default{% else %}min{% endif %}
+          group: "ha-updates"
+          color: >-
+            {% if has_critical %}#B71C1C{% elif total_updates > 0 %}#FF9800{% else %}#4CAF50{% endif %}
+          icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- Persistent Notification ---
+    - service: persistent_notification.create
+      data:
+        title: >-
+          {% if has_critical %}🚨 CRITICAL Updates Available — {{ now().strftime('%d %b %Y') }}
+          {% elif total_updates > 0 %}📦 {{ total_updates }} Update(s) Available — {{ now().strftime('%d %b %Y') }}
+          {% else %}✅ Daily Update Report — {{ now().strftime('%d %b %Y') }}
+          {% endif %}
+        message: >-
+          Daily update report at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+          {% if total_updates > 0 %}
+          📦 Total Updates: {{ total_updates }}
+          {% if has_critical %}⚠️ CRITICAL updates available — action required immediately!{% endif %}
+
+          Available Updates:
+          {% for u in updates_list %}• {{ u }}
+          {% endfor %}
+          {% else %}
+          ✅ No updates available. All components are up to date.
+          {% endif %}
+
+          🕐 Checked: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+          ✅ Email sent — notify.email_notification_jbarkhuizen_gmail_com
+          ✅ Telegram sent — chat_id_2
+          ✅ Mobile Push sent — SM-G996B
+        notification_id: "daily_update_report"
+
+    # --- System Log ---
     - service: system_log.write
       data:
         message: >-
-          Daily update report sent - Total updates: {{ state_attr('sensor.home_assistant_updates_summary', 'total_updates') | default(0) }}
+          Daily update report sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+          Total updates: {{ total_updates }}, Critical: {{ has_critical }}.
+          Summary: {{ friendly_summary }}.
+          Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
         level: info
 
   mode: single
@@ -126,7 +227,8 @@
 - id: daily_automatic_updates_and_notifications_0815
   alias: "System: Daily Automatic Updates and Notifications at 08:15"
   description: >
-    Automatically install available updates and report success or failure.
+    Automatically install available updates and report success or failure via
+    Email, Telegram, Mobile Push, Persistent Notification and System Log.
     Fires event 'auto_update_cycle_complete' for status sensor.
 
   trigger:
@@ -157,7 +259,7 @@
           {{ base }}
 
     - delay:
-        seconds: 30 # allow sensors to settle more thoroughly before acting
+        seconds: 30
 
     # (A2) Install core components individually
     - choose:
@@ -252,84 +354,208 @@
 
     # (A7) Conditional notifications based on status
     - choose:
-        # Failure path
+
+        #-------------------------------------------------------------------
+        # FAILURE PATH
+        #-------------------------------------------------------------------
         - conditions:
             - condition: template
               value_template: "{{ status == 'failure' }}"
           sequence:
+            # --- Persistent Notification ---
             - service: persistent_notification.create
               data:
-                title: "Auto Update Failure"
-                message: >
-                  Automatic update routine did not reduce available updates.
-                  Pre-count: {{ pre_count }} | Post-count: {{ post_count }}
-                  Remaining entities: {{ remaining_entities }}
-                  Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+                title: "❌ Auto Update FAILED — {{ now().strftime('%d %b %Y %H:%M') }}"
+                message: >-
+                  Automatic update routine FAILED at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+                  ❌ Status: FAILURE
+                  📦 Pre-count: {{ pre_count }} → Post-count: {{ post_count }}
+                  🔁 No reduction in update count.
+
+                  Remaining Entities:
+                  {% for r in remaining_entities %}• {{ r }}
+                  {% endfor %}
+                  {% if remaining_entities | length == 0 %}• None{% endif %}
+
+                  ⚠️ Please check the update log and manually review failed updates.
+                  🌐 192.168.1.31:8123
                 notification_id: "auto_update_failure"
+
+            # --- Telegram ---
             - service: telegram_bot.send_message
               data:
                 chat_id: !secret telegram_chat_id_2
                 message: >-
-                  ❌ *Auto Update Failure*  
-                  Pre: {{ pre_count }} | Post: {{ post_count }}  
-                  Remaining: {{ remaining_entities | join(', ') if remaining_entities else 'None' }}  
+                  ❌ *Auto Update Failure*
+                  Pre: {{ pre_count }} | Post: {{ post_count }}
+                  Remaining: {{ remaining_entities | join(', ') if remaining_entities else 'None' }}
                   _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                 parse_mode: markdown
 
-        # Partial path
+            # --- Mobile Push ---
+            - service: notify.mobile_app_sm_g996b
+              data:
+                title: "❌ Auto Update FAILED"
+                message: "Update failed: {{ pre_count }} → {{ post_count }} updates. {{ remaining_entities | length }} still pending. Check HA logs."
+                data:
+                  channel: "System Updates"
+                  importance: high
+                  group: "ha-updates"
+                  color: "#B71C1C"
+                  actions:
+                    - action: "OPEN_HA"
+                      title: "Open HA"
+                      uri: "http://192.168.1.31:8123"
+
+        #-------------------------------------------------------------------
+        # PARTIAL PATH
+        #-------------------------------------------------------------------
         - conditions:
             - condition: template
               value_template: "{{ status == 'partial' }}"
           sequence:
+            # --- Persistent Notification ---
             - service: persistent_notification.create
               data:
-                title: "Auto Update Partial"
-                message: >
-                  Some updates remain after attempt.
-                  Pre-count: {{ pre_count }} | Post-count: {{ post_count }}
-                  Remaining: {{ remaining_entities }}
-                  Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+                title: "⚠️ Auto Update PARTIAL — {{ now().strftime('%d %b %Y %H:%M') }}"
+                message: >-
+                  Automatic update routine partially completed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+                  ⚠️ Status: PARTIAL
+                  📦 Pre-count: {{ pre_count }} → Post-count: {{ post_count }}
+                  🔁 Some updates remain.
+
+                  Remaining Entities:
+                  {% for r in remaining_entities %}• {{ r }}
+                  {% endfor %}
+                  {% if remaining_entities | length == 0 %}• None{% endif %}
+
+                  ℹ️ These may require manual update or a restart.
+                  🌐 192.168.1.31:8123
                 notification_id: "auto_update_partial"
+
+            # --- Telegram ---
             - service: telegram_bot.send_message
               data:
                 chat_id: !secret telegram_chat_id_2
                 message: >-
-                  ⚠️ *Auto Update Partial*  
-                  Pre: {{ pre_count }} | Post: {{ post_count }}  
-                  Remaining: {{ remaining_entities | join(', ') if remaining_entities else 'None' }}  
+                  ⚠️ *Auto Update Partial*
+                  Pre: {{ pre_count }} | Post: {{ post_count }}
+                  Remaining: {{ remaining_entities | join(', ') if remaining_entities else 'None' }}
                   _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                 parse_mode: markdown
 
-        # Success path
+            # --- Mobile Push ---
+            - service: notify.mobile_app_sm_g996b
+              data:
+                title: "⚠️ Auto Update PARTIAL"
+                message: "Partial update: {{ pre_count }} → {{ post_count }}. {{ remaining_entities | length }} update(s) still pending. May need manual action."
+                data:
+                  channel: "System Updates"
+                  importance: high
+                  group: "ha-updates"
+                  color: "#FF9800"
+                  actions:
+                    - action: "OPEN_HA"
+                      title: "Open HA"
+                      uri: "http://192.168.1.31:8123"
+
+        #-------------------------------------------------------------------
+        # SUCCESS PATH
+        #-------------------------------------------------------------------
         - conditions:
             - condition: template
               value_template: "{{ status == 'success' }}"
           sequence:
+            # --- Persistent Notification ---
             - service: persistent_notification.create
               data:
-                title: "Auto Update Success"
-                message: >
-                  Updates successfully processed.
-                  Pre-count: {{ pre_count }} | Post-count: {{ post_count }}
-                  Restart Required: {{ restart_required }}
-                  Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+                title: "✅ Auto Update SUCCESS — {{ now().strftime('%d %b %Y %H:%M') }}"
+                message: >-
+                  Automatic updates completed successfully at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+                  ✅ Status: SUCCESS
+                  📦 Pre-count: {{ pre_count }} → Post-count: {{ post_count }}
+                  ⏱️ Duration: {{ duration_seconds }} seconds
+                  🔄 Restart Required: {{ restart_required }}
+
+                  {% if restart_required %}
+                  ⚠️ A restart is required to complete the Core/OS/Supervisor update.
+                  Please restart Home Assistant at a convenient time.
+                  {% endif %}
+                  🌐 192.168.1.31:8123
                 notification_id: "auto_update_success"
+
+            # --- Telegram ---
             - service: telegram_bot.send_message
               data:
                 chat_id: !secret telegram_chat_id_2
                 message: >-
-                  ✅ *Auto Update Success*  
-                  Pre: {{ pre_count }} | Post: {{ post_count }}  
-                  Remaining: {{ remaining_entities | length }}  
-                  Restart Required: {{ restart_required }}  
+                  ✅ *Auto Update Success*
+                  Pre: {{ pre_count }} | Post: {{ post_count }}
+                  Remaining: {{ remaining_entities | length }}
+                  Restart Required: {{ restart_required }}
                   _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                 parse_mode: markdown
 
-        # No updates path (should rarely trigger due to condition)
+            # --- Mobile Push ---
+            - service: notify.mobile_app_sm_g996b
+              data:
+                title: "✅ Auto Update SUCCESS"
+                message: >-
+                  {{ pre_count }} → {{ post_count }} updates. Duration: {{ duration_seconds }}s.
+                  {% if restart_required %}⚠️ Restart required to complete Core/OS update.{% else %}No restart needed.{% endif %}
+                data:
+                  channel: "System Updates"
+                  importance: >-
+                    {% if restart_required %}high{% else %}default{% endif %}
+                  group: "ha-updates"
+                  color: >-
+                    {% if restart_required %}#FF9800{% else %}#4CAF50{% endif %}
+                  actions:
+                    - action: "OPEN_HA"
+                      title: "Open HA"
+                      uri: "http://192.168.1.31:8123"
+
+        #-------------------------------------------------------------------
+        # NO UPDATES PATH
+        #-------------------------------------------------------------------
         - conditions:
             - condition: template
               value_template: "{{ status == 'no_updates' }}"
           sequence:
+            # --- Telegram ---
+            - service: telegram_bot.send_message
+              data:
+                chat_id: !secret telegram_chat_id_2
+                message: >-
+                  ✅ *Auto Update: No Updates Pending*
+                  All components are up to date.
+                  _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+                parse_mode: markdown
+
+            # --- Mobile Push ---
+            - service: notify.mobile_app_sm_g996b
+              data:
+                title: "✅ No Updates Pending"
+                message: "All HA components are up to date as of {{ now().strftime('%H:%M') }}. No action required."
+                data:
+                  channel: "System Updates"
+                  importance: min
+                  group: "ha-updates"
+                  color: "#4CAF50"
+
+            # --- Persistent Notification ---
+            - service: persistent_notification.create
+              data:
+                title: "✅ Auto Update — No Updates Pending"
+                message: >-
+                  Auto update cycle ran at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+                  All components are up to date. No action required.
+                notification_id: "auto_update_no_updates"
+
+            # --- System Log ---
             - service: system_log.write
               data:
                 message: "Auto Update: No updates were pending at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}."
@@ -354,9 +580,9 @@
     - service: system_log.write
       data:
         message: >
-          Auto Update Cycle finished status={{ status }} pre={{ pre_count }} post={{ post_count }}
-          remaining={{ remaining_entities }} restart_required={{ restart_required }}
-          duration={{ duration_seconds }}s
+          Auto Update Cycle finished: status={{ status }}, pre={{ pre_count }}, post={{ post_count }},
+          remaining={{ remaining_entities }}, restart_required={{ restart_required }},
+          duration={{ duration_seconds }}s. Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
         level: info
 
     # (A10) Email summary (always sent)
@@ -392,3 +618,6 @@
           Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
 
   mode: single
+#===============================================================================
+# END OF DAILY UPDATE REPORT AUTOMATIONS
+#===============================================================================

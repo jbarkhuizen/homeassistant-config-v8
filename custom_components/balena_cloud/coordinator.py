@@ -6,7 +6,9 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import (DataUpdateCoordinator,
                                                       UpdateFailed)
 
@@ -24,10 +26,12 @@ class BalenaCloudDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(
         self,
         hass: HomeAssistant,
+        entry: ConfigEntry,
         config_data: Dict[str, Any],
         options: Dict[str, Any],
     ) -> None:
         """Initialize the coordinator."""
+        self.entry = entry
         self.api_token = config_data[CONF_API_TOKEN]
         self.selected_fleets = config_data.get(CONF_FLEETS, [])
         self.include_offline_devices = options.get(CONF_INCLUDE_OFFLINE_DEVICES, True)
@@ -62,6 +66,15 @@ class BalenaCloudDataUpdateCoordinator(DataUpdateCoordinator):
 
             # Fetch devices for selected fleets
             await self._async_update_devices()
+
+            # Prune HA device registry entries for fleets/devices that no
+            # longer exist in Balena Cloud (or are no longer selected).
+            try:
+                self._cleanup_stale_devices()
+            except Exception as cleanup_err:  # pragma: no cover - best effort
+                _LOGGER.debug(
+                    "Failed to clean up stale devices: %s", cleanup_err
+                )
 
             # Return combined data
             return {
@@ -98,25 +111,61 @@ class BalenaCloudDataUpdateCoordinator(DataUpdateCoordinator):
         """Update device information."""
         try:
             _LOGGER.debug("Fetching devices from Balena Cloud")
+            _LOGGER.debug("Selected fleets: %s, Available fleets: %s", 
+                         self.selected_fleets, list(self.fleets.keys()))
 
-            # If specific fleets are selected, fetch only those
+            # Always fetch all devices to get current fleet associations
+            # This ensures we find devices even if they've been moved between fleets
+            _LOGGER.debug("Fetching all devices to get current fleet associations")
+            all_devices_raw = await self.api.async_get_devices()
+            _LOGGER.debug("API returned %d total devices", len(all_devices_raw))
+
+            # If specific fleets are selected, filter devices to only those fleets
             if self.selected_fleets:
-                all_devices = []
+                # Convert selected fleet IDs to integers for comparison
+                selected_fleet_ids = set()
                 for fleet_id_str in self.selected_fleets:
                     try:
                         fleet_id = int(fleet_id_str)
                         if fleet_id in self.fleets:
-                            fleet_devices = await self.api.async_get_devices(fleet_id)
-                            all_devices.extend(fleet_devices)
+                            selected_fleet_ids.add(fleet_id)
+                        else:
+                            _LOGGER.warning(
+                                "Fleet ID %s is selected but not found in available fleets. "
+                                "Available fleet IDs: %s", fleet_id, list(self.fleets.keys())
+                            )
                     except (ValueError, TypeError) as err:
                         _LOGGER.warning("Invalid fleet ID %s: %s", fleet_id_str, err)
                         continue
+                
+                if selected_fleet_ids:
+                    # Filter devices to only include those in selected fleets
+                    filtered_devices = []
+                    for device_data in all_devices_raw:
+                        device_fleet_id = device_data.get("belongs_to__application", {}).get("__id")
+                        if device_fleet_id in selected_fleet_ids:
+                            filtered_devices.append(device_data)
+                    
+                    all_devices = filtered_devices
+                    _LOGGER.debug(
+                        "Filtered to %d devices in selected fleets (out of %d total devices)",
+                        len(all_devices), len(all_devices_raw)
+                    )
+                else:
+                    _LOGGER.warning(
+                        "None of the selected fleet IDs matched available fleets. "
+                        "Selected: %s, Available: %s. Showing all devices.",
+                        self.selected_fleets, list(self.fleets.keys())
+                    )
+                    all_devices = all_devices_raw
             else:
-                # Fetch all devices
-                all_devices = await self.api.async_get_devices()
+                # No fleet filter - use all devices
+                all_devices = all_devices_raw
 
             # Process device data
             self.devices.clear()
+            processed_count = 0
+            skipped_offline_count = 0
             for device_data in all_devices:
                 try:
                     # Get fleet name for the device
@@ -131,6 +180,8 @@ class BalenaCloudDataUpdateCoordinator(DataUpdateCoordinator):
 
                     # Skip offline devices if not included
                     if not self.include_offline_devices and not device.is_online:
+                        skipped_offline_count += 1
+                        _LOGGER.debug("Skipping offline device %s (UUID: %s)", device.display_name, device.uuid)
                         continue
 
                     # Get device metrics if available
@@ -148,16 +199,55 @@ class BalenaCloudDataUpdateCoordinator(DataUpdateCoordinator):
                         )
 
                     self.devices[device.uuid] = device
+                    processed_count += 1
 
                 except Exception as device_err:
-                    _LOGGER.warning("Failed to process device data: %s", device_err)
+                    _LOGGER.warning("Failed to process device data: %s", device_err, exc_info=True)
                     continue
 
-            _LOGGER.debug("Found %d devices", len(self.devices))
+            _LOGGER.debug(
+                "Processed %d devices, skipped %d offline devices, total devices: %d",
+                processed_count, skipped_offline_count, len(self.devices)
+            )
 
         except Exception as err:
             _LOGGER.error("Failed to update devices: %s", err)
             raise
+
+    def _cleanup_stale_devices(self) -> None:
+        """Remove HA device registry entries no longer present in Balena Cloud."""
+        device_registry = dr.async_get(self.hass)
+        entries = dr.async_entries_for_config_entry(
+            device_registry, self.entry.entry_id
+        )
+
+        for device_entry in entries:
+            stale = False
+            for domain, identifier in device_entry.identifiers:
+                if domain != DOMAIN:
+                    continue
+                if identifier.startswith("fleet_"):
+                    try:
+                        fleet_id = int(identifier.removeprefix("fleet_"))
+                    except ValueError:
+                        continue
+                    if fleet_id not in self.fleets:
+                        stale = True
+                        break
+                elif identifier not in self.devices:
+                    stale = True
+                    break
+
+            if stale:
+                _LOGGER.info(
+                    "Removing stale Balena device registry entry %s (%s)",
+                    device_entry.id,
+                    device_entry.identifiers,
+                )
+                device_registry.async_update_device(
+                    device_entry.id,
+                    remove_config_entry_id=self.entry.entry_id,
+                )
 
     async def async_restart_application(
         self, device_uuid: str, service_name: Optional[str] = None

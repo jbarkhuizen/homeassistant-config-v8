@@ -1,11 +1,18 @@
 #===============================================================================
-# SOLAR: Weekly Solar Performance Summary (Mondays 08:40) — Email + Telegram
+# SOLAR: Weekly Solar Performance Summary (Mondays 08:40)
+# File: automations/solar_weekly_report.yaml
+# Updated: 2026-05-01
+# - Runs every Monday at 08:40 (inside 06:00–09:00 window)
+# - Guarded by Maintenance Mode (must be OFF)
+# - Compares last 7 days vs prior 7 days for PV, Load, Grid Import, Grid Export
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
 #===============================================================================
 - id: solar_weekly_summary_0840
-  alias: "Solar: Weekly Performance Summary (Mon 08:40)"
+  alias: "Solar: Weekly Performance Summary (Mon 08:40) — All Channels"
   description: >
     Compares last 7 days vs prior 7 days for PV, Load, Grid Import, Grid Export.
-    Sends Email + Telegram. Guarded by Maintenance Mode (must be OFF).
+    Sends Email, Telegram, Mobile Push and Persistent Notification every Monday at 08:40.
+    Guarded by Maintenance Mode (must be OFF).
 
   trigger:
     - platform: time
@@ -24,7 +31,34 @@
     - delay:
         seconds: 10
 
-    # Email
+    # Variables for Mobile Push and Persistent summary
+    - variables:
+        pv7: "{{ states('sensor.solar_pv_energy_change_7d') | float(0) | round(2) }}"
+        pv_prev7: "{{ states('sensor.solar_pv_energy_change_14d') | float(0) | round(2) }}"
+        load7: "{{ states('sensor.solar_load_energy_change_7d') | float(0) | round(2) }}"
+        load_prev7: "{{ states('sensor.solar_load_energy_change_14d') | float(0) | round(2) }}"
+        grid_import7: "{{ states('sensor.solar_grid_import_energy_change_7d') | float(0) | round(2) }}"
+        grid_import_prev7: "{{ states('sensor.solar_grid_import_energy_change_14d') | float(0) | round(2) }}"
+        grid_export7: "{{ states('sensor.solar_grid_export_energy_change_7d') | float(0) | round(2) }}"
+        grid_export_prev7: "{{ states('sensor.solar_grid_export_energy_change_14d') | float(0) | round(2) }}"
+        pv_daily_avg: "{{ (states('sensor.solar_pv_energy_change_7d') | float(0) / 7) | round(2) }}"
+        target: "{{ states('input_number.solar_generation_target') | float(25) }}"
+        weekly_achievement: >-
+          {% set avg = states('sensor.solar_pv_energy_change_7d') | float(0) / 7 %}
+          {% set tgt = states('input_number.solar_generation_target') | float(25) %}
+          {{ (avg / tgt * 100) | round(1) if tgt > 0 else 0 }}
+        grid_dep_pct: >-
+          {% set imp = states('sensor.solar_grid_import_energy_change_7d') | float(0) %}
+          {% set load = states('sensor.solar_load_energy_change_7d') | float(0) %}
+          {{ (imp / load * 100) | round(1) if load > 0 else 0 }}
+        pv_delta: >-
+          {% set cur = states('sensor.solar_pv_energy_change_7d') | float(0) %}
+          {% set prev = states('sensor.solar_pv_energy_change_14d') | float(0) %}
+          {% set d = (cur - prev) | round(2) %}
+          {{ ('+' ~ d | string) if d > 0 else (d | string) }}
+        value_zar: "{{ (states('sensor.solar_pv_energy_change_7d') | float(0) * 2.50) | round(2) }}"
+
+    # --- Email ---
     - service: notify.email_notification_jbarkhuizen_gmail_com
       data:
         title: "🔆 Weekly Solar Summary — {{ now().strftime('%Y-%m-%d') }}"
@@ -32,7 +66,7 @@
           {% from 'solar_weekly_report.jinja' import solar_weekly_report_email %}
           {{ solar_weekly_report_email() }}
 
-    # Telegram — replace !secret telegram_chat_id_2 with your real chat_id, or use !secret telegram_chat_id
+    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         chat_id: !secret telegram_chat_id_2
@@ -41,11 +75,61 @@
           {{ solar_weekly_report_telegram() }}
         parse_mode: markdown
 
-    # Log for auditing
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "🔆 Weekly Solar Summary — {{ now().strftime('%d %b %Y') }}"
+        message: >-
+          ☀️ PV 7d: {{ pv7 }} kWh (Δ {{ pv_delta }} kWh vs prev week)
+          | Avg: {{ pv_daily_avg }} kWh/day ({{ weekly_achievement }}% of target)
+          | Grid Dep: {{ grid_dep_pct }}%
+          | Value: ZAR {{ value_zar }}
+        data:
+          channel: "Solar Reports"
+          importance: default
+          group: "ha-solar"
+          color: "#FF9800"
+          icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- Persistent Notification ---
+    - service: persistent_notification.create
+      data:
+        title: "🔆 Weekly Solar Summary (08:40) — {{ now().strftime('%d %b %Y') }}"
+        message: >-
+          Weekly solar performance summary sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+          ☀️ Solar Production (Last 7 Days):
+          • PV Total: {{ pv7 }} kWh (vs {{ pv_prev7 }} kWh prior week — Δ {{ pv_delta }} kWh)
+          • Daily Average: {{ pv_daily_avg }} kWh/day
+          • Target: {{ target }} kWh/day ({{ weekly_achievement }}% achieved)
+          • Estimated Value: ZAR {{ value_zar }}
+
+          ⚡ Energy Balance (Last 7 Days):
+          • Load: {{ load7 }} kWh (vs {{ load_prev7 }} kWh prior week)
+          • Grid Import: {{ grid_import7 }} kWh (vs {{ grid_import_prev7 }} kWh prior week)
+          • Grid Export: {{ grid_export7 }} kWh (vs {{ grid_export_prev7 }} kWh prior week)
+          • Grid Dependency: {{ grid_dep_pct }}%
+
+          ✅ Email sent — notify.email_notification_jbarkhuizen_gmail_com
+          ✅ Telegram sent — chat_id_2
+          ✅ Mobile Push sent — SM-G996B
+        notification_id: "solar_weekly_summary_0840"
+
+    # --- System Log ---
     - service: system_log.write
       data:
         message: >-
           Solar Weekly Summary sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+          PV 7d: {{ pv7 }} kWh (Δ {{ pv_delta }} kWh), Daily avg: {{ pv_daily_avg }} kWh/day,
+          Achievement: {{ weekly_achievement }}%, Grid Dep: {{ grid_dep_pct }}%,
+          Value: ZAR {{ value_zar }}. Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
         level: info
 
   mode: single
+#===============================================================================
+# END OF SOLAR WEEKLY REPORT
+#===============================================================================

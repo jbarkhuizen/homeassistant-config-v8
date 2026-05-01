@@ -1,14 +1,17 @@
 #===============================================================================
 # SYSTEM: Maintenance Mode Reminder (08:50)
-# - Reminds you if Maintenance Mode is still ON near the end of your morning window.
-# - Sends Telegram + Persistent Notification + system log.
-# - Trigger inside 06:00–09:00 window as requested.
+# File: automations/maintanance_mode_reminder.yaml
+# Updated: 2026-05-01
+# - Reminds you if Maintenance Mode is still ON near the end of the morning window.
+# - Trigger inside 06:00–09:00 window.
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
 #===============================================================================
 - id: maintenance_mode_reminder_0850
-  alias: "System: Maintenance Mode Reminder 08:50 (Telegram + Persistent)"
+  alias: "System: Maintenance Mode Reminder 08:50 (All Channels)"
   description: >
-    At 08:50, if Maintenance Mode is still ON, send a reminder via Telegram and
-    a persistent notification, including how long it has been on.
+    At 08:50, if Maintenance Mode is still ON, send a reminder via Email,
+    Telegram, Mobile Push, Persistent Notification and System Log,
+    including how long it has been active.
 
   trigger:
     - platform: time
@@ -20,7 +23,7 @@
       state: "on"
 
   action:
-    # Compute a simple "duration on" in hours/minutes from last_changed
+    # Compute duration Maintenance Mode has been ON
     - variables:
         seconds_on: "{{ (as_timestamp(now()) - as_timestamp(states.input_boolean.maintenance_mode.last_changed)) | int(0) }}"
         hours_on: "{{ (seconds_on // 3600) | int }}"
@@ -34,37 +37,111 @@
         cloud_url: "https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/"
         local_url: "http://192.168.1.31:8123/"
 
-    # Persistent notification in UI
+    # --- Persistent Notification ---
     - service: persistent_notification.create
       data:
-        title: "Maintenance Mode is still ON"
+        title: "⚠️ Maintenance Mode Still ON (08:50 — {{ now().strftime('%d %b %Y') }})"
         message: >-
-          Maintenance Mode has been ON for {{ duration_hm }}.
-          Some scheduled automations may be suppressed until it is turned OFF.
+          Maintenance Mode reminder at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
 
-          Quick links:
-          • Local UI: {{ local_url }}
-          • Cloud UI: {{ cloud_url }}
+          ⚠️ Maintenance Mode has been ON for: {{ duration_hm }}
 
-          Toggle in: Settings → Devices & Services → Helpers → input_boolean.maintenance_mode
+          ❌ The following automations are currently suppressed:
+          • Morning system overview
+          • Solar daily & weekly reports
+          • Solar forecast notifications
+          • Battery weekly summary
+          • MQTT broker alerts
+          • Git snapshot (08:55)
+          • All automations guarded by Maintenance Mode
+
+          🔧 To turn OFF Maintenance Mode:
+          Settings → Devices & Services → Helpers → input_boolean.maintenance_mode → Toggle OFF
+
+          🌐 Local: {{ local_url }}
+          ☁️ Cloud: {{ cloud_url }}
         notification_id: "maintenance_mode_reminder"
 
-    # Telegram — replace !secret telegram_chat_id_2 with your real chat_id, or use !secret telegram_chat_id
+    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         target:
           - !secret telegram_chat_id_2
         message: >-
-          ⚠️ Maintenance Mode is still ON ({{ duration_hm }}).
-          Some scheduled automations may be suppressed.
-          Turn OFF from your Home Assistant UI.
+          ⚠️ *Maintenance Mode Still ON (08:50)*
+
+          Active for: *{{ duration_hm }}*
+
+          Many scheduled automations are currently suppressed.
+          Please turn OFF Maintenance Mode from HA if maintenance is complete.
+
+          🔧 Settings → Helpers → input_boolean.maintenance_mode → Toggle OFF
+          🌐 {{ local_url }}
+          _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
         parse_mode: markdown
 
-    # Audit log
+    # --- Email ---
+    - service: notify.email_notification_jbarkhuizen_gmail_com
+      data:
+        title: "⚠️ Maintenance Mode Still ON — {{ duration_hm }} ({{ now().strftime('%Y-%m-%d') }})"
+        message: >-
+          MAINTENANCE MODE REMINDER
+
+          Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
+
+          ================================================================================
+
+          WARNING: Maintenance Mode has been ON for {{ duration_hm }}.
+
+          AUTOMATIONS CURRENTLY SUPPRESSED:
+          - Morning system overview (08:05)
+          - Solar daily & weekly reports
+          - Solar forecast notifications
+          - Battery weekly summary (08:32)
+          - MQTT broker alerts
+          - Git snapshot (08:55)
+          - All automations guarded by Maintenance Mode
+
+          HOW TO TURN OFF MAINTENANCE MODE:
+          1. Open Home Assistant: http://192.168.1.31:8123
+          2. Go to Settings → Devices & Services → Helpers
+          3. Find input_boolean.maintenance_mode
+          4. Click to toggle it OFF
+
+          ================================================================================
+
+          System: {{ local_url }}
+          Cloud: {{ cloud_url }}
+
+    # --- Mobile Push ---
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "⚠️ Maintenance Mode Still ON ({{ duration_hm }})"
+        message: >-
+          Maintenance Mode has been active for {{ duration_hm }}.
+          Multiple scheduled automations are suppressed.
+          Toggle OFF in HA Settings → Helpers if maintenance is complete.
+        data:
+          channel: "System Status"
+          importance: high
+          group: "ha-maintenance"
+          color: "#FF9800"
+          icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    # --- System Log ---
     - service: system_log.write
       data:
         message: >-
-          Maintenance Mode reminder sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }} (ON for {{ duration_hm }}).
-        level: info
+          Maintenance Mode reminder sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          (ON for {{ duration_hm }}).
+          Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
+        level: warning
 
   mode: single
+#===============================================================================
+# END OF MAINTENANCE MODE REMINDER
+#===============================================================================

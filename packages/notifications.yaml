@@ -2,14 +2,19 @@
 # Consolidated Notifications Configuration
 # File: /config/packages/notifications.yaml
 # Purpose: All notification services consolidated with correct device references
+# Updated: 2026-05-01
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
 #===============================================================================
 
 script:
-  # Test basic email functionality (uses the restored alias notify.email_ha)
+
+  #=============================================================================
+  # TEST: Email only (basic verification)
+  #=============================================================================
   test_email_basic:
     alias: "Test Email - Basic"
     sequence:
-      # Email Notification Service
+      # --- Email ---
       - service: notify.email_ha
         data:
           title: "📧 Email Basic Test"
@@ -18,51 +23,417 @@ script:
             Service: notify.email_ha
             From: Home Assistant (192.168.1.31:8123)
 
-  # Test basic Telegram functionality (to BarkieHome and JohanBarkhuizen)
+      # --- Telegram ---
+      - service: telegram_bot.send_message
+        data:
+          chat_id: !secret telegram_chat_id_2
+          message: >-
+            📧 *Email Basic Test Triggered*
+            A test email has been sent via notify.email_ha.
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          parse_mode: markdown
+
+      # --- Mobile Push ---
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "📧 Email Basic Test"
+          message: "Test email sent via notify.email_ha — {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+          data:
+            channel: "Test"
+            importance: default
+            group: "ha-tests"
+
+      # --- Persistent Notification ---
+      - service: persistent_notification.create
+        data:
+          title: "📧 Email Basic Test"
+          message: >-
+            Test email sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }} via notify.email_ha.
+            Check your inbox to confirm delivery.
+          notification_id: "test_email_basic"
+
+      # --- System Log ---
+      - service: system_log.write
+        data:
+          message: "Test email basic executed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}."
+          level: info
+
+  #=============================================================================
+  # TEST: Telegram only (basic verification)
+  #=============================================================================
   test_telegram_basic:
     alias: "Test Telegram - Basic"
     sequence:
-      # Telegram Notification Service
+      # --- Telegram ---
       - service: notify.barkiehome
         data:
           message: "Telegram basic test (BarkieHome) — {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
       - delay: "00:00:02"
-      # Telegram Notification Service
       - service: notify.johanbarkhuizen
         data:
           message: "Telegram basic test (JohanBarkhuizen) — {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
 
+      # --- Email ---
+      - service: notify.email_ha
+        data:
+          title: "🤖 Telegram Basic Test Triggered"
+          message: |
+            Telegram basic test was executed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+            Messages sent to: BarkieHome and JohanBarkhuizen.
+            From: Home Assistant (192.168.1.31:8123)
+
+      # --- Mobile Push ---
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "🤖 Telegram Basic Test"
+          message: "Telegram test sent to BarkieHome & JohanBarkhuizen — {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+          data:
+            channel: "Test"
+            importance: default
+            group: "ha-tests"
+
+      # --- Persistent Notification ---
+      - service: persistent_notification.create
+        data:
+          title: "🤖 Telegram Basic Test"
+          message: >-
+            Telegram basic test sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+            Recipients: BarkieHome and JohanBarkhuizen.
+            Check Telegram to confirm delivery.
+          notification_id: "test_telegram_basic"
+
+      # --- System Log ---
+      - service: system_log.write
+        data:
+          message: "Test Telegram basic executed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}."
+          level: info
+
+  #=============================================================================
+  # TEST: Mobile Push only (basic verification) — NEW
+  #=============================================================================
+  test_mobile_push_basic:
+    alias: "Test Mobile Push - Basic"
+    sequence:
+      # --- Mobile Push ---
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "📱 Mobile Push Basic Test"
+          message: "Mobile push test — {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+          data:
+            channel: "Test"
+            importance: high
+            group: "ha-tests"
+            color: "#41BDF5"
+            icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+
+      # --- Email ---
+      - service: notify.email_ha
+        data:
+          title: "📱 Mobile Push Basic Test Triggered"
+          message: |
+            Mobile push basic test was executed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+            Service: notify.mobile_app_sm_g996b
+            Device: Samsung S21 (SM-G996B)
+            From: Home Assistant (192.168.1.31:8123)
+
+      # --- Telegram ---
+      - service: telegram_bot.send_message
+        data:
+          chat_id: !secret telegram_chat_id_2
+          message: >-
+            📱 *Mobile Push Basic Test Triggered*
+            A test push notification has been sent to Samsung S21.
+            Service: notify.mobile_app_sm_g996b
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          parse_mode: markdown
+
+      # --- Persistent Notification ---
+      - service: persistent_notification.create
+        data:
+          title: "📱 Mobile Push Basic Test"
+          message: >-
+            Mobile push basic test sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+            Device: Samsung S21 (SM-G996B).
+            Check your phone to confirm delivery.
+          notification_id: "test_mobile_push_basic"
+
+      # --- System Log ---
+      - service: system_log.write
+        data:
+          message: "Test Mobile Push basic executed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }} to SM-G996B."
+          level: info
+
+  #=============================================================================
+  # TEST: All channels simultaneously — NEW master test script
+  #=============================================================================
+  test_all_channels:
+    alias: "Test ALL Notification Channels"
+    sequence:
+      # --- Email ---
+      - service: notify.email_ha
+        data:
+          title: "🔔 All Channels Test — {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+          message: |
+            ALL NOTIFICATION CHANNELS TEST
+
+            This email confirms that the Email channel is working correctly.
+
+            Test Time: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
+            System: Home Assistant
+            IP: 192.168.1.31:8123
+            Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
+
+            Channels being tested:
+            1. Email (this message)
+            2. Telegram (BarkieHome + JohanBarkhuizen)
+            3. Mobile Push (Samsung S21 SM-G996B)
+            4. Persistent Notification (HA Dashboard)
+            5. System Log
+
+      # --- Telegram ---
+      - service: telegram_bot.send_message
+        data:
+          chat_id: !secret telegram_chat_id_2
+          message: >-
+            🔔 *All Channels Test*
+
+            Telegram channel is working correctly.
+
+            ✅ Email — Sent
+            ✅ Telegram — This message
+            📱 Mobile Push — Sending next...
+            🔔 Persistent — Creating...
+            📋 System Log — Logging...
+
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+            IP: 192.168.1.31:8123
+          parse_mode: markdown
+
+      # --- Telegram second account ---
+      - delay: "00:00:02"
+      - service: notify.barkiehome
+        data:
+          message: "🔔 All Channels Test — BarkieHome channel confirmed — {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+      # --- Mobile Push ---
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "🔔 All Channels Test"
+          message: "All notification channels test — Email ✅ Telegram ✅ Mobile Push ✅ — {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+          data:
+            channel: "Test"
+            importance: high
+            group: "ha-tests"
+            color: "#41BDF5"
+            icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+            actions:
+              - action: "OPEN_HA"
+                title: "Open HA"
+                uri: "http://192.168.1.31:8123"
+
+      # --- Persistent Notification ---
+      - service: persistent_notification.create
+        data:
+          title: "🔔 All Channels Test Complete"
+          message: >-
+            All notification channel test executed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+            Results:
+            ✅ Email — Sent to notify.email_ha
+            ✅ Telegram — Sent to BarkieHome and JohanBarkhuizen
+            ✅ Mobile Push — Sent to SM-G996B (Samsung S21)
+            ✅ Persistent Notification — This message
+            ✅ System Log — See HA logs
+
+            Check each channel to confirm delivery.
+          notification_id: "test_all_channels"
+
+      # --- System Log ---
+      - service: system_log.write
+        data:
+          message: >-
+            All Channels Test executed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+            Channels: Email, Telegram (BarkieHome + JohanBarkhuizen), Mobile Push (SM-G996B), Persistent, System Log.
+          level: info
+
+#===============================================================================
+# AUTOMATIONS — Daily smoke tests for all channels
+#===============================================================================
 automation:
-  # Daily smoke-test to verify email delivery automatically (within 06h00–09h00 window)
+
+  #-----------------------------------------------------------------------------
+  # Email smoke test — 08:10 daily
+  #-----------------------------------------------------------------------------
   - id: email_smoke_test_0810
     alias: "Email Smoke Test (08:10)"
-    description: "Sends a short email to verify SMTP delivery each day."
+    description: "Sends a short email to verify SMTP delivery each day. Also sends Telegram, Mobile Push and Persistent notification."
     trigger:
       - platform: time
         at: "08:10:00"
     action:
-      # Email Notification Service
+      # --- Email ---
       - service: notify.email_ha
         data:
           title: "📧 HA Email Smoke Test"
           message: "Automated test at {{ now().strftime('%Y-%m-%d %H:%M:%S') }} — if you see this, SMTP is working."
+
+      # --- Telegram ---
+      - service: telegram_bot.send_message
+        data:
+          chat_id: !secret telegram_chat_id_2
+          message: >-
+            📧 *Email Smoke Test (08:10)*
+            Daily email smoke test was sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+            Check your inbox to confirm SMTP delivery.
+          parse_mode: markdown
+
+      # --- Mobile Push ---
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "📧 Email Smoke Test"
+          message: "Daily email smoke test sent — {{ now().strftime('%Y-%m-%d %H:%M:%S') }}. Check inbox."
+          data:
+            channel: "System Tests"
+            importance: default
+            group: "ha-smoke-tests"
+
+      # --- Persistent Notification ---
+      - service: persistent_notification.create
+        data:
+          title: "📧 Email Smoke Test (08:10)"
+          message: >-
+            Email smoke test sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+            Check your inbox to confirm SMTP is working correctly.
+          notification_id: "email_smoke_test"
+
+      # --- System Log ---
+      - service: system_log.write
+        data:
+          message: "Email smoke test sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}."
+          level: info
     mode: single
 
-  # Daily smoke-test to verify Telegram delivery automatically (within 06h00–09h00 window)
+  #-----------------------------------------------------------------------------
+  # Telegram smoke test — 08:12 daily
+  #-----------------------------------------------------------------------------
   - id: telegram_smoke_test_0812
     alias: "Telegram Smoke Test (08:12)"
-    description: "Sends short Telegram messages to verify delivery daily."
+    description: "Sends short Telegram messages to verify delivery daily. Also sends Email, Mobile Push and Persistent notification."
     trigger:
       - platform: time
         at: "08:12:00"
     action:
-      #Telegram Notification Service
+      # --- Telegram ---
       - service: notify.barkiehome
         data:
           message: "🤖 Telegram Smoke Test — BarkieHome — {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
       - delay: "00:00:02"
-      # Telegram Notification Service
       - service: notify.johanbarkhuizen
         data:
           message: "🤖 Telegram Smoke Test — JohanBarkhuizen — {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+      # --- Email ---
+      - service: notify.email_ha
+        data:
+          title: "🤖 Telegram Smoke Test (08:12)"
+          message: |
+            Daily Telegram smoke test was sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+            Recipients: BarkieHome and JohanBarkhuizen.
+            Check your Telegram app to confirm delivery.
+            From: Home Assistant (192.168.1.31:8123)
+
+      # --- Mobile Push ---
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "🤖 Telegram Smoke Test"
+          message: "Daily Telegram smoke test sent to BarkieHome & JohanBarkhuizen — {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+          data:
+            channel: "System Tests"
+            importance: default
+            group: "ha-smoke-tests"
+
+      # --- Persistent Notification ---
+      - service: persistent_notification.create
+        data:
+          title: "🤖 Telegram Smoke Test (08:12)"
+          message: >-
+            Telegram smoke test sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+            Check BarkieHome and JohanBarkhuizen Telegram channels to confirm delivery.
+          notification_id: "telegram_smoke_test"
+
+      # --- System Log ---
+      - service: system_log.write
+        data:
+          message: "Telegram smoke test sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }} to BarkieHome and JohanBarkhuizen."
+          level: info
     mode: single
+
+  #-----------------------------------------------------------------------------
+  # Mobile Push smoke test — 08:14 daily — NEW
+  #-----------------------------------------------------------------------------
+  - id: mobile_push_smoke_test_0814
+    alias: "Mobile Push Smoke Test (08:14)"
+    description: "Sends a daily push notification to Samsung S21 to verify mobile push delivery. Also sends Email, Telegram and Persistent notification."
+    trigger:
+      - platform: time
+        at: "08:14:00"
+    action:
+      # --- Mobile Push ---
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "📱 Mobile Push Smoke Test"
+          message: "Daily push test — {{ now().strftime('%Y-%m-%d %H:%M:%S') }} — HA is running and mobile notifications are working."
+          data:
+            channel: "System Tests"
+            importance: high
+            group: "ha-smoke-tests"
+            color: "#41BDF5"
+            icon_url: "https://www.home-assistant.io/images/favicon-192x192-full.png"
+            actions:
+              - action: "OPEN_HA"
+                title: "Open HA"
+                uri: "http://192.168.1.31:8123"
+
+      # --- Email ---
+      - service: notify.email_ha
+        data:
+          title: "📱 Mobile Push Smoke Test (08:14)"
+          message: |
+            Daily mobile push smoke test was sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+            Device: Samsung S21 (SM-G996B)
+            Service: notify.mobile_app_sm_g996b
+            Check your phone to confirm push notification delivery.
+            From: Home Assistant (192.168.1.31:8123)
+
+      # --- Telegram ---
+      - service: telegram_bot.send_message
+        data:
+          chat_id: !secret telegram_chat_id_2
+          message: >-
+            📱 *Mobile Push Smoke Test (08:14)*
+            Daily mobile push test sent to Samsung S21 (SM-G996B).
+            Service: notify.mobile_app_sm_g996b
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+            Check your phone to confirm delivery.
+          parse_mode: markdown
+
+      # --- Persistent Notification ---
+      - service: persistent_notification.create
+        data:
+          title: "📱 Mobile Push Smoke Test (08:14)"
+          message: >-
+            Mobile push smoke test sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+            Device: Samsung S21 (SM-G996B).
+            Service: notify.mobile_app_sm_g996b.
+            Check your Samsung S21 to confirm push notification was received.
+          notification_id: "mobile_push_smoke_test"
+
+      # --- System Log ---
+      - service: system_log.write
+        data:
+          message: "Mobile Push smoke test sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }} to SM-G996B (Samsung S21)."
+          level: info
+    mode: single
+#===============================================================================
+# END OF CONSOLIDATED NOTIFICATIONS CONFIGURATION
+#===============================================================================
