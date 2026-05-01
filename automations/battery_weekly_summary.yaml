@@ -1,55 +1,56 @@
-# =============================================================================
-# PACKAGE: Battery Weekly Summary Metrics
-# - 7d/14d change sensors for Low and Critical device counts
-# - 7d alert hours (battery alert active)
-# =============================================================================
+#===============================================================================
+# BATTERY: Weekly Summary (Mondays 08:32) — Email + Telegram
+# - Requires: templates/battery_weekly_report.jinja and package sensors.
+# - Guards: Maintenance Mode OFF, Weekly Report switch ON
+#===============================================================================
+- id: battery_weekly_summary_0832
+  alias: "Battery: Weekly Summary (Mon 08:32)"
+  description: >
+    Sends a weekly battery summary (trends + top-5 lowest devices) via Email and
+    Telegram on Mondays at 08:32. Requires Weekly Battery Report to be enabled.
 
-sensor:
-  # 7-day and 14-day "change" for Low count
-  - platform: statistics
-    name: battery_low_count_change_7d
-    unique_id: battery_low_count_change_7d
-    entity_id: sensor.battery_devices_low_count
-    state_characteristic: change
-    max_age:
-      days: 7
-    sampling_size: 10000
+  trigger:
+    - platform: time
+      at: "08:32:00"
 
-  - platform: statistics
-    name: battery_low_count_change_14d
-    unique_id: battery_low_count_change_14d
-    entity_id: sensor.battery_devices_low_count
-    state_characteristic: change
-    max_age:
-      days: 14
-    sampling_size: 20000
+  condition:
+    - condition: state
+      entity_id: input_boolean.maintenance_mode
+      state: "off"
+    - condition: state
+      entity_id: input_boolean.battery_weekly_report_enabled
+      state: "on"
+    - condition: time
+      weekday:
+        - mon
 
-  # 7-day and 14-day "change" for Critical count
-  - platform: statistics
-    name: battery_critical_count_change_7d
-    unique_id: battery_critical_count_change_7d
-    entity_id: sensor.battery_devices_critical_count
-    state_characteristic: change
-    max_age:
-      days: 7
-    sampling_size: 10000
+  action:
+    # slight delay to ensure morning stats are updated
+    - delay:
+        seconds: 10
 
-  - platform: statistics
-    name: battery_critical_count_change_14d
-    unique_id: battery_critical_count_change_14d
-    entity_id: sensor.battery_devices_critical_count
-    state_characteristic: change
-    max_age:
-      days: 14
-    sampling_size: 20000
+    # Email
+    - service: notify.email_notification_jbarkhuizen_gmail_com
+      data:
+        title: "🔋 Battery — Weekly Summary {{ now().strftime('%Y-%m-%d') }}"
+        message: >-
+          {% from 'battery_weekly_report.jinja' import battery_weekly_email %}
+          {{ battery_weekly_email() }}
 
-  # Hours with battery alert active during the last 7 days
-  - platform: history_stats
-    name: battery_alert_on_hours_7d
-    unique_id: battery_alert_on_hours_7d
-    entity_id: binary_sensor.battery_alert_active
-    state: "on"
-    type: time
-    duration:
-      days: 7
-    end: "{{ now() }}"
+    # Telegram — replace 6167623299 with your chat_id or use !secret telegram_chat_id
+    - service: telegram_bot.send_message
+      data:
+        target:
+          - 6167623299
+        message: >-
+          {% from 'battery_weekly_report.jinja' import battery_weekly_telegram %}
+          {{ battery_weekly_telegram() }}
+        parse_mode: markdown
+
+    # Audit log
+    - service: system_log.write
+      data:
+        message: "Battery Weekly Summary sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}."
+        level: info
+
+  mode: single
