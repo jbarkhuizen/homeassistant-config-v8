@@ -6,6 +6,7 @@
 
 # Loads default set of integrations. Do not remove.
 default_config:
+bluetooth:
 
 homeassistant:
   # Basic instance information
@@ -24,7 +25,7 @@ homeassistant:
 
   # File system access
   allowlist_external_dirs:
-    - "/config/sensor_report"
+    - "/config/sensor_reports"
     - "/config/scripts"
     - "/tmp"
     - "/config/exports"
@@ -248,8 +249,7 @@ shell_command:
   git_commit: "/config/scripts/git_commit_1.sh"
   git_commit_bash: "/bin/bash /config/scripts/git_commit_1.sh"
   save_commit_message: 'bash -c "printf %s \"{{ message }}\" > /config/.last_commit_message"'
-  backup_config: >
-    cp -r /config /backup/ha-config-$(date +%Y%m%d_%H%M%S)
+  backup_config: bash -c "mkdir -p /config/backup && rsync -a /config/ /config/backup/ha-config-$(date +%Y%m%d_%H%M%S)/ --exclude=backup --exclude=.git --exclude=*.log"
   check_system_status: >
     echo "System check at $(date)" > /config/system_check.log
   extract_sensors: >
