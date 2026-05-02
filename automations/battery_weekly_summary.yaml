@@ -106,7 +106,7 @@
           actions:
             - action: "OPEN_HA"
               title: "Open HA"
-              uri: "http://192.168.1.30:8123"
+              uri: "http://192.168.1.31:8123"
 
     # --- Persistent Notification ---
     - service: persistent_notification.create
