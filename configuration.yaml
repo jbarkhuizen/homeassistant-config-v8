@@ -287,16 +287,16 @@ logger:
   default: warning
   logs:
     # TEMP (for Deye entry_id discovery): log config entries at startup
-    homeassistant.config_entries: debug
+    homeassistant.config_entries: warning
 
     # Core Components - Set to info for better debugging
-    homeassistant.core: info
+    homeassistant.core: warning
     homeassistant.components.http: warning
     homeassistant.loader: warning
-    homeassistant.setup: info
+    homeassistant.setup: warning
     homeassistant.config: info
-    homeassistant.components.smtp: debug
-    aiosmtplib: debug
+    homeassistant.components.smtp: warning
+    aiosmtplib: warning
 
     # Automation & Scripts - Info level for troubleshooting
     homeassistant.components.automation: info
