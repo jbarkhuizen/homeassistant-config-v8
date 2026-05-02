@@ -1,5 +1,7 @@
 # =============================================================================
 # AUTOMATION: MQTT Broker Alerts
+# File: automations/mqtt_broker_alerts.yaml
+# Updated: 2026-05-01
 # (4) ADDED: Multi-trigger alert system (06:00–09:00 window)
 # - Triggers:
 #     a) Scheduled evaluation at 06:45
@@ -7,7 +9,7 @@
 #     c) Memory sustained above alert threshold for 10 min
 # - Conditions: Maintenance Mode OFF, Time between 06:00 and 09:00
 # - Distinguishes Elevated vs Critical using critical thresholds
-# - Notifications: Persistent, Email, Telegram, System Log
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
 # =============================================================================
 
 - id: mqtt_broker_alerts_manager
@@ -16,6 +18,7 @@
     Sends alerts if Mosquitto CPU or Memory exceed configured thresholds.
     Evaluates at 06:45 and on sustained threshold crossings (10 min).
     Critical thresholds escalate messaging.
+    Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent, System Log.
 
   trigger:
     # Scheduled daily evaluation
@@ -41,48 +44,56 @@
     - condition: time
       after: "06:00:00"
       before: "09:00:00"
-    # Ensure either alert active or scheduled run (the scheduled run passes anyway; numeric triggers guarantee active)
+    # Ensure either alert active or scheduled run
     - condition: template
       value_template: >
         {{ trigger.platform == 'time' or is_state('binary_sensor.mqtt_broker_alert_active','on') }}
 
   action:
     - variables:
-        cpu: "{{ states('sensor.mosquitto_broker_cpu_percent')|float(0) }}"
-        mem: "{{ states('sensor.mosquitto_broker_memory_percent')|float(0) }}"
-        cpu_alert: "{{ states('input_number.mqtt_broker_cpu_alert_threshold')|float(55) }}"
-        mem_alert: "{{ states('input_number.mqtt_broker_memory_alert_threshold')|float(30) }}"
-        cpu_crit: "{{ states('input_number.mqtt_broker_cpu_critical_threshold')|float(70) }}"
-        mem_crit: "{{ states('input_number.mqtt_broker_memory_critical_threshold')|float(45) }}"
+        cpu: "{{ states('sensor.mosquitto_broker_cpu_percent') | float(0) }}"
+        mem: "{{ states('sensor.mosquitto_broker_memory_percent') | float(0) }}"
+        cpu_alert: "{{ states('input_number.mqtt_broker_cpu_alert_threshold') | float(55) }}"
+        mem_alert: "{{ states('input_number.mqtt_broker_memory_alert_threshold') | float(30) }}"
+        cpu_crit: "{{ states('input_number.mqtt_broker_cpu_critical_threshold') | float(70) }}"
+        mem_crit: "{{ states('input_number.mqtt_broker_memory_critical_threshold') | float(45) }}"
         is_critical: "{{ cpu >= cpu_crit or mem >= mem_crit }}"
         health: "{{ states('sensor.mqtt_broker_health_state') }}"
-        local_url: "http://192.168.1.31:8123"
+        local_url: "http://192.168.1.30:8123"
         cloud_url: "https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/"
 
     - choose:
+        #---------------------------------------------------------------------
+        # BRANCH 1: CRITICAL — CPU >= critical threshold OR Memory >= critical threshold
+        #---------------------------------------------------------------------
         - conditions:
             - condition: template
               value_template: "{{ is_critical == 'True' or is_critical == True }}"
           sequence:
-            # Critical notification set
+
+            # --- Persistent Notification ---
             - service: persistent_notification.create
               data:
-                title: "CRITICAL MQTT Broker Alert"
+                title: "🚨 CRITICAL MQTT Broker Alert — {{ now().strftime('%d %b %Y %H:%M') }}"
                 message: >-
-                  Critical state detected.
-                  CPU: {{ cpu|round(1) }}% (Crit {{ cpu_crit }}%)
-                  Memory: {{ mem|round(1) }}% (Crit {{ mem_crit }}%)
-                  Health: {{ health }}
+                  CRITICAL MQTT Broker state detected at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
 
-                  Actions:
-                  • Inspect Node-RED flows (infinite loops).
-                  • Check retained topics size.
-                  • Consider broker restart mid solar peak.
+                  📊 Resource Usage:
+                  • CPU: {{ cpu | round(1) }}% (Critical threshold: {{ cpu_crit }}%)
+                  • Memory: {{ mem | round(1) }}% (Critical threshold: {{ mem_crit }}%)
+                  • Health State: {{ health }}
 
-                  Local: {{ local_url }}
-                  Cloud: {{ cloud_url }}
+                  ⚠️ Immediate Actions Required:
+                  • Inspect Node-RED flows for infinite loops
+                  • Check retained topics size
+                  • Consider broker restart outside solar peak
+                  • Monitor connected devices for excessive publishing
+
+                  🌐 Local: {{ local_url }}
+                  ☁️ Cloud: {{ cloud_url }}
                 notification_id: "mqtt_broker_alert"
 
+            # --- Email ---
             - service: notify.email_notification_jbarkhuizen_gmail_com
               data:
                 title: "🚨 CRITICAL MQTT Broker Alert"
@@ -90,6 +101,7 @@
                   {% from 'mqtt_broker_notifications.jinja' import mqtt_broker_email %}
                   {{ mqtt_broker_email(True) }}
 
+            # --- Telegram ---
             - service: telegram_bot.send_message
               data:
                 target:
@@ -99,36 +111,66 @@
                   {{ mqtt_broker_telegram(True) }}
                 parse_mode: markdown
 
+            # --- Mobile Push ---
+            - service: notify.mobile_app_sm_g996b
+              data:
+                title: "🚨 CRITICAL: MQTT Broker Alert"
+                message: >-
+                  CRITICAL: CPU {{ cpu | round(1) }}% (crit {{ cpu_crit }}%)
+                  | Mem {{ mem | round(1) }}% (crit {{ mem_crit }}%)
+                  | Health: {{ health }}
+                  | Check Node-RED flows and restart broker if needed.
+                data:
+                  channel: "MQTT Broker"
+                  importance: high
+                  group: "ha-mqtt"
+                  color: "#B71C1C"
+                  actions:
+                    - action: "OPEN_HA"
+                      title: "Open HA NOW"
+                      uri: "http://192.168.1.30:8123"
+
+            # --- System Log ---
             - service: system_log.write
               data:
                 message: >-
-                  CRITICAL MQTT Broker Alert: CPU={{ cpu|round(1) }}% Mem={{ mem|round(1) }}%
-                  Health={{ health }} at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+                  CRITICAL MQTT Broker Alert: CPU={{ cpu | round(1) }}% (crit {{ cpu_crit }}%)
+                  Mem={{ mem | round(1) }}% (crit {{ mem_crit }}%)
+                  Health={{ health }} at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+                  Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
                 level: critical
 
+        #---------------------------------------------------------------------
+        # BRANCH 2: ELEVATED — CPU or Memory above alert but below critical threshold
+        #---------------------------------------------------------------------
         - conditions:
             - condition: template
               value_template: "{{ is_critical != 'True' and is_critical != True }}"
           sequence:
-            # Elevated / High notification set
+
+            # --- Persistent Notification ---
             - service: persistent_notification.create
               data:
-                title: "MQTT Broker Elevated"
+                title: "⚠️ MQTT Broker Elevated — {{ now().strftime('%d %b %Y %H:%M') }}"
                 message: >-
-                  Elevated MQTT resource usage.
-                  CPU: {{ cpu|round(1) }}% (Alert {{ cpu_alert }}%)
-                  Memory: {{ mem|round(1) }}% (Alert {{ mem_alert }}%)
-                  Health: {{ health }}
+                  Elevated MQTT Broker resource usage detected at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
 
-                  Recommendations:
-                  • Monitor next 30 min.
-                  • Review new device messages / firmware updates.
-                  • Prune unused retained topics.
+                  📊 Resource Usage:
+                  • CPU: {{ cpu | round(1) }}% (Alert threshold: {{ cpu_alert }}%)
+                  • Memory: {{ mem | round(1) }}% (Alert threshold: {{ mem_alert }}%)
+                  • Health State: {{ health }}
 
-                  Local: {{ local_url }}
-                  Cloud: {{ cloud_url }}
+                  💡 Recommendations:
+                  • Monitor for the next 30 minutes
+                  • Review new device messages or firmware updates
+                  • Prune unused retained topics
+                  • Check Node-RED for high-frequency message flows
+
+                  🌐 Local: {{ local_url }}
+                  ☁️ Cloud: {{ cloud_url }}
                 notification_id: "mqtt_broker_alert"
 
+            # --- Email ---
             - service: notify.email_notification_jbarkhuizen_gmail_com
               data:
                 title: "⚠️ MQTT Broker Elevated Usage"
@@ -136,6 +178,7 @@
                   {% from 'mqtt_broker_notifications.jinja' import mqtt_broker_email %}
                   {{ mqtt_broker_email(False) }}
 
+            # --- Telegram ---
             - service: telegram_bot.send_message
               data:
                 target:
@@ -145,11 +188,36 @@
                   {{ mqtt_broker_telegram(False) }}
                 parse_mode: markdown
 
+            # --- Mobile Push ---
+            - service: notify.mobile_app_sm_g996b
+              data:
+                title: "⚠️ MQTT Broker Elevated Usage"
+                message: >-
+                  Elevated: CPU {{ cpu | round(1) }}% (alert {{ cpu_alert }}%)
+                  | Mem {{ mem | round(1) }}% (alert {{ mem_alert }}%)
+                  | Health: {{ health }}
+                  | Monitor for next 30 min. Review device messages.
+                data:
+                  channel: "MQTT Broker"
+                  importance: default
+                  group: "ha-mqtt"
+                  color: "#FF9800"
+                  actions:
+                    - action: "OPEN_HA"
+                      title: "Open HA"
+                      uri: "http://192.168.1.30:8123"
+
+            # --- System Log ---
             - service: system_log.write
               data:
                 message: >-
-                  MQTT Broker Elevated: CPU={{ cpu|round(1) }}% Mem={{ mem|round(1) }}%
-                  Health={{ health }} at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+                  MQTT Broker Elevated: CPU={{ cpu | round(1) }}% (alert {{ cpu_alert }}%)
+                  Mem={{ mem | round(1) }}% (alert {{ mem_alert }}%)
+                  Health={{ health }} at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+                  Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
                 level: warning
 
   mode: single
+# =============================================================================
+# END OF MQTT BROKER ALERTS
+# =============================================================================
