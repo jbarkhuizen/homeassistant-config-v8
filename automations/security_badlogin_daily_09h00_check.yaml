@@ -1,154 +1,88 @@
-alias: Security - Badlogin Daily 09h00 Check
-description: >
-  Detects daily bad-login spikes vs yesterday's baseline; alerts when over
-  threshold. Rolls the baseline after the check for a clean daily window.
-  Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent, System Log.
-mode: single
-triggers:
-  - at: "09:00:00"
-    trigger: time
-actions:
-  - variables:
-      threshold: 25
-      current: "{{ states('sensor.badlogin') | int(0) }}"
-      baseline: "{{ states('input_number.badlogin_previous_count') | int(0) }}"
-      diff: "{{ (current - baseline) | int }}"
-      detail: >-
-        Baseline: {{ baseline }} | Current: {{ current }} | Increase: {{ diff }}
-        | Threshold: {{ threshold }}
-      risk_level: >-
-        {% if diff >= threshold * 3 %}CRITICAL {% elif diff >= threshold * 2 %}HIGH {% elif diff >= threshold %}ELEVATED {% else %}NORMAL {% endif %}
-      risk_color: >-
-        {% if diff >= threshold * 3 %}#B71C1C {% elif diff >= threshold * 2 %}#F44336 {% elif diff >= threshold %}#FF9800 {% else %}#4CAF50 {% endif %}
-  - choose:
-      - conditions:
-          - condition: template
-            value_template: "{{ diff >= threshold }}"
-        sequence:
-          - data:
-              title: >-
-                🚨 Security: Bad Logins Spike — {{ risk_level }} (09:00 {{ now().strftime('%d %b %Y') }})
-              message: >-
-                Bad login spike detected at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
-
-                🔐 Security Alert Details: • Risk Level: {{ risk_level }} • Baseline (yesterday): {{ baseline }} • Current Count: {{ current }} • Increase: {{ diff }} (threshold: {{ threshold }})
-
-                ⚠️ Recommended Actions: • Check Settings → Security → IP Ban log • Review /config/home-assistant.log for failed login sources • Consider enabling brute-force protection in HA settings • If source is external, review firewall and Nabu Casa access rules • Check if any device has incorrect credentials configured
-
-                🌐 192.168.1.31:8123
-              notification_id: security_badlogins_spike
-            action: persistent_notification.create
-          - data:
-              chat_id:
-                - 6167623299
-              message: >-
-                🚨 *Security: Bad Logins Spike — {{ risk_level }}*
-
-                🔐 Baseline: {{ baseline }} | Current: {{ current }} 📈 Increase: {{ diff }} (threshold: {{ threshold }}) ⚠️ Risk Level: *{{ risk_level }}*
-
-                Check HA Security logs immediately. _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_ 🌐 192.168.1.31:8123
-              parse_mode: markdown
-            action: telegram_bot.send_message
-          - data:
-              title: >-
-                🚨 Security: Bad Logins Spike — {{ risk_level }} ({{ now().strftime('%Y-%m-%d') }})
-              message: >-
-                SECURITY ALERT — BAD LOGINS SPIKE DETECTED
-
-                Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
-
-                ================================================================================
-
-                ALERT DETAILS
-
-                Risk Level: {{ risk_level }} {{ detail }}
-
-                RECOMMENDED ACTIONS: 1. Check Settings → Security → IP Ban log in Home Assistant 2. Review /config/home-assistant.log for failed login sources and IP addresses 3. Enable brute-force protection if not already active 4. If source is external, review firewall and Nabu Casa access rules 5. Check all connected devices for incorrect credentials 6. Consider enabling 2-factor authentication on your HA account
-
-                ================================================================================
-
-                System: http://192.168.1.31:8123 Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
-            action: notify.email_notification_jbarkhuizen_gmail_com
-          - data:
-              title: 🚨 Security Alert — Bad Logins Spike ({{ risk_level }})
-              message: >-
-                {{ diff }} new bad logins detected (baseline: {{ baseline }}, current: {{ current }}). Risk: {{ risk_level }}. Check HA Security logs immediately.
+- alias: Security - Badlogin Daily 09h00 Check
+  description: >
+    Detects daily bad-login spikes vs yesterday's baseline; alerts when over
+    threshold. Rolls the baseline after the check for a clean daily window.
+    Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent, System Log.
+  mode: single
+  triggers:
+    - trigger: time
+      at: "09:00:00"
+  actions:
+    - variables:
+        threshold: 25
+        current: "{{ states('sensor.badlogin') | int(0) }}"
+        baseline: "{{ states('input_number.badlogin_previous_count') | int(0) }}"
+        diff: "{{ (current - baseline) | int(0) }}"
+        detail: "Baseline: {{ baseline }} | Current: {{ current }} | Increase: {{ diff }} | Threshold: {{ threshold }}"
+        risk_level: "{% if diff >= threshold * 3 %}CRITICAL{% elif diff >= threshold * 2 %}HIGH{% elif diff >= threshold %}ELEVATED{% else %}NORMAL{% endif %}"
+        risk_color: "{% if diff >= threshold * 3 %}#B71C1C{% elif diff >= threshold * 2 %}#F44336{% elif diff >= threshold %}#FF9800{% else %}#4CAF50{% endif %}"
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ diff >= threshold }}"
+          sequence:
+            - action: persistent_notification.create
               data:
-                channel: Security
-                importance: high
-                group: ha-security
-                color: "{{ risk_color }}"
-                actions:
-                  - action: OPEN_HA
-                    title: Open HA Security
-                    uri: http://192.168.1.31:8123/config/auth
-            action: notify.mobile_app_sm_g996b
-          - data:
-              message: >-
-                Security BAD LOGIN SPIKE: {{ diff }} new logins (baseline: {{ baseline }}, current: {{ current }}, threshold: {{ threshold }}, risk: {{ risk_level }}). Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
-              level: warning
-            action: system_log.write
-      - conditions:
-          - condition: template
-            value_template: "{{ diff < threshold }}"
-        sequence:
-          - data:
-              title: >-
-                ✅ Security: Bad Logins OK (09:00 {{ now().strftime('%d %b %Y') }})
-              message: >-
-                Daily bad login check completed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
-
-                ✅ No spike detected — security status is normal.
-
-                🔐 Check Details: • Baseline (yesterday): {{ baseline }} • Current Count: {{ current }} • Increase: {{ diff }} (threshold: {{ threshold }}) • Risk Level: NORMAL
-              notification_id: security_badlogins_ok
-            action: persistent_notification.create
-          - data:
-              chat_id:
-                - 6167623299
-              message: >-
-                ✅ *Security: Bad Logins OK (09:00)*
-
-                No spike detected today. Baseline: {{ baseline }} | Current: {{ current }} | Increase: {{ diff }} Threshold: {{ threshold }} | Status: NORMAL
-
-                _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
-              parse_mode: markdown
-            action: telegram_bot.send_message
-          - data:
-              title: "✅ Security: Bad Logins OK — {{ now().strftime('%Y-%m-%d') }}"
-              message: >-
-                SECURITY DAILY CHECK — NO SPIKE DETECTED
-
-                Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
-
-                ================================================================================
-
-                DAILY BAD LOGIN CHECK: NORMAL
-
-                Baseline (yesterday): {{ baseline }} Current Count: {{ current }} Increase: {{ diff }} Threshold: {{ threshold }} Risk Level: NORMAL
-
-                No action required. System security is operating normally.
-
-                ================================================================================
-
-                System: http://192.168.1.31:8123
-            action: notify.email_notification_jbarkhuizen_gmail_com
-          - data:
-              title: ✅ Security Check OK (09:00)
-              message: >-
-                Bad logins: baseline {{ baseline }}, current {{ current }}, increase {{ diff }}. Below threshold of {{ threshold }}. All clear.
+                title: "🚨 Security: Bad Logins Spike - {{ risk_level }} (09:00 {{ now().strftime('%d %b %Y') }})"
+                message: "Bad login spike detected at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}. Risk Level: {{ risk_level }}. Baseline: {{ baseline }}. Current: {{ current }}. Increase: {{ diff }}. Threshold: {{ threshold }}. Check Settings > Security > IP Ban log and review /config/home-assistant.log. System: 192.168.1.31:8123"
+                notification_id: "security_badlogins_spike"
+            - action: telegram_bot.send_message
               data:
-                channel: Security
-                importance: min
-                group: ha-security
-                color: "#4CAF50"
-            action: notify.mobile_app_sm_g996b
-          - data:
-              message: Badlogins OK at 09:00 — {{ detail }}
-              level: info
-            action: system_log.write
-  - target:
-      entity_id: input_number.badlogin_previous_count
-    data:
-      value: "{{ current }}"
-    action: input_number.set_value
+                chat_id: 6167623299
+                message: "🚨 Security: Bad Logins Spike - {{ risk_level }}. Baseline: {{ baseline }} | Current: {{ current }} | Increase: {{ diff }} | Threshold: {{ threshold }}. Check HA Security logs immediately. {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+            - action: notify.email_notification_jbarkhuizen_gmail_com
+              data:
+                title: "🚨 Security: Bad Logins Spike - {{ risk_level }} ({{ now().strftime('%Y-%m-%d') }})"
+                message: "SECURITY ALERT. Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}. Risk Level: {{ risk_level }}. {{ detail }}. Review IP Ban log, home-assistant.log, firewall, Nabu Casa access rules and device credentials. System: http://192.168.1.31:8123 Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/"
+            - action: notify.mobile_app_sm_g996b
+              data:
+                title: "🚨 Security Alert - Bad Logins Spike ({{ risk_level }})"
+                message: "{{ diff }} new bad logins detected. Baseline: {{ baseline }}, Current: {{ current }}, Risk: {{ risk_level }}."
+                data:
+                  channel: "Security"
+                  importance: "high"
+                  group: "ha-security"
+                  color: "{{ risk_color }}"
+                  actions:
+                    - action: "OPEN_HA"
+                      title: "Open HA Security"
+                      uri: "http://192.168.1.31:8123/config/auth"
+            - action: system_log.write
+              data:
+                message: "Security BAD LOGIN SPIKE: {{ diff }} new logins. Baseline: {{ baseline }}, Current: {{ current }}, Threshold: {{ threshold }}, Risk: {{ risk_level }}."
+                level: "warning"
+        - conditions:
+            - condition: template
+              value_template: "{{ diff < threshold }}"
+          sequence:
+            - action: persistent_notification.create
+              data:
+                title: "✅ Security: Bad Logins OK (09:00 {{ now().strftime('%d %b %Y') }})"
+                message: "Daily bad login check completed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}. No spike detected. Baseline: {{ baseline }}. Current: {{ current }}. Increase: {{ diff }}. Threshold: {{ threshold }}. Risk Level: NORMAL."
+                notification_id: "security_badlogins_ok"
+            - action: telegram_bot.send_message
+              data:
+                chat_id: 6167623299
+                message: "✅ Security: Bad Logins OK. Baseline: {{ baseline }} | Current: {{ current }} | Increase: {{ diff }} | Threshold: {{ threshold }} | Status: NORMAL. {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+            - action: notify.email_notification_jbarkhuizen_gmail_com
+              data:
+                title: "✅ Security: Bad Logins OK - {{ now().strftime('%Y-%m-%d') }}"
+                message: "SECURITY DAILY CHECK - NO SPIKE DETECTED. Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}. Baseline: {{ baseline }}. Current: {{ current }}. Increase: {{ diff }}. Threshold: {{ threshold }}. Risk Level: NORMAL. No action required. System: http://192.168.1.31:8123"
+            - action: notify.mobile_app_sm_g996b
+              data:
+                title: "✅ Security Check OK (09:00)"
+                message: "Bad logins: baseline {{ baseline }}, current {{ current }}, increase {{ diff }}. Below threshold of {{ threshold }}. All clear."
+                data:
+                  channel: "Security"
+                  importance: "min"
+                  group: "ha-security"
+                  color: "#4CAF50"
+            - action: system_log.write
+              data:
+                message: "Badlogins OK at 09:00 - {{ detail }}"
+                level: "info"
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.badlogin_previous_count
+      data:
+        value: "{{ current }}"
