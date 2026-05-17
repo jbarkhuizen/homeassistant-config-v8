@@ -538,7 +538,7 @@ lovelace:
       icon: mdi:backup-restore
       show_in_sidebar: true
       require_admin: false
-      filename: dashboards/backups_storage.yaml
+      filename: dashboards/backup_storage.yaml
     github-devops:
       mode: yaml
       title: "GitHub & DevOps"
@@ -559,7 +559,7 @@ lovelace:
       icon: mdi:cctv
       show_in_sidebar: true
       require_admin: false
-      filename: dashboards/cameras_security.yaml
+      filename: dashboards/camera_security.yaml
     mqtt-broker:
       mode: yaml
       title: "MQTT & Broker"
