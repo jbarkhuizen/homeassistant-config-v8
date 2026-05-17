@@ -475,7 +475,7 @@ lovelace:
       icon: mdi:shield-check
       show_in_sidebar: true
       require_admin: false
-      filename: dashboards/security_maintenance.yaml
+      filename: dashboards/security_maintanance.yaml
     solar-energy:
       mode: yaml
       title: "Solar & Energy"
@@ -517,7 +517,7 @@ lovelace:
       icon: mdi:weather-sunny-alert
       show_in_sidebar: true
       require_admin: false
-      filename: dashboards/solar_forecast.yaml
+      filename: dashboards/solar_forcast.yaml
     adguard-dns:
       mode: yaml
       title: "AdGuard & DNS"
@@ -538,7 +538,7 @@ lovelace:
       icon: mdi:backup-restore
       show_in_sidebar: true
       require_admin: false
-      filename: dashboards/backups_storage.yaml
+      filename: dashboards/backup_storage.yaml
     github-devops:
       mode: yaml
       title: "GitHub & DevOps"
@@ -559,7 +559,7 @@ lovelace:
       icon: mdi:cctv
       show_in_sidebar: true
       require_admin: false
-      filename: dashboards/cameras_security.yaml
+      filename: dashboards/camera_security.yaml
     mqtt-broker:
       mode: yaml
       title: "MQTT & Broker"
@@ -587,4 +587,4 @@ lovelace:
       icon: mdi:earth-alert
       show_in_sidebar: true
       require_admin: false
-      filename: dashboards/gdacs.yaml
+      filename: dashboards/gdac.yaml
