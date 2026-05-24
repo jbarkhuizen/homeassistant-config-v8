@@ -78,3 +78,236 @@ sensor.sonoff_a4800e446e_battery:
 #Sonoff Study Window Sensor Management
 sensor.sonoff_1002357619_battery:
   scan_interval: 14400  # seconds (240 minutes)
+
+# ============================================================================
+# Network Devices - Friendly Names and Metadata
+# Verified full MAC addresses only
+# ============================================================================
+
+# ============================================================================
+# Routers and Network Infrastructure
+# ============================================================================
+device_tracker.192_168_1_1:
+  friendly_name: Nokia DSL Router
+  vendor_name: Nokia Solutions and Networks
+  mac_address: "B4:63:6F:68:57:F1"
+  description: Primary DSL router and network gateway
+  icon: mdi:router-network
+
+device_tracker.tp_link_technologies_cb_53_30:
+  friendly_name: TP-Link Network Switch
+  vendor_name: TP-Link
+  mac_address: "74:DA:88:CB:53:30"
+  description: Network switch or access point
+  icon: mdi:access-point-network
+
+device_tracker.d_link_international_18_cb_12:
+  friendly_name: DIR-825 D-Link International 18:CB:12
+  vendor_name: D-Link International
+  mac_address: "80:26:89:18:CB:12"
+  description: D-Link DIR-825 network infrastructure device
+  icon: mdi:router-wireless
+
+device_tracker.netgear_bb_07_e0:
+  friendly_name: Netgear BB:07:E0
+  vendor_name: Netgear
+  mac_address: "A0:63:91:BB:07:E0"
+  description: Netgear network infrastructure device
+  icon: mdi:router-wireless
+
+device_tracker.d_link_international_02_15_f7:
+  friendly_name: D-Link International 02:15:F7
+  vendor_name: D-Link International
+  mac_address: "10:BE:F5:02:15:F7"
+  description: D-Link network device
+  icon: mdi:router-wireless
+
+device_tracker.huawei_device_7b_5e_6f:
+  friendly_name: HUAWEI WiFi Q2 Pro
+  vendor_name: Huawei
+  mac_address: "AC:BD:70:7B:5E:6F"
+  description: Huawei WiFi Q2 Pro mesh device
+  icon: mdi:wifi
+
+device_tracker.huawei_device_7b_5e_60:
+  friendly_name: Huawei Device 7B:5E:60
+  vendor_name: Huawei
+  mac_address: "AC:BD:70:7B:5E:60"
+  description: Huawei smart network device
+  icon: mdi:router-network
+
+device_tracker.icp_electronics_c2_e5_13:
+  friendly_name: ICP Electronics C2:E5:13
+  vendor_name: ICP Electronics
+  mac_address: "00:08:9B:C2:E5:13"
+  description: ICP industrial device
+  icon: mdi:factory
+
+device_tracker.icp_electronics_c2_e5_14:
+  friendly_name: ICP Electronics C2:E5:14
+  vendor_name: ICP Electronics
+  mac_address: "00:08:9B:C2:E5:14"
+  description: ICP industrial device
+  icon: mdi:factory
+
+# ============================================================================
+# Computers and Printers
+# ============================================================================
+device_tracker.dell_40_d1_f5:
+  friendly_name: Dell 40:D1:F5
+  vendor_name: Dell
+  mac_address: "74:78:27:40:D1:F5"
+  description: Dell desktop computer or server
+  icon: mdi:desktop-tower-monitor
+
+device_tracker.hewlett_packard_ae_f5_cc:
+  friendly_name: Hewlett Packard Printer
+  vendor_name: Hewlett Packard
+  mac_address: "30:8D:99:AE:F5:CC"
+  description: Network printer
+  icon: mdi:printer
+
+# ============================================================================
+# Storage Devices
+# ============================================================================
+device_tracker.iomega_2a_18_6e:
+  friendly_name: Iomega NAS Port 1
+  vendor_name: Iomega
+  mac_address: "00:D0:B8:2A:18:6E"
+  description: Network attached storage primary port
+  icon: mdi:nas
+
+device_tracker.iomega_2a_18_6d:
+  friendly_name: Iomega NAS Port 2
+  vendor_name: Iomega
+  mac_address: "00:D0:B8:2A:18:6D"
+  description: Network attached storage secondary port
+  icon: mdi:nas
+
+# ============================================================================
+# Mobile Devices
+# ============================================================================
+device_tracker.apple_3f_b1_14:
+  friendly_name: Apple 3F:B1:14
+  vendor_name: Apple
+  mac_address: "F0:B3:EC:3F:B1:14"
+  description: Apple iPhone or iPad personal mobile device
+  icon: mdi:apple
+
+# ============================================================================
+# Cameras and Video Devices
+# ============================================================================
+device_tracker.altobeam_china_4c_a4_06:
+  friendly_name: AltoBeam (China) 4C:A4:06
+  vendor_name: AltoBeam (China)
+  mac_address: "38:BE:AB:4C:A4:06"
+  description: AltoBeam network device
+  icon: mdi:cctv
+
+device_tracker.altobeam_dc_2c_b4:
+  friendly_name: AltoBeam DC:2C:B4
+  vendor_name: AltoBeam
+  mac_address: "90:31:4B:DC:2C:B4"
+  description: AltoBeam camera or video device
+  icon: mdi:cctv
+
+device_tracker.altobeam_china_a9_76_65:
+  friendly_name: AltoBeam (China) A9:76:65
+  vendor_name: AltoBeam (China)
+  mac_address: "F4:B1:9C:A9:76:65"
+  description: AltoBeam imaging or video device
+  icon: mdi:cctv
+
+# ============================================================================
+# IoT Devices and Controllers
+# ============================================================================
+device_tracker.espressif_d0_d1_88:
+  friendly_name: Espressif D0:D1:88
+  vendor_name: Espressif
+  mac_address: "34:85:18:D0:D1:88"
+  description: Espressif IoT device
+  icon: mdi:chip
+
+device_tracker.espressif_58_62_dc:
+  friendly_name: DeyeInverterSlave
+  vendor_name: Espressif
+  mac_address: "D4:D4:DA:58:62:DC"
+  description: Deye inverter slave controller
+  icon: mdi:solar-power
+
+device_tracker.espressif_41_e2_98:
+  friendly_name: DeyeInverterMaster
+  vendor_name: Espressif
+  mac_address: "D4:D4:DA:41:E2:98"
+  description: Deye inverter master controller
+  icon: mdi:solar-power
+
+device_tracker.espressif_67_e6_72:
+  friendly_name: Inverter Power Room
+  vendor_name: Espressif
+  mac_address: "CC:50:E3:67:E6:72"
+  description: Espressif device in inverter power room
+  icon: mdi:lightning-bolt
+
+device_tracker.espressif_68_03_30:
+  friendly_name: Espressif 68:03:30
+  vendor_name: Espressif
+  mac_address: "CC:50:E3:68:03:30"
+  description: Espressif IoT device
+  icon: mdi:chip
+
+device_tracker.espressif_7d_16_d4:
+  friendly_name: NSPanel
+  vendor_name: Espressif
+  mac_address: "44:17:93:7D:16:D4"
+  description: NSPanel wall control device
+  icon: mdi:tablet-dashboard
+
+device_tracker.espressif_98_b7_35:
+  friendly_name: Espressif 98:B7:35
+  vendor_name: Espressif
+  mac_address: "70:03:9F:98:B7:35"
+  description: Espressif IoT device
+  icon: mdi:chip
+
+device_tracker.espressif_a5_58_32:
+  friendly_name: Study & Dining Area Lights
+  vendor_name: Espressif
+  mac_address: "7C:87:CE:A5:58:32"
+  description: Lighting controller for study and dining area
+  icon: mdi:ceiling-light
+
+device_tracker.espressif_a1_5a_14:
+  friendly_name: Garage Door
+  vendor_name: Espressif
+  mac_address: "9C:9C:1F:A1:5A:14"
+  description: Garage door controller
+  icon: mdi:garage-variant
+
+device_tracker.espressif_a7_18_f8:
+  friendly_name: Unknown
+  vendor_name: Espressif
+  mac_address: "84:F3:EB:A7:18:F8"
+  description: Unidentified Espressif IoT device
+  icon: mdi:chip
+
+device_tracker.espressif_b1_d6_44:
+  friendly_name: Backyard lights
+  vendor_name: Espressif
+  mac_address: "C4:4F:33:B1:D6:44"
+  description: Backyard lighting controller
+  icon: mdi:string-lights
+
+device_tracker.espressif_e6_be_bd:
+  friendly_name: Loadshedder
+  vendor_name: Espressif
+  mac_address: "C8:2B:96:E6:BE:BD"
+  description: Load shedding controller
+  icon: mdi:transmission-tower-off
+
+device_tracker.bouffalo_lab_nanjing_01_91_d5:
+  friendly_name: Bouffalo Lab (Nanjing) 01:91:D5
+  vendor_name: Bouffalo Lab
+  mac_address: "F4:42:50:01:91:D5"
+  description: Bouffalo Lab IoT device
+  icon: mdi:chip

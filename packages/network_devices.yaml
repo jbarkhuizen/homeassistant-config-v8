@@ -69,16 +69,17 @@ template:
             } %}
             {% set devices = devices + [router_device] %}
 
-            {# Add discovered device tracker entities #}
-            {% for entity in states.device_tracker %}
+            {# Add discovered device tracker entities with UI-renamed friendly names #}
+            {% for entity_id in states.device_tracker %}
+              {% set entity = states[entity_id] %}
               {% if entity.attributes.source_type == 'router' and entity.attributes.ip %}
                 {% set device = {
-                  'name': entity.attributes.friendly_name or entity.name or states[entity.entity_id].name,
+                  'name': state_attr(entity_id, 'friendly_name'),
                   'ip': entity.attributes.ip,
                   'status': 'Online' if entity.state == 'home' else 'Away',
-                  'type': 'Mobile' if 'iphone' in entity.name.lower() else
-                          'Computer' if 'laptop' in entity.name.lower() else
-                          'Smart Device' if 'sonoff' in entity.name.lower() or 'tuya' in entity.name.lower() else
+                  'type': 'Mobile' if 'iphone' in entity_id.lower() else
+                          'Computer' if 'laptop' in entity_id.lower() else
+                          'Smart Device' if 'sonoff' in entity_id.lower() or 'tuya' in entity_id.lower() else
                           'Unknown Device',
                   'vendor': entity.attributes.vendor or 'Unknown',
                   'mac': entity.attributes.mac or 'Unknown',
