@@ -20,6 +20,77 @@ automation:
       - service: shell_command.cleanup_sensor_reports
       - service: shell_command.extract_sensors
       - service: shell_command.backup_config
+
+      - service: persistent_notification.create
+        data:
+          title: "Daily Maintenance Complete"
+          message: >
+            Daily maintenance completed successfully.
+
+            Tasks run:
+            - Cleanup logs
+            - Check log size
+            - Cleanup sensor reports
+            - Extract sensors
+            - Backup config
+
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          notification_id: "daily_maintenance_0900_complete"
+
+      - service: telegram_bot.send_message
+        data:
+          chat_id: !secret telegram_chat_id_2
+          message: >-
+            ✅ *Daily Maintenance Complete*
+
+            Completed:
+            • Cleanup logs
+            • Check log size
+            • Cleanup sensor reports
+            • Extract sensors
+            • Backup config
+
+            _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+          parse_mode: markdown
+
+      - service: notify.email_notification_jbarkhuizen_gmail_com
+        data:
+          title: "Daily Maintenance Complete"
+          message: >
+            DAILY MAINTENANCE COMPLETE
+
+            Daily housekeeping tasks completed successfully.
+
+            Tasks run:
+            - Cleanup logs
+            - Check log size
+            - Cleanup sensor reports
+            - Extract sensors
+            - Backup config
+
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "Daily Maintenance Complete"
+          message: >-
+            Daily maintenance completed successfully at {{ now().strftime('%H:%M') }}.
+          data:
+            channel: "Maintenance"
+            importance: default
+            group: "ha-maintenance"
+            color: "#4CAF50"
+            actions:
+              - action: "OPEN_HA"
+                title: "Open HA"
+                uri: "http://192.168.1.31:8123"
+
+      - service: system_log.write
+        data:
+          message: >-
+            Daily maintenance completed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+            Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
+          level: info
     mode: single
 
   - id: weekly_restart_0900_monday
@@ -36,6 +107,68 @@ automation:
         weekday:
           - mon
     action:
+      - service: persistent_notification.create
+        data:
+          title: "Weekly Home Assistant Restart"
+          message: >
+            Weekly Home Assistant restart starting now.
+
+            Schedule:
+            - Day: Monday
+            - Time: 09:00
+
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          notification_id: "weekly_restart_0900_monday"
+
+      - service: telegram_bot.send_message
+        data:
+          chat_id: !secret telegram_chat_id_2
+          message: >-
+            ⚠️ *Weekly Home Assistant Restart*
+
+            Weekly restart is starting now.
+
+            _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+          parse_mode: markdown
+
+      - service: notify.email_notification_jbarkhuizen_gmail_com
+        data:
+          title: "Weekly Home Assistant Restart"
+          message: >
+            WEEKLY HOME ASSISTANT RESTART
+
+            Weekly restart is starting now.
+
+            Schedule:
+            - Day: Monday
+            - Time: 09:00
+
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "Weekly HA Restart"
+          message: >-
+            Weekly Home Assistant restart is starting now.
+          data:
+            channel: "Maintenance"
+            importance: high
+            group: "ha-maintenance"
+            color: "#FF9800"
+            actions:
+              - action: "OPEN_HA"
+                title: "Open HA"
+                uri: "http://192.168.1.31:8123"
+
+      - service: system_log.write
+        data:
+          message: >-
+            Weekly Home Assistant restart started at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+            Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
+          level: warning
+
+      - delay: "00:00:05"
+
       - service: homeassistant.restart
     mode: single
 
@@ -529,7 +662,63 @@ automation:
                     group: "ha-security"
                     color: "#FF9800"
                     actions:
-                      - action: "OPEN_HA"
+                      - action: "OPEN_HA Security"
+                        title: "Open HA Security"
+                        uri: "http://192.168.1.31:8123/config/auth"
+
+          - conditions:
+              - condition: template
+                value_template: "{{ diff <= 0 }}"
+            sequence:
+              - service: persistent_notification.create
+                data:
+                  title: "Security: IP Ban Summary OK"
+                  message: >
+                    No new IP bans detected since yesterday.
+                    Previous: {{ baseline }} | Current: {{ current }} | Increase: {{ diff }}
+                    Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+                  notification_id: "security_ip_bans_summary_ok"
+
+              - service: telegram_bot.send_message
+                data:
+                  chat_id: !secret telegram_chat_id_2
+                  message: >-
+                    ✅ *Security: IP Ban Summary OK*
+
+                    No new IP bans detected since yesterday.
+                    Previous: {{ baseline }}
+                    Current: {{ current }}
+                    Increase: {{ diff }}
+
+                    _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+                  parse_mode: markdown
+
+              - service: notify.email_notification_jbarkhuizen_gmail_com
+                data:
+                  title: "Security: IP Ban Summary OK"
+                  message: >
+                    SECURITY IP BAN SUMMARY OK
+
+                    No new IP bans detected since yesterday.
+
+                    Previous: {{ baseline }}
+                    Current: {{ current }}
+                    Increase: {{ diff }}
+
+                    Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: notify.mobile_app_sm_g996b
+                data:
+                  title: "Security: IP Ban Summary OK"
+                  message: >-
+                    No new IP bans detected since yesterday.
+                  data:
+                    channel: "Security"
+                    importance: default
+                    group: "ha-security"
+                    color: "#4CAF50"
+                    actions:
+                      - action: "OPEN_HA Security"
                         title: "Open HA Security"
                         uri: "http://192.168.1.31:8123/config/auth"
 
@@ -538,6 +727,14 @@ automation:
           entity_id: input_number.ipbans_previous_count
         data:
           value: "{{ current }}"
+
+      - service: system_log.write
+        data:
+          message: >-
+            Security IP ban summary completed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+            Previous={{ baseline }}, Current={{ current }}, Increase={{ diff }}.
+            Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent.
+          level: info
 
   # Node-RED & Grafana health — 08:15 — guarded (can restart add-ons)
   - id: addons_health_check_0815
