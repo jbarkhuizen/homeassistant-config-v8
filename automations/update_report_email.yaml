@@ -52,16 +52,13 @@
 
           ================================================================================
 
-
           SUMMARY
 
           --------
 
           {{ state_attr('sensor.home_assistant_updates_summary', 'friendly_summary') | default('Checking updates...') }}
 
-
           Total Updates Available: {{ state_attr('sensor.home_assistant_updates_summary', 'total_updates') | default(0) }}
-
 
           {% if state_attr('sensor.home_assistant_updates_summary', 'total_updates') | int(0) > 0 %}
 
@@ -75,7 +72,6 @@
 
           {% endfor %}
 
-
           DETAILED STATUS
 
           ---------------
@@ -85,7 +81,6 @@
           {% for component, details in detailed.items() %}
 
           {% if details.update_available %}
-
 
           {{ component }}:
 
@@ -101,7 +96,6 @@
 
           {% endfor %}
 
-
           {% if state_attr('sensor.home_assistant_updates_summary', 'has_critical_updates') %}
 
           ⚠️ CRITICAL UPDATES AVAILABLE ⚠️
@@ -112,14 +106,10 @@
 
           {% endif %}
 
-
           {% endif %}
 
-
           🕐 Checked: {{ state_attr('sensor.home_assistant_updates_summary', 'last_checked') | default(now().strftime('%Y-%m-%d %H:%M:%S')) }}
-
           🌐 IP: 192.168.1.31:8123
-
           📅 {{ now().strftime('%A, %d %B %Y at %H:%M') }}
 
     # --- Telegram ---
@@ -408,6 +398,29 @@
                       title: "Open HA"
                       uri: "http://192.168.1.31:8123"
 
+            # --- Email ---
+            - service: notify.email_notification_jbarkhuizen_gmail_com
+              data:
+                title: "❌ Auto Update FAILED — {{ now().strftime('%Y-%m-%d %H:%M') }}"
+                message: >-
+                  AUTO UPDATE FAILED
+
+                  Automatic update routine failed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+                  Status: FAILURE
+                  Pre-count: {{ pre_count }}
+                  Post-count: {{ post_count }}
+                  Remaining Entities:
+                  {% for r in remaining_entities %}
+                  - {{ r }}
+                  {% endfor %}
+                  {% if remaining_entities | length == 0 %}None{% endif %}
+
+                  Please review the failed updates in Home Assistant.
+
+                  IP: 192.168.1.31:8123
+                  Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
+
         #-------------------------------------------------------------------
         # PARTIAL PATH
         #-------------------------------------------------------------------
@@ -460,6 +473,29 @@
                     - action: "OPEN_HA"
                       title: "Open HA"
                       uri: "http://192.168.1.31:8123"
+
+            # --- Email ---
+            - service: notify.email_notification_jbarkhuizen_gmail_com
+              data:
+                title: "⚠️ Auto Update PARTIAL — {{ now().strftime('%Y-%m-%d %H:%M') }}"
+                message: >-
+                  AUTO UPDATE PARTIAL
+
+                  Automatic update routine partially completed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+                  Status: PARTIAL
+                  Pre-count: {{ pre_count }}
+                  Post-count: {{ post_count }}
+                  Remaining Entities:
+                  {% for r in remaining_entities %}
+                  - {{ r }}
+                  {% endfor %}
+                  {% if remaining_entities | length == 0 %}None{% endif %}
+
+                  These updates may require manual intervention or a restart.
+
+                  IP: 192.168.1.31:8123
+                  Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
 
         #-------------------------------------------------------------------
         # SUCCESS PATH
@@ -518,6 +554,28 @@
                       title: "Open HA"
                       uri: "http://192.168.1.31:8123"
 
+            # --- Email ---
+            - service: notify.email_notification_jbarkhuizen_gmail_com
+              data:
+                title: "✅ Auto Update SUCCESS — {{ now().strftime('%Y-%m-%d %H:%M') }}"
+                message: >-
+                  AUTO UPDATE SUCCESS
+
+                  Automatic updates completed successfully at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+                  Status: SUCCESS
+                  Pre-count: {{ pre_count }}
+                  Post-count: {{ post_count }}
+                  Duration: {{ duration_seconds }} seconds
+                  Restart Required: {{ restart_required }}
+
+                  {% if restart_required %}
+                  A restart is required to complete the Core, OS or Supervisor update.
+                  {% endif %}
+
+                  IP: 192.168.1.31:8123
+                  Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
+
         #-------------------------------------------------------------------
         # NO UPDATES PATH
         #-------------------------------------------------------------------
@@ -554,6 +612,19 @@
                   Auto update cycle ran at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
                   All components are up to date. No action required.
                 notification_id: "auto_update_no_updates"
+
+            # --- Email ---
+            - service: notify.email_notification_jbarkhuizen_gmail_com
+              data:
+                title: "✅ Auto Update — No Updates Pending ({{ now().strftime('%Y-%m-%d') }})"
+                message: >-
+                  AUTO UPDATE STATUS
+
+                  No updates were pending at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+                  All components are up to date. No action required.
+
+                  IP: 192.168.1.31:8123
+                  Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
 
             # --- System Log ---
             - service: system_log.write

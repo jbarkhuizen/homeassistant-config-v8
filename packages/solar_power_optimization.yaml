@@ -109,6 +109,7 @@ automation:
 
             Pool pump automation is separate and remains controlled by its
             dedicated pool pump automation file.
+
       - service: telegram_bot.send_message
         data:
           chat_id: !secret telegram_chat_id_2
@@ -118,6 +119,37 @@ automation:
             Generic solar optimization disabled at {{ now().strftime('%H:%M') }}.
 
             Pool pump control remains separate.
+          parse_mode: markdown
+
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "⚠️ Solar Power Optimization"
+          message: >-
+            Generic solar optimization disabled at {{ now().strftime('%H:%M') }}.
+            Pool pump control remains separate.
+          data:
+            channel: "Solar Optimization"
+            importance: high
+            group: "ha-solar-optimization"
+            color: "#FF9800"
+            actions:
+              - action: "OPEN_HA"
+                title: "Open HA"
+                uri: "http://192.168.1.31:8123"
+
+      - service: persistent_notification.create
+        data:
+          title: "⚠️ Solar Power Optimization"
+          message: >-
+            Generic solar optimization has been manually disabled at
+            {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+            No generic devices will be automatically controlled until re-enabled.
+
+            Pool pump automation is separate and remains controlled by its
+            dedicated pool pump automation file.
+          notification_id: "solar_power_manual_override_alert"
+
     mode: single
 
 # ==============================================================================
