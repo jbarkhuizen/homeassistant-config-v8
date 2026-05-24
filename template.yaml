@@ -419,6 +419,51 @@
           {% endif %}
         icon: mdi:toggle-switch
 
+      # -----------------------------------------------------------------------
+      # Solar Daily Report 18:00
+      # -----------------------------------------------------------------------
+      - name: "Solar Daily Report 18h00 Message"
+        unique_id: solar_daily_report_18h00_message
+        icon: mdi:solar-power
+        state: >
+          {% set actual_production = states('sensor.daily_total_solar_production') | float(0) %}
+          {% set forecast_value = states('sensor.solar_forecast_total_today') | float(0) %}
+          {% set remaining = states('sensor.energy_production_today_remaining') | float(0) %}
+          {% set accuracy = states('sensor.solar_forecast_accuracy_so_far') | float(0) %}
+          {% set peak_time = states('sensor.solar_forecast_peak_time_today') %}
+          {% set variance = actual_production - forecast_value %}
+          {% set peak_display = peak_time[11:16] if peak_time not in ['unknown', 'unavailable', '', none] else 'N/A' %}
+
+          Daily Solar Report - {{ now().strftime('%d %B %Y') }}
+
+          ACTUAL PRODUCTION
+          Generated: {{ "%.2f" | format(actual_production) }} kWh
+
+          TODAY'S FORECAST
+          Expected: {{ "%.2f" | format(forecast_value) }} kWh
+          Remaining: {{ "%.2f" | format(remaining) }} kWh
+
+          VARIANCE
+          {% if forecast_value > 0 %}
+            {% set variance_percent = ((variance / forecast_value) * 100) | round(1) %}
+            {% if variance >= 0 %}
+          Performance: +{{ "%.2f" | format(variance) }} kWh ({{ variance_percent }}% above forecast)
+            {% else %}
+          Performance: {{ "%.2f" | format(variance) }} kWh ({{ variance_percent | abs }}% below forecast)
+            {% endif %}
+          {% else %}
+          Performance: {{ "%.2f" | format(variance) }} kWh (forecast unavailable)
+          {% endif %}
+
+          FORECAST ACCURACY
+          So Far: {{ accuracy | round(1) }}%
+
+          PEAK GENERATION
+          Peak Time: {{ peak_display }} SAST
+
+          Next Update: 18:00 daily
+          Inverters: Deye Master + Slave
+
   # ---------------------------------------------------------------------------
   # TEMPLATE ENTITIES - Binary Sensors & Trigger-based Sensors
   # ---------------------------------------------------------------------------

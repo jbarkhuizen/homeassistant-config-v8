@@ -4,20 +4,18 @@
   trigger:
     - platform: time
       at: "18:00:00"
-  condition:
-    - condition: template
-      value_template: "{{ True }}"
+  condition: []
   action:
     - service: notify.email_ha
       data:
         title: "Daily Solar Report"
         message: "{{ states('sensor.solar_daily_report_18h00_message') }}"
-    
+
     - service: telegram_bot.send_message
       data:
         chat_id: !secret telegram_chat_id_2
         message: "{{ states('sensor.solar_daily_report_18h00_message') }}"
-    
+
     - service: notify.mobile_app_sm_g996b
       data:
         title: "Daily Solar Report"
@@ -26,9 +24,10 @@
           channel: "solar_reports"
           importance: "default"
           color: "FFC107"
-    
+
     - service: persistent_notification.create
       data:
         title: "Daily Solar Report - {{ now().strftime('%d %b %Y') }}"
         message: "{{ states('sensor.solar_daily_report_18h00_message') }}"
         notification_id: "solar_daily_report_{{ now().strftime('%Y%m%d') }}"
+  mode: single
