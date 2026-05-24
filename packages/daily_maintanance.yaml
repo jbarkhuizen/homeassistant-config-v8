@@ -116,7 +116,7 @@ automation:
                     Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
               - service: recorder.purge
                 data:
-                  keep_days: 360
+                  keep_days: 90
                   repack: true
           - conditions:
               - condition: template
@@ -164,7 +164,7 @@ automation:
       - delay: "00:00:05"
       - service: recorder.purge
         data:
-          keep_days: 360
+          keep_days: 90
           repack: true
       - delay: "00:00:05"
       - variables:
