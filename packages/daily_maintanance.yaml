@@ -29,7 +29,6 @@ automation:
       - platform: time
         at: "09:00:00"
     condition:
-      # Maintenance Mode must be OFF
       - condition: state
         entity_id: input_boolean.maintenance_mode
         state: "off"
@@ -112,12 +111,63 @@ automation:
                     Current size: {{ current }} MB
                     Increase: {{ diff_mb }} MB ({{ pct_growth }}%)
                     Threshold: {{ threshold_percent }}%
-                    Action: Initiating purge & repack (keep 360 days).
+                    Action: Initiating purge & repack (keep 90 days).
                     Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: telegram_bot.send_message
+                data:
+                  chat_id: !secret telegram_chat_id_2
+                  message: >-
+                    ⚠️ *Database Growth Alert*
+
+                    Previous baseline: {{ baseline }} MB
+                    Current size: {{ current }} MB
+                    Increase: {{ diff_mb }} MB ({{ pct_growth }}%)
+                    Threshold: {{ threshold_percent }}%
+                    Action: Initiating purge and repack, keep 90 days.
+
+                    _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+                  parse_mode: markdown
+
+              - service: notify.email_alerts_jbarkhuizen_gmail_com
+                data:
+                  title: "Database Growth Alert"
+                  message: >
+                    DATABASE GROWTH ALERT
+
+                    Home Assistant DB size increased abnormally.
+
+                    Previous baseline: {{ baseline }} MB
+                    Current size: {{ current }} MB
+                    Increase: {{ diff_mb }} MB ({{ pct_growth }}%)
+                    Threshold: {{ threshold_percent }}%
+
+                    Action:
+                    Initiating purge and repack with keep_days set to 90.
+
+                    Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: notify.mobile_app_sm_g996b
+                data:
+                  title: "Database Growth Alert"
+                  message: >-
+                    DB grew by {{ diff_mb }} MB ({{ pct_growth }}%).
+                    Purge and repack started, keep 90 days.
+                  data:
+                    channel: "Database"
+                    importance: high
+                    group: "ha-database"
+                    color: "#FF9800"
+                    actions:
+                      - action: "OPEN_HA"
+                        title: "Open HA"
+                        uri: "http://192.168.1.31:8123"
+
               - service: recorder.purge
                 data:
                   keep_days: 90
                   repack: true
+
           - conditions:
               - condition: template
                 value_template: "{{ pct_growth <= threshold_percent or diff_mb <= 250 }}"
@@ -131,8 +181,55 @@ automation:
                     Current: {{ current }} MB
                     Change: {{ diff_mb }} MB ({{ pct_growth }}%)
                     Threshold: {{ threshold_percent }}%
-                    Retention: 360 days
+                    Retention: 90 days
                     Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: telegram_bot.send_message
+                data:
+                  chat_id: !secret telegram_chat_id_2
+                  message: >-
+                    ✅ *Database Daily Check*
+
+                    Baseline: {{ baseline }} MB
+                    Current: {{ current }} MB
+                    Change: {{ diff_mb }} MB ({{ pct_growth }}%)
+                    Threshold: {{ threshold_percent }}%
+                    Retention: 90 days
+
+                    _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+                  parse_mode: markdown
+
+              - service: notify.email_notification_jbarkhuizen_gmail_com
+                data:
+                  title: "Database Daily Check"
+                  message: >
+                    DATABASE DAILY CHECK
+
+                    Database size is within normal range.
+
+                    Baseline: {{ baseline }} MB
+                    Current: {{ current }} MB
+                    Change: {{ diff_mb }} MB ({{ pct_growth }}%)
+                    Threshold: {{ threshold_percent }}%
+                    Retention: 90 days
+
+                    Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: notify.mobile_app_sm_g996b
+                data:
+                  title: "Database Daily Check"
+                  message: >-
+                    DB normal. Current {{ current }} MB, change {{ diff_mb }} MB.
+                  data:
+                    channel: "Database"
+                    importance: default
+                    group: "ha-database"
+                    color: "#4CAF50"
+                    actions:
+                      - action: "OPEN_HA"
+                        title: "Open HA"
+                        uri: "http://192.168.1.31:8123"
+
       - service: input_number.set_value
         target:
           entity_id: input_number.homeassistant_db_baseline_mb
@@ -177,8 +274,52 @@ automation:
             Size before: {{ pre_size }} MB
             Size after: {{ post_size }} MB
             Backup path recorded in /backup/db-monthly-latest.txt
-            Retention: 360 days
+            Retention: 90 days
             Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+      - service: telegram_bot.send_message
+        data:
+          chat_id: !secret telegram_chat_id_2
+          message: >-
+            ✅ *Monthly DB Backup and Compaction Complete*
+
+            Size before: {{ pre_size }} MB
+            Size after: {{ post_size }} MB
+            Retention: 90 days
+            Backup path recorded in /backup/db-monthly-latest.txt
+
+            _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+          parse_mode: markdown
+
+      - service: notify.email_notification_jbarkhuizen_gmail_com
+        data:
+          title: "Monthly DB Backup & Compaction Complete"
+          message: >
+            MONTHLY DATABASE BACKUP AND COMPACTION COMPLETE
+
+            Monthly database maintenance finished.
+
+            Size before: {{ pre_size }} MB
+            Size after: {{ post_size }} MB
+            Retention: 90 days
+            Backup path recorded in /backup/db-monthly-latest.txt
+
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "Monthly DB Backup Complete"
+          message: >-
+            DB maintenance complete. Before {{ pre_size }} MB, after {{ post_size }} MB.
+          data:
+            channel: "Database"
+            importance: default
+            group: "ha-database"
+            color: "#4CAF50"
+            actions:
+              - action: "OPEN_HA"
+                title: "Open HA"
+                uri: "http://192.168.1.31:8123"
 
   # Daily InfluxDB data flow verification — 08:00 (read-only, not guarded)
   - id: influxdb_flow_verification_0800
@@ -218,7 +359,6 @@ automation:
               - condition: template
                 value_template: "{{ stale_list | length > 0 }}"
             sequence:
-              # Persistant Notification Service
               - service: persistent_notification.create
                 data:
                   title: "InfluxDB Data Flow Warning"
@@ -227,14 +367,54 @@ automation:
                     in the last 15 minutes (08h00 check).
                     Stale sensors: {{ stale_list }}
                     Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: telegram_bot.send_message
+                data:
+                  chat_id: !secret telegram_chat_id_2
+                  message: >-
+                    ⚠️ *InfluxDB Data Flow Warning*
+
+                    Stale or invalid critical inverter sensors detected.
+                    Stale sensors: {{ stale_list }}
+
+                    _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+                  parse_mode: markdown
+
+              - service: notify.email_alerts_jbarkhuizen_gmail_com
+                data:
+                  title: "InfluxDB Data Flow Warning"
+                  message: >
+                    INFLUXDB DATA FLOW WARNING
+
+                    One or more critical inverter sensors have stale or invalid states.
+
+                    Stale sensors: {{ stale_list }}
+
+                    Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: notify.mobile_app_sm_g996b
+                data:
+                  title: "InfluxDB Data Flow Warning"
+                  message: >-
+                    Stale inverter sensor data detected. Check HA now.
+                  data:
+                    channel: "InfluxDB"
+                    importance: high
+                    group: "ha-influxdb"
+                    color: "#FF9800"
+                    actions:
+                      - action: "OPEN_HA"
+                        title: "Open HA"
+                        uri: "http://192.168.1.31:8123"
+
               - service: homeassistant.update_entity
                 target:
                   entity_id: sensor.influxdb_flow_status
+
           - conditions:
               - condition: template
                 value_template: "{{ stale_list | length == 0 }}"
             sequence:
-              # Persistant Notification Service
               - service: persistent_notification.create
                 data:
                   title: "InfluxDB Data Flow OK"
@@ -242,6 +422,44 @@ automation:
                     All critical inverter sensors updated within the last 15 minutes.
                     Data flow healthy as of 08h00.
                     Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: telegram_bot.send_message
+                data:
+                  chat_id: !secret telegram_chat_id_2
+                  message: >-
+                    ✅ *InfluxDB Data Flow OK*
+
+                    All critical inverter sensors updated within the last 15 minutes.
+
+                    _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+                  parse_mode: markdown
+
+              - service: notify.email_notification_jbarkhuizen_gmail_com
+                data:
+                  title: "InfluxDB Data Flow OK"
+                  message: >
+                    INFLUXDB DATA FLOW OK
+
+                    All critical inverter sensors updated within the last 15 minutes.
+                    Data flow healthy as of 08h00.
+
+                    Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: notify.mobile_app_sm_g996b
+                data:
+                  title: "InfluxDB Data Flow OK"
+                  message: >-
+                    InfluxDB data flow healthy as of 08:00.
+                  data:
+                    channel: "InfluxDB"
+                    importance: default
+                    group: "ha-influxdb"
+                    color: "#4CAF50"
+                    actions:
+                      - action: "OPEN_HA"
+                        title: "Open HA"
+                        uri: "http://192.168.1.31:8123"
+
               - service: homeassistant.update_entity
                 target:
                   entity_id: sensor.influxdb_flow_status
@@ -265,7 +483,6 @@ automation:
               - condition: template
                 value_template: "{{ diff > 0 }}"
             sequence:
-              # Persistant Notification Service
               - service: persistent_notification.create
                 data:
                   title: "Security: New IP bans detected"
@@ -273,6 +490,49 @@ automation:
                     IP bans increased since yesterday.
                     Previous: {{ baseline }} | Current: {{ current }} | Increase: {{ diff }}
                     Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: telegram_bot.send_message
+                data:
+                  chat_id: !secret telegram_chat_id_2
+                  message: >-
+                    ⚠️ *Security: New IP Bans Detected*
+
+                    Previous: {{ baseline }}
+                    Current: {{ current }}
+                    Increase: {{ diff }}
+
+                    _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+                  parse_mode: markdown
+
+              - service: notify.email_alerts_jbarkhuizen_gmail_com
+                data:
+                  title: "Security: New IP bans detected"
+                  message: >
+                    SECURITY ALERT
+
+                    IP bans increased since yesterday.
+
+                    Previous: {{ baseline }}
+                    Current: {{ current }}
+                    Increase: {{ diff }}
+
+                    Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: notify.mobile_app_sm_g996b
+                data:
+                  title: "Security: New IP Bans"
+                  message: >-
+                    IP bans increased by {{ diff }} since yesterday.
+                  data:
+                    channel: "Security"
+                    importance: high
+                    group: "ha-security"
+                    color: "#FF9800"
+                    actions:
+                      - action: "OPEN_HA"
+                        title: "Open HA Security"
+                        uri: "http://192.168.1.31:8123/config/auth"
+
       - service: input_number.set_value
         target:
           entity_id: input_number.ipbans_previous_count
@@ -304,9 +564,49 @@ automation:
                 data:
                   title: "Node-RED Health Alert"
                   message: "HTTP status: {{ node_status }}. Attempting restart..."
+
+              - service: telegram_bot.send_message
+                data:
+                  chat_id: !secret telegram_chat_id_2
+                  message: >-
+                    ⚠️ *Node-RED Health Alert*
+
+                    HTTP status: {{ node_status }}.
+                    Attempting restart.
+
+                    _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+                  parse_mode: markdown
+
+              - service: notify.email_alerts_jbarkhuizen_gmail_com
+                data:
+                  title: "Node-RED Health Alert"
+                  message: >
+                    NODE-RED HEALTH ALERT
+
+                    HTTP status: {{ node_status }}.
+                    Attempting restart.
+
+                    Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: notify.mobile_app_sm_g996b
+                data:
+                  title: "Node-RED Health Alert"
+                  message: >-
+                    Node-RED unhealthy. Restart attempt started.
+                  data:
+                    channel: "Add-ons"
+                    importance: high
+                    group: "ha-addons"
+                    color: "#FF9800"
+                    actions:
+                      - action: "OPEN_HA"
+                        title: "Open HA"
+                        uri: "http://192.168.1.31:8123"
+
               - service: hassio.addon_restart
                 data:
                   addon: "a0d7b954_nodered"
+
       - choose:
           - conditions:
               - condition: template
@@ -316,6 +616,45 @@ automation:
                 data:
                   title: "Grafana Health Alert"
                   message: "HTTP status: {{ graf_status }}. Attempting restart..."
+
+              - service: telegram_bot.send_message
+                data:
+                  chat_id: !secret telegram_chat_id_2
+                  message: >-
+                    ⚠️ *Grafana Health Alert*
+
+                    HTTP status: {{ graf_status }}.
+                    Attempting restart.
+
+                    _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+                  parse_mode: markdown
+
+              - service: notify.email_alerts_jbarkhuizen_gmail_com
+                data:
+                  title: "Grafana Health Alert"
+                  message: >
+                    GRAFANA HEALTH ALERT
+
+                    HTTP status: {{ graf_status }}.
+                    Attempting restart.
+
+                    Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: notify.mobile_app_sm_g996b
+                data:
+                  title: "Grafana Health Alert"
+                  message: >-
+                    Grafana unhealthy. Restart attempt started.
+                  data:
+                    channel: "Add-ons"
+                    importance: high
+                    group: "ha-addons"
+                    color: "#FF9800"
+                    actions:
+                      - action: "OPEN_HA"
+                        title: "Open HA"
+                        uri: "http://192.168.1.31:8123"
+
               - service: hassio.addon_restart
                 data:
                   addon: "a0d7b954_grafana"
@@ -368,14 +707,53 @@ automation:
                     Reloading Deye integration (Master + Slave).
                     Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
 
-              # Reload MASTER inverter config entry
+              - service: telegram_bot.send_message
+                data:
+                  chat_id: !secret telegram_chat_id_2
+                  message: >-
+                    ⚠️ *Sunsunk Inverter Data Stale*
+
+                    Stale sensors detected: {{ stale }}.
+                    Reloading Deye integration.
+
+                    _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
+                  parse_mode: markdown
+
+              - service: notify.email_alerts_jbarkhuizen_gmail_com
+                data:
+                  title: "Sunsunk Inverter Data Stale"
+                  message: >
+                    SUNSUNK INVERTER DATA STALE
+
+                    Stale sensors detected for more than 10 minutes.
+
+                    Stale sensors: {{ stale }}
+
+                    Reloading Deye integration for Master and Slave.
+
+                    Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: notify.mobile_app_sm_g996b
+                data:
+                  title: "Sunsunk Inverter Data Stale"
+                  message: >-
+                    Stale inverter data detected. Reloading Deye integration.
+                  data:
+                    channel: "Inverters"
+                    importance: high
+                    group: "ha-inverters"
+                    color: "#FF9800"
+                    actions:
+                      - action: "OPEN_HA"
+                        title: "Open HA"
+                        uri: "http://192.168.1.31:8123"
+
               - service: homeassistant.reload_config_entry
                 data:
                   entry_id: "01K8Z1D2A4C656PMBQRM9E3FD5"
 
               - delay: "00:00:02"
 
-              # Reload SLAVE inverter config entry
               - service: homeassistant.reload_config_entry
                 data:
                   entry_id: "01K8Z1DEBRYEGPPBNWWF5RTZ6Y"
@@ -398,7 +776,6 @@ automation:
         state: "off"
     action:
       - variables:
-          # DB
           db_current: "{{ states('sensor.homeassistant_db_size_mb') | float(0) }}"
           db_baseline: "{{ states('input_number.homeassistant_db_baseline_mb') | float(0) }}"
           db_change_3d: "{{ states('sensor.db_size_change_3d') | float(0) }}"
@@ -407,15 +784,12 @@ automation:
             {% if db_baseline > 0 %}
               {{ (((db_current - db_baseline) / db_baseline) * 100) | round(1) }}
             {% else %}0{% endif %}
-          # LOGS
           log_mb: "{{ states('sensor.home_assistant_log_size_mb') | float(0) }}"
           log_on_hours_48h: "{{ states('sensor.log_errors_on_hours_48h') | float(0) }}"
-          # Thresholds
           db_3d_mb_threshold: 500
           db_pct_threshold: 25
           log_mb_threshold: 1.0
           log_hours_threshold: 24
-          # Flags
           db_alert: "{{ db_change_3d > db_3d_mb_threshold and db_pct_vs_baseline > db_pct_threshold }}"
           log_alert: "{{ log_mb > log_mb_threshold or log_on_hours_48h >= log_hours_threshold }}"
       - choose:
@@ -435,16 +809,54 @@ automation:
                     Percent vs Baseline: {{ db_pct_vs_baseline }}%
                     Thresholds: {{ db_3d_mb_threshold }} MB, {{ db_pct_threshold }}%
                     Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
               - service: telegram_bot.send_message
                 data:
                   chat_id: !secret telegram_chat_id_2
                   message: >-
-                    ⚠️ *Database Trend Alert (3-day)*  
-                    Now: {{ db_current }} MB | Baseline: {{ db_baseline }} MB  
-                    3d Δ: {{ db_change_3d }} MB | 7d Δ: {{ db_change_7d }} MB  
-                    % vs baseline: {{ db_pct_vs_baseline }}%  
+                    ⚠️ *Database Trend Alert (3-day)*
+
+                    Now: {{ db_current }} MB
+                    Baseline: {{ db_baseline }} MB
+                    3d change: {{ db_change_3d }} MB
+                    7d change: {{ db_change_7d }} MB
+                    Percent vs baseline: {{ db_pct_vs_baseline }}%
+
                     _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                   parse_mode: markdown
+
+              - service: notify.email_alerts_jbarkhuizen_gmail_com
+                data:
+                  title: "Database Trend Alert (3-day)"
+                  message: >
+                    DATABASE TREND ALERT
+
+                    DB growth over 3 days appears high.
+
+                    Current: {{ db_current }} MB
+                    Baseline: {{ db_baseline }} MB
+                    3-day Change: {{ db_change_3d }} MB
+                    7-day Change: {{ db_change_7d }} MB
+                    Percent vs Baseline: {{ db_pct_vs_baseline }}%
+                    Thresholds: {{ db_3d_mb_threshold }} MB and {{ db_pct_threshold }}%
+
+                    Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: notify.mobile_app_sm_g996b
+                data:
+                  title: "Database Trend Alert"
+                  message: >-
+                    DB growth trend high over 3 days. Check Home Assistant.
+                  data:
+                    channel: "Database"
+                    importance: high
+                    group: "ha-database"
+                    color: "#FF9800"
+                    actions:
+                      - action: "OPEN_HA"
+                        title: "Open HA"
+                        uri: "http://192.168.1.31:8123"
+
           - conditions:
               - condition: template
                 value_template: "{{ log_alert }}"
@@ -458,14 +870,48 @@ automation:
                     Hours with errors in last 48h: {{ log_on_hours_48h }} h
                     Thresholds: {{ log_mb_threshold }} MB or {{ log_hours_threshold }} h
                     Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
               - service: telegram_bot.send_message
                 data:
                   chat_id: !secret telegram_chat_id_2
                   message: >-
-                    ⚠️ *Log Health Alert*  
-                    Size: {{ log_mb }} MB | 48h error hours: {{ log_on_hours_48h }}h  
+                    ⚠️ *Log Health Alert*
+
+                    Log size: {{ log_mb }} MB
+                    Error hours in last 48h: {{ log_on_hours_48h }} h
+
                     _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                   parse_mode: markdown
+
+              - service: notify.email_alerts_jbarkhuizen_gmail_com
+                data:
+                  title: "Log Health Alert"
+                  message: >
+                    LOG HEALTH ALERT
+
+                    Logs indicate persistent errors or large size.
+
+                    Current Log Size: {{ log_mb }} MB
+                    Hours with errors in last 48h: {{ log_on_hours_48h }} h
+                    Thresholds: {{ log_mb_threshold }} MB or {{ log_hours_threshold }} h
+
+                    Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+              - service: notify.mobile_app_sm_g996b
+                data:
+                  title: "Log Health Alert"
+                  message: >-
+                    Logs show persistent errors or abnormal size. Check HA now.
+                  data:
+                    channel: "System Health"
+                    importance: high
+                    group: "ha-system-health"
+                    color: "#FF9800"
+                    actions:
+                      - action: "OPEN_HA"
+                        title: "Open HA"
+                        uri: "http://192.168.1.31:8123"
+
       - service: system_log.write
         data:
           message: >-
@@ -526,7 +972,6 @@ command_line:
 
 # NEW: Statistics and History sensors for trend analysis
 sensor:
-  # DB size change over rolling 3 days and 7 days
   - platform: statistics
     name: db_size_change_3d
     unique_id: db_size_change_3d
@@ -545,7 +990,6 @@ sensor:
       days: 7
     sampling_size: 10000
 
-  # Hours with 'log has errors' over last 48 hours
   - platform: history_stats
     name: log_errors_on_hours_48h
     entity_id: binary_sensor.home_assistant_log_has_errors
