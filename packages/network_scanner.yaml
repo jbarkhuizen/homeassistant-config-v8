@@ -1,82 +1,8 @@
-#===============================================================================
-# HOME ASSISTANT NETWORK SCANNER CONFIGURATION
-# All 57 network devices with MAC to name mapping
-#===============================================================================
-
-network_scanner:
-  ip_range: "10.1.1.0/24, 192.168.0.1/24, 192.168.1.1/24, 192.168.2.1/24, 192.168.3.1/24, 192.168.4.1/24, 192.168.5.1/24, 192.168.56.1/24, 172.25.80.1/24"
-  
-  # NETWORK INFRASTRUCTURE
-  mac_mapping_1: "B4:63:6F:68:57:F1;Nokia DSL Router;Primary Router - DSL Gateway"
-  mac_mapping_2: "74:DA:88:CB:53:30;TP-Link Network Switch;Network Switch/Access Point"
-  mac_mapping_3: "80:26:89:18:CB:12;D-Link Network Device;Network Infrastructure"
-  mac_mapping_4: "A0:63:91:BB:07:E0;Netgear Network Device;Network Infrastructure"
-  mac_mapping_5: "74:78:27:40:D1:F5;Dell Server/PC;Desktop Computer"
-  
-  # HP PRINTER
-  mac_mapping_6: "30:8D:99:AE:F5:CC;HP Network Printer;Networked Printer"
-  
-  # MOBILE DEVICES
-  mac_mapping_7: "F0:B3:EC:3F:B1:14;Apple iPhone/iPad;Personal Mobile Device"
-  mac_mapping_8: "00:C3:F4:0D:91:33;Samsung Galaxy Phone;Samsung SM_G996B - Personal Mobile"
-  
-  # STORAGE DEVICES
-  mac_mapping_9: "00:D0:B8:2A:18:6E;Iomega NAS Port 1;Network Attached Storage - Primary"
-  mac_mapping_10: "00:D0:B8:2A:18:6D;Iomega NAS Port 2;Network Attached Storage - Secondary Port"
-  
-  # TP-LINK DUAL-PORT DEVICE
-  mac_mapping_11: "EC:08:6B:A5:80:20;TP-Link Smart Device Multi-Port;Multi-Port Device (192.168.1.10 & .11)"
-  
-  # TUYA SMART HOME DEVICES
-  mac_mapping_12: "7C:F6:66:08:D6:3F;Tuya Smart Plug 1;Smart Power Outlet"
-  mac_mapping_13: "38:A5:C9:AD:59:53;Tuya Smart Plug 2;Smart Power Outlet"
-  mac_mapping_14: "10:5A:17:16:05:5D;Tuya Smart Plug 3;Smart Power Outlet"
-  mac_mapping_15: "10:5A:17:16:01:29;Tuya Smart Plug 4;Smart Power Outlet"
-  mac_mapping_16: "18:DE:50:E0:A7:1A;Tuya Smart Plug 5;Smart Power Outlet"
-  mac_mapping_17: "38:A5:C9:AD:5F:AF;Tuya Smart Plug 6;Smart Power Outlet"
-  mac_mapping_18: "A0:92:08:78:66:B3;Tuya Smart Plug 7;Smart Power Outlet"
-  mac_mapping_19: "38:2C:E5:14:B6:CC;Tuya Smart Plug 8;Smart Power Outlet"
-  mac_mapping_20: "18:DE:50:E1:3A:3E;Tuya Smart Plug 9;Smart Power Outlet"
-  mac_mapping_21: "38:A5:C9:AD:56:08;Tuya Smart Plug 10;Smart Power Outlet"
-  mac_mapping_22: "18:DE:50:E0:AF:E6;Tuya Smart Plug 11;Smart Power Outlet"
-  mac_mapping_23: "18:DE:50:E1:54:79;Tuya Smart Plug 12;Smart Power Outlet"
-  mac_mapping_24: "AC:BD:70:7B:5E:60;Huawei Tuya Device;Huawei Tuya Smart Device"
-  
-  # ESPRESSIF DEVICES (ESP32/ESP8266)
-  mac_mapping_25: "34:85:18:D0:D1:88;Espressif IoT Device 1;ESP32/ESP8266 Device"
-  mac_mapping_26: "D4:D4:DA:58:62:DC;Espressif IoT Device 2;ESP32/ESP8266 Device"
-  mac_mapping_27: "CC:50:E3:67:E6:72;Espressif IoT Device 3;ESP32/ESP8266 Device"
-  mac_mapping_28: "84:F3:EB:A7:18:F8;Espressif IoT Device 4;ESP32/ESP8266 Device"
-  mac_mapping_29: "C4:4F:33:B1:D6:44;Espressif IoT Device 5;ESP32/ESP8266 Device"
-  mac_mapping_30: "C8:2B:96:E6:BE:BD;Espressif IoT Device 6;ESP32/ESP8266 Device"
-  mac_mapping_31: "20:98:ED:69:A1:45;Espressif IoT Device 7;ESP32/ESP8266 Device"
-  mac_mapping_32: "C4:DD:57:10:F8:72;Espressif IoT Device 8;ESP32/ESP8266 Device"
-  mac_mapping_33: "D4:D4:DA:41:E2:98;Espressif IoT Device 9;ESP32/ESP8266 Device"
-  mac_mapping_34: "9C:9C:1F:A3:04:91;Espressif IoT Device 10;ESP32/ESP8266 Device"
-  mac_mapping_35: "CC:50:E3:68:03:30;Espressif IoT Device 11;ESP32/ESP8266 Device"
-  mac_mapping_36: "44:17:93:7D:16:D4;Espressif IoT Device 12;ESP32/ESP8266 Device"
-  mac_mapping_37: "5C:CF:7F:7A:5F:FB;Espressif IoT Device 13;ESP32/ESP8266 Device"
-  mac_mapping_38: "7C:87:CE:A5:58:32;Espressif IoT Device 14;ESP32/ESP8266 Device"
-  mac_mapping_39: "70:03:9F:98:B7:35;Espressif IoT Device 15;ESP32/ESP8266 Device"
-  mac_mapping_40: "9C:9C:1F:A1:5A:14;Espressif IoT Device 16;ESP32/ESP8266 Device"
-  
-  # ALTOBEAM DEVICES
-  mac_mapping_41: "90:31:4B:DC:2C:B4;AltoBeam Camera Multi-Port;Video Camera (192.168.1.103 & .158)"
-  mac_mapping_42: "38:BE:AB:4C:A4:06;AltoBeam Device Multi-Port;AltoBeam Device (192.168.1.105 & .172)"
-  mac_mapping_43: "F4:B1:9C:A9:76:65;AltoBeam Device 3;AltoBeam Video/Imaging"
-  mac_mapping_44: "AC:BD:70:7B:5E:6F;AltoBeam Device 4;AltoBeam Video/Imaging"
-  
-  # ICP ELECTRONICS
-  mac_mapping_45: "00:08:9B:C2:E5:13;ICP Electronics Device 1;ICP Industrial Device"
-  mac_mapping_46: "00:08:9B:C2:E5:14;ICP Electronics Device 2;ICP Industrial Device"
-  
-  # OTHER DEVICES
-  mac_mapping_47: "30:4A:26:CA:A8:A4;Shenzhen Trolink Device;Trolink Technology Device"
-  mac_mapping_48: "F4:42:50:01:91:D5;Bouffalo Lab Device;Bouffalo Lab IoT Device"
-  mac_mapping_49: "28:6B:B4:BA:16:C1;Sjit Device;Sjit Technology Device"
-  mac_mapping_50: "9E:9D:7E:02:65:C9;Unknown Device 1;Unidentified Network Device"
-  mac_mapping_51: "B2:B4:15:79:49:F2;Unknown Device 2;Unidentified Network Device"
-  mac_mapping_52: "10:BE:F5:02:15:F7;D-Link Secondary Device;D-Link Network Device"
+#network_scanner:
+#  ip_range: "10.1.1.0/24, 192.168.0.1/24, 192.168.1.1/24, 192.168.2.1/24, 192.168.3.1/24, 192.168.4.1/24, 192.168.5.1/24, 192.168.56.1/24, 172.25.80.1/24"
+#  mac_mapping_1: "84:d3:43:da:cc:d7;Calix Router;Internet Connectivity"
+#  mac_mapping_2: "00:08:9b:c2:e5:13;Johanba-Server Port 1"
+#  mac_mapping_3: "00:08:9b:c2:e5:14;Johanba-Server Port 2"
 
 device_tracker:
   # NMAP Network Scanner - Primary tracking method
@@ -107,12 +33,10 @@ device_tracker:
       ping_192_168_1_151: 192.168.1.151 # DVR Outside
     count: 3
     consider_home: 180
-
 #===============================================================================
 # NOTES:
 # 1. NMAP scans are resource-intensive - runs every 10 minutes
 # 2. Ping tracker provides faster updates for critical devices
 # 3. All tracked devices will appear as device_tracker entities
 # 4. Configure device names in Home Assistant UI under Configuration > Devices
-# 5. 57 network devices now mapped with custom names and descriptions
 #===============================================================================
