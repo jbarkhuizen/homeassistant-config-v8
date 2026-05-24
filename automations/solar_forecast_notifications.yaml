@@ -77,7 +77,7 @@
         notification_id: "solar_forecast_daily"
 
     # --- Email ---
-    - service: notify.email_notification_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "☀️ Solar Forecast — Daily Summary"
         message: >-
@@ -193,7 +193,7 @@
         notification_id: "solar_forecast_low_alert"
 
     # --- Email ---
-    - service: notify.email_notification_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "⚠️ Low Solar Day Alert"
         message: >-

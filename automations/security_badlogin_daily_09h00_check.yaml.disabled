@@ -30,7 +30,7 @@
               data:
                 chat_id: 6167623299
                 message: "🚨 Security: Bad Logins Spike - {{ risk_level }}. Baseline: {{ baseline }} | Current: {{ current }} | Increase: {{ diff }} | Threshold: {{ threshold }}. Check HA Security logs immediately. {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
-            - action: notify.email_notification_jbarkhuizen_gmail_com
+            - action: notify.email_ha
               data:
                 title: "🚨 Security: Bad Logins Spike - {{ risk_level }} ({{ now().strftime('%Y-%m-%d') }})"
                 message: "SECURITY ALERT. Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}. Risk Level: {{ risk_level }}. {{ detail }}. Review IP Ban log, home-assistant.log, firewall, Nabu Casa access rules and device credentials. System: http://192.168.1.31:8123 Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/"
@@ -64,7 +64,7 @@
               data:
                 chat_id: 6167623299
                 message: "✅ Security: Bad Logins OK. Baseline: {{ baseline }} | Current: {{ current }} | Increase: {{ diff }} | Threshold: {{ threshold }} | Status: NORMAL. {{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
-            - action: notify.email_notification_jbarkhuizen_gmail_com
+            - action: notify.email_ha
               data:
                 title: "✅ Security: Bad Logins OK - {{ now().strftime('%Y-%m-%d') }}"
                 message: "SECURITY DAILY CHECK - NO SPIKE DETECTED. Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}. Baseline: {{ baseline }}. Current: {{ current }}. Increase: {{ diff }}. Threshold: {{ threshold }}. Risk Level: NORMAL. No action required. System: http://192.168.1.31:8123"

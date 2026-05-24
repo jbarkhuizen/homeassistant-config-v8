@@ -172,7 +172,7 @@
                 parse_mode: markdown
 
             # --- Email ---
-            - service: notify.email_notification_jbarkhuizen_gmail_com
+            - service: notify.email_ha
               data:
                 title: "🗄️ Recorder DB Growth Alert — {{ risk_level }} ({{ now().strftime('%Y-%m-%d') }})"
                 message: >-

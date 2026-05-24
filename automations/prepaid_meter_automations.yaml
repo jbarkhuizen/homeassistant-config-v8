@@ -58,7 +58,7 @@
         parse_mode: markdown
 
     # --- Email ---
-    - service: notify.email_alerts_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: >-
           Prepaid Meter Daily Status - {{ now().strftime('%Y-%m-%d') }}
@@ -247,7 +247,7 @@
         parse_mode: markdown
 
     # --- Email ---
-    - service: notify.email_alerts_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "🟡 WARNING: Prepaid Meter Low Balance — {{ now().strftime('%Y-%m-%d') }}"
         message: >-
@@ -353,7 +353,7 @@
         parse_mode: markdown
 
     # --- Email ---
-    - service: notify.email_alerts_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "🟠 CRITICAL: Prepaid Meter Balance Low"
         message: >
@@ -457,7 +457,7 @@
         parse_mode: markdown
 
     # --- Email ---
-    - service: notify.email_alerts_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "🔴 EMERGENCY: Prepaid Meter - Load Shedding Active"
         message: >
@@ -610,7 +610,7 @@
         parse_mode: markdown
 
     # --- Email ---
-    - service: notify.email_alerts_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "✅ Prepaid Meter Recharged — Emergency Mode Deactivated"
         message: >-
@@ -719,7 +719,7 @@
         parse_mode: markdown
 
     # --- Email ---
-    - service: notify.email_alerts_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "💳 Prepaid Meter Recharge Confirmed — {{ now().strftime('%Y-%m-%d') }}"
         message: >-

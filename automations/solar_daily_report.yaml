@@ -1,7 +1,7 @@
 #===============================================================================
 # SOLAR: Daily Solar & Inverter Report (08:25)
 # File: automations/solar_daily_report.yaml
-# Updated: 2026-05-01
+# Updated: 2026-05-24
 # - Runs daily at 08:25 (inside 06:00–09:00 window)
 # - Guarded by Maintenance Mode (must be OFF)
 # Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
@@ -22,11 +22,9 @@
       state: "off"
 
   action:
-    # Small delay to ensure morning values have stabilised
     - delay:
         seconds: 10
 
-    # Variables for Mobile Push and Persistent summary
     - variables:
         pv1_today: "{{ states('sensor.deyeinvertermaster_summary_day_pv1') | float(0) | round(2) }}"
         pv2_today: "{{ states('sensor.deyeinvertermaster_summary_day_pv2') | float(0) | round(2) }}"
@@ -65,15 +63,13 @@
           {% set tgt = states('input_number.solar_generation_target') | float(25) %}
           {{ (t / tgt * 100) | round(1) if tgt > 0 else 0 }}
 
-    # --- Email ---
-    - service: notify.email_notification_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "🔆 Solar & Inverter — {{ now().strftime('%Y-%m-%d') }}"
         message: >-
           {% from 'solar_daily_report.jinja' import solar_daily_report_email %}
           {{ solar_daily_report_email() }}
 
-    # --- Telegram ---
     - service: telegram_bot.send_message
       data:
         chat_id: !secret telegram_chat_id_2
@@ -82,7 +78,6 @@
           {{ solar_daily_report_telegram() }}
         parse_mode: markdown
 
-    # --- Mobile Push ---
     - service: notify.mobile_app_sm_g996b
       data:
         title: "🔆 Solar Report — {{ now().strftime('%d %b %Y') }} 08:25"
@@ -102,7 +97,6 @@
               title: "Open HA"
               uri: "http://192.168.1.31:8123"
 
-    # --- Persistent Notification ---
     - service: persistent_notification.create
       data:
         title: "🔆 Solar Daily Report (08:25) — {{ now().strftime('%d %b %Y') }}"
@@ -121,12 +115,11 @@
           • Grid Power: {{ grid_power }}
           • Battery SOC: {{ battery_soc }}
 
-          ✅ Email sent — notify.email_notification_jbarkhuizen_gmail_com
+          ✅ Email sent — notify.email_ha
           ✅ Telegram sent — chat_id_2
           ✅ Mobile Push sent — SM-G996B
         notification_id: "solar_daily_report_0825"
 
-    # --- System Log ---
     - service: system_log.write
       data:
         message: >-

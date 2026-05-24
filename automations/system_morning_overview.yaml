@@ -67,7 +67,7 @@
           Solar: {{ fc_quality }} {{ fc_remaining_today|round(1) }}kWh rem Peak {{ fc_peak_time }}
 
     # --- Email ---
-    - service: notify.email_notification_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: >-
           {% if is_mon %}

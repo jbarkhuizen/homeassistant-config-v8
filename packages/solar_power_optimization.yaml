@@ -98,7 +98,7 @@ automation:
         entity_id: input_boolean.solar_optimization_enabled
         to: "off"
     actions:
-      - service: notify.email_alerts_jbarkhuizen_gmail_com
+      - service: notify.email_ha
         data:
           title: "⚠️ Solar Power Optimization"
           message: >-
@@ -151,7 +151,6 @@ automation:
           notification_id: "solar_power_manual_override_alert"
 
     mode: single
-
 # ==============================================================================
 # End of Solar Power Optimization Package
 # ==============================================================================

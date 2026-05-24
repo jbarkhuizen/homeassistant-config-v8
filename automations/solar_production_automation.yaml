@@ -70,7 +70,7 @@
           🌐 http://192.168.1.31:8123
 
     # --- Email ---
-    - service: notify.email_alerts_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: >-
           Daily Solar Production - {{ now().strftime('%Y-%m-%d') }}
@@ -196,7 +196,7 @@
         parse_mode: markdown
 
     # --- Email ---
-    - service: notify.email_alerts_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: >-
           Weekly Solar Production Summary - {{ now().strftime('%d %B %Y') }}
@@ -338,7 +338,7 @@
         parse_mode: markdown
 
     # --- Email ---
-    - service: notify.email_alerts_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: >-
           🎉 Exceptional Solar Production Day - {{ now().strftime('%Y-%m-%d') }}
@@ -481,7 +481,7 @@
         parse_mode: markdown
 
     # --- Email ---
-    - service: notify.email_alerts_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: >-
           ⚠️ Low Solar Production Alert - {{ now().strftime('%Y-%m-%d') }}
@@ -643,7 +643,7 @@
         parse_mode: markdown
 
     # --- Email ---
-    - service: notify.email_alerts_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: >-
           ⚠️ PV String Imbalance Detected - {{ now().strftime('%Y-%m-%d') }}
@@ -831,7 +831,7 @@
           Great month!
 
     # --- Email ---
-    - service: notify.email_alerts_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: >-
           Monthly Solar Report - {{ now().strftime('%B %Y') }}

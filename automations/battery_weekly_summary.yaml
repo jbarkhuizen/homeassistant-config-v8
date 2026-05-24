@@ -65,7 +65,7 @@
           {% endif %}
 
     # --- Email ---
-    - service: notify.email_notification_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "🔋 Battery — Weekly Summary {{ now().strftime('%Y-%m-%d') }}"
         message: >-
@@ -125,7 +125,7 @@
           • Healthy Devices: {{ healthy_pct }}
           • Lowest Device: {{ top_low_device }} @ {{ top_low_pct }}
 
-          ✅ Email sent — notify.email_notification_jbarkhuizen_gmail_com
+          ✅ Email sent — notify.email_ha
           ✅ Telegram sent — chat_id_2
           ✅ Mobile Push sent — SM-G996B
         notification_id: "battery_weekly_summary_0832"

@@ -108,7 +108,7 @@
           🌐 {{ local_url }}
         parse_mode: markdown
 
-    - service: notify.email_notification_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "🛑 Pool Pump OFF — PV Low ({{ now().strftime('%Y-%m-%d %H:%M') }})"
         message: >-
@@ -258,7 +258,7 @@
           🌐 {{ local_url }}
         parse_mode: markdown
 
-    - service: notify.email_notification_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "✅ Pool Pump ON — PV Sufficient ({{ now().strftime('%Y-%m-%d %H:%M') }})"
         message: >-
@@ -310,7 +310,6 @@
         level: info
 
   mode: single
-
 #===============================================================================
 # END OF SOLAR POOL PUMP MANAGEMENT
 #===============================================================================

@@ -164,7 +164,7 @@
                 parse_mode: markdown
 
             # --- Email ---
-            - service: notify.email_notification_jbarkhuizen_gmail_com
+            - service: notify.email_ha
               data:
                 title: "🚨 Security: Bad Logins Spike — {{ risk_level }} ({{ now().strftime('%Y-%m-%d') }})"
                 message: >-
@@ -257,7 +257,7 @@
                 parse_mode: markdown
 
             # --- Email ---
-            - service: notify.email_notification_jbarkhuizen_gmail_com
+            - service: notify.email_ha
               data:
                 title: "✅ Security: Bad Logins OK — {{ now().strftime('%Y-%m-%d') }}"
                 message: >-

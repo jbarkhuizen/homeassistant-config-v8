@@ -42,7 +42,7 @@
         updates_list: "{{ state_attr('sensor.home_assistant_updates_summary', 'updates_list') | default([]) }}"
 
     # --- Email ---
-    - service: notify.email_notification_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "📊 Daily Home Assistant Update Report - {{ now().strftime('%Y-%m-%d') }}"
         message: >-
@@ -193,7 +193,7 @@
 
           🕐 Checked: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
 
-          ✅ Email sent — notify.email_notification_jbarkhuizen_gmail_com
+          ✅ Email sent — notify.email_ha
           ✅ Telegram sent — chat_id_2
           ✅ Mobile Push sent — SM-G996B
         notification_id: "daily_update_report"
@@ -344,7 +344,6 @@
 
     # (A7) Conditional notifications based on status
     - choose:
-
         #-------------------------------------------------------------------
         # FAILURE PATH
         #-------------------------------------------------------------------
@@ -399,7 +398,7 @@
                       uri: "http://192.168.1.31:8123"
 
             # --- Email ---
-            - service: notify.email_notification_jbarkhuizen_gmail_com
+            - service: notify.email_ha
               data:
                 title: "❌ Auto Update FAILED — {{ now().strftime('%Y-%m-%d %H:%M') }}"
                 message: >-
@@ -475,7 +474,7 @@
                       uri: "http://192.168.1.31:8123"
 
             # --- Email ---
-            - service: notify.email_notification_jbarkhuizen_gmail_com
+            - service: notify.email_ha
               data:
                 title: "⚠️ Auto Update PARTIAL — {{ now().strftime('%Y-%m-%d %H:%M') }}"
                 message: >-
@@ -555,7 +554,7 @@
                       uri: "http://192.168.1.31:8123"
 
             # --- Email ---
-            - service: notify.email_notification_jbarkhuizen_gmail_com
+            - service: notify.email_ha
               data:
                 title: "✅ Auto Update SUCCESS — {{ now().strftime('%Y-%m-%d %H:%M') }}"
                 message: >-
@@ -614,7 +613,7 @@
                 notification_id: "auto_update_no_updates"
 
             # --- Email ---
-            - service: notify.email_notification_jbarkhuizen_gmail_com
+            - service: notify.email_ha
               data:
                 title: "✅ Auto Update — No Updates Pending ({{ now().strftime('%Y-%m-%d') }})"
                 message: >-
@@ -657,7 +656,7 @@
         level: info
 
     # (A10) Email summary (always sent)
-    - service: notify.email_notification_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "🔄 Auto Update Result — {{ status | capitalize }} ({{ now().strftime('%Y-%m-%d') }})"
         message: >-

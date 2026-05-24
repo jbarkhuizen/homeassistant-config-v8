@@ -73,7 +73,7 @@
         parse_mode: markdown
 
     # --- Email ---
-    - service: notify.email_notification_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "🟠 Grafana Memory High — {{ risk_level }} ({{ now().strftime('%Y-%m-%d %H:%M') }})"
         message: >-

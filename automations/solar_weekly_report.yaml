@@ -59,7 +59,7 @@
         value_zar: "{{ (states('sensor.solar_pv_energy_change_7d') | float(0) * 2.50) | round(2) }}"
 
     # --- Email ---
-    - service: notify.email_notification_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "🔆 Weekly Solar Summary — {{ now().strftime('%Y-%m-%d') }}"
         message: >-
@@ -114,7 +114,7 @@
           • Grid Export: {{ grid_export7 }} kWh (vs {{ grid_export_prev7 }} kWh prior week)
           • Grid Dependency: {{ grid_dep_pct }}%
 
-          ✅ Email sent — notify.email_notification_jbarkhuizen_gmail_com
+          ✅ Email sent — notify.email_ha
           ✅ Telegram sent — chat_id_2
           ✅ Mobile Push sent — SM-G996B
         notification_id: "solar_weekly_summary_0840"

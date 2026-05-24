@@ -53,7 +53,7 @@ automation:
             _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
           parse_mode: markdown
 
-      - service: notify.email_notification_jbarkhuizen_gmail_com
+      - service: notify.email_ha
         data:
           title: "Daily Maintenance Complete"
           message: >
@@ -131,7 +131,7 @@ automation:
             _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
           parse_mode: markdown
 
-      - service: notify.email_notification_jbarkhuizen_gmail_com
+      - service: notify.email_ha
         data:
           title: "Weekly Home Assistant Restart"
           message: >
@@ -262,7 +262,7 @@ automation:
                     _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                   parse_mode: markdown
 
-              - service: notify.email_alerts_jbarkhuizen_gmail_com
+              - service: notify.email_ha
                 data:
                   title: "Database Growth Alert"
                   message: >
@@ -332,7 +332,7 @@ automation:
                     _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                   parse_mode: markdown
 
-              - service: notify.email_notification_jbarkhuizen_gmail_com
+              - service: notify.email_ha
                 data:
                   title: "Database Daily Check"
                   message: >
@@ -424,7 +424,7 @@ automation:
             _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
           parse_mode: markdown
 
-      - service: notify.email_notification_jbarkhuizen_gmail_com
+      - service: notify.email_ha
         data:
           title: "Monthly DB Backup & Compaction Complete"
           message: >
@@ -513,7 +513,7 @@ automation:
                     _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                   parse_mode: markdown
 
-              - service: notify.email_alerts_jbarkhuizen_gmail_com
+              - service: notify.email_ha
                 data:
                   title: "InfluxDB Data Flow Warning"
                   message: >
@@ -567,7 +567,7 @@ automation:
                     _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                   parse_mode: markdown
 
-              - service: notify.email_notification_jbarkhuizen_gmail_com
+              - service: notify.email_ha
                 data:
                   title: "InfluxDB Data Flow OK"
                   message: >
@@ -637,7 +637,7 @@ automation:
                     _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                   parse_mode: markdown
 
-              - service: notify.email_alerts_jbarkhuizen_gmail_com
+              - service: notify.email_ha
                 data:
                   title: "Security: New IP bans detected"
                   message: >
@@ -693,7 +693,7 @@ automation:
                     _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                   parse_mode: markdown
 
-              - service: notify.email_notification_jbarkhuizen_gmail_com
+              - service: notify.email_ha
                 data:
                   title: "Security: IP Ban Summary OK"
                   message: >
@@ -774,7 +774,7 @@ automation:
                     _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                   parse_mode: markdown
 
-              - service: notify.email_alerts_jbarkhuizen_gmail_com
+              - service: notify.email_ha
                 data:
                   title: "Node-RED Health Alert"
                   message: >
@@ -826,7 +826,7 @@ automation:
                     _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                   parse_mode: markdown
 
-              - service: notify.email_alerts_jbarkhuizen_gmail_com
+              - service: notify.email_ha
                 data:
                   title: "Grafana Health Alert"
                   message: >
@@ -916,7 +916,7 @@ automation:
                     _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                   parse_mode: markdown
 
-              - service: notify.email_alerts_jbarkhuizen_gmail_com
+              - service: notify.email_ha
                 data:
                   title: "Sunsunk Inverter Data Stale"
                   message: >
@@ -1022,7 +1022,7 @@ automation:
                     _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                   parse_mode: markdown
 
-              - service: notify.email_alerts_jbarkhuizen_gmail_com
+              - service: notify.email_ha
                 data:
                   title: "Database Trend Alert (3-day)"
                   message: >
@@ -1080,7 +1080,7 @@ automation:
                     _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                   parse_mode: markdown
 
-              - service: notify.email_alerts_jbarkhuizen_gmail_com
+              - service: notify.email_ha
                 data:
                   title: "Log Health Alert"
                   message: >

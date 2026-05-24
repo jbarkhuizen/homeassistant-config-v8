@@ -201,7 +201,7 @@ automation:
           parse_mode: markdown
 
       # --- Email ---
-      - service: notify.email_alerts_jbarkhuizen_gmail_com
+      - service: notify.email_ha
         data:
           title: "🔴 Home Assistant - High CPU Usage Alert"
           message: >
@@ -308,7 +308,7 @@ automation:
           parse_mode: markdown
 
       # --- Email ---
-      - service: notify.email_alerts_jbarkhuizen_gmail_com
+      - service: notify.email_ha
         data:
           title: "🚨 CRITICAL - Home Assistant CPU Emergency"
           message: >
@@ -414,7 +414,7 @@ automation:
           parse_mode: markdown
 
       # --- Email ---
-      - service: notify.email_alerts_jbarkhuizen_gmail_com
+      - service: notify.email_ha
         data:
           title: "🟠 Home Assistant - High Memory Usage Alert"
           message: >
@@ -521,7 +521,7 @@ automation:
           parse_mode: markdown
 
       # --- Email ---
-      - service: notify.email_alerts_jbarkhuizen_gmail_com
+      - service: notify.email_ha
         data:
           title: "Home Assistant - Daily System Health Report"
           message: >
@@ -606,7 +606,7 @@ automation:
             ✅ No critical issues detected — All systems operating normally
             {% endif %}
 
-            ✅ Email sent — notify.email_alerts_jbarkhuizen_gmail_com
+            ✅ Email sent — notify.email_ha
             ✅ Telegram sent — chat_id_2
             ✅ Mobile Push sent — SM-G996B
           notification_id: "system_daily_health_report"
@@ -667,7 +667,7 @@ automation:
           parse_mode: markdown
 
       # --- Email ---
-      - service: notify.email_alerts_jbarkhuizen_gmail_com
+      - service: notify.email_ha
         data:
           title: "🟠 Home Assistant - High Disk Usage Alert"
           message: >
@@ -774,7 +774,7 @@ automation:
           parse_mode: markdown
 
       # --- Email ---
-      - service: notify.email_alerts_jbarkhuizen_gmail_com
+      - service: notify.email_ha
         data:
           title: "🚨 CRITICAL - Home Assistant Disk Full"
           message: >

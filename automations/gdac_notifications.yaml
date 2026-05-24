@@ -81,7 +81,7 @@
         notification_id: gdacs_daily_summary
 
     # --- Email ---
-    - service: notify.email_notification_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "🌍 GDACS — Daily Summary"
         message: >-
@@ -203,7 +203,7 @@
         notification_id: gdacs_high_alert
 
     # --- Email ---
-    - service: notify.email_notification_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "🚨 GDACS High Severity Alert"
         message: >-

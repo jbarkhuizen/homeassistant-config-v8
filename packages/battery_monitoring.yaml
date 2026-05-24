@@ -334,7 +334,7 @@ automation:
 
             # Send Email Alert
             # Email Notification Service
-            - service: notify.email_alerts_jbarkhuizen_gmail_com
+            - service: notify.email_ha
               data:
                 title: "🟡 Low Battery Alert - {{ repeat.item.name | replace(' Battery', '') }}"
                 message: >
@@ -497,7 +497,7 @@ automation:
 
             # Send Urgent Email
             # Email Notification Service
-            - service: notify.email_alerts_jbarkhuizen_gmail_com
+            - service: notify.email_ha
               data:
                 title: '🔴 CRITICAL - Battery Emergency: {{ repeat.item.name | replace(" Battery", "") }}'
                 message: >
@@ -667,7 +667,7 @@ automation:
 
       # Send Email Report with HTML Table
       # Email Notification Service
-      - service: notify.email_alerts_jbarkhuizen_gmail_com
+      - service: notify.email_ha
         data:
           title: '📊 Weekly Battery Status Report - {{ now().strftime("%d %B %Y") }}'
           message: >
@@ -875,7 +875,7 @@ automation:
           parse_mode: markdown
 
       # Send Daily Email Reminder
-      - service: notify.email_alerts_jbarkhuizen_gmail_com
+      - service: notify.email_ha
         data:
           title: "⚠️ Daily Battery Reminder"
           message: >

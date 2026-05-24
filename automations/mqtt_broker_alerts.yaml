@@ -93,7 +93,7 @@
                 notification_id: "mqtt_broker_alert"
 
             # --- Email ---
-            - service: notify.email_notification_jbarkhuizen_gmail_com
+            - service: notify.email_ha
               data:
                 title: "🚨 CRITICAL MQTT Broker Alert"
                 message: >-
@@ -169,7 +169,7 @@
                 notification_id: "mqtt_broker_alert"
 
             # --- Email ---
-            - service: notify.email_notification_jbarkhuizen_gmail_com
+            - service: notify.email_ha
               data:
                 title: "⚠️ MQTT Broker Elevated Usage"
                 message: >-

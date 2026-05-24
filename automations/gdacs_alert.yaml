@@ -17,7 +17,7 @@
   #=============================================================================
   trigger:
     - platform: state
-      entity_id: sensor.gdacs_my_location  # CHANGE THIS to your actual GDACS entity ID
+      entity_id: sensor.gdacs_my_location # CHANGE THIS to your actual GDACS entity ID
 
   #=============================================================================
   # CONDITIONS: Ensure valid alert data exists
@@ -120,7 +120,7 @@
         parse_mode: markdown
 
     # Action 3: Send Email notification with comprehensive details
-    - service: notify.email_alerts_jbarkhuizen_gmail_com
+    - service: notify.email_ha
       data:
         title: "🚨 GDACS Disaster Alert - {{ trigger.to_state.state }} Active Alerts"
         message: >
