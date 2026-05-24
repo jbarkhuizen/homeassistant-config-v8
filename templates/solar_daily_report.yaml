@@ -1,0 +1,36 @@
+- sensor:
+    - name: "Solar Daily Report 18h00 Message"
+      unique_id: solar_daily_report_18h00_message
+      icon: mdi:solar-power
+      unit_of_measurement: null
+      state: >
+        {% set actual_production = states('sensor.daily_total_solar_production') | float(0) %}
+        {% set forecast_value = states('sensor.solar_forecast_total_today') | float(0) %}
+        {% set remaining = states('sensor.energy_production_today_remaining') | float(0) %}
+        {% set accuracy = states('sensor.solar_forecast_accuracy_so_far') | float(0) %}
+        {% set peak_time = states('sensor.solar_forecast_peak_time_today') %}
+        
+        Daily Solar Report - {{ now().strftime('%d %B %Y') }}
+        
+        ACTUAL PRODUCTION
+        Generated: {{ "%.2f" | format(actual_production) }} kWh
+        
+        TODAY'S FORECAST
+        Expected: {{ "%.2f" | format(forecast_value) }} kWh
+        Remaining: {{ "%.2f" | format(remaining) }} kWh
+        
+        VARIANCE
+        {% if actual_production > forecast_value %}
+        Performance: +{{ "%.2f" | format(actual_production - forecast_value) }} kWh ({{ ((actual_production / forecast_value - 1) * 100) | round(1) }}% above forecast)
+        {% else %}
+        Performance: -{{ "%.2f" | format(forecast_value - actual_production) }} kWh ({{ ((1 - actual_production / forecast_value) * 100) | round(1) }}% below forecast)
+        {% endif %}
+        
+        FORECAST ACCURACY
+        So Far: {{ accuracy | round(1) }}%
+        
+        PEAK GENERATION
+        Peak Time: {{ peak_time[11:16] if peak_time else 'N/A' }} SAST
+        
+        Next Update: 18:00 daily
+        Inverters: Deye Master + Slave
