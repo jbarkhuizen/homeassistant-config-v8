@@ -1,0 +1,162 @@
+{# =============================================================================
+   JINJA TEMPLATE: GDACS Notifications
+   File: templates/gdacs_notifications.jinja
+   Purpose: Shared email and Telegram message bodies for GDACS automations
+   Used by: automations/gdac_notifications.yaml
+   Updated: 2026-05-17
+   ============================================================================= #}
+
+{% macro gdacs_daily_email() -%}
+{% set total_events = states('sensor.gdacs_events_within_radius') %}
+{% set red_events = states('sensor.gdacs_events_red_within_radius') %}
+{% set orange_events = states('sensor.gdacs_events_orange_within_radius') %}
+{% set green_events = states('sensor.gdacs_events_green_within_radius') %}
+{% set highest_severity = states('sensor.gdacs_highest_severity_within_radius') %}
+{% set nearest_event = states('sensor.gdacs_nearest_event') %}
+{% set radius_km = states('input_number.gdacs_radius_km') %}
+{% set min_severity = states('input_select.gdacs_min_severity') %}
+
+GDACS DAILY SUMMARY
+
+Date and Time: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
+
+========================================================================
+
+MONITORING SETTINGS
+
+Radius: {{ radius_km }} km
+Minimum Severity: {{ min_severity }}
+
+========================================================================
+
+EVENT COUNTS
+
+Total Events Within Radius: {{ total_events }}
+Red Events: {{ red_events }}
+Orange Events: {{ orange_events }}
+Green Events: {{ green_events }}
+
+Highest Severity: {{ highest_severity }}
+Nearest Event: {{ nearest_event }}
+
+========================================================================
+
+REFERENCE
+
+GDACS Website: https://www.gdacs.org
+Home Assistant: http://192.168.1.31:8123
+Cloud URL: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
+{%- endmacro %}
+
+{% macro gdacs_daily_telegram() -%}
+{% set total_events = states('sensor.gdacs_events_within_radius') %}
+{% set red_events = states('sensor.gdacs_events_red_within_radius') %}
+{% set orange_events = states('sensor.gdacs_events_orange_within_radius') %}
+{% set green_events = states('sensor.gdacs_events_green_within_radius') %}
+{% set highest_severity = states('sensor.gdacs_highest_severity_within_radius') %}
+{% set nearest_event = states('sensor.gdacs_nearest_event') %}
+{% set radius_km = states('input_number.gdacs_radius_km') %}
+{% set min_severity = states('input_select.gdacs_min_severity') %}
+
+🌍 *GDACS DAILY SUMMARY*
+
+📅 {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+*Monitoring Settings*
+• Radius: {{ radius_km }} km
+• Minimum Severity: {{ min_severity }}
+
+*Event Counts*
+• Total: {{ total_events }}
+• 🔴 Red: {{ red_events }}
+• 🟠 Orange: {{ orange_events }}
+• 🟢 Green: {{ green_events }}
+
+*Status*
+• Highest Severity: {{ highest_severity }}
+• Nearest Event: {{ nearest_event }}
+
+🔗 https://www.gdacs.org
+🏠 http://192.168.1.31:8123
+{%- endmacro %}
+
+{% macro gdacs_high_alert_email() -%}
+{% set total_events = states('sensor.gdacs_events_within_radius') %}
+{% set red_events = states('sensor.gdacs_events_red_within_radius') %}
+{% set orange_events = states('sensor.gdacs_events_orange_within_radius') %}
+{% set highest_severity = states('sensor.gdacs_highest_severity_within_radius') %}
+{% set nearest_event = states('sensor.gdacs_nearest_event') %}
+{% set radius_km = states('input_number.gdacs_radius_km') %}
+{% set min_severity = states('input_select.gdacs_min_severity') %}
+
+GDACS HIGH SEVERITY ALERT
+
+Date and Time: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
+
+========================================================================
+
+ALERT STATUS: ACTIVE
+
+Radius: {{ radius_km }} km
+Minimum Severity Setting: {{ min_severity }}
+Highest Severity Detected: {{ highest_severity }}
+Nearest Event: {{ nearest_event }}
+
+========================================================================
+
+EVENT BREAKDOWN
+
+Red Events: {{ red_events }}
+Orange Events: {{ orange_events }}
+Total Events Within Radius: {{ total_events }}
+
+========================================================================
+
+RECOMMENDED ACTIONS
+
+- Review current GDACS event details
+- Monitor official disaster response channels
+- Check local and regional alerts if relevant
+- Follow updates on the GDACS website
+
+========================================================================
+
+REFERENCE
+
+GDACS Website: https://www.gdacs.org
+Home Assistant: http://192.168.1.31:8123
+Cloud URL: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
+{%- endmacro %}
+
+{% macro gdacs_high_alert_telegram() -%}
+{% set total_events = states('sensor.gdacs_events_within_radius') %}
+{% set red_events = states('sensor.gdacs_events_red_within_radius') %}
+{% set orange_events = states('sensor.gdacs_events_orange_within_radius') %}
+{% set highest_severity = states('sensor.gdacs_highest_severity_within_radius') %}
+{% set nearest_event = states('sensor.gdacs_nearest_event') %}
+{% set radius_km = states('input_number.gdacs_radius_km') %}
+{% set min_severity = states('input_select.gdacs_min_severity') %}
+
+🚨 *GDACS HIGH SEVERITY ALERT*
+
+📅 {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+*Alert Status*
+• ACTIVE
+
+*Monitoring Settings*
+• Radius: {{ radius_km }} km
+• Minimum Severity: {{ min_severity }}
+
+*Current Risk*
+• Highest Severity: {{ highest_severity }}
+• Nearest Event: {{ nearest_event }}
+
+*Event Breakdown*
+• 🔴 Red: {{ red_events }}
+• 🟠 Orange: {{ orange_events }}
+• Total: {{ total_events }}
+
+🔗 https://www.gdacs.org
+🏠 http://192.168.1.31:8123
+{%- endmacro %}

@@ -818,10 +818,22 @@ TRAINING_SENSORS: tuple[GarminConnectSensorEntityDescription, ...] = (
         attributes_fn=lambda data: data.get("trainingReadiness") or {},
     ),
     GarminConnectSensorEntityDescription(
+        key="recoveryTime",
+        translation_key="recovery_time",
+        coordinator_type=CoordinatorType.TRAINING,
+        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_unit_of_measurement=UnitOfTime.HOURS,
+        suggested_display_precision=1,
+        value_fn=lambda data: (data.get("trainingReadiness") or {}).get("recoveryTime"),
+        preserve_value=True,
+    ),
+    GarminConnectSensorEntityDescription(
         key="trainingStatus",
         translation_key="training_status",
         coordinator_type=CoordinatorType.TRAINING,
-        value_fn=lambda data: (data.get("trainingStatus") or {}).get("trainingStatusPhrase"),
+        value_fn=lambda data: data.get("trainingStatusPhrase"),
         attributes_fn=lambda data: data.get("trainingStatus") or {},
     ),
     GarminConnectSensorEntityDescription(
@@ -1093,6 +1105,11 @@ GOALS_SENSORS: tuple[GarminConnectSensorEntityDescription, ...] = (
                     if b.get("badgeEarnedDate")
                     else None,
                     "times_earned": b.get("badgeEarnedNumber"),
+                    "uuid": b.get("badgeUuid"),
+                    "key": b.get("badgeKey"),
+                    "category_id": b.get("badgeCategoryId"),
+                    "difficulty_id": b.get("badgeDifficultyId"),
+                    "type_ids": b.get("badgeTypeIds"),
                 }
                 for b in sorted(
                     data.get("badges", []),
@@ -1129,7 +1146,7 @@ GOALS_SENSORS: tuple[GarminConnectSensorEntityDescription, ...] = (
                     "target_duration": g.get("durationInSeconds"),
                     "target_calories": g.get("caloriesInKiloCalories"),
                     "target_activities": g.get("numberOfActivities"),
-                    "progress_percent": g.get("progress", {}).get("percent"),
+                    "progress_percent": (g.get("progress") or {}).get("percent"),
                     "start_date": g.get("startDate"),
                     "end_date": g.get("endDate"),
                     "activity_type": g.get("activityType"),
@@ -1171,7 +1188,7 @@ GOALS_SENSORS: tuple[GarminConnectSensorEntityDescription, ...] = (
                 {
                     "name": g.get("name"),
                     "type": g.get("type"),
-                    "progress_percent": g.get("progress", {}).get("percent"),
+                    "progress_percent": (g.get("progress") or {}).get("percent"),
                     "start_date": g.get("startDate"),
                     "end_date": g.get("endDate"),
                 }

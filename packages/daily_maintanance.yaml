@@ -492,7 +492,6 @@ template:
           {% if this.state == 'ok' %}mdi:database-check
           {% elif this.state == 'warning' %}mdi:database-alert
           {% else %}mdi:database-clock{% endif %}
-      # NEW: Convert log size to numeric MB for trend checks
       - name: "Home Assistant Log Size (MB)"
         unique_id: ha_log_size_mb
         unit_of_measurement: MB
@@ -513,7 +512,7 @@ template:
       - name: "Home Assistant Log Has Errors"
         unique_id: ha_log_has_errors
         device_class: problem
-        state: "{{ states('sensor.homeassistant_log_size_mb') | float(0) > 0.25 }}"
+        state: "{{ states('sensor.home_assistant_log_size_mb') | float(0) > 0.25 }}"
         icon: >
           {% if is_state(this.entity_id, 'on') %}mdi:alert-circle{% else %}mdi:check-circle{% endif %}
 
