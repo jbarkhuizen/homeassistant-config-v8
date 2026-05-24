@@ -1,6 +1,6 @@
 # packages/network_devices.yaml
-# Network Device Discovery Package with Custom Device Mapping
-# All 57 network devices with custom names and descriptions
+# Fresh Network Device Discovery Package
+# Clean implementation with minimal dependencies
 
 # Network device discovery using nmap
 device_tracker:
@@ -38,54 +38,68 @@ template:
         state: "{{ states('sensor.network_active_devices') }}"
         attributes:
           last_scan: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
-          device_mapping: >
-            {
-              'B4:63:6F:68:57:F1': {'name': 'Nokia DSL Router', 'type': 'Primary Router - DSL Gateway'},
-              '74:DA:88:CB:53:30': {'name': 'TP-Link Network Switch', 'type': 'Network Switch/Access Point'},
-              '80:26:89:18:CB:12': {'name': 'D-Link Network Device', 'type': 'Network Infrastructure'},
-              'A0:63:91:BB:07:E0': {'name': 'Netgear Network Device', 'type': 'Network Infrastructure'},
-              '74:78:27:40:D1:F5': {'name': 'Dell Server/PC', 'type': 'Desktop Computer'},
-              '30:8D:99:AE:F5:CC': {'name': 'HP Network Printer', 'type': 'Networked Printer'},
-              'F0:B3:EC:3F:B1:14': {'name': 'Apple iPhone/iPad', 'type': 'Personal Mobile Device'},
-              '00:C3:F4:0D:91:33': {'name': 'Samsung Galaxy Phone', 'type': 'Samsung SM_G996B - Personal Mobile'},
-              '00:D0:B8:2A:18:6E': {'name': 'Iomega NAS Port 1', 'type': 'Network Attached Storage - Primary'},
-              '00:D0:B8:2A:18:6D': {'name': 'Iomega NAS Port 2', 'type': 'Network Attached Storage - Secondary Port'},
-              'EC:08:6B:A5:80:20': {'name': 'TP-Link Smart Device Multi-Port', 'type': 'Multi-Port Device (192.168.1.10 & .11)'},
-              '7C:F6:66:08:D6:3F': {'name': 'Tuya Smart Plug 1', 'type': 'Smart Power Outlet'},
-              '38:A5:C9:AD:59:53': {'name': 'Tuya Smart Plug 2', 'type': 'Smart Power Outlet'},
-              '10:5A:17:16:05:5D': {'name': 'Tuya Smart Plug 3', 'type': 'Smart Power Outlet'},
-              '10:5A:17:16:01:29': {'name': 'Tuya Smart Plug 4', 'type': 'Smart Power Outlet'},
-              '18:DE:50:E0:A7:1A': {'name': 'Tuya Smart Plug 5', 'type': 'Smart Power Outlet'},
-              '38:A5:C9:AD:5F:AF': {'name': 'Tuya Smart Plug 6', 'type': 'Smart Power Outlet'},
-              'A0:92:08:78:66:B3': {'name': 'Tuya Smart Plug 7', 'type': 'Smart Power Outlet'},
-              '38:2C:E5:14:B6:CC': {'name': 'Tuya Smart Plug 8', 'type': 'Smart Power Outlet'},
-              '18:DE:50:E1:3A:3E': {'name': 'Tuya Smart Plug 9', 'type': 'Smart Power Outlet'},
-              '38:A5:C9:AD:56:08': {'name': 'Tuya Smart Plug 10', 'type': 'Smart Power Outlet'},
-              '18:DE:50:E0:AF:E6': {'name': 'Tuya Smart Plug 11', 'type': 'Smart Power Outlet'},
-              '18:DE:50:E1:54:79': {'name': 'Tuya Smart Plug 12', 'type': 'Smart Power Outlet'},
-              'AC:BD:70:7B:5E:60': {'name': 'Huawei Tuya Device', 'type': 'Huawei Tuya Smart Device'},
-              '34:85:18:D0:D1:88': {'name': 'Espressif IoT Device 1', 'type': 'ESP32/ESP8266 Device'},
-              'D4:D4:DA:58:62:DC': {'name': 'Espressif IoT Device 2', 'type': 'ESP32/ESP8266 Device'},
-              'CC:50:E3:67:E6:72': {'name': 'Espressif IoT Device 3', 'type': 'ESP32/ESP8266 Device'},
-              '84:F3:EB:A7:18:F8': {'name': 'Espressif IoT Device 4', 'type': 'ESP32/ESP8266 Device'},
-              'C4:4F:33:B1:D6:44': {'name': 'Espressif IoT Device 5', 'type': 'ESP32/ESP8266 Device'},
-              'C8:2B:96:E6:BE:BD': {'name': 'Espressif IoT Device 6', 'type': 'ESP32/ESP8266 Device'},
-              '20:98:ED:69:A1:45': {'name': 'Espressif IoT Device 7', 'type': 'ESP32/ESP8266 Device'},
-              'C4:DD:57:10:F8:72': {'name': 'Espressif IoT Device 8', 'type': 'ESP32/ESP8266 Device'},
-              'D4:D4:DA:41:E2:98': {'name': 'Espressif IoT Device 9', 'type': 'ESP32/ESP8266 Device'},
-              '9C:9C:1F:A3:04:91': {'name': 'Espressif IoT Device 10', 'type': 'ESP32/ESP8266 Device'},
-              'CC:50:E3:68:03:30': {'name': 'Espressif IoT Device 11', 'type': 'ESP32/ESP8266 Device'},
-              '44:17:93:7D:16:D4': {'name': 'Espressif IoT Device 12', 'type': 'ESP32/ESP8266 Device'},
-              '5C:CF:7F:7A:5F:FB': {'name': 'Espressif IoT Device 13', 'type': 'ESP32/ESP8266 Device'},
-              '7C:87:CE:A5:58:32': {'name': 'Espressif IoT Device 14', 'type': 'ESP32/ESP8266 Device'},
-              '70:03:9F:98:B7:35': {'name': 'Espressif IoT Device 15', 'type': 'ESP32/ESP8266 Device'},
-              '9C:9C:1F:A1:5A:14': {'name': 'Espressif IoT Device 16', 'type': 'ESP32/ESP8266 Device'},
-              '90:31:4B:DC:2C:B4': {'name': 'AltoBeam Camera Multi-Port', 'type': 'Video Camera (192.168.1.103 & .158)'},
-              '38:BE:AB:4C:A4:06': {'name': 'AltoBeam Device Multi-Port', 'type': 'AltoBeam Device (192.168.1.105 & .172)'},
-              'F4:B1:9C:A9:76:65': {'name': 'AltoBeam Device 3', 'type': 'AltoBeam Video/Imaging'},
-              'AC:BD:70:7B:5E:6F': {'name': 'AltoBeam Device 4', 'type': 'AltoBeam Video/Imaging'},
-              '00:08:9B:C2:E5:13': {'name': 'ICP Electronics Device 1', 'type': 'ICP Industrial Device'},
-              '00:08:9B:C2:E5:14': {'name': 'ICP Electronics Device 2', 'type': 'ICP Industrial Device'},
-              '30:4A:26:CA:A8:A4': {'name': 'Shenzhen Trolink Device', 'type': 'Trolink Technology Device'},
-              'F4:42:50:01:91:D5': {'name': 'Bouffalo Lab Device', 'type': 'Bouffalo Lab IoT Device'},
-              '28:6B:B4:BA:16:C1': {'name': 'Sjit Device', 'type': 'Sjit Technol
+          devices: >
+            {% set devices = [] %}
+
+            {# Add Home Assistant #}
+            {% set ha_device = {
+              'name': 'Home Assistant Server',
+              'ip': '192.168.1.31',
+              'status': 'Online',
+              'type': 'Server',
+              'vendor': 'Home Assistant',
+              'mac': 'Unknown',
+              'ports': '8123',
+              'services': 'HA, InfluxDB, Grafana',
+              'last_seen': now().strftime('%Y-%m-%d %H:%M')
+            } %}
+            {% set devices = devices + [ha_device] %}
+
+            {# Add Router #}
+            {% set router_device = {
+              'name': 'Nokia Beacon 2 Router',
+              'ip': '192.168.1.1', 
+              'status': 'Online' if is_state('binary_sensor.nokia_router_online', 'on') else 'Offline',
+              'type': 'Router',
+              'vendor': 'Nokia',
+              'mac': 'Unknown',
+              'ports': '80, 443',
+              'services': 'HTTP, HTTPS, DHCP, DNS',
+              'last_seen': now().strftime('%Y-%m-%d %H:%M')
+            } %}
+            {% set devices = devices + [router_device] %}
+
+            {# Add discovered device tracker entities #}
+            {% for entity in states.device_tracker %}
+              {% if entity.attributes.source_type == 'router' and entity.attributes.ip %}
+                {% set device = {
+                  'name': entity.attributes.friendly_name or entity.name or states[entity.entity_id].name,
+                  'ip': entity.attributes.ip,
+                  'status': 'Online' if entity.state == 'home' else 'Away',
+                  'type': 'Mobile' if 'iphone' in entity.name.lower() else
+                          'Computer' if 'laptop' in entity.name.lower() else
+                          'Smart Device' if 'sonoff' in entity.name.lower() or 'tuya' in entity.name.lower() else
+                          'Unknown Device',
+                  'vendor': entity.attributes.vendor or 'Unknown',
+                  'mac': entity.attributes.mac or 'Unknown',
+                  'ports': 'Unknown',
+                  'services': 'Unknown',
+                  'last_seen': entity.last_changed.strftime('%Y-%m-%d %H:%M') if entity.last_changed else 'Unknown'
+                } %}
+                {% set devices = devices + [device] %}
+              {% endif %}
+            {% endfor %}
+
+            {{ devices | sort(attribute='ip') }}
+
+      - name: "Network Summary"
+        unique_id: network_summary
+        state: "{{ state_attr('sensor.network_devices_table', 'devices') | length }}"
+        attributes:
+          total_devices: "{{ state_attr('sensor.network_devices_table', 'devices') | length }}"
+          online_devices: >
+            {% set devices = state_attr('sensor.network_devices_table', 'devices') or [] %}
+            {{ devices | selectattr('status', 'equalto', 'Online') | list | length }}
+          router_status: "{{ 'Online' if is_state('binary_sensor.nokia_router_online', 'on') else 'Offline' }}"
+          internet_status: "{{ 'Connected' if is_state('binary_sensor.internet_connected', 'on') else 'Disconnected' }}"
+          last_update: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
