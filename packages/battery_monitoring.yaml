@@ -63,7 +63,7 @@ template:
         unique_id: battery_devices_low_count
         state: >
           {% set ns = namespace(count=0) %}
-          {% for state in states.sensor 
+          {% for state in states.sensor
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'battery') %}
             {% if state.state not in ['unknown', 'unavailable', 'none'] %}
@@ -79,7 +79,7 @@ template:
         attributes:
           devices: >
             {% set ns = namespace(devices=[]) %}
-            {% for state in states.sensor 
+            {% for state in states.sensor
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'battery') %}
               {% if state.state not in ['unknown', 'unavailable', 'none'] %}
@@ -103,7 +103,7 @@ template:
         unique_id: battery_devices_critical_count
         state: >
           {% set ns = namespace(count=0) %}
-          {% for state in states.sensor 
+          {% for state in states.sensor
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'battery') %}
             {% if state.state not in ['unknown', 'unavailable', 'none'] %}
@@ -119,7 +119,7 @@ template:
         attributes:
           devices: >
             {% set ns = namespace(devices=[]) %}
-            {% for state in states.sensor 
+            {% for state in states.sensor
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'battery') %}
               {% if state.state not in ['unknown', 'unavailable', 'none'] %}
@@ -143,7 +143,7 @@ template:
         unique_id: battery_devices_total_count
         state: >
           {% set ns = namespace(count=0) %}
-          {% for state in states.sensor 
+          {% for state in states.sensor
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'battery') %}
             {% if state.state not in ['unknown', 'unavailable', 'none'] %}
@@ -161,7 +161,7 @@ template:
         unique_id: battery_system_health_score
         state: >
           {% set ns = namespace(total=0, count=0) %}
-          {% for state in states.sensor 
+          {% for state in states.sensor
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'battery') %}
             {% if state.state not in ['unknown', 'unavailable', 'none'] %}
@@ -212,7 +212,7 @@ template:
         unique_id: battery_next_replacement_needed
         state: >
           {% set ns = namespace(lowest_battery=100, device_name='None') %}
-          {% for state in states.sensor 
+          {% for state in states.sensor
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'battery') %}
             {% if state.state not in ['unknown', 'unavailable', 'none'] %}
@@ -228,7 +228,7 @@ template:
         attributes:
           battery_level: >
             {% set ns = namespace(lowest_battery=100) %}
-            {% for state in states.sensor 
+            {% for state in states.sensor
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'battery') %}
               {% if state.state not in ['unknown', 'unavailable', 'none'] %}
@@ -271,12 +271,12 @@ automation:
       # Trigger when any battery sensor goes below low threshold
       - platform: template
         value_template: >
-          {% for state in states.sensor 
+          {% for state in states.sensor
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'battery') %}
             {% if state.state not in ['unknown', 'unavailable', 'none'] %}
               {% set battery_level = state.state | float(100) %}
-              {% if battery_level < states('input_number.battery_low_threshold') | float 
+              {% if battery_level < states('input_number.battery_low_threshold') | float
                  and battery_level >= states('input_number.battery_critical_threshold') | float %}
                 {{ true }}
               {% endif %}
@@ -292,12 +292,12 @@ automation:
       - repeat:
           for_each: >
             {% set ns = namespace(devices=[]) %}
-            {% for state in states.sensor 
+            {% for state in states.sensor
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'battery') %}
               {% if state.state not in ['unknown', 'unavailable', 'none'] %}
                 {% set battery_level = state.state | float(100) %}
-                {% if battery_level < states('input_number.battery_low_threshold') | float 
+                {% if battery_level < states('input_number.battery_low_threshold') | float
                    and battery_level >= states('input_number.battery_critical_threshold') | float %}
                   {% set ns.devices = ns.devices + [{
                     'name': state.name,
@@ -380,6 +380,42 @@ automation:
                   This is an automated notification from your Home Assistant battery monitoring system.
 
                   ================================================================================
+
+            # Send Mobile Push Alert
+            - service: notify.mobile_app_sm_g996b
+              data:
+                title: "🟡 Low Battery Alert"
+                message: >-
+                  {{ repeat.item.name | replace(' Battery', '') }} battery is low at
+                  {{ repeat.item.battery | round(1) }}%.
+                data:
+                  channel: "Battery Alerts"
+                  importance: high
+                  group: "ha-battery"
+                  color: "#FF9800"
+                  actions:
+                    - action: "OPEN_HA"
+                      title: "Open HA"
+                      uri: "http://192.168.1.31:8123"
+
+            # Send HA Persistent Notification
+            - service: persistent_notification.create
+              data:
+                title: "🟡 Low Battery Alert - {{ repeat.item.name | replace(' Battery', '') }}"
+                message: >
+                  Device battery running low.
+
+                  Device: {{ repeat.item.name | replace(' Battery', '') }}
+                  Battery Level: {{ repeat.item.battery | round(1) }}%
+                  Threshold: {{ states('input_number.battery_low_threshold') }}%
+
+                  Action:
+                  Order replacement battery and monitor device functionality.
+
+                  Entity ID: {{ repeat.item.entity_id }}
+                  Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+                notification_id: "battery_low_{{ repeat.item.entity_id | replace('.', '_') }}"
+
             # Log Event
             - service: system_log.write
               data:
@@ -398,7 +434,7 @@ automation:
     trigger:
       - platform: template
         value_template: >
-          {% for state in states.sensor 
+          {% for state in states.sensor
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'battery') %}
             {% if state.state not in ['unknown', 'unavailable', 'none'] %}
@@ -418,7 +454,7 @@ automation:
       - repeat:
           for_each: >
             {% set ns = namespace(devices=[]) %}
-            {% for state in states.sensor 
+            {% for state in states.sensor
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'battery') %}
               {% if state.state not in ['unknown', 'unavailable', 'none'] %}
@@ -486,6 +522,41 @@ automation:
 
                   Home Assistant: http://192.168.1.31:8123
 
+            # Send Mobile Push Alert
+            - service: notify.mobile_app_sm_g996b
+              data:
+                title: "🔴 Critical Battery Alert"
+                message: >-
+                  {{ repeat.item.name | replace(' Battery', '') }} battery is critical at
+                  {{ repeat.item.battery | round(1) }}%. Replace immediately.
+                data:
+                  channel: "Battery Alerts"
+                  importance: high
+                  group: "ha-battery"
+                  color: "#F44336"
+                  actions:
+                    - action: "OPEN_HA"
+                      title: "Open HA"
+                      uri: "http://192.168.1.31:8123"
+
+            # Send HA Persistent Notification
+            - service: persistent_notification.create
+              data:
+                title: "🔴 Critical Battery Alert - {{ repeat.item.name | replace(' Battery', '') }}"
+                message: >
+                  Immediate action required.
+
+                  Device: {{ repeat.item.name | replace(' Battery', '') }}
+                  Battery Level: {{ repeat.item.battery | round(1) }}%
+                  Critical Threshold: {{ states('input_number.battery_critical_threshold') }}%
+
+                  Action:
+                  Replace this battery immediately to avoid device failure.
+
+                  Entity ID: {{ repeat.item.entity_id }}
+                  Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+                notification_id: "battery_critical_{{ repeat.item.entity_id | replace('.', '_') }}"
+
             # Log Critical Event
             - service: system_log.write
               data:
@@ -518,7 +589,7 @@ automation:
       - variables:
           battery_devices: >
             {% set ns = namespace(devices=[]) %}
-            {% for state in states.sensor 
+            {% for state in states.sensor
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'battery') %}
               {% if state.state not in ['unknown', 'unavailable', 'none'] %}
@@ -619,7 +690,7 @@ automation:
             ================================================================================
 
             {% set ns = namespace(devices=[]) %}
-            {% for state in states.sensor 
+            {% for state in states.sensor
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'battery') %}
               {% if state.state not in ['unknown', 'unavailable', 'none'] %}
@@ -713,6 +784,43 @@ automation:
             Home Assistant: http://192.168.1.31:8123
             Generated: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
 
+      # Send Mobile Push Report
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "📊 Weekly Battery Status Report"
+          message: >-
+            Total devices: {{ states('sensor.battery_devices_total_count') }},
+            health: {{ states('sensor.battery_system_health_score') }}%,
+            low: {{ states('sensor.battery_devices_low_count') }},
+            critical: {{ states('sensor.battery_devices_critical_count') }}.
+          data:
+            channel: "Battery Alerts"
+            importance: default
+            group: "ha-battery"
+            color: "#4CAF50"
+            actions:
+              - action: "OPEN_HA"
+                title: "Open HA"
+                uri: "http://192.168.1.31:8123"
+
+      # Send HA Persistent Notification
+      - service: persistent_notification.create
+        data:
+          title: "📊 Weekly Battery Status Report"
+          message: >
+            Weekly battery report generated.
+
+            Total Devices: {{ states('sensor.battery_devices_total_count') }}
+            System Health Score: {{ states('sensor.battery_system_health_score') }}%
+            Low Battery Devices: {{ states('sensor.battery_devices_low_count') }}
+            Critical Battery Devices: {{ states('sensor.battery_devices_critical_count') }}
+
+            Next Replacement:
+            {{ states('sensor.battery_next_replacement_needed') }} ({{ state_attr('sensor.battery_next_replacement_needed', 'battery_level') }}%)
+
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          notification_id: "battery_weekly_status_report"
+
       # Log Weekly Report
       - service: system_log.write
         data:
@@ -765,6 +873,61 @@ automation:
             🏠 System: 192.168.1.31:8123
             📅 {{ now().strftime('%A, %d %B %Y') }}
           parse_mode: markdown
+
+      # Send Daily Email Reminder
+      - service: notify.email_alerts_jbarkhuizen_gmail_com
+        data:
+          title: "⚠️ Daily Battery Reminder"
+          message: >
+            DAILY BATTERY REMINDER
+
+            Critical batteries still need attention.
+
+            Critical Device Count: {{ states('sensor.battery_devices_critical_count') }}
+            System Health Score: {{ states('sensor.battery_system_health_score') }}%
+
+            {% for device in state_attr('sensor.battery_devices_critical_count', 'devices') %}
+            - {{ device.name }}: {{ device.battery }}%
+            {% endfor %}
+
+            Action required today:
+            Replace these batteries to avoid device failure.
+
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+      # Send Daily Mobile Push Reminder
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "⚠️ Daily Battery Reminder"
+          message: >-
+            {{ states('sensor.battery_devices_critical_count') }} critical battery device(s)
+            still need attention today.
+          data:
+            channel: "Battery Alerts"
+            importance: high
+            group: "ha-battery"
+            color: "#FF9800"
+            actions:
+              - action: "OPEN_HA"
+                title: "Open HA"
+                uri: "http://192.168.1.31:8123"
+
+      # Send HA Persistent Notification
+      - service: persistent_notification.create
+        data:
+          title: "⚠️ Daily Battery Reminder"
+          message: >
+            Critical batteries still need attention.
+
+            Critical Device Count: {{ states('sensor.battery_devices_critical_count') }}
+            System Health Score: {{ states('sensor.battery_system_health_score') }}%
+
+            {% for device in state_attr('sensor.battery_devices_critical_count', 'devices') %}
+            - {{ device.name }}: {{ device.battery }}%
+            {% endfor %}
+
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          notification_id: "battery_daily_critical_reminder"
 
       # Log Reminder
       - service: system_log.write
