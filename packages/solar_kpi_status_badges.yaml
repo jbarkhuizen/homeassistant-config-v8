@@ -1,0 +1,135 @@
+template:
+  - sensor:
+      - name: "Solar KPI PV Trend Status"
+        unique_id: solar_kpi_pv_trend_status
+        state: >
+          {% set v = states('sensor.solar_pv_energy_delta_7d') | float(0) %}
+          {% if v > 0.5 %}
+            Improved
+          {% elif v < -0.5 %}
+            Declined
+          {% else %}
+            Stable
+          {% endif %}
+        icon: >
+          {% set v = states('sensor.solar_pv_energy_delta_7d') | float(0) %}
+          {% if v > 0.5 %}
+            mdi:trending-up
+          {% elif v < -0.5 %}
+            mdi:trending-down
+          {% else %}
+            mdi:minus
+          {% endif %}
+
+      - name: "Solar KPI Load Trend Status"
+        unique_id: solar_kpi_load_trend_status
+        state: >
+          {% set v = states('sensor.solar_load_energy_delta_7d') | float(0) %}
+          {% if v > 0.5 %}
+            Increased
+          {% elif v < -0.5 %}
+            Reduced
+          {% else %}
+            Stable
+          {% endif %}
+        icon: >
+          {% set v = states('sensor.solar_load_energy_delta_7d') | float(0) %}
+          {% if v > 0.5 %}
+            mdi:trending-up
+          {% elif v < -0.5 %}
+            mdi:trending-down
+          {% else %}
+            mdi:minus
+          {% endif %}
+
+      - name: "Solar KPI Grid Import Trend Status"
+        unique_id: solar_kpi_grid_import_trend_status
+        state: >
+          {% set v = states('sensor.solar_grid_import_energy_delta_7d') | float(0) %}
+          {% if v < -0.5 %}
+            Improved
+          {% elif v > 0.5 %}
+            Declined
+          {% else %}
+            Stable
+          {% endif %}
+        icon: >
+          {% set v = states('sensor.solar_grid_import_energy_delta_7d') | float(0) %}
+          {% if v < -0.5 %}
+            mdi:trending-down
+          {% elif v > 0.5 %}
+            mdi:trending-up
+          {% else %}
+            mdi:minus
+          {% endif %}
+
+      - name: "Solar KPI Grid Export Trend Status"
+        unique_id: solar_kpi_grid_export_trend_status
+        state: >
+          {% set v = states('sensor.solar_grid_export_energy_delta_7d') | float(0) %}
+          {% if v > 0.5 %}
+            Improved
+          {% elif v < -0.5 %}
+            Declined
+          {% else %}
+            Stable
+          {% endif %}
+        icon: >
+          {% set v = states('sensor.solar_grid_export_energy_delta_7d') | float(0) %}
+          {% if v > 0.5 %}
+            mdi:trending-up
+          {% elif v < -0.5 %}
+            mdi:trending-down
+          {% else %}
+            mdi:minus
+          {% endif %}
+
+      - name: "Solar KPI Self Consumption Trend Status"
+        unique_id: solar_kpi_self_consumption_trend_status
+        state: >
+          {% set current = states('sensor.solar_self_consumption_7d') | float(0) %}
+          {% set prior = states('sensor.solar_self_consumption_prior_7d') | float(0) %}
+          {% set delta = current - prior %}
+          {% if delta > 0.5 %}
+            Improved
+          {% elif delta < -0.5 %}
+            Declined
+          {% else %}
+            Stable
+          {% endif %}
+        icon: >
+          {% set current = states('sensor.solar_self_consumption_7d') | float(0) %}
+          {% set prior = states('sensor.solar_self_consumption_prior_7d') | float(0) %}
+          {% set delta = current - prior %}
+          {% if delta > 0.5 %}
+            mdi:trending-up
+          {% elif delta < -0.5 %}
+            mdi:trending-down
+          {% else %}
+            mdi:minus
+          {% endif %}
+
+      - name: "Solar KPI Grid Dependency Trend Status"
+        unique_id: solar_kpi_grid_dependency_trend_status
+        state: >
+          {% set current = states('sensor.solar_grid_dependency_7d') | float(0) %}
+          {% set prior = states('sensor.solar_grid_dependency_prior_7d') | float(0) %}
+          {% set delta = current - prior %}
+          {% if delta < -0.5 %}
+            Improved
+          {% elif delta > 0.5 %}
+            Declined
+          {% else %}
+            Stable
+          {% endif %}
+        icon: >
+          {% set current = states('sensor.solar_grid_dependency_7d') | float(0) %}
+          {% set prior = states('sensor.solar_grid_dependency_prior_7d') | float(0) %}
+          {% set delta = current - prior %}
+          {% if delta < -0.5 %}
+            mdi:trending-down
+          {% elif delta > 0.5 %}
+            mdi:trending-up
+          {% else %}
+            mdi:minus
+          {% endif %}
