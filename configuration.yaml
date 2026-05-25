@@ -54,8 +54,9 @@ tts:
 # Load Automations, Scripts, Scenes, etc.
 # ==============================================================================
 automation: !include_dir_merge_list automations
+script: !include_dir_merge_list scripts
 script: !include scripts.yaml
-scene: !include scenes.yaml
+scene: !include scene.yaml
 template: !include template.yaml
 group: !include groups.yaml
 
