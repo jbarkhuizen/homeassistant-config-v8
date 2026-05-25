@@ -14,7 +14,7 @@ views:
           - Additional tracked (yours): {{ states('sensor.flightradar24_additional_tracked') }}
 
           Tips:
-          - Use the Tracking Controls to add/remove a HEX/callsign to follow.
+          - Use the Tracking Controls to add or remove a HEX or callsign to follow.
           - Toggle API data fetching if you want to temporarily reduce polling.
 
       - type: glance
@@ -35,10 +35,14 @@ views:
       - type: entities
         title: Tracking Controls
         entities:
-          - switch.api_data_fetching
-          - text.flightradar24_add_to_track
-          - text.flightradar24_remove_from_track
-          - button.clear_additional_tracked
+          - entity: switch.flightradar24_api_data_fetching
+            name: API data fetching
+          - entity: text.flightradar24_add_to_track
+            name: Add to track
+          - entity: text.flightradar24_remove_from_track
+            name: Remove from track
+          - entity: button.flightradar24_clear_additional_tracked
+            name: Clear additional tracked
 
       - type: statistics-graph
         title: Flights & Tracking (24h)
@@ -57,9 +61,8 @@ views:
       - type: entities
         title: Host Correlation (for spikes)
         entities:
-          - sensor.system_monitor_processor_use
-          - sensor.system_monitor_network_throughput_in_enp2s0
-          - sensor.system_monitor_network_throughput_out_enp2s0
+          - entity: sensor.system_monitor_processor_use
+            name: System Monitor Processor use
 
   - title: Trends
     path: trends
@@ -87,7 +90,7 @@ views:
           - sensor.flightradar24_exited_area
 
       - type: statistics-graph
-        title: Most/Additional Tracked (7 days)
+        title: Most and Additional Tracked (7 days)
         chart_type: line
         period: day
         days_to_show: 7
@@ -104,16 +107,19 @@ views:
       - type: markdown
         title: How to Track Aircraft
         content: |
-          - Enter a HEX or callsign in "Add to track", then clear/add as you need.
+          - Enter a HEX or callsign in "Add to track" then clear or add as needed.
           - Use "Remove from track" to stop following a particular aircraft.
           - "Clear additional tracked" resets your custom list.
 
       - type: entities
         title: Manage List
         entities:
-          - text.flightradar24_add_to_track
-          - text.flightradar24_remove_from_track
-          - button.clear_additional_tracked
+          - entity: text.flightradar24_add_to_track
+            name: Add to track
+          - entity: text.flightradar24_remove_from_track
+            name: Remove from track
+          - entity: button.flightradar24_clear_additional_tracked
+            name: Clear additional tracked
 
       - type: history-graph
         title: Activity (24h)

@@ -7,27 +7,37 @@ views:
       - type: markdown
         title: Update Summary
         content: |
-          - Total Updates: {{ state_attr('sensor.home_assistant_updates_summary','total_updates') }}
-          - Friendly Summary: {{ state_attr('sensor.home_assistant_updates_summary','friendly_summary') }}
-          - Auto Update Status: {{ states('sensor.auto_update_status') }} (Detail: {{ state_attr('sensor.auto_update_status','status_detail') }})
-          - Restart Required: {{ state_attr('sensor.auto_update_status','restart_required') }}
+          - Total Updates: {{ state_attr('sensor.home_assistant_updates_summary', 'total_updates') }}
+          - Friendly Summary: {{ state_attr('sensor.home_assistant_updates_summary', 'friendly_summary') }}
+          - Auto Update Status: {{ states('sensor.auto_update_status') }}
+          - Status Detail: {{ state_attr('sensor.auto_update_status', 'status_detail') }}
+          - Restart Required: {{ state_attr('sensor.auto_update_status', 'restart_required') }}
 
       - type: entities
-        title: Critical Updates
+        title: Core Updates
         entities:
-          - update.home_assistant_core_update
-          - update.home_assistant_supervisor_update
-          - update.home_assistant_operating_system_update
+          - entity: update.home_assistant_core_update
+            name: Home Assistant Core
+          - entity: update.home_assistant_supervisor_update
+            name: Home Assistant Supervisor
+          - entity: update.home_assistant_operating_system_update
+            name: Home Assistant Operating System
 
       - type: entities
-        title: Selected Add-on / Integration Updates
+        title: Update Cycle Status
         entities:
-          - update.studio_code_server_update
-          - update.mosquitto_broker_update
-          - update.node_red_update
-          - update.grafana_update
-          - update.influxdb_update
-          - update.adguard_home_update
+          - entity: sensor.auto_update_status
+            name: Auto Update Status
+          - entity: sensor.backup_health_status
+            name: Backup Health Status
+          - entity: sensor.backup_backup_manager_state
+            name: Backup Manager State
+          - entity: sensor.backup_last_successful_automatic_backup
+            name: Last Successful Automatic Backup
+          - entity: sensor.backup_last_attempted_automatic_backup
+            name: Last Attempted Automatic Backup
+          - entity: sensor.backup_next_scheduled_automatic_backup
+            name: Next Scheduled Automatic Backup
 
   - title: Automation Monitoring
     path: automation-monitoring
@@ -36,33 +46,43 @@ views:
       - type: markdown
         title: Automation Overview
         content: |
-          Below are key automations with last run timestamps and enabled state.
+          This dashboard focuses on stable automation and maintenance entities.
           - Maintenance Mode: {{ states('input_boolean.maintenance_mode') }}
+          - Battery Devices Low Count: {{ states('sensor.battery_devices_low_count') }}
+          - Battery Devices Critical Count: {{ states('sensor.battery_devices_critical_count') }}
+          - Battery Health Score: {{ states('sensor.battery_system_health_score') }}
+          - Bad Logins: {{ states('sensor.badlogin') }}
+          - IP Bans Count: {{ states('sensor.home_assistant_ip_bans_count') }}
 
       - type: entities
-        title: Core Maintenance Automations
+        title: Maintenance & Security
         entities:
-          - sensor.automation_db_daily_growth_check_last_run
-          - sensor.automation_db_daily_growth_check_status
-          - sensor.automation_inverterconfig_update_times_last_run
-          - sensor.automation_inverterconfig_update_times_status
-          - sensor.automation_server_sync_clock_last_run
-          - sensor.automation_server_sync_clock_status
-          - sensor.automation_badlogin_daily_check_last_run
-          - sensor.automation_badlogin_daily_check_status
+          - entity: input_boolean.maintenance_mode
+            name: Maintenance Mode
+          - entity: sensor.auto_update_status
+            name: Auto Update Status
+          - entity: sensor.backup_health_status
+            name: Backup Health Status
+          - entity: sensor.badlogin
+            name: Bad Logins
+          - entity: sensor.home_assistant_ip_bans_count
+            name: Home Assistant IP Bans Count
 
       - type: entities
-        title: Prepaid & Battery Alerts
+        title: Battery Monitoring
         entities:
-          - sensor.automation_prepaid_daily_status_last_run
-          - sensor.automation_prepaid_daily_status_status
-          - sensor.automation_prepaid_warning_alert_last_run
-          - sensor.automation_prepaid_warning_alert_status
-          - sensor.automation_prepaid_critical_alert_last_run
-          - sensor.automation_prepaid_critical_alert_status
-          - sensor.battery_devices_low_count
-          - sensor.battery_devices_critical_count
-          - sensor.battery_system_health_score
+          - entity: sensor.battery_devices_total_count
+            name: Battery Devices Total Count
+          - entity: sensor.battery_devices_low_count
+            name: Battery Devices Low Count
+          - entity: sensor.battery_devices_critical_count
+            name: Battery Devices Critical Count
+          - entity: sensor.battery_system_health_score
+            name: Battery System Health Score
+          - entity: sensor.battery_next_replacement_needed
+            name: Battery Next Replacement Needed
+          - entity: binary_sensor.battery_alert_active
+            name: Battery Alert Active
 
       - type: statistics-graph
         title: Battery Health (Counts - 7 Days)
@@ -80,16 +100,16 @@ views:
         title: Backup & Update Cycle
         content: |
           - Backup Health Status: {{ states('sensor.backup_health_status') }}
-          - Last Backup Success: {{ state_attr('sensor.backup_health_status','last_success') }}
-          - Next Scheduled Backup: {{ state_attr('sensor.backup_health_status','next_backup') }}
-          - Auto Update Last Run: {{ state_attr('sensor.auto_update_status','last_run') }}
+          - Last Backup Success: {{ state_attr('sensor.backup_health_status', 'last_success') }}
+          - Next Scheduled Backup: {{ state_attr('sensor.backup_health_status', 'next_backup') }}
+          - Auto Update Last Run: {{ state_attr('sensor.auto_update_status', 'last_run') }}
 
   - title: Scheduled Windows
     path: schedule
     icon: mdi:calendar-clock
     cards:
       - type: markdown
-        title: Daily Schedule (06h00–09h00 Window)
+        title: Daily Schedule (06h00-09h00 Window)
         content: |
           - 06:10 Badlogin Baseline
           - 06:14 IP Ban Spike
@@ -111,8 +131,13 @@ views:
       - type: entities
         title: Maintenance Flags
         entities:
-          - input_boolean.maintenance_mode
-          - sensor.auto_update_status
-          - sensor.backup_health_status
-          - sensor.home_assistant_ip_bans_count
-          - sensor.badlogin
+          - entity: input_boolean.maintenance_mode
+            name: Maintenance Mode
+          - entity: sensor.auto_update_status
+            name: Auto Update Status
+          - entity: sensor.backup_health_status
+            name: Backup Health Status
+          - entity: sensor.home_assistant_ip_bans_count
+            name: Home Assistant IP Bans Count
+          - entity: sensor.badlogin
+            name: Bad Logins

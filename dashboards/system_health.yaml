@@ -16,23 +16,28 @@ views:
           - Memory Use: {{ states('sensor.system_monitor_memory_usage') }}%
           - Load (1/5/15m): {{ states('sensor.system_monitor_load_1_min') }}/{{ states('sensor.system_monitor_load_5_min') }}/{{ states('sensor.system_monitor_load_15_min') }}
           - Last Boot: {{ states('sensor.system_monitor_last_boot') }}
-          - Folding@home CPU: {{ states('sensor.folding_home_cpu_percent') }}% (If high, verify cooling)
-          - Updates Available: {{ state_attr('sensor.home_assistant_updates_summary','total_updates') }}
+          - Updates Available: {{ state_attr('sensor.home_assistant_updates_summary', 'total_updates') }}
           - Maintenance Mode: {{ states('input_boolean.maintenance_mode') }}
 
       - type: entities
         title: Resource Utilization
         entities:
-          - sensor.system_monitor_processor_use
-          - sensor.system_monitor_memory_usage
-          - sensor.system_monitor_swap_usage
-          - sensor.system_monitor_load_1_min
-          - sensor.system_monitor_load_5_min
-          - sensor.system_monitor_load_15_min
-          - sensor.homeassistant_db_size_mb
-          - sensor.home_assistant_log_size
-          - sensor.folding_home_cpu_percent
-          - sensor.folding_home_memory_percent
+          - entity: sensor.system_monitor_processor_use
+            name: System Monitor Processor use
+          - entity: sensor.system_monitor_memory_usage
+            name: System Monitor Memory usage
+          - entity: sensor.system_monitor_swap_usage
+            name: System Monitor Swap usage
+          - entity: sensor.system_monitor_load_1_min
+            name: System Monitor Load (1 min)
+          - entity: sensor.system_monitor_load_5_min
+            name: System Monitor Load (5 min)
+          - entity: sensor.system_monitor_load_15_min
+            name: System Monitor Load (15 min)
+          - entity: sensor.homeassistant_db_size_mb
+            name: Homeassistant DB Size MB
+          - entity: sensor.home_assistant_log_size
+            name: Home Assistant Log Size
 
       - type: statistics-graph
         title: CPU & Memory Trends (Last 24h)
@@ -89,14 +94,20 @@ views:
       - type: entities
         title: System Services Status
         entities:
-          - binary_sensor.grafana_running
-          - binary_sensor.node_red_running
-          - binary_sensor.influxdb_running
-          - binary_sensor.adguard_home_running
-          - binary_sensor.mosquitto_broker_running
-          - binary_sensor.studio_code_server_running
-          - binary_sensor.samba_share_running
-          - binary_sensor.matter_server_running
+          - entity: binary_sensor.grafana_running
+            name: Grafana Running
+          - entity: binary_sensor.node_red_running
+            name: Node-RED Running
+          - entity: binary_sensor.influxdb_running
+            name: InfluxDB Running
+          - entity: binary_sensor.adguard_home_running
+            name: AdGuard Home Running
+          - entity: binary_sensor.mosquitto_broker_running
+            name: Mosquitto broker Running
+          - entity: binary_sensor.studio_code_server_running
+            name: Studio Code Server Running
+          - entity: binary_sensor.matter_server_running
+            name: Matter Server Running
 
       - type: markdown
         title: Disk & Network
@@ -114,9 +125,15 @@ views:
       - type: entities
         title: Backup Status
         entities:
-          - sensor.backup_backup_manager_state
-          - sensor.backup_last_successful_automatic_backup
-          - sensor.backup_last_attempted_automatic_backup
-          - sensor.backup_next_scheduled_automatic_backup
-          - sensor.backup_health_status
-          - sensor.auto_update_status
+          - entity: sensor.backup_backup_manager_state
+            name: Backup Backup Manager state
+          - entity: sensor.backup_last_successful_automatic_backup
+            name: Backup Last successful automatic backup
+          - entity: sensor.backup_last_attempted_automatic_backup
+            name: Backup Last attempted automatic backup
+          - entity: sensor.backup_next_scheduled_automatic_backup
+            name: Backup Next scheduled automatic backup
+          - entity: sensor.backup_health_status
+            name: Backup Health Status
+          - entity: sensor.auto_update_status
+            name: Auto Update Status
