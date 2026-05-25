@@ -54,7 +54,7 @@ tts:
 # Load Automations, Scripts, Scenes, etc.
 # ==============================================================================
 automation: !include_dir_merge_list automations
-script: !include_dir_merge_list scripts
+# script: !include_dir_merge_list scripts
 script: !include scripts.yaml
 scene: !include scene.yaml
 template: !include template.yaml
@@ -383,12 +383,12 @@ recorder:
       - sensor.deyeinverterslave_battery_output_power
       - sensor.deyeinvertermaster_generator_port_power
       # Daily summaries (if present)
-      - sensor.deyeinvertermaster_today_energy_bought
-      - sensor.deyeinvertermaster_today_energy_sold
-      - sensor.deyeinvertermaster_today_load_consumption
-      - sensor.deyeinverterslave_today_energy_bought
-      - sensor.deyeinverterslave_today_energy_sold
-      - sensor.deyeinverterslave_today_load_consumption
+#      - sensor.deyeinvertermaster_today_energy_bought
+#      - sensor.deyeinvertermaster_today_energy_sold
+#      - sensor.deyeinvertermaster_today_load_consumption
+#      - sensor.deyeinverterslave_today_energy_bought
+#      - sensor.deyeinverterslave_today_energy_sold
+#      - sensor.deyeinverterslave_today_load_consumption
       # Solar Forecast sensors for trend persistence
       - sensor.solar_forecast_total_today
       - sensor.solar_forecast_remaining_today
@@ -401,10 +401,10 @@ recorder:
       # MQTT resource sensors
       - sensor.mosquitto_broker_cpu_percent
       - sensor.mosquitto_broker_memory_percent
-      - sensor.system_monitor_network_in_enp2s0
-      - sensor.system_monitor_network_out_enp2s0
-      - sensor.system_monitor_network_throughput_in_enp2s0
-      - sensor.system_monitor_network_throughput_out_enp2s0
+#      - sensor.system_monitor_network_in_enp2s0
+#     - sensor.system_monitor_network_out_enp2s0
+#      - sensor.system_monitor_network_throughput_in_enp2s0
+#      - sensor.system_monitor_network_throughput_out_enp2s0
       # MQTT Health Sensors
       - sensor.mqtt_broker_health_state
       - sensor.mqtt_broker_cpu_state_detail
@@ -422,25 +422,25 @@ recorder:
       - updater
       - sun
       - media_player
-    entities:
-      - sensor.date_time
-      - sensor.time
-      - sensor.date_time_utc
-      - sensor.date_time_iso
-      - sensor.time_date
-      - sensor.uptime
-      - sensor.time_utc
-      - sensor.last_boot
-      - sensor.processor_use
-      - sensor.processor_temperature
-      - sensor.memory_use_percent
-      - sensor.swap_use_percent
-      - sensor.load_1m
-      - sensor.load_5m
-      - sensor.load_15m
-      - sensor.speedtest_download
-      - sensor.speedtest_upload
-      - sensor.speedtest_ping
+#    entities:
+#      - sensor.date_time
+#      - sensor.time
+#      - sensor.date_time_utc
+#      - sensor.date_time_iso
+#      - sensor.time_date
+#      - sensor.uptime
+#      - sensor.time_utc
+#      - sensor.last_boot
+#      - sensor.processor_use
+#      - sensor.processor_temperature
+#      - sensor.memory_use_percent
+#      - sensor.swap_use_percent
+#      - sensor.load_1m
+#      - sensor.load_5m
+#      - sensor.load_15m
+#      - sensor.speedtest_download
+#      - sensor.speedtest_upload
+#      - sensor.speedtest_ping
     entity_globs:
       - sensor.*_update_available
       - sensor.hacs_*

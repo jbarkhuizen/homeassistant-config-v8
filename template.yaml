@@ -47,6 +47,28 @@
             on
           {% endif %}
 
+      - name: "Prepaid Units Left"
+        unique_id: prepaid_units_left
+        unit_of_measurement: "kWh"
+        state: >
+          {% set purchased = states('input_number.prepaid_meter_units') | float(0) %}
+          {% set used = states('input_number.prepaid_meter_inverter_total_units') | float(0) %}
+          {{ (purchased - used) | round(2) }}
+        availability: >
+          {{ states('input_number.prepaid_meter_units') not in ['unknown', 'unavailable', 'none']
+            and states('input_number.prepaid_meter_inverter_total_units') not in ['unknown', 'unavailable', 'none'] }}
+        icon: >
+          {% set units = states('sensor.prepaid_units_left') | float(0) %}
+          {% if units <= 5 %}
+            mdi:alert
+          {% elif units <= 20 %}
+            mdi:battery-alert
+          {% elif units <= 50 %}
+            mdi:battery-low
+          {% else %}
+            mdi:battery-high
+          {% endif %}
+
       # -----------------------------------------------------------------------
       # Inverter Automations
       # -----------------------------------------------------------------------

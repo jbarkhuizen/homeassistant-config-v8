@@ -1,0 +1,64 @@
+# ==============================================================================
+# Prepaid Meter Helpers
+# File: packages/prepaid_meter.yaml
+# Purpose: Manual prepaid meter inputs and thresholds
+# Updated: 2026-05-25
+# ==============================================================================
+
+input_number:
+  prepaid_meter_units:
+    name: Prepaid Meter Units
+    min: 0
+    max: 100000
+    step: 0.01
+    mode: box
+    unit_of_measurement: kWh
+    icon: mdi:counter
+
+  prepaid_meter_inverter_total_units:
+    name: Prepaid Meter Inverter Total Units
+    min: 0
+    max: 100000
+    step: 0.01
+    mode: box
+    unit_of_measurement: kWh
+    icon: mdi:solar-power
+
+  prepaid_meter_warning_threshold:
+    name: Prepaid Meter Warning Threshold
+    min: 1
+    max: 1000
+    step: 1
+    mode: box
+    unit_of_measurement: kWh
+    icon: mdi:alert-outline
+    initial: 50
+
+  prepaid_meter_critical_threshold:
+    name: Prepaid Meter Critical Threshold
+    min: 1
+    max: 1000
+    step: 1
+    mode: box
+    unit_of_measurement: kWh
+    icon: mdi:alert
+    initial: 20
+
+  prepaid_meter_emergency_threshold:
+    name: Prepaid Meter Emergency Threshold
+    min: 1
+    max: 1000
+    step: 1
+    mode: box
+    unit_of_measurement: kWh
+    icon: mdi:alert-circle
+    initial: 5
+
+input_boolean:
+  prepaid_meter_emergency_mode:
+    name: Prepaid Meter Emergency Mode
+    icon: mdi:flash-alert
+
+  energy_saving_mode:
+    name: Energy Saving Mode
+    icon: mdi:leaf
