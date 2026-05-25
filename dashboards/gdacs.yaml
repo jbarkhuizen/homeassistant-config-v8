@@ -26,10 +26,13 @@ views:
           - binary_sensor.gdacs_alert_active
 
       - type: markdown
-        title: Events Nearby (Top 15 within {{ states('input_number.gdacs_radius_km')|round(0) }} km)
+        title: Events Nearby
         content: >
           {% set r = states('input_number.gdacs_radius_km')|float(200) %}
           {% set minsev = states('input_select.gdacs_min_severity') %}
+
+          Top 15 within {{ r | round(0) }} km
+
           {% set geos = states.geo_location
               | rejectattr('state','in',['unknown','unavailable',''])
               | selectattr('name','search','GDACS') | list %}
@@ -53,8 +56,8 @@ views:
       - type: entities
         title: Related Automations
         entities:
-          - automation.gdacs_daily_summary_0635
-          - automation.gdacs_high_severity_alert_0805
+          - automation.gdacs_daily_summary_06_35
+          - automation.gdacs_high_severity_alert_08_05
           - automation.alert_gdacs_disaster_notification
 
   - title: Map
@@ -76,15 +79,3 @@ views:
     path: trends
     icon: mdi:chart-line
     cards:
-      - type: statistics-graph
-        title: Event Counts (24h)
-        chart_type: line
-        period: hour
-        days_to_show: 1
-        stat_types:
-          - mean
-        entities:
-          - sensor.gdacs_events_within_radius
-          - sensor.gdacs_events_red_within_radius
-          - sensor.gdacs_events_orange_within_radius
-          - sensor.gdacs_events_green_within_radius
