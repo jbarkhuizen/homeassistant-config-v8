@@ -621,7 +621,7 @@ TO ADD NEW MESSAGES:
 EXAMPLE USAGE IN AUTOMATION:
   - service: telegram_bot.send_message
     data:
-      config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
+      chat_id: !secret telegram_chat_id_2
       message: >
         {% from 'notifications.jinja' import low_battery_alert_telegram %}
         {{ low_battery_alert_telegram(

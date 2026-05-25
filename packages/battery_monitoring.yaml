@@ -313,7 +313,7 @@ automation:
             # Telegram Notification Service
             - service: telegram_bot.send_message
               data:
-                config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
+                chat_id: !secret telegram_chat_id_2
                 message: |
                   🟡 *LOW BATTERY ALERT*
 
@@ -474,7 +474,7 @@ automation:
             # Telegram Notification Service
             - service: telegram_bot.send_message
               data:
-                config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
+                chat_id: !secret telegram_chat_id_2
                 message: |
                   🔴 *CRITICAL BATTERY ALERT*
 
@@ -616,7 +616,7 @@ automation:
       # Telegram Notification Service
       - service: telegram_bot.send_message
         data:
-          config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
+          chat_id: !secret telegram_chat_id_2
           message: |
             📊 *WEEKLY BATTERY STATUS REPORT*
 
@@ -853,7 +853,7 @@ automation:
       # Telegram Notification Service
       - service: telegram_bot.send_message
         data:
-          config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
+          chat_id: !secret telegram_chat_id_2
           message: |
             ⚠️ *DAILY BATTERY REMINDER*
 

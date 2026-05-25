@@ -30,7 +30,7 @@
     # --- Telegram ---
     - service: telegram_bot.send_message
       data:
-        config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
+        chat_id: !secret telegram_chat_id_2
         message: |
           ⚡ *PREPAID METER DAILY STATUS*
 
@@ -226,7 +226,7 @@
     # --- Telegram ---
     - service: telegram_bot.send_message
       data:
-        config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
+        chat_id: !secret telegram_chat_id_2
         message: |
           🟡 *PREPAID METER WARNING*
 
@@ -327,7 +327,7 @@
     # --- Telegram ---
     - service: telegram_bot.send_message
       data:
-        config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
+        chat_id: !secret telegram_chat_id_2
         message: |
           🟠 *PREPAID METER CRITICAL ALERT*
 
@@ -429,7 +429,7 @@
     # --- Telegram ---
     - service: telegram_bot.send_message
       data:
-        config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
+        chat_id: !secret telegram_chat_id_2
         message: |
           🔴 *EMERGENCY: LOAD SHEDDING ACTIVATED*
 
@@ -585,7 +585,7 @@
     # --- Telegram ---
     - service: telegram_bot.send_message
       data:
-        config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
+        chat_id: !secret telegram_chat_id_2
         message: |
           ✅ *PREPAID METER RECHARGED*
 
@@ -701,7 +701,7 @@
     # --- Telegram ---
     - service: telegram_bot.send_message
       data:
-        config_entry_id: 01K7PH2MD1SA9VXHCP39WVCJM4
+        chat_id: !secret telegram_chat_id_2
         message: |
           💳 *PREPAID METER RECHARGE CONFIRMED*
 
