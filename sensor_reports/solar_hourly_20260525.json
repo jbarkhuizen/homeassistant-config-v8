@@ -1,0 +1,33 @@
+{
+  "report_date": "2026-05-25",
+  "created_at": "2026-05-25 06:57:00",
+  "updated_at": "2026-05-25 08:00:00",
+  "baseline": {
+    "pv1_total": 293.629,
+    "pv2_total": 167.255
+  },
+  "last_snapshot": {
+    "pv1_total": 293.93,
+    "pv2_total": 167.267
+  },
+  "rows": [
+    {
+      "hour": "06:00-06:59",
+      "pv1_kwh": 0.0,
+      "pv2_kwh": 0.0,
+      "total_kwh": 0.0,
+      "cum_pv1": 0.0,
+      "cum_pv2": 0.0,
+      "cum_total": 0.0
+    },
+    {
+      "hour": "07:00-07:59",
+      "pv1_kwh": 0.3,
+      "pv2_kwh": 0.01,
+      "total_kwh": 0.31,
+      "cum_pv1": 0.3,
+      "cum_pv2": 0.01,
+      "cum_total": 0.31
+    }
+  ]
+}

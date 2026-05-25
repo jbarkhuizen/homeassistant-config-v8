@@ -1,0 +1,189 @@
+#===============================================================================
+# SOLAR: Hourly Production Report
+# File: automations/solar_hourly_report.yaml
+# Updated: 2026-05-25
+# Purpose:
+# - Initialize daily baseline at 05:00
+# - Send hourly report from 06:00 to 20:00
+# - Channels: Persistent | Mobile | Telegram | Email
+#===============================================================================
+
+- id: solar_hourly_report_init_0500
+  alias: "Solar: Hourly Report Initialize Day 05:00"
+  description: >
+    Initializes the daily solar hourly report baseline at 05:00.
+  trigger:
+    - platform: time
+      at: "05:00:00"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.maintenance_mode
+      state: "off"
+
+  action:
+    - service: pyscript.solar_hourly_report_init_day
+
+    - service: system_log.write
+      data:
+        message: >-
+          Solar hourly report day initialized at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+        level: info
+
+  mode: single
+
+- id: solar_hourly_report_send_hourly
+  alias: "Solar: Hourly Production Report 06:00-20:00"
+  description: >
+    Captures the last completed hour and sends the solar hourly report every hour
+    from 06:00 to 20:00.
+  trigger:
+    - platform: time
+      at: "06:00:00"
+    - platform: time
+      at: "07:00:00"
+    - platform: time
+      at: "08:00:00"
+    - platform: time
+      at: "09:00:00"
+    - platform: time
+      at: "10:00:00"
+    - platform: time
+      at: "11:00:00"
+    - platform: time
+      at: "12:00:00"
+    - platform: time
+      at: "13:00:00"
+    - platform: time
+      at: "14:00:00"
+    - platform: time
+      at: "15:00:00"
+    - platform: time
+      at: "16:00:00"
+    - platform: time
+      at: "17:00:00"
+    - platform: time
+      at: "18:00:00"
+    - platform: time
+      at: "19:00:00"
+    - platform: time
+      at: "20:00:00"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.maintenance_mode
+      state: "off"
+
+  action:
+    - service: pyscript.solar_hourly_report_capture_and_prepare
+
+    - delay:
+        seconds: 2
+
+    - variables:
+        report_date: "{{ state_attr('pyscript.solar_hourly_report_status', 'report_date') | default(now().strftime('%Y-%m-%d'), true) }}"
+        last_completed_hour: "{{ state_attr('pyscript.solar_hourly_report_status', 'last_completed_hour') | default('N/A', true) }}"
+        last_pv1: "{{ state_attr('pyscript.solar_hourly_report_status', 'last_pv1_kwh') | float(0) }}"
+        last_pv2: "{{ state_attr('pyscript.solar_hourly_report_status', 'last_pv2_kwh') | float(0) }}"
+        last_total: "{{ state_attr('pyscript.solar_hourly_report_status', 'last_total_kwh') | float(0) }}"
+        total_today: "{{ state_attr('pyscript.solar_hourly_report_status', 'total_combined_kwh') | float(0) }}"
+        best_hour: "{{ state_attr('pyscript.solar_hourly_report_status', 'best_hour') | default('N/A', true) }}"
+        best_hour_total: "{{ state_attr('pyscript.solar_hourly_report_status', 'best_hour_total_kwh') | float(0) }}"
+        target_kwh: "{{ state_attr('pyscript.solar_hourly_report_status', 'target_kwh') | float(0) }}"
+        achievement_pct: "{{ state_attr('pyscript.solar_hourly_report_status', 'achievement_pct') | float(0) }}"
+        row_count: "{{ state_attr('pyscript.solar_hourly_report_status', 'row_count') | int(0) }}"
+
+    - service: persistent_notification.create
+      data:
+        title: "Solar Hourly Report {{ last_completed_hour }}"
+        message: >-
+          Date: {{ report_date }}
+
+          Last completed hour: {{ last_completed_hour }}
+          PV1 this hour: {{ last_pv1 }} kWh
+          PV2 this hour: {{ last_pv2 }} kWh
+          Total this hour: {{ last_total }} kWh
+
+          Total today: {{ total_today }} kWh
+          Best hour: {{ best_hour }}
+          Best hour total: {{ best_hour_total }} kWh
+
+          Target: {{ target_kwh }} kWh
+          Achievement: {{ achievement_pct }}%
+          Rows captured: {{ row_count }}
+        notification_id: solar_hourly_report_latest
+
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "Solar Hourly {{ last_completed_hour }}"
+        message: >-
+          Total this hour: {{ last_total }} kWh
+          Total today: {{ total_today }} kWh
+          Best hour: {{ best_hour }}
+          Achievement: {{ achievement_pct }}%
+        data:
+          channel: "Solar Reports"
+          group: "ha-solar-hourly"
+          importance: default
+          color: "#FF9800"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    - service: telegram_bot.send_message
+      data:
+        chat_id: !secret telegram_chat_id_2
+        message: >-
+          Solar Hourly Report
+
+          Date: {{ report_date }}
+          Hour: {{ last_completed_hour }}
+
+          PV1: {{ last_pv1 }} kWh
+          PV2: {{ last_pv2 }} kWh
+          Total hour: {{ last_total }} kWh
+
+          Total today: {{ total_today }} kWh
+          Best hour: {{ best_hour }}
+          Best hour total: {{ best_hour_total }} kWh
+
+          Target: {{ target_kwh }} kWh
+          Achievement: {{ achievement_pct }}%
+          Rows: {{ row_count }}
+
+    - service: notify.email_ha
+      data:
+        title: "Solar Hourly Report {{ report_date }} {{ last_completed_hour }}"
+        message: >-
+          Solar Hourly Report
+
+          Date: {{ report_date }}
+          Last completed hour: {{ last_completed_hour }}
+
+          PV1 this hour: {{ last_pv1 }} kWh
+          PV2 this hour: {{ last_pv2 }} kWh
+          Total this hour: {{ last_total }} kWh
+
+          Total today: {{ total_today }} kWh
+          Best hour: {{ best_hour }}
+          Best hour total: {{ best_hour_total }} kWh
+
+          Target: {{ target_kwh }} kWh
+          Achievement: {{ achievement_pct }}%
+          Rows captured: {{ row_count }}
+
+    - service: system_log.write
+      data:
+        message: >-
+          Solar hourly notifications sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+          Hour={{ last_completed_hour }}, HourTotal={{ last_total }} kWh,
+          Today={{ total_today }} kWh, BestHour={{ best_hour }},
+          BestHourTotal={{ best_hour_total }} kWh, Achievement={{ achievement_pct }}%,
+          Rows={{ row_count }}.
+        level: info
+
+  mode: single
+#===============================================================================
+# END OF SOLAR HOURLY REPORT
+#===============================================================================

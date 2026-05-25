@@ -1,9 +1,9 @@
 #===============================================================================
 # SOLAR: Pool Pump Management by PV Production (09:00–15:00)
 # File: automations/pool_pump_solar_management.yaml
-# Updated: 2026-05-15
+# Updated: 2026-05-25
 # - Turn OFF if PV < 2500 W for 15 min, only during 09:00-15:00
-# - Turn ON if PV > 3599 W for 15 min, at least 10 min after last OFF
+# - Turn ON if PV > 3000 W for 15 min, at least 10 min after last OFF
 # - Pool pump is controlled only by this dedicated automation
 # - Generic solar optimization package must not control the pool pump
 # - Guarded by Maintenance Mode, must be OFF
@@ -51,7 +51,7 @@
     - variables:
         pv_now: "{{ states('sensor.deyeinvertercombined_pv_power') | float(0) | round(0) }}"
         threshold_off: 2500
-        threshold_on: 3599
+        threshold_on: 3000
         battery_soc: >-
           {% set soc = states('sensor.deyeinvertermaster_battery_soc') %}
           {% if soc in ['unknown','unavailable','None',''] %}N/A{% else %}{{ soc | float(0) | round(0) }}%{% endif %}
@@ -167,9 +167,9 @@
 # Turn ON pool pump when PV is sufficient
 #----------------------------------------------------------------------------
 - id: pool_pump_on_on_high_pv
-  alias: "Solar: Pool Pump ON when PV > 3599 W (09:00–15:00)"
+  alias: "Solar: Pool Pump ON when PV > 3000 W (09:00–15:00)"
   description: >
-    If PV production rises above 3599 W, sustained for 15 minutes during
+    If PV production rises above 3000 W, sustained for 15 minutes during
     09:00–15:00, turn the pool pump ON if it is OFF and at least 10 minutes
     have passed since the last solar OFF event.
     Guarded by Maintenance Mode.
@@ -178,7 +178,7 @@
   trigger:
     - platform: numeric_state
       entity_id: sensor.deyeinvertercombined_pv_power
-      above: 3599
+      above: 3000
       for:
         minutes: 15
     - platform: time_pattern
@@ -195,20 +195,20 @@
       entity_id: switch.sonoff_10009ce3f9
       state: "off"
     - condition: template
-      value_template: "{{ states('sensor.deyeinvertercombined_pv_power') | float(0) > 3599 }}"
+      value_template: "{{ states('sensor.deyeinvertercombined_pv_power') | float(0) > 3000 }}"
     - condition: template
       value_template: >
-        {% set last_off = states('input_datetime.pool_pump_last_off_time') %}
-        {% if last_off not in ['unknown', 'unavailable', 'none', 'None', ''] %}
-          {{ (now() - strptime(last_off, '%Y-%m-%d %H:%M:%S')).total_seconds() > 600 }}
-        {% else %}
+        {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
+        {% if last_off_ts in [none, 'unknown', 'unavailable', ''] %}
           true
+        {% else %}
+          {{ (as_timestamp(now()) - (last_off_ts | float(0))) > 600 }}
         {% endif %}
 
   action:
     - variables:
         pv_now: "{{ states('sensor.deyeinvertercombined_pv_power') | float(0) | round(0) }}"
-        threshold_on: 3599
+        threshold_on: 3000
         threshold_off: 2500
         battery_soc: >-
           {% set soc = states('sensor.deyeinvertermaster_battery_soc') %}

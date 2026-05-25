@@ -17,8 +17,7 @@
   #=============================================================================
   trigger:
     - platform: state
-      entity_id: sensor.gdacs_my_location # CHANGE THIS to your actual GDACS entity ID
-
+      entity_id: binary_sensor.gdacs_alert_active
   #=============================================================================
   # CONDITIONS: Ensure valid alert data exists
   #=============================================================================

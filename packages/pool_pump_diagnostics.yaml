@@ -1,0 +1,220 @@
+template:
+  - binary_sensor:
+      - name: "Pool Pump Diagnostics Maintenance Mode Clear"
+        unique_id: pool_pump_diag_maintenance_mode_clear
+        state: >
+          {{ is_state('input_boolean.maintenance_mode', 'off') }}
+        icon: >
+          {% if is_state('input_boolean.maintenance_mode', 'off') %}
+            mdi:check-circle
+          {% else %}
+            mdi:alert-circle
+          {% endif %}
+        attributes:
+          detail: >
+            {% if is_state('input_boolean.maintenance_mode', 'off') %}
+              Maintenance Mode is OFF
+            {% else %}
+              Maintenance Mode is ON and blocks pool pump automations
+            {% endif %}
+
+      - name: "Pool Pump Diagnostics Time Window Active"
+        unique_id: pool_pump_diag_time_window_active
+        state: >
+          {{ now().strftime('%H:%M:%S') >= '09:00:00' and now().strftime('%H:%M:%S') < '15:00:00' }}
+        icon: >
+          {% if now().strftime('%H:%M:%S') >= '09:00:00' and now().strftime('%H:%M:%S') < '15:00:00' %}
+            mdi:clock-check
+          {% else %}
+            mdi:clock-alert
+          {% endif %}
+        attributes:
+          detail: >
+            {% if now().strftime('%H:%M:%S') >= '09:00:00' and now().strftime('%H:%M:%S') < '15:00:00' %}
+              Current time is inside the 09:00 to 15:00 window
+            {% else %}
+              Current time is outside the 09:00 to 15:00 window
+            {% endif %}
+
+      - name: "Pool Pump Diagnostics Sonoff Ready For Start"
+        unique_id: pool_pump_diag_sonoff_ready_for_start
+        state: >
+          {{ is_state('switch.sonoff_10009ce3f9', 'off') }}
+        icon: >
+          {% if is_state('switch.sonoff_10009ce3f9', 'off') %}
+            mdi:toggle-switch-off
+          {% else %}
+            mdi:toggle-switch
+          {% endif %}
+        attributes:
+          detail: >
+            {% if is_state('switch.sonoff_10009ce3f9', 'off') %}
+              Sonoff pump switch is OFF and ready for an ON command
+            {% else %}
+              Sonoff pump switch is already ON, so ON automation will not run
+            {% endif %}
+
+      - name: "Pool Pump Diagnostics PV Above ON Threshold"
+        unique_id: pool_pump_diag_pv_above_on_threshold
+        state: >
+          {{ states('sensor.deyeinvertercombined_pv_power') | float(0) > 3000 }}
+        icon: >
+          {% if states('sensor.deyeinvertercombined_pv_power') | float(0) > 3000 %}
+            mdi:solar-power
+          {% else %}
+            mdi:solar-power-variant-outline
+          {% endif %}
+        attributes:
+          detail: >
+            {% set pv = states('sensor.deyeinvertercombined_pv_power') | float(0) %}
+            {% if pv > 3000 %}
+              PV is above ON threshold at {{ pv | round(0) }} W
+            {% else %}
+              PV is below ON threshold at {{ pv | round(0) }} W
+            {% endif %}
+          pv_now_w: >
+            {{ states('sensor.deyeinvertercombined_pv_power') | float(0) | round(0) }}
+          on_threshold_w: 3000
+
+      - name: "Pool Pump Diagnostics Cooldown Clear"
+        unique_id: pool_pump_diag_cooldown_clear
+        state: >
+          {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
+          {% if last_off_ts in [none, 'unknown', 'unavailable', ''] %}
+            true
+          {% else %}
+            {{ (as_timestamp(now()) - (last_off_ts | float(0))) > 600 }}
+          {% endif %}
+        icon: >
+          {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
+          {% if last_off_ts in [none, 'unknown', 'unavailable', ''] %}
+            mdi:timer-check
+          {% else %}
+            {% set seconds = (as_timestamp(now()) - (last_off_ts | float(0))) %}
+            {% if seconds > 600 %}
+              mdi:timer-check
+            {% else %}
+              mdi:timer-sand
+            {% endif %}
+          {% endif %}
+        attributes:
+          detail: >
+            {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
+            {% if last_off_ts in [none, 'unknown', 'unavailable', ''] %}
+              No previous OFF time is recorded, cooldown is clear
+            {% else %}
+              {% set seconds = (as_timestamp(now()) - (last_off_ts | float(0))) | int(0) %}
+              {% if seconds > 600 %}
+                Cooldown is clear, {{ seconds }} seconds since last OFF
+              {% else %}
+                Cooldown still active, only {{ seconds }} seconds since last OFF
+              {% endif %}
+            {% endif %}
+          last_off_time: >
+            {{ states('input_datetime.pool_pump_last_off_time') }}
+          last_off_timestamp: >
+            {{ state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') }}
+
+      - name: "Pool Pump Diagnostics Ready To Start"
+        unique_id: pool_pump_diag_ready_to_start
+        state: >
+          {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
+          {{
+            is_state('input_boolean.maintenance_mode', 'off')
+            and now().strftime('%H:%M:%S') >= '09:00:00'
+            and now().strftime('%H:%M:%S') < '15:00:00'
+            and is_state('switch.sonoff_10009ce3f9', 'off')
+            and (states('sensor.deyeinvertercombined_pv_power') | float(0) > 3000)
+            and (
+              last_off_ts in [none, 'unknown', 'unavailable', '']
+              or (as_timestamp(now()) - (last_off_ts | float(0))) > 600
+            )
+          }}
+        icon: >
+          {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
+          {% if
+            is_state('input_boolean.maintenance_mode', 'off')
+            and now().strftime('%H:%M:%S') >= '09:00:00'
+            and now().strftime('%H:%M:%S') < '15:00:00'
+            and is_state('switch.sonoff_10009ce3f9', 'off')
+            and (states('sensor.deyeinvertercombined_pv_power') | float(0) > 3000)
+            and (
+              last_off_ts in [none, 'unknown', 'unavailable', '']
+              or (as_timestamp(now()) - (last_off_ts | float(0))) > 600
+            )
+          %}
+            mdi:check-decagram
+          {% else %}
+            mdi:close-octagon
+          {% endif %}
+        attributes:
+          detail: >
+            {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
+            {% if
+              is_state('input_boolean.maintenance_mode', 'off')
+              and now().strftime('%H:%M:%S') >= '09:00:00'
+              and now().strftime('%H:%M:%S') < '15:00:00'
+              and is_state('switch.sonoff_10009ce3f9', 'off')
+              and (states('sensor.deyeinvertercombined_pv_power') | float(0) > 3000)
+              and (
+                last_off_ts in [none, 'unknown', 'unavailable', '']
+                or (as_timestamp(now()) - (last_off_ts | float(0))) > 600
+              )
+            %}
+              All current ON conditions are passing
+            {% else %}
+              One or more ON conditions are failing
+            {% endif %}
+
+  - sensor:
+      - name: "Pool Pump Diagnostics Current Status"
+        unique_id: pool_pump_diag_current_status
+        state: >
+          {% set maintenance_ok = is_state('input_boolean.maintenance_mode', 'off') %}
+          {% set time_ok = now().strftime('%H:%M:%S') >= '09:00:00' and now().strftime('%H:%M:%S') < '15:00:00' %}
+          {% set switch_ok = is_state('switch.sonoff_10009ce3f9', 'off') %}
+          {% set pv = states('sensor.deyeinvertercombined_pv_power') | float(0) %}
+          {% set pv_ok = pv > 3000 %}
+          {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
+          {% set cooldown_ok = last_off_ts in [none, 'unknown', 'unavailable', ''] or (as_timestamp(now()) - (last_off_ts | float(0))) > 600 %}
+
+          {% if not maintenance_ok %}
+            Blocked: Maintenance Mode ON
+          {% elif not time_ok %}
+            Blocked: Outside 09:00–15:00 window
+          {% elif not switch_ok %}
+            Blocked: Sonoff switch already ON
+          {% elif not pv_ok %}
+            Blocked: PV below 3000 W
+          {% elif not cooldown_ok %}
+            Blocked: 10 minute cooldown active
+          {% else %}
+            Ready: ON conditions satisfied
+          {% endif %}
+        icon: >
+          {% set maintenance_ok = is_state('input_boolean.maintenance_mode', 'off') %}
+          {% set time_ok = now().strftime('%H:%M:%S') >= '09:00:00' and now().strftime('%H:%M:%S') < '15:00:00' %}
+          {% set switch_ok = is_state('switch.sonoff_10009ce3f9', 'off') %}
+          {% set pv = states('sensor.deyeinvertercombined_pv_power') | float(0) %}
+          {% set pv_ok = pv > 3000 %}
+          {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
+          {% set cooldown_ok = last_off_ts in [none, 'unknown', 'unavailable', ''] or (as_timestamp(now()) - (last_off_ts | float(0))) > 600 %}
+
+          {% if maintenance_ok and time_ok and switch_ok and pv_ok and cooldown_ok %}
+            mdi:check-decagram
+          {% else %}
+            mdi:alert-circle
+          {% endif %}
+        attributes:
+          pv_now_w: >
+            {{ states('sensor.deyeinvertercombined_pv_power') | float(0) | round(0) }}
+          on_threshold_w: 3000
+          off_threshold_w: 2500
+          last_off_time: >
+            {{ states('input_datetime.pool_pump_last_off_time') }}
+          last_off_timestamp: >
+            {{ state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') }}
+          maintenance_mode: >
+            {{ states('input_boolean.maintenance_mode') }}
+          sonoff_switch_state: >
+            {{ states('switch.sonoff_10009ce3f9') }}

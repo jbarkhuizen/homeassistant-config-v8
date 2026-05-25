@@ -1,0 +1,105 @@
+{% macro _a(name, default='N/A') -%}
+{{ state_attr('pyscript.solar_hourly_report_status', name) if state_attr('pyscript.solar_hourly_report_status', name) is not none else default }}
+{%- endmacro %}
+
+{% macro _f(v, d=2) -%}
+{{ (v | float(0)) | round(d) }}
+{%- endmacro %}
+
+{% macro _rows() -%}
+{{ state_attr('pyscript.solar_hourly_report_status', 'rows') | default([], true) }}
+{%- endmacro %}
+
+{% macro solar_hourly_report_email() -%}
+<html>
+  <body style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.5;">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 16px;">
+      <h2 style="margin-bottom: 6px;">🔆 Solar Hourly Production Report</h2>
+      <p style="margin-top: 0;">
+        Date: {{ _a('report_date') }}<br>
+        Generated: {{ _a('generated_at') }}<br>
+        Window: 05:00 to {{ _a('last_completed_hour') }}
+      </p>
+
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 18px;">
+        <tr>
+          <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>Last Completed Hour</strong><br>{{ _a('last_completed_hour') }}</td>
+          <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>PV1 This Hour</strong><br>{{ _f(_a('last_pv1_kwh')) }} kWh</td>
+          <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>PV2 This Hour</strong><br>{{ _f(_a('last_pv2_kwh')) }} kWh</td>
+          <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>Hour Total</strong><br>{{ _f(_a('last_total_kwh')) }} kWh</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>PV1 Today</strong><br>{{ _f(_a('total_pv1_kwh')) }} kWh</td>
+          <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>PV2 Today</strong><br>{{ _f(_a('total_pv2_kwh')) }} kWh</td>
+          <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>Total Today</strong><br>{{ _f(_a('total_combined_kwh')) }} kWh</td>
+          <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>Achievement</strong><br>{{ _f(_a('achievement_pct'), 1) }}%</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>Best Hour</strong><br>{{ _a('best_hour') }}</td>
+          <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>Best Hour Total</strong><br>{{ _f(_a('best_hour_total_kwh')) }} kWh</td>
+          <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>Target</strong><br>{{ _f(_a('target_kwh')) }} kWh</td>
+          <td style="padding: 10px; border: 1px solid #d1d5db;"><strong>Rows</strong><br>{{ _a('row_count', 0) }}</td>
+        </tr>
+      </table>
+
+      <h3 style="margin-bottom: 8px;">Hourly Breakdown</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="background-color: #f3f4f6;">
+            <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Hour</th>
+            <th style="border: 1px solid #d1d5db; padding: 8px; text-align: right;">PV1 kWh</th>
+            <th style="border: 1px solid #d1d5db; padding: 8px; text-align: right;">PV2 kWh</th>
+            <th style="border: 1px solid #d1d5db; padding: 8px; text-align: right;">Total kWh</th>
+            <th style="border: 1px solid #d1d5db; padding: 8px; text-align: right;">Cum PV1</th>
+            <th style="border: 1px solid #d1d5db; padding: 8px; text-align: right;">Cum PV2</th>
+            <th style="border: 1px solid #d1d5db; padding: 8px; text-align: right;">Cum Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in _rows() %}
+          <tr>
+            <td style="border: 1px solid #d1d5db; padding: 8px;">{{ row.hour }}</td>
+            <td style="border: 1px solid #d1d5db; padding: 8px; text-align: right;">{{ _f(row.pv1_kwh) }}</td>
+            <td style="border: 1px solid #d1d5db; padding: 8px; text-align: right;">{{ _f(row.pv2_kwh) }}</td>
+            <td style="border: 1px solid #d1d5db; padding: 8px; text-align: right;"><strong>{{ _f(row.total_kwh) }}</strong></td>
+            <td style="border: 1px solid #d1d5db; padding: 8px; text-align: right;">{{ _f(row.cum_pv1) }}</td>
+            <td style="border: 1px solid #d1d5db; padding: 8px; text-align: right;">{{ _f(row.cum_pv2) }}</td>
+            <td style="border: 1px solid #d1d5db; padding: 8px; text-align: right;"><strong>{{ _f(row.cum_total) }}</strong></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <p style="margin-top: 18px;">
+        Local: http://192.168.1.31:8123<br>
+        Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
+      </p>
+    </div>
+  </body>
+</html>
+{%- endmacro %}
+
+{% macro solar_hourly_report_telegram() -%}
+🔆 *Solar Hourly Report — {{ _a('report_date') }}*
+
+*Last completed hour:* {{ _a('last_completed_hour') }}
+PV1: {{ _f(_a('last_pv1_kwh')) }} kWh
+PV2: {{ _f(_a('last_pv2_kwh')) }} kWh
+Total: {{ _f(_a('last_total_kwh')) }} kWh
+
+*Today so far*
+PV1: {{ _f(_a('total_pv1_kwh')) }} kWh
+PV2: {{ _f(_a('total_pv2_kwh')) }} kWh
+Total: {{ _f(_a('total_combined_kwh')) }} kWh
+
+*Performance*
+Best hour: {{ _a('best_hour') }}
+Best hour total: {{ _f(_a('best_hour_total_kwh')) }} kWh
+Target: {{ _f(_a('target_kwh')) }} kWh
+Achievement: {{ _f(_a('achievement_pct'), 1) }}%
+
+```text
+Hour          PV1    PV2   Total  CumTot
+{% for row in _rows() -%}
+{{ "%-13s"|format(row.hour) }} {{ "%5.2f"|format(row.pv1_kwh|float(0)) }} {{ "%5.2f"|format(row.pv2_kwh|float(0)) }} {{ "%6.2f"|format(row.total_kwh|float(0)) }} {{ "%7.2f"|format(row.cum_total|float(0)) }}
+{% endfor -%}
