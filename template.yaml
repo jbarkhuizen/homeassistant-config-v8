@@ -49,6 +49,8 @@
     - name: "Prepaid Eskom Units Used Since Recharge"
       unique_id: prepaid_eskom_units_used_since_recharge
       unit_of_measurement: "kWh"
+      state_class: measurement
+      device_class: energy
       state: >
         {% set current_total_kwh = (states('sensor.deyeinvertercombined_summary_total_grid_import_buy') | float(0)) * 1000 %}
         {% set baseline_kwh = states('input_number.prepaid_meter_grid_import_baseline') | float(0) %}
@@ -64,6 +66,7 @@
     - name: "Prepaid Units Left"
       unique_id: prepaid_units_left
       unit_of_measurement: "kWh"
+      state_class: measurement
       state: >
         {% set purchased = states('input_number.prepaid_meter_units') | float(0) %}
         {% set used = states('sensor.prepaid_eskom_units_used_since_recharge') | float(0) %}
@@ -86,6 +89,8 @@
     - name: "Grid Units Used This Hour"
       unique_id: grid_units_used_this_hour
       unit_of_measurement: "kWh"
+      state_class: measurement
+      device_class: energy
       state: >
         {{ ((states('sensor.grid_units_used_hourly') | float(0)) * 1000) | round(3) }}
       availability: >
@@ -95,6 +100,8 @@
     - name: "Solar Generated This Hour"
       unique_id: solar_generated_this_hour
       unit_of_measurement: "kWh"
+      state_class: measurement
+      device_class: energy
       state: >
         {{ ((states('sensor.solar_generated_hourly') | float(0)) * 1000) | round(3) }}
       availability: >
@@ -104,21 +111,18 @@
     - name: "Battery Discharged This Hour"
       unique_id: battery_discharged_this_hour
       unit_of_measurement: "kWh"
+      state_class: measurement
+      device_class: energy
       state: >
         {{ ((states('sensor.battery_discharged_hourly') | float(0)) * 1000) | round(3) }}
       availability: >
         {{ states('sensor.battery_discharged_hourly') not in ['unknown', 'unavailable', 'none'] }}
       icon: mdi:battery-arrow-down
 
-    - name: "Prepaid Hourly Snapshot Display"
-      unique_id: prepaid_hourly_snapshot_display
-      state: >
-        {{ states('input_text.prepaid_hourly_snapshot_latest') }}
-      icon: mdi:text-box-outline
-
     - name: "Prepaid Units Variance"
       unique_id: prepaid_units_variance
       unit_of_measurement: "kWh"
+      state_class: measurement
       state: >
         {% set estimated = states('sensor.prepaid_units_left') | float(0) %}
         {% set actual = states('input_number.prepaid_meter_actual_balance') | float(0) %}

@@ -1,20 +1,14 @@
-#===============================================================================
-# InfluxDB Configuration with System Monitoring - Updated
+# ===============================================================================
+# InfluxDB Configuration with System Monitoring
 # File: packages/influxdb.yaml
-# Updated: 2026-04-28
+# Updated: 2026-05-26
 #
-# IMPORTANT (Home Assistant 2026.9.0 change):
-# - InfluxDB connection/auth settings configured in YAML are being removed.
-# - Home Assistant has imported your connection settings into the UI automatically.
-# - This YAML file must now contain ONLY filtering/tagging options (include/exclude/tags/etc).
-#
-# Removed from YAML (now configured in UI):
-# - host, port, ssl, verify_ssl, ssl_ca_cert, username, password, database
-# - api_version, token, organization, bucket, path
-#===============================================================================
+# IMPORTANT:
+# - InfluxDB connection and authentication settings are configured in the UI
+# - This YAML file contains filtering, retry and measurement options only
+# ===============================================================================
 
 influxdb:
-  # Keep (still supported in YAML): retry + measurement + filtering
   max_retries: 3
   default_measurement: state
 
@@ -35,25 +29,28 @@ influxdb:
       - binary_sensor
 
     entity_globs:
-      # Sunsynk/Deye inverters (existing)
+      # Sunsynk / Deye inverter entities
       - "sensor.deyeinvertermaster_*"
       - "sensor.deyeinverterslave_*"
+      - "sensor.deyeinvertercombined_*"
 
-      # Prepaid meter (existing)
+      # Prepaid meter
       - "sensor.prepaid_*"
       - "input_number.prepaid_*"
 
-      # Energy monitoring (existing)
+      # Energy monitoring
       - "sensor.*energy*"
       - "sensor.*power*"
       - "sensor.*battery*"
+      - "sensor.*grid*"
+      - "sensor.*solar*"
 
-      # Speed test entities (existing)
+      # Speed test entities
       - "sensor.cloudflare_speed_test_*"
       - "sensor.speedtest_*"
       - "binary_sensor.speedtest_*"
 
-      # System monitoring (existing)
+      # System monitoring
       - "sensor.processor_*"
       - "sensor.memory_*"
       - "sensor.disk_*"
@@ -68,13 +65,13 @@ influxdb:
       - "sensor.cpu_usage_*"
       - "sensor.memory_usage_*"
 
-      # Battery Management (enhanced)
+      # Battery management
       - "sensor.battery_*"
       - "binary_sensor.battery_*"
       - "counter.battery_*"
       - "input_number.battery_*"
 
-      # New combined sensors
+      # Combined sensors
       - "sensor.combined_*"
       - "sensor.total_grid_*"
       - "sensor.energy_independence_*"
@@ -87,13 +84,13 @@ influxdb:
       - "binary_sensor.all_critical_*"
 
     entities:
-      # Specific battery sensors (from discovery)
+      # Specific battery sensors
       - sensor.temperature_humidity_sensor_battery
       - sensor.temperature_humidity_sensor_battery_2
       - sensor.motion_sensor_battery
       - sensor.snzb_05p_battery
 
-      # Integration sensors (moved from main config)
+      # Integration sensors
       - sensor.deyeinvertermaster_summary_total_battery_charge_grid
       - sensor.deyeinverterslave_summary_total_battery_charge_grid
       - sensor.deyeinvertermaster_summary_total_pv_generation
@@ -120,3 +117,28 @@ influxdb:
       - sensor.deyeinverterslave_summary_day_pv_generation
       - sensor.deyeinvertermaster_summary_day_grid_export
       - sensor.deyeinverterslave_summary_day_grid_export
+
+      # Exact first-test Grafana sensors
+      - sensor.deyeinvertermaster_priority_charge_or_load
+      - sensor.deyeinvertermaster_solar_power_used
+      - sensor.deyeinvertermaster_essential_load
+      - sensor.deyeinvertermaster_non_essential_load
+
+      # Exact prepaid and hourly Grafana sensors
+      - sensor.prepaid_eskom_units_used_since_recharge
+      - sensor.prepaid_units_left
+      - sensor.prepaid_units_variance
+      - sensor.prepaid_balance_accuracy_status
+      - sensor.prepaid_recommended_calibration_factor
+      - sensor.grid_units_used_this_hour
+      - sensor.solar_generated_this_hour
+      - sensor.battery_discharged_this_hour
+      - sensor.grid_units_used_hourly
+      - sensor.solar_generated_hourly
+      - sensor.battery_discharged_hourly
+
+      # Prepaid helpers
+      - input_number.prepaid_meter_units
+      - input_number.prepaid_meter_actual_balance
+      - input_number.prepaid_meter_grid_import_baseline
+      - input_number.prepaid_meter_calibration_factor
