@@ -8,7 +8,7 @@ views:
       - type: markdown
         title: Pool Pump Summary
         content: |
-          - Dashboard Pump Entity: {{ states('switch.pool_pump') }}
+          - Pump Switch Entity: {{ states('switch.sonoff_10009ce3f9') }}
           - Sonoff Pump Entity: {{ states('switch.sonoff_10009ce3f9') }}
           - Pump Power: {{ states('sensor.sonoff_10009ce3f9_power') }} W
           - PV Now: {{ states('sensor.deyeinvertercombined_pv_power') }} W
@@ -28,7 +28,7 @@ views:
       - type: entities
         title: Pool Pump Control and Diagnostics
         entities:
-          - switch.pool_pump
+#          - switch.pool_pump
           - switch.sonoff_10009ce3f9
           - sensor.sonoff_10009ce3f9_power
           - sensor.sonoff_10009ce3f9_energy
@@ -54,7 +54,7 @@ views:
         title: Pump Entities vs PV
         hours_to_show: 24
         entities:
-          - switch.pool_pump
+#          - switch.pool_pump
           - switch.sonoff_10009ce3f9
           - sensor.deyeinvertercombined_pv_power
 
@@ -63,6 +63,7 @@ views:
         entities:
           - automation.solar_pool_pump_off_when_pv_2500_w_06_00_18_00
           - automation.solar_pool_pump_on_when_pv_3599_w_06_00_18_00
+          - automation.solar_pool_pump_force_off_at_15_00
 
       - type: markdown
         title: What Must Be True for Pump ON
@@ -82,6 +83,10 @@ views:
           - Sonoff pump switch must be on
           - PV must be below 2500 W
           - PV must stay below 2500 W for 15 minutes, or be caught by the 5 minute recheck
+          - Automation thresholds: OFF < 2500 W for 15 min, ON > 3000 W for 15 min
+          - Active solar control window: 09:00–15:00
+          - Hard stop: pool pump forced OFF daily at 15:00
+          - Restart cooldown after OFF: 10 minutes
 
   - title: Garden
     path: garden

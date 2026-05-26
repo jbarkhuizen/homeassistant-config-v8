@@ -310,6 +310,35 @@
         level: info
 
   mode: single
+
+- id: pool_pump_force_off_at_1500
+  alias: "Solar: Pool Pump Force OFF at 15:00"
+  description: >
+    Force the pool pump OFF every day at 15:00, regardless of PV level.
+    Recommended: do not block this with Maintenance Mode, so 15:00 OFF is absolute.
+
+  trigger:
+    - platform: time
+      at: "15:00:00"
+
+  action:
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.pool_pump_last_off_time
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+    - service: switch.turn_off
+      target:
+        entity_id: switch.sonoff_10009ce3f9
+
+    - service: system_log.write
+      data:
+        message: >-
+          Pool Pump FORCE OFF at 15:00 on {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+        level: info
+
+  mode: single
 #===============================================================================
 # END OF SOLAR POOL PUMP MANAGEMENT
 #===============================================================================

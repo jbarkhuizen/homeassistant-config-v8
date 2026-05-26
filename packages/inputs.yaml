@@ -28,3 +28,8 @@ input_datetime:
     has_date: false
     has_time: true
 #=======================================================================================
+
+  pool_pump_last_off_time:
+    name: Pool Pump Last OFF Time
+    has_date: true
+    has_time: true
