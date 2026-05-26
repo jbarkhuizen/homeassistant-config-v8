@@ -97,6 +97,26 @@ utility_meter:
     source: sensor.deyeinverterslave_summary_total_battery_charge_grid
     cycle: daily
 
+  prepaid_eskom_units_used:
+    name: prepaid_eskom_units_used
+    source: sensor.deyeinvertercombined_summary_day_grid_import_buy
+    cycle: monthly
+
+  grid_units_used_hourly:
+    name: Grid Units Used Hourly
+    source: sensor.deyeinvertercombined_summary_total_grid_import_buy
+    cycle: hourly
+
+  solar_generated_hourly:
+    name: Solar Generated Hourly
+    source: sensor.deyeinvertercombined_summary_total_pv
+    cycle: hourly
+
+  battery_discharged_hourly:
+    name: Battery Discharged Hourly
+    source: sensor.deyeinvertercombined_summary_total_battery_discharge
+    cycle: hourly
+
 # ==============================================================================
 # HTTP Configuration - Secure and Optimized
 # ==============================================================================

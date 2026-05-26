@@ -69,6 +69,115 @@
             mdi:battery-high
           {% endif %}
 
+      - name: "Prepaid Eskom Units Used Since Recharge"
+        unique_id: prepaid_eskom_units_used_since_recharge
+        unit_of_measurement: "kWh"
+        state: >
+            {% set current_total = states('sensor.deyeinvertercombined_summary_total_grid_import_buy') | float(0) %}
+            {% set baseline = states('input_number.prepaid_meter_grid_import_baseline') | float(0) %}
+            {% set used = current_total - baseline %}
+            {{ [used, 0] | max | round(2) }}
+        availability: >
+            {{ states('sensor.deyeinvertercombined_summary_total_grid_import_buy') not in ['unknown', 'unavailable', 'none']
+              and states('input_number.prepaid_meter_grid_import_baseline') not in ['unknown', 'unavailable', 'none'] }}
+        icon: mdi:transmission-tower-import
+
+      - name: "Prepaid Units Left"
+        unique_id: prepaid_units_left
+        unit_of_measurement: "kWh"
+        state: >
+            {% set purchased = states('input_number.prepaid_meter_units') | float(0) %}
+            {% set used = states('sensor.prepaid_eskom_units_used_since_recharge') | float(0) %}
+            {{ [purchased - used, 0] | max | round(2) }}
+        availability: >
+            {{ states('input_number.prepaid_meter_units') not in ['unknown', 'unavailable', 'none']
+              and states('sensor.prepaid_eskom_units_used_since_recharge') not in ['unknown', 'unavailable', 'none'] }}
+        icon: >
+            {% set units = states('sensor.prepaid_units_left') | float(0) %}
+            {% if units <= 5 %}
+              mdi:alert
+            {% elif units <= 20 %}
+              mdi:battery-alert
+            {% elif units <= 50 %}
+              mdi:battery-low
+            {% else %}
+              mdi:battery-high
+            {% endif %}
+      - name: "Prepaid Eskom Units Used Since Recharge"
+        unique_id: prepaid_eskom_units_used_since_recharge
+        unit_of_measurement: "kWh"
+        state: >
+          {% set current_total_mwh = states('sensor.deyeinvertercombined_summary_total_grid_import_buy') | float(0) %}
+          {% set baseline_kwh = states('input_number.prepaid_meter_grid_import_baseline') | float(0) %}
+          {% set current_total_kwh = current_total_mwh * 1000 %}
+          {% set used = current_total_kwh - baseline_kwh %}
+          {{ [used, 0] | max | round(2) }}
+        availability: >
+          {{ states('sensor.deyeinvertercombined_summary_total_grid_import_buy') not in ['unknown', 'unavailable', 'none']
+            and states('input_number.prepaid_meter_grid_import_baseline') not in ['unknown', 'unavailable', 'none'] }}
+        icon: mdi:transmission-tower-import
+
+      - name: "Prepaid Units Left"
+        unique_id: prepaid_units_left
+        unit_of_measurement: "kWh"
+        state: >
+          {% set purchased = states('input_number.prepaid_meter_units') | float(0) %}
+          {% set used = states('sensor.prepaid_eskom_units_used_since_recharge') | float(0) %}
+          {{ [purchased - used, 0] | max | round(2) }}
+        availability: >
+          {{ states('input_number.prepaid_meter_units') not in ['unknown', 'unavailable', 'none']
+            and states('sensor.prepaid_eskom_units_used_since_recharge') not in ['unknown', 'unavailable', 'none'] }}
+        icon: >
+          {% set units = states('sensor.prepaid_units_left') | float(0) %}
+          {% if units <= 5 %}
+            mdi:alert
+          {% elif units <= 20 %}
+            mdi:battery-alert
+          {% elif units <= 50 %}
+            mdi:battery-low
+          {% else %}
+            mdi:battery-high
+          {% endif %}
+
+      - name: "Grid Units Used This Hour"
+        unique_id: grid_units_used_this_hour
+        unit_of_measurement: "kWh"
+        state: >
+          {% set current_mwh = states('sensor.deyeinvertercombined_summary_total_grid_import_buy') | float(0) %}
+          {% set last = state_attr('sensor.grid_units_used_this_hour', 'last_total_mwh') | float(current_mwh) %}
+          {{ ((current_mwh - last) * 1000) | round(3) if current_mwh >= last else 0 }}
+        attributes:
+          last_total_mwh: "{{ states('sensor.deyeinvertercombined_summary_total_grid_import_buy') | float(0) }}"
+        icon: mdi:transmission-tower-import
+
+      - name: "Solar Generated This Hour"
+        unique_id: solar_generated_this_hour
+        unit_of_measurement: "kWh"
+        state: >
+          {% set current_mwh = states('sensor.deyeinvertercombined_summary_total_pv') | float(0) %}
+          {% set last = state_attr('sensor.solar_generated_this_hour', 'last_total_mwh') | float(current_mwh) %}
+          {{ ((current_mwh - last) * 1000) | round(3) if current_mwh >= last else 0 }}
+        attributes:
+          last_total_mwh: "{{ states('sensor.deyeinvertercombined_summary_total_pv') | float(0) }}"
+        icon: mdi:solar-power
+
+      - name: "Battery Discharged This Hour"
+        unique_id: battery_discharged_this_hour
+        unit_of_measurement: "kWh"
+        state: >
+          {% set current_mwh = states('sensor.deyeinvertercombined_summary_total_battery_discharge') | float(0) %}
+          {% set last = state_attr('sensor.battery_discharged_this_hour', 'last_total_mwh') | float(current_mwh) %}
+          {{ ((current_mwh - last) * 1000) | round(3) if current_mwh >= last else 0 }}
+        attributes:
+          last_total_mwh: "{{ states('sensor.deyeinvertercombined_summary_total_battery_discharge') | float(0) }}"
+        icon: mdi:battery-arrow-down
+
+      - name: "Prepaid Hourly Snapshot Display"
+        unique_id: prepaid_hourly_snapshot_display
+        state: >
+          {{ states('input_text.prepaid_hourly_snapshot_latest') }}
+        icon: mdi:text-box-outline
+
       # -----------------------------------------------------------------------
       # Inverter Automations
       # -----------------------------------------------------------------------

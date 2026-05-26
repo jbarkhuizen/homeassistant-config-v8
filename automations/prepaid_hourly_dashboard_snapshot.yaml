@@ -1,0 +1,639 @@
+# ==============================================================================
+# Template Integration Entities (Modern)
+# File: template.yaml
+# Purpose:
+# - Provides template sensors and template binary sensors
+# - Supports trigger-based template sensors
+#
+# IMPORTANT:
+# This file is included from configuration.yaml via:
+#   template: !include template.yaml
+#
+# Therefore it must be a valid Template Integration structure:
+#   - sensor: ...
+#   - binary_sensor: ...
+#   - trigger: ...
+# ==============================================================================
+
+# ---------------------------------------------------------------------------
+# SmartHome Integrations (Deye / Sunsynk helpers)
+# Source: https://github.com/tomatensaus/DeyeSolarDesktop/blob/main/template.yaml
+# ---------------------------------------------------------------------------
+- sensor:
+    - name: "deyeinvertermaster_solar_power_used"
+      state: "{{ (states('sensor.deyeinvertermaster_summary_day_pv') | float(0) - states('sensor.deyeinvertermaster_summary_day_battery_charge') | float(0)) | round(1) }}"
+      unit_of_measurement: "kWh"
+      device_class: energy
+      state_class: total_increasing
+
+    - name: "deyeinvertermaster_essential_load"
+      state: "{{ (states('sensor.deyeinvertermaster_inverter_output_power') | float(0) + (states('sensor.deyeinvertermaster_grid_load') | float(0) - states('sensor.deyeinvertermaster_aux_output_power') | float(0))) | round(0) }}"
+      unit_of_measurement: "W"
+      device_class: power
+      state_class: measurement
+
+    - name: "deyeinvertermaster_non_essential_load"
+      state: "{{ (states('sensor.deyeinvertermaster_grid_power_ct_clamp') | float(0) - (states('sensor.deyeinvertermaster_grid_load_l1') | float(0))) | round(0) }}"
+      unit_of_measurement: "W"
+      device_class: power
+      state_class: measurement
+
+    - name: "deyeinvertermaster_priority_charge_or_load"
+      state: >
+        {% if is_state('select.deyeinvertermaster_energy_management_model', 'Battery Priority Mode') %}
+          off
+        {% else %}
+          on
+        {% endif %}
+
+    - name: "Prepaid Eskom Units Used Since Recharge"
+      unique_id: prepaid_eskom_units_used_since_recharge
+      unit_of_measurement: "kWh"
+      state: >
+        {% set current_total_kwh = (states('sensor.deyeinvertercombined_summary_total_grid_import_buy') | float(0)) * 1000 %}
+        {% set baseline_kwh = states('input_number.prepaid_meter_grid_import_baseline') | float(0) %}
+        {% set used = current_total_kwh - baseline_kwh %}
+        {{ [used, 0] | max | round(2) }}
+      availability: >
+        {{ states('sensor.deyeinvertercombined_summary_total_grid_import_buy') not in ['unknown', 'unavailable', 'none']
+           and states('input_number.prepaid_meter_grid_import_baseline') not in ['unknown', 'unavailable', 'none'] }}
+      icon: mdi:transmission-tower-import
+
+    - name: "Prepaid Units Left"
+      unique_id: prepaid_units_left
+      unit_of_measurement: "kWh"
+      state: >
+        {% set purchased = states('input_number.prepaid_meter_units') | float(0) %}
+        {% set used = states('sensor.prepaid_eskom_units_used_since_recharge') | float(0) %}
+        {{ [purchased - used, 0] | max | round(2) }}
+      availability: >
+        {{ states('input_number.prepaid_meter_units') not in ['unknown', 'unavailable', 'none']
+           and states('sensor.prepaid_eskom_units_used_since_recharge') not in ['unknown', 'unavailable', 'none'] }}
+      icon: >
+        {% set units = states('sensor.prepaid_units_left') | float(0) %}
+        {% if units <= 5 %}
+          mdi:alert
+        {% elif units <= 20 %}
+          mdi:battery-alert
+        {% elif units <= 50 %}
+          mdi:battery-low
+        {% else %}
+          mdi:battery-high
+        {% endif %}
+
+    - name: "Grid Units Used This Hour"
+      unique_id: grid_units_used_this_hour
+      unit_of_measurement: "kWh"
+      state: >
+        {{ ((states('sensor.grid_units_used_hourly') | float(0)) * 1000) | round(3) }}
+      availability: >
+        {{ states('sensor.grid_units_used_hourly') not in ['unknown', 'unavailable', 'none'] }}
+      icon: mdi:transmission-tower-import
+
+    - name: "Solar Generated This Hour"
+      unique_id: solar_generated_this_hour
+      unit_of_measurement: "kWh"
+      state: >
+        {{ ((states('sensor.solar_generated_hourly') | float(0)) * 1000) | round(3) }}
+      availability: >
+        {{ states('sensor.solar_generated_hourly') not in ['unknown', 'unavailable', 'none'] }}
+      icon: mdi:solar-power
+
+    - name: "Battery Discharged This Hour"
+      unique_id: battery_discharged_this_hour
+      unit_of_measurement: "kWh"
+      state: >
+        {{ ((states('sensor.battery_discharged_hourly') | float(0)) * 1000) | round(3) }}
+      availability: >
+        {{ states('sensor.battery_discharged_hourly') not in ['unknown', 'unavailable', 'none'] }}
+      icon: mdi:battery-arrow-down
+
+    - name: "Prepaid Hourly Snapshot Display"
+      unique_id: prepaid_hourly_snapshot_display
+      state: >
+        {{ states('input_text.prepaid_hourly_snapshot_latest') }}
+      icon: mdi:text-box-outline
+
+    # -----------------------------------------------------------------------
+    # Inverter Automations
+    # -----------------------------------------------------------------------
+    - name: "Automation InverterConfig Update Times Last Run"
+      unique_id: automation_inverterconfig_update_times_last_run
+      state: >
+        {% set t = state_attr('automation.inverterconfig_update_times', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-end
+
+    - name: "Automation InverterConfig Update Times Status"
+      unique_id: automation_inverterconfig_update_times_status
+      state: >
+        {% if is_state('automation.inverterconfig_update_times', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    - name: "Automation Server Sync Clock Last Run"
+      unique_id: automation_server_sync_clock_last_run
+      state: >
+        {% set t = state_attr('automation.server_sync_clock', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-end
+
+    - name: "Automation Server Sync Clock Status"
+      unique_id: automation_server_sync_clock_status
+      state: >
+        {% if is_state('automation.server_sync_clock', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    # -----------------------------------------------------------------------
+    # Security / Access
+    # -----------------------------------------------------------------------
+    - name: "Automation Badlogin Initialize Baseline Last Run"
+      unique_id: automation_badlogin_initialize_baseline_last_run
+      state: >
+        {% set t = state_attr('automation.security_badlogin_initialize_baseline', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-alert
+
+    - name: "Automation Badlogin Initialize Baseline Status"
+      unique_id: automation_badlogin_initialize_baseline_status
+      state: >
+        {% if is_state('automation.security_badlogin_initialize_baseline', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    - name: "Automation Badlogin Daily Check Last Run"
+      unique_id: automation_badlogin_daily_check_last_run
+      state: >
+        {% set t = state_attr('automation.security_badlogin_daily_09h00_check', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-alert
+
+    - name: "Automation Badlogin Daily Check Status"
+      unique_id: automation_badlogin_daily_check_status
+      state: >
+        {% if is_state('automation.security_badlogin_daily_09h00_check', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    - name: "Automation Grafana Memory High Alert Last Run"
+      unique_id: automation_grafana_memory_high_last_run
+      state: >
+        {% set t = state_attr('automation.grafana_memory_high_alert', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-alert
+
+    - name: "Automation Grafana Memory High Alert Status"
+      unique_id: automation_grafana_memory_high_status
+      state: >
+        {% if is_state('automation.grafana_memory_high_alert', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    # -----------------------------------------------------------------------
+    # Recorder / Database
+    # -----------------------------------------------------------------------
+    - name: "Automation DB Initialize Baseline Last Run"
+      unique_id: automation_recorder_initialize_baseline_last_run
+      state: >
+        {% set t = state_attr('automation.database_initialize_baseline_startup', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:database-clock
+
+    - name: "Automation DB Initialize Baseline Status"
+      unique_id: automation_recorder_initialize_baseline_status
+      state: >
+        {% if is_state('automation.database_initialize_baseline_startup', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    - name: "Automation DB Daily Growth Check Last Run"
+      unique_id: automation_recorder_daily_growth_check_last_run
+      state: >
+        {% set t = state_attr('automation.database_daily_09h00_growth_check', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:database-clock
+
+    - name: "Automation DB Daily Growth Check Status"
+      unique_id: automation_recorder_daily_growth_check_status
+      state: >
+        {% if is_state('automation.database_daily_09h00_growth_check', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    # -----------------------------------------------------------------------
+    # Prepaid Meter
+    # -----------------------------------------------------------------------
+    - name: "Automation Prepaid Daily Status Last Run"
+      unique_id: automation_prepaid_daily_status_last_run
+      state: >
+        {% set t = state_attr('automation.prepaid_meter_daily_status_report_at_09_00', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-outline
+
+    - name: "Automation Prepaid Daily Status Status"
+      unique_id: automation_prepaid_daily_status_status
+      state: >
+        {% if is_state('automation.prepaid_meter_daily_status_report_at_09_00', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    - name: "Automation Prepaid Warning Alert Last Run"
+      unique_id: automation_prepaid_warning_alert_last_run
+      state: >
+        {% set t = state_attr('automation.prepaid_meter_low_balance_warning', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-alert
+
+    - name: "Automation Prepaid Warning Alert Status"
+      unique_id: automation_prepaid_warning_alert_status
+      state: >
+        {% if is_state('automation.prepaid_meter_low_balance_warning', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    - name: "Automation Prepaid Critical Alert Last Run"
+      unique_id: automation_prepaid_critical_alert_last_run
+      state: >
+        {% set t = state_attr('automation.prepaid_meter_critical_balance_alert', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-alert
+
+    - name: "Automation Prepaid Critical Alert Status"
+      unique_id: automation_prepaid_critical_alert_status
+      state: >
+        {% if is_state('automation.prepaid_meter_critical_balance_alert', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    - name: "Automation Prepaid Emergency Load Shedding Last Run"
+      unique_id: automation_prepaid_emergency_load_shedding_last_run
+      state: >
+        {% set t = state_attr('automation.prepaid_meter_emergency_load_shedding', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-alert
+
+    - name: "Automation Prepaid Emergency Load Shedding Status"
+      unique_id: automation_prepaid_emergency_load_shedding_status
+      state: >
+        {% if is_state('automation.prepaid_meter_emergency_load_shedding', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    - name: "Automation Prepaid Recovery Last Run"
+      unique_id: automation_prepaid_recovery_last_run
+      state: >
+        {% set t = state_attr('automation.prepaid_meter_recovery_from_emergency', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-outline
+
+    - name: "Automation Prepaid Recovery Status"
+      unique_id: automation_prepaid_recovery_status
+      state: >
+        {% if is_state('automation.prepaid_meter_recovery_from_emergency', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    - name: "Automation Prepaid Recharge Detected Last Run"
+      unique_id: automation_prepaid_recharge_detected_last_run
+      state: >
+        {% set t = state_attr('automation.prepaid_meter_recharge_detected', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-outline
+
+    - name: "Automation Prepaid Recharge Detected Status"
+      unique_id: automation_prepaid_recharge_detected_status
+      state: >
+        {% if is_state('automation.prepaid_meter_recharge_detected', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    # -----------------------------------------------------------------------
+    # System Health / Updates
+    # -----------------------------------------------------------------------
+    - name: "Automation System Morning Email Last Run"
+      unique_id: automation_system_morning_test_email_last_run
+      state: >
+        {% set t = state_attr('automation.morning_test_email_system_check', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-start
+
+    - name: "Automation System Morning Email Status"
+      unique_id: automation_system_morning_test_email_status
+      state: >
+        {% if is_state('automation.morning_test_email_system_check', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    - name: "Automation Daily Update Telegram Last Run"
+      unique_id: automation_daily_update_telegram_last_run
+      state: >
+        {% set t = state_attr('automation.system_daily_update_status_report_at_89_15_telegram', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-outline
+
+    - name: "Automation Daily Update Telegram Status"
+      unique_id: automation_daily_update_telegram_status
+      state: >
+        {% if is_state('automation.system_daily_update_status_report_at_89_15_telegram', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    - name: "Automation Daily Update Email Last Run"
+      unique_id: automation_daily_update_email_last_run
+      state: >
+        {% set t = state_attr('automation.system_daily_update_status_report_at_08_00_email', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-outline
+
+    - name: "Automation Daily Update Email Status"
+      unique_id: automation_daily_update_email_status
+      state: >
+        {% if is_state('automation.system_daily_update_status_report_at_08_00_email', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    - name: "Automation Critical Update Alert Last Run"
+      unique_id: automation_critical_update_alert_last_run
+      state: >
+        {% set t = state_attr('automation.system_critical_update_alert_immediate', 'last_triggered') %}
+        {% if t is not none %}
+          {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          Never
+        {% endif %}
+      icon: mdi:clock-alert
+
+    - name: "Automation Critical Update Alert Status"
+      unique_id: automation_critical_update_alert_status
+      state: >
+        {% if is_state('automation.system_critical_update_alert_immediate', 'on') %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      icon: mdi:toggle-switch
+
+    # -----------------------------------------------------------------------
+    # Solar Daily Report 18:00
+    # -----------------------------------------------------------------------
+    - name: "Solar Daily Report 18h00 Message"
+      unique_id: solar_daily_report_18h00_message
+      icon: mdi:solar-power
+      state: >
+        {% set actual_production = states('sensor.daily_total_solar_production') | float(0) %}
+        {% set forecast_value = states('sensor.solar_forecast_total_today') | float(0) %}
+        {% set remaining = states('sensor.energy_production_today_remaining') | float(0) %}
+        {% set accuracy = states('sensor.solar_forecast_accuracy_so_far') | float(0) %}
+        {% set peak_time = states('sensor.solar_forecast_peak_time_today') %}
+        {% set variance = actual_production - forecast_value %}
+        {% set peak_display = peak_time[11:16] if peak_time not in ['unknown', 'unavailable', '', none] else 'N/A' %}
+
+        Daily Solar Report - {{ now().strftime('%d %B %Y') }}
+
+        ACTUAL PRODUCTION
+        Generated: {{ "%.2f" | format(actual_production) }} kWh
+
+        TODAY'S FORECAST
+        Expected: {{ "%.2f" | format(forecast_value) }} kWh
+        Remaining: {{ "%.2f" | format(remaining) }} kWh
+
+        VARIANCE
+        {% if forecast_value > 0 %}
+          {% set variance_percent = ((variance / forecast_value) * 100) | round(1) %}
+          {% if variance >= 0 %}
+        Performance: +{{ "%.2f" | format(variance) }} kWh ({{ variance_percent }}% above forecast)
+          {% else %}
+        Performance: {{ "%.2f" | format(variance) }} kWh ({{ variance_percent | abs }}% below forecast)
+          {% endif %}
+        {% else %}
+        Performance: {{ "%.2f" | format(variance) }} kWh (forecast unavailable)
+        {% endif %}
+
+        FORECAST ACCURACY
+        So Far: {{ accuracy | round(1) }}%
+
+        PEAK GENERATION
+        Peak Time: {{ peak_display }} SAST
+
+        Next Update: 18:00 daily
+        Inverters: Deye Master + Slave
+
+# ---------------------------------------------------------------------------
+# TEMPLATE ENTITIES - Binary Sensors & Trigger-based Sensors
+# ---------------------------------------------------------------------------
+- binary_sensor:
+    - name: "Network Monitoring Active"
+      unique_id: network_monitoring_active
+      device_class: connectivity
+      state: "{{ (as_timestamp(now()) - as_timestamp(states.sensor.network_devices_table.last_changed)) < 600 }}"
+
+# Trigger-based template sensor: Auto Update Status
+- trigger:
+    - platform: event
+      event_type: auto_update_cycle_complete
+  sensor:
+    - name: "Auto Update Status"
+      unique_id: auto_update_status
+      icon: >
+        {% set status = trigger.event.data.status %}
+        {% if status == 'success' %}mdi:update
+        {% elif status == 'partial' %}mdi:update-alert
+        {% elif status == 'failure' %}mdi:alert-circle-outline
+        {% elif status == 'no_updates' %}mdi:update-off
+        {% else %}mdi:progress-clock{% endif %}
+      state: "{{ trigger.event.data.status }}"
+      attributes:
+        last_run: "{{ trigger.event.data.last_run }}"
+        pre_count: "{{ trigger.event.data.pre_count }}"
+        post_count: "{{ trigger.event.data.post_count }}"
+        attempted_entities: "{{ trigger.event.data.attempted_entities }}"
+        remaining_entities: "{{ trigger.event.data.remaining_entities }}"
+        duration_seconds: "{{ trigger.event.data.duration_seconds }}"
+        restart_required: "{{ trigger.event.data.restart_required }}"
+        status_detail: "{{ trigger.event.data.status_detail }}"
+
+# Trigger-based template sensor: Backup Health Status
+- trigger:
+    - platform: event
+      event_type: backup_health_cycle_complete
+  sensor:
+    - name: "Backup Health Status"
+      unique_id: backup_health_status
+      icon: >
+        {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+          {% set status = trigger.event.data.status | default('unknown') %}
+        {% else %}
+          {% set status = 'unknown' %}
+        {% endif %}
+        {% if status == 'success' %}mdi:backup-restore
+        {% elif status == 'warning' %}mdi:progress-alert
+        {% elif status == 'failure' %}mdi:alert-circle
+        {% else %}mdi:progress-clock{% endif %}
+      state: >
+        {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+          {{ trigger.event.data.status | default('unknown') }}
+        {% else %}
+          unknown
+        {% endif %}
+      attributes:
+        last_run: >
+          {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+            {{ trigger.event.data.last_run | default('') }}
+          {% else %}
+            ""
+          {% endif %}
+        last_success: >
+          {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+            {{ trigger.event.data.last_success | default('') }}
+          {% else %}
+            ""
+          {% endif %}
+        last_attempt: >
+          {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+            {{ trigger.event.data.last_attempt | default('') }}
+          {% else %}
+            ""
+          {% endif %}
+        next_backup: >
+          {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+            {{ trigger.event.data.next_backup | default('') }}
+          {% else %}
+            ""
+          {% endif %}
+        age_hours: >
+          {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+            {{ trigger.event.data.age_hours | default('') }}
+          {% else %}
+            ""
+          {% endif %}
+        manager_state: >
+          {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+            {{ trigger.event.data.manager_state | default('') }}
+          {% else %}
+            ""
+          {% endif %}
+        status_detail: >
+          {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+            {{ trigger.event.data.status_detail | default('') }}
+          {% else %}
+            ""
+          {% endif %}
+        threshold_hours: >
+          {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
+            {{ trigger.event.data.threshold_hours | default('') }}
+          {% else %}
+            ""
+          {% endif %}

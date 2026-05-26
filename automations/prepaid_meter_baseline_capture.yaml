@@ -1,0 +1,20 @@
+- id: prepaid_meter_baseline_capture_on_recharge
+  alias: "Prepaid Meter: Capture Grid Import Baseline On Recharge"
+  description: "Stores the current Deye total grid import reading when prepaid units are updated"
+  trigger:
+    - platform: state
+      entity_id: input_number.prepaid_meter_units
+  condition: []
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.prepaid_meter_grid_import_baseline
+      data:
+        value: "{{ states('sensor.deyeinvertercombined_summary_total_grid_import_buy') | float(0) }}"
+    - service: system_log.write
+      data:
+        message: >-
+          Prepaid meter baseline captured at {{ states('sensor.deyeinvertercombined_summary_total_grid_import_buy') }} kWh
+          after prepaid units updated to {{ states('input_number.prepaid_meter_units') }} kWh.
+        level: info
+  mode: single

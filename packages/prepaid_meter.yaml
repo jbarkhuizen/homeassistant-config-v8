@@ -1,7 +1,7 @@
 # ==============================================================================
 # Prepaid Meter Helpers
 # File: packages/prepaid_meter.yaml
-# Purpose: Manual prepaid meter inputs and thresholds
+# Purpose: Manual prepaid meter inputs, thresholds and state helpers
 # Updated: 2026-05-25
 # ==============================================================================
 
@@ -15,14 +15,14 @@ input_number:
     unit_of_measurement: kWh
     icon: mdi:counter
 
-  prepaid_meter_inverter_total_units:
-    name: Prepaid Meter Inverter Total Units
+  prepaid_meter_grid_import_baseline:
+    name: Prepaid Meter Grid Import Baseline
     min: 0
-    max: 100000
+    max: 10000000
     step: 0.01
     mode: box
     unit_of_measurement: kWh
-    icon: mdi:solar-power
+    icon: mdi:transmission-tower-import
 
   prepaid_meter_warning_threshold:
     name: Prepaid Meter Warning Threshold
@@ -53,6 +53,12 @@ input_number:
     unit_of_measurement: kWh
     icon: mdi:alert-circle
     initial: 5
+
+input_text:
+  prepaid_hourly_snapshot_latest:
+    name: Prepaid Hourly Snapshot Latest
+    max: 255
+    icon: mdi:table-clock
 
 input_boolean:
   prepaid_meter_emergency_mode:

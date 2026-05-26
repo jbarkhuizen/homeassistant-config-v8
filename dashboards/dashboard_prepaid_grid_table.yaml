@@ -1,0 +1,61 @@
+title: Prepaid Energy Monitor
+views:
+  - title: Grid Table
+    path: prepaid-grid-table
+    icon: mdi:table-electric
+    cards:
+      - type: entities
+        title: Prepaid Meter Overview
+        show_header_toggle: false
+        entities:
+          - entity: input_number.prepaid_meter_units
+            name: Prepaid Bought
+          - entity: sensor.prepaid_eskom_units_used_since_recharge
+            name: Grid Units Used Since Recharge
+          - entity: sensor.prepaid_units_left
+            name: Prepaid Units Left
+          - entity: input_number.prepaid_meter_grid_import_baseline
+            name: Grid Import Baseline
+
+      - type: glance
+        title: Current Hourly Energy Metrics
+        show_name: true
+        show_icon: true
+        show_state: true
+        columns: 3
+        entities:
+          - entity: sensor.grid_units_used_this_hour
+            name: Grid This Hour
+          - entity: sensor.solar_generated_this_hour
+            name: Solar This Hour
+          - entity: sensor.battery_discharged_this_hour
+            name: Battery This Hour
+
+      - type: markdown
+        title: Latest Hourly Snapshot
+        content: >
+          {{ states('sensor.prepaid_hourly_snapshot_display') }}
+
+      - type: history-graph
+        title: Last 24 Hours, Hourly Energy Trends
+        hours_to_show: 24
+        entities:
+          - entity: sensor.grid_units_used_this_hour
+            name: Grid This Hour
+          - entity: sensor.solar_generated_this_hour
+            name: Solar This Hour
+          - entity: sensor.battery_discharged_this_hour
+            name: Battery This Hour
+
+      - type: statistics-graph
+        title: 24 Hour Statistics
+        chart_type: line
+        period: hour
+        days_to_show: 1
+        stat_types:
+          - mean
+          - max
+        entities:
+          - sensor.grid_units_used_this_hour
+          - sensor.solar_generated_this_hour
+          - sensor.battery_discharged_this_hour
