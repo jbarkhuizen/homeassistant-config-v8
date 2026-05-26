@@ -1,8 +1,8 @@
 # ==============================================================================
 # Prepaid Meter Helpers
 # File: packages/prepaid_meter.yaml
-# Purpose: Manual prepaid meter inputs, thresholds and state helpers
-# Updated: 2026-05-25
+# Purpose: Manual prepaid inputs, thresholds, calibration and reporting helpers
+# Updated: 2026-05-26
 # ==============================================================================
 
 input_number:
@@ -23,6 +23,25 @@ input_number:
     mode: box
     unit_of_measurement: kWh
     icon: mdi:transmission-tower-import
+
+  prepaid_meter_actual_balance:
+    name: Prepaid Meter Actual Balance
+    min: 0
+    max: 100000
+    step: 0.01
+    mode: box
+    unit_of_measurement: kWh
+    icon: mdi:meter-electric
+
+  prepaid_meter_calibration_factor:
+    name: Prepaid Meter Calibration Factor
+    min: 0.500
+    max: 1.500
+    step: 0.001
+    mode: box
+    unit_of_measurement: x
+    icon: mdi:tune
+    initial: 1.000
 
   prepaid_meter_warning_threshold:
     name: Prepaid Meter Warning Threshold
@@ -59,6 +78,11 @@ input_text:
     name: Prepaid Hourly Snapshot Latest
     max: 255
     icon: mdi:table-clock
+
+  prepaid_daily_accuracy_snapshot:
+    name: Prepaid Daily Accuracy Snapshot
+    max: 255
+    icon: mdi:clipboard-text-clock
 
 input_boolean:
   prepaid_meter_emergency_mode:

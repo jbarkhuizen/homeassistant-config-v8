@@ -1,0 +1,94 @@
+# ==============================================================================
+# Prepaid Meter Daily Accuracy Tracking and Morning Report
+# File: automations/prepaid_daily_accuracy_report.yaml
+# Updated: 2026-05-26
+# Purpose:
+# - Capture daily accuracy summary
+# - Send one morning report between 06:00 and 09:00
+# - Auto-suggest calibration factor
+# ==============================================================================
+
+- id: prepaid_daily_accuracy_snapshot_06h15
+  alias: "Prepaid Meter: Daily Accuracy Snapshot at 06:15"
+  description: "Capture prepaid accuracy summary for daily review"
+
+  trigger:
+    - platform: time
+      at: "06:15:00"
+
+  condition: []
+
+  action:
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.prepaid_daily_accuracy_snapshot
+      data:
+        value: >-
+          {{ now().strftime('%Y-%m-%d %H:%M') }} |
+          Estimated: {{ states('sensor.prepaid_units_left') }} kWh |
+          Actual: {{ states('input_number.prepaid_meter_actual_balance') }} kWh |
+          Variance: {{ states('sensor.prepaid_units_variance') }} kWh |
+          Status: {{ states('sensor.prepaid_balance_accuracy_status') }} |
+          Recommended Factor: {{ states('sensor.prepaid_recommended_calibration_factor') }} |
+          Current Factor: {{ states('input_number.prepaid_meter_calibration_factor') }}
+
+    - service: system_log.write
+      data:
+        message: >-
+          Daily prepaid accuracy snapshot at {{ now().strftime('%Y-%m-%d %H:%M') }} |
+          Estimated={{ states('sensor.prepaid_units_left') }} kWh |
+          Actual={{ states('input_number.prepaid_meter_actual_balance') }} kWh |
+          Variance={{ states('sensor.prepaid_units_variance') }} kWh |
+          Status={{ states('sensor.prepaid_balance_accuracy_status') }} |
+          RecommendedFactor={{ states('sensor.prepaid_recommended_calibration_factor') }} |
+          CurrentFactor={{ states('input_number.prepaid_meter_calibration_factor') }}
+        level: info
+
+  mode: single
+
+- id: prepaid_morning_report_06h30
+  alias: "Prepaid Meter: Morning Report at 06:30"
+  description: "Morning prepaid and energy summary for review"
+
+  trigger:
+    - platform: time
+      at: "06:30:00"
+
+  condition: []
+
+  action:
+    - service: persistent_notification.create
+      data:
+        title: "Prepaid Energy Morning Report"
+        message: >-
+          Date: {{ now().strftime('%Y-%m-%d %H:%M') }}
+
+          Prepaid Bought: {{ states('input_number.prepaid_meter_units') }} kWh
+          Estimated Units Left: {{ states('sensor.prepaid_units_left') }} kWh
+          Actual Meter Balance: {{ states('input_number.prepaid_meter_actual_balance') }} kWh
+          Variance: {{ states('sensor.prepaid_units_variance') }} kWh
+          Accuracy Status: {{ states('sensor.prepaid_balance_accuracy_status') }}
+
+          Grid Used Since Recharge: {{ states('sensor.prepaid_eskom_units_used_since_recharge') }} kWh
+          Grid This Hour: {{ states('sensor.grid_units_used_this_hour') }} kWh
+          Solar This Hour: {{ states('sensor.solar_generated_this_hour') }} kWh
+          Battery This Hour: {{ states('sensor.battery_discharged_this_hour') }} kWh
+
+          Current Calibration Factor: {{ states('input_number.prepaid_meter_calibration_factor') }}
+          Recommended Calibration Factor: {{ states('sensor.prepaid_recommended_calibration_factor') }}
+
+          Daily Snapshot:
+          {{ states('input_text.prepaid_daily_accuracy_snapshot') }}
+        notification_id: prepaid_morning_report
+
+    - service: system_log.write
+      data:
+        message: >-
+          Morning prepaid report generated at {{ now().strftime('%Y-%m-%d %H:%M') }} |
+          Left={{ states('sensor.prepaid_units_left') }} kWh |
+          Actual={{ states('input_number.prepaid_meter_actual_balance') }} kWh |
+          Variance={{ states('sensor.prepaid_units_variance') }} kWh |
+          Status={{ states('sensor.prepaid_balance_accuracy_status') }}
+        level: info
+
+  mode: single
