@@ -1,0 +1,832 @@
+# ==============================================================================
+# Sonoff and Tuya Energy Tracking
+# File: packages/sonoff_tuya_energy.yaml
+# Purpose:
+# - Convert power sensors in W to energy sensors in kWh
+# - Create hourly, daily, weekly, monthly and yearly utility meters
+# - Create summary template sensors for stable dashboard table rows
+# ==============================================================================
+
+sensor:
+  - platform: integration
+    name: "Sonoff 10023b8a5d Energy"
+    source: sensor.sonoff_10023b8a5d_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Sonoff 1000cd8649 Energy"
+    source: sensor.sonoff_1000cd8649_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Sonoff 1000cd8209 Energy"
+    source: sensor.sonoff_1000cd8209_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Sonoff 1000cd865e Energy"
+    source: sensor.sonoff_1000cd865e_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Sonoff 10009ce3f9 Energy"
+    source: sensor.sonoff_10009ce3f9_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Sonoff 10023b8a40 Energy"
+    source: sensor.sonoff_10023b8a40_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "3D Printers Energy"
+    source: sensor.3d_printers_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Boorgat Energy"
+    source: sensor.boorgat_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "DB Switch Pool Outbuilding Energy"
+    source: sensor.db_switch_pool_outbuilding_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Geyser External Energy"
+    source: sensor.geyser_external_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Geyser Indoor Energy"
+    source: sensor.geyser_indoor_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Laundry Energy"
+    source: sensor.laundry_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Main Eskom Switch Energy"
+    source: sensor.main_eskom_switch_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Main PC Setup Energy"
+    source: sensor.main_pc_setup_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Plugs 1 Energy"
+    source: sensor.plugs_1_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Plugs 2 Energy"
+    source: sensor.plugs_2_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Plugs 3 Energy"
+    source: sensor.plugs_3_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Plugs Kas Energy"
+    source: sensor.plugs_kas_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Printers Router Energy"
+    source: sensor.printers_router_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Top Floor Energy"
+    source: sensor.top_floor_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+utility_meter:
+  sonoff_10023b8a5d_hourly:
+    name: "Sonoff 10023b8a5d Hourly"
+    source: sensor.sonoff_10023b8a5d_energy
+    cycle: hourly
+  sonoff_10023b8a5d_daily:
+    name: "Sonoff 10023b8a5d Daily"
+    source: sensor.sonoff_10023b8a5d_energy
+    cycle: daily
+  sonoff_10023b8a5d_weekly:
+    name: "Sonoff 10023b8a5d Weekly"
+    source: sensor.sonoff_10023b8a5d_energy
+    cycle: weekly
+  sonoff_10023b8a5d_monthly:
+    name: "Sonoff 10023b8a5d Monthly"
+    source: sensor.sonoff_10023b8a5d_energy
+    cycle: monthly
+  sonoff_10023b8a5d_yearly:
+    name: "Sonoff 10023b8a5d Yearly"
+    source: sensor.sonoff_10023b8a5d_energy
+    cycle: yearly
+
+  sonoff_1000cd8649_hourly:
+    name: "Sonoff 1000cd8649 Hourly"
+    source: sensor.sonoff_1000cd8649_energy
+    cycle: hourly
+  sonoff_1000cd8649_daily:
+    name: "Sonoff 1000cd8649 Daily"
+    source: sensor.sonoff_1000cd8649_energy
+    cycle: daily
+  sonoff_1000cd8649_weekly:
+    name: "Sonoff 1000cd8649 Weekly"
+    source: sensor.sonoff_1000cd8649_energy
+    cycle: weekly
+  sonoff_1000cd8649_monthly:
+    name: "Sonoff 1000cd8649 Monthly"
+    source: sensor.sonoff_1000cd8649_energy
+    cycle: monthly
+  sonoff_1000cd8649_yearly:
+    name: "Sonoff 1000cd8649 Yearly"
+    source: sensor.sonoff_1000cd8649_energy
+    cycle: yearly
+
+  sonoff_1000cd8209_hourly:
+    name: "Sonoff 1000cd8209 Hourly"
+    source: sensor.sonoff_1000cd8209_energy
+    cycle: hourly
+  sonoff_1000cd8209_daily:
+    name: "Sonoff 1000cd8209 Daily"
+    source: sensor.sonoff_1000cd8209_energy
+    cycle: daily
+  sonoff_1000cd8209_weekly:
+    name: "Sonoff 1000cd8209 Weekly"
+    source: sensor.sonoff_1000cd8209_energy
+    cycle: weekly
+  sonoff_1000cd8209_monthly:
+    name: "Sonoff 1000cd8209 Monthly"
+    source: sensor.sonoff_1000cd8209_energy
+    cycle: monthly
+  sonoff_1000cd8209_yearly:
+    name: "Sonoff 1000cd8209 Yearly"
+    source: sensor.sonoff_1000cd8209_energy
+    cycle: yearly
+
+  sonoff_1000cd865e_hourly:
+    name: "Sonoff 1000cd865e Hourly"
+    source: sensor.sonoff_1000cd865e_energy
+    cycle: hourly
+  sonoff_1000cd865e_daily:
+    name: "Sonoff 1000cd865e Daily"
+    source: sensor.sonoff_1000cd865e_energy
+    cycle: daily
+  sonoff_1000cd865e_weekly:
+    name: "Sonoff 1000cd865e Weekly"
+    source: sensor.sonoff_1000cd865e_energy
+    cycle: weekly
+  sonoff_1000cd865e_monthly:
+    name: "Sonoff 1000cd865e Monthly"
+    source: sensor.sonoff_1000cd865e_energy
+    cycle: monthly
+  sonoff_1000cd865e_yearly:
+    name: "Sonoff 1000cd865e Yearly"
+    source: sensor.sonoff_1000cd865e_energy
+    cycle: yearly
+
+  sonoff_10009ce3f9_hourly:
+    name: "Sonoff 10009ce3f9 Hourly"
+    source: sensor.sonoff_10009ce3f9_energy
+    cycle: hourly
+  sonoff_10009ce3f9_daily:
+    name: "Sonoff 10009ce3f9 Daily"
+    source: sensor.sonoff_10009ce3f9_energy
+    cycle: daily
+  sonoff_10009ce3f9_weekly:
+    name: "Sonoff 10009ce3f9 Weekly"
+    source: sensor.sonoff_10009ce3f9_energy
+    cycle: weekly
+  sonoff_10009ce3f9_monthly:
+    name: "Sonoff 10009ce3f9 Monthly"
+    source: sensor.sonoff_10009ce3f9_energy
+    cycle: monthly
+  sonoff_10009ce3f9_yearly:
+    name: "Sonoff 10009ce3f9 Yearly"
+    source: sensor.sonoff_10009ce3f9_energy
+    cycle: yearly
+
+  sonoff_10023b8a40_hourly:
+    name: "Sonoff 10023b8a40 Hourly"
+    source: sensor.sonoff_10023b8a40_energy
+    cycle: hourly
+  sonoff_10023b8a40_daily:
+    name: "Sonoff 10023b8a40 Daily"
+    source: sensor.sonoff_10023b8a40_energy
+    cycle: daily
+  sonoff_10023b8a40_weekly:
+    name: "Sonoff 10023b8a40 Weekly"
+    source: sensor.sonoff_10023b8a40_energy
+    cycle: weekly
+  sonoff_10023b8a40_monthly:
+    name: "Sonoff 10023b8a40 Monthly"
+    source: sensor.sonoff_10023b8a40_energy
+    cycle: monthly
+  sonoff_10023b8a40_yearly:
+    name: "Sonoff 10023b8a40 Yearly"
+    source: sensor.sonoff_10023b8a40_energy
+    cycle: yearly
+
+  d_printers_hourly:
+    name: "3D Printers Hourly"
+    source: sensor.3d_printers_energy
+    cycle: hourly
+  d_printers_daily:
+    name: "3D Printers Daily"
+    source: sensor.3d_printers_energy
+    cycle: daily
+  d_printers_weekly:
+    name: "3D Printers Weekly"
+    source: sensor.3d_printers_energy
+    cycle: weekly
+  d_printers_monthly:
+    name: "3D Printers Monthly"
+    source: sensor.3d_printers_energy
+    cycle: monthly
+  d_printers_yearly:
+    name: "3D Printers Yearly"
+    source: sensor.3d_printers_energy
+    cycle: yearly
+
+  boorgat_hourly:
+    name: "Boorgat Hourly"
+    source: sensor.boorgat_energy
+    cycle: hourly
+  boorgat_daily:
+    name: "Boorgat Daily"
+    source: sensor.boorgat_energy
+    cycle: daily
+  boorgat_weekly:
+    name: "Boorgat Weekly"
+    source: sensor.boorgat_energy
+    cycle: weekly
+  boorgat_monthly:
+    name: "Boorgat Monthly"
+    source: sensor.boorgat_energy
+    cycle: monthly
+  boorgat_yearly:
+    name: "Boorgat Yearly"
+    source: sensor.boorgat_energy
+    cycle: yearly
+
+  db_switch_pool_outbuilding_hourly:
+    name: "DB Switch Pool Outbuilding Hourly"
+    source: sensor.db_switch_pool_outbuilding_energy
+    cycle: hourly
+  db_switch_pool_outbuilding_daily:
+    name: "DB Switch Pool Outbuilding Daily"
+    source: sensor.db_switch_pool_outbuilding_energy
+    cycle: daily
+  db_switch_pool_outbuilding_weekly:
+    name: "DB Switch Pool Outbuilding Weekly"
+    source: sensor.db_switch_pool_outbuilding_energy
+    cycle: weekly
+  db_switch_pool_outbuilding_monthly:
+    name: "DB Switch Pool Outbuilding Monthly"
+    source: sensor.db_switch_pool_outbuilding_energy
+    cycle: monthly
+  db_switch_pool_outbuilding_yearly:
+    name: "DB Switch Pool Outbuilding Yearly"
+    source: sensor.db_switch_pool_outbuilding_energy
+    cycle: yearly
+
+  geyser_external_hourly:
+    name: "Geyser External Hourly"
+    source: sensor.geyser_external_energy
+    cycle: hourly
+  geyser_external_daily:
+    name: "Geyser External Daily"
+    source: sensor.geyser_external_energy
+    cycle: daily
+  geyser_external_weekly:
+    name: "Geyser External Weekly"
+    source: sensor.geyser_external_energy
+    cycle: weekly
+  geyser_external_monthly:
+    name: "Geyser External Monthly"
+    source: sensor.geyser_external_energy
+    cycle: monthly
+  geyser_external_yearly:
+    name: "Geyser External Yearly"
+    source: sensor.geyser_external_energy
+    cycle: yearly
+
+  geyser_indoor_hourly:
+    name: "Geyser Indoor Hourly"
+    source: sensor.geyser_indoor_energy
+    cycle: hourly
+  geyser_indoor_daily:
+    name: "Geyser Indoor Daily"
+    source: sensor.geyser_indoor_energy
+    cycle: daily
+  geyser_indoor_weekly:
+    name: "Geyser Indoor Weekly"
+    source: sensor.geyser_indoor_energy
+    cycle: weekly
+  geyser_indoor_monthly:
+    name: "Geyser Indoor Monthly"
+    source: sensor.geyser_indoor_energy
+    cycle: monthly
+  geyser_indoor_yearly:
+    name: "Geyser Indoor Yearly"
+    source: sensor.geyser_indoor_energy
+    cycle: yearly
+
+  laundry_hourly:
+    name: "Laundry Hourly"
+    source: sensor.laundry_energy
+    cycle: hourly
+  laundry_daily:
+    name: "Laundry Daily"
+    source: sensor.laundry_energy
+    cycle: daily
+  laundry_weekly:
+    name: "Laundry Weekly"
+    source: sensor.laundry_energy
+    cycle: weekly
+  laundry_monthly:
+    name: "Laundry Monthly"
+    source: sensor.laundry_energy
+    cycle: monthly
+  laundry_yearly:
+    name: "Laundry Yearly"
+    source: sensor.laundry_energy
+    cycle: yearly
+
+  main_eskom_switch_hourly:
+    name: "Main Eskom Switch Hourly"
+    source: sensor.main_eskom_switch_energy
+    cycle: hourly
+  main_eskom_switch_daily:
+    name: "Main Eskom Switch Daily"
+    source: sensor.main_eskom_switch_energy
+    cycle: daily
+  main_eskom_switch_weekly:
+    name: "Main Eskom Switch Weekly"
+    source: sensor.main_eskom_switch_energy
+    cycle: weekly
+  main_eskom_switch_monthly:
+    name: "Main Eskom Switch Monthly"
+    source: sensor.main_eskom_switch_energy
+    cycle: monthly
+  main_eskom_switch_yearly:
+    name: "Main Eskom Switch Yearly"
+    source: sensor.main_eskom_switch_energy
+    cycle: yearly
+
+  main_pc_setup_hourly:
+    name: "Main PC Setup Hourly"
+    source: sensor.main_pc_setup_energy
+    cycle: hourly
+  main_pc_setup_daily:
+    name: "Main PC Setup Daily"
+    source: sensor.main_pc_setup_energy
+    cycle: daily
+  main_pc_setup_weekly:
+    name: "Main PC Setup Weekly"
+    source: sensor.main_pc_setup_energy
+    cycle: weekly
+  main_pc_setup_monthly:
+    name: "Main PC Setup Monthly"
+    source: sensor.main_pc_setup_energy
+    cycle: monthly
+  main_pc_setup_yearly:
+    name: "Main PC Setup Yearly"
+    source: sensor.main_pc_setup_energy
+    cycle: yearly
+
+  plugs_1_hourly:
+    name: "Plugs 1 Hourly"
+    source: sensor.plugs_1_energy
+    cycle: hourly
+  plugs_1_daily:
+    name: "Plugs 1 Daily"
+    source: sensor.plugs_1_energy
+    cycle: daily
+  plugs_1_weekly:
+    name: "Plugs 1 Weekly"
+    source: sensor.plugs_1_energy
+    cycle: weekly
+  plugs_1_monthly:
+    name: "Plugs 1 Monthly"
+    source: sensor.plugs_1_energy
+    cycle: monthly
+  plugs_1_yearly:
+    name: "Plugs 1 Yearly"
+    source: sensor.plugs_1_energy
+    cycle: yearly
+
+  plugs_2_hourly:
+    name: "Plugs 2 Hourly"
+    source: sensor.plugs_2_energy
+    cycle: hourly
+  plugs_2_daily:
+    name: "Plugs 2 Daily"
+    source: sensor.plugs_2_energy
+    cycle: daily
+  plugs_2_weekly:
+    name: "Plugs 2 Weekly"
+    source: sensor.plugs_2_energy
+    cycle: weekly
+  plugs_2_monthly:
+    name: "Plugs 2 Monthly"
+    source: sensor.plugs_2_energy
+    cycle: monthly
+  plugs_2_yearly:
+    name: "Plugs 2 Yearly"
+    source: sensor.plugs_2_energy
+    cycle: yearly
+
+  plugs_3_hourly:
+    name: "Plugs 3 Hourly"
+    source: sensor.plugs_3_energy
+    cycle: hourly
+  plugs_3_daily:
+    name: "Plugs 3 Daily"
+    source: sensor.plugs_3_energy
+    cycle: daily
+  plugs_3_weekly:
+    name: "Plugs 3 Weekly"
+    source: sensor.plugs_3_energy
+    cycle: weekly
+  plugs_3_monthly:
+    name: "Plugs 3 Monthly"
+    source: sensor.plugs_3_energy
+    cycle: monthly
+  plugs_3_yearly:
+    name: "Plugs 3 Yearly"
+    source: sensor.plugs_3_energy
+    cycle: yearly
+
+  plugs_kas_hourly:
+    name: "Plugs Kas Hourly"
+    source: sensor.plugs_kas_energy
+    cycle: hourly
+  plugs_kas_daily:
+    name: "Plugs Kas Daily"
+    source: sensor.plugs_kas_energy
+    cycle: daily
+  plugs_kas_weekly:
+    name: "Plugs Kas Weekly"
+    source: sensor.plugs_kas_energy
+    cycle: weekly
+  plugs_kas_monthly:
+    name: "Plugs Kas Monthly"
+    source: sensor.plugs_kas_energy
+    cycle: monthly
+  plugs_kas_yearly:
+    name: "Plugs Kas Yearly"
+    source: sensor.plugs_kas_energy
+    cycle: yearly
+
+  printers_router_hourly:
+    name: "Printers Router Hourly"
+    source: sensor.printers_router_energy
+    cycle: hourly
+  printers_router_daily:
+    name: "Printers Router Daily"
+    source: sensor.printers_router_energy
+    cycle: daily
+  printers_router_weekly:
+    name: "Printers Router Weekly"
+    source: sensor.printers_router_energy
+    cycle: weekly
+  printers_router_monthly:
+    name: "Printers Router Monthly"
+    source: sensor.printers_router_energy
+    cycle: monthly
+  printers_router_yearly:
+    name: "Printers Router Yearly"
+    source: sensor.printers_router_energy
+    cycle: yearly
+
+  top_floor_hourly:
+    name: "Top Floor Hourly"
+    source: sensor.top_floor_energy
+    cycle: hourly
+  top_floor_daily:
+    name: "Top Floor Daily"
+    source: sensor.top_floor_energy
+    cycle: daily
+  top_floor_weekly:
+    name: "Top Floor Weekly"
+    source: sensor.top_floor_energy
+    cycle: weekly
+  top_floor_monthly:
+    name: "Top Floor Monthly"
+    source: sensor.top_floor_energy
+    cycle: monthly
+  top_floor_yearly:
+    name: "Top Floor Yearly"
+    source: sensor.top_floor_energy
+    cycle: yearly
+
+template:
+  - sensor:
+      - name: "Sonoff 10023b8a5d Summary"
+        unique_id: sonoff_10023b8a5d_summary
+        state: "{{ states('sensor.sonoff_10023b8a5d_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.sonoff_10023b8a5d_energy') }}"
+          hourly: "{{ states('sensor.sonoff_10023b8a5d_hourly') }}"
+          daily: "{{ states('sensor.sonoff_10023b8a5d_daily') }}"
+          weekly: "{{ states('sensor.sonoff_10023b8a5d_weekly') }}"
+          monthly: "{{ states('sensor.sonoff_10023b8a5d_monthly') }}"
+          yearly: "{{ states('sensor.sonoff_10023b8a5d_yearly') }}"
+
+      - name: "Sonoff 1000cd8649 Summary"
+        unique_id: sonoff_1000cd8649_summary
+        state: "{{ states('sensor.sonoff_1000cd8649_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.sonoff_1000cd8649_energy') }}"
+          hourly: "{{ states('sensor.sonoff_1000cd8649_hourly') }}"
+          daily: "{{ states('sensor.sonoff_1000cd8649_daily') }}"
+          weekly: "{{ states('sensor.sonoff_1000cd8649_weekly') }}"
+          monthly: "{{ states('sensor.sonoff_1000cd8649_monthly') }}"
+          yearly: "{{ states('sensor.sonoff_1000cd8649_yearly') }}"
+
+      - name: "Sonoff 1000cd8209 Summary"
+        unique_id: sonoff_1000cd8209_summary
+        state: "{{ states('sensor.sonoff_1000cd8209_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.sonoff_1000cd8209_energy') }}"
+          hourly: "{{ states('sensor.sonoff_1000cd8209_hourly') }}"
+          daily: "{{ states('sensor.sonoff_1000cd8209_daily') }}"
+          weekly: "{{ states('sensor.sonoff_1000cd8209_weekly') }}"
+          monthly: "{{ states('sensor.sonoff_1000cd8209_monthly') }}"
+          yearly: "{{ states('sensor.sonoff_1000cd8209_yearly') }}"
+
+      - name: "Sonoff 1000cd865e Summary"
+        unique_id: sonoff_1000cd865e_summary
+        state: "{{ states('sensor.sonoff_1000cd865e_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.sonoff_1000cd865e_energy') }}"
+          hourly: "{{ states('sensor.sonoff_1000cd865e_hourly') }}"
+          daily: "{{ states('sensor.sonoff_1000cd865e_daily') }}"
+          weekly: "{{ states('sensor.sonoff_1000cd865e_weekly') }}"
+          monthly: "{{ states('sensor.sonoff_1000cd865e_monthly') }}"
+          yearly: "{{ states('sensor.sonoff_1000cd865e_yearly') }}"
+
+      - name: "Sonoff 10009ce3f9 Summary"
+        unique_id: sonoff_10009ce3f9_summary
+        state: "{{ states('sensor.sonoff_10009ce3f9_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.sonoff_10009ce3f9_energy') }}"
+          hourly: "{{ states('sensor.sonoff_10009ce3f9_hourly') }}"
+          daily: "{{ states('sensor.sonoff_10009ce3f9_daily') }}"
+          weekly: "{{ states('sensor.sonoff_10009ce3f9_weekly') }}"
+          monthly: "{{ states('sensor.sonoff_10009ce3f9_monthly') }}"
+          yearly: "{{ states('sensor.sonoff_10009ce3f9_yearly') }}"
+
+      - name: "Sonoff 10023b8a40 Summary"
+        unique_id: sonoff_10023b8a40_summary
+        state: "{{ states('sensor.sonoff_10023b8a40_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.sonoff_10023b8a40_energy') }}"
+          hourly: "{{ states('sensor.sonoff_10023b8a40_hourly') }}"
+          daily: "{{ states('sensor.sonoff_10023b8a40_daily') }}"
+          weekly: "{{ states('sensor.sonoff_10023b8a40_weekly') }}"
+          monthly: "{{ states('sensor.sonoff_10023b8a40_monthly') }}"
+          yearly: "{{ states('sensor.sonoff_10023b8a40_yearly') }}"
+
+      - name: "3D Printers Summary"
+        unique_id: d_printers_summary
+        state: "{{ states('sensor.3d_printers_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.3d_printers_energy') }}"
+          hourly: "{{ states('sensor.3d_printers_hourly') }}"
+          daily: "{{ states('sensor.3d_printers_daily') }}"
+          weekly: "{{ states('sensor.3d_printers_weekly') }}"
+          monthly: "{{ states('sensor.3d_printers_monthly') }}"
+          yearly: "{{ states('sensor.3d_printers_yearly') }}"
+
+      - name: "Boorgat Summary"
+        unique_id: boorgat_summary
+        state: "{{ states('sensor.boorgat_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.boorgat_energy') }}"
+          hourly: "{{ states('sensor.boorgat_hourly') }}"
+          daily: "{{ states('sensor.boorgat_daily') }}"
+          weekly: "{{ states('sensor.boorgat_weekly') }}"
+          monthly: "{{ states('sensor.boorgat_monthly') }}"
+          yearly: "{{ states('sensor.boorgat_yearly') }}"
+
+      - name: "DB Switch Pool Outbuilding Summary"
+        unique_id: db_switch_pool_outbuilding_summary
+        state: "{{ states('sensor.db_switch_pool_outbuilding_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.db_switch_pool_outbuilding_energy') }}"
+          hourly: "{{ states('sensor.db_switch_pool_outbuilding_hourly') }}"
+          daily: "{{ states('sensor.db_switch_pool_outbuilding_daily') }}"
+          weekly: "{{ states('sensor.db_switch_pool_outbuilding_weekly') }}"
+          monthly: "{{ states('sensor.db_switch_pool_outbuilding_monthly') }}"
+          yearly: "{{ states('sensor.db_switch_pool_outbuilding_yearly') }}"
+
+      - name: "Geyser External Summary"
+        unique_id: geyser_external_summary
+        state: "{{ states('sensor.geyser_external_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.geyser_external_energy') }}"
+          hourly: "{{ states('sensor.geyser_external_hourly') }}"
+          daily: "{{ states('sensor.geyser_external_daily') }}"
+          weekly: "{{ states('sensor.geyser_external_weekly') }}"
+          monthly: "{{ states('sensor.geyser_external_monthly') }}"
+          yearly: "{{ states('sensor.geyser_external_yearly') }}"
+
+      - name: "Geyser Indoor Summary"
+        unique_id: geyser_indoor_summary
+        state: "{{ states('sensor.geyser_indoor_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.geyser_indoor_energy') }}"
+          hourly: "{{ states('sensor.geyser_indoor_hourly') }}"
+          daily: "{{ states('sensor.geyser_indoor_daily') }}"
+          weekly: "{{ states('sensor.geyser_indoor_weekly') }}"
+          monthly: "{{ states('sensor.geyser_indoor_monthly') }}"
+          yearly: "{{ states('sensor.geyser_indoor_yearly') }}"
+
+      - name: "Laundry Summary"
+        unique_id: laundry_summary
+        state: "{{ states('sensor.laundry_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.laundry_energy') }}"
+          hourly: "{{ states('sensor.laundry_hourly') }}"
+          daily: "{{ states('sensor.laundry_daily') }}"
+          weekly: "{{ states('sensor.laundry_weekly') }}"
+          monthly: "{{ states('sensor.laundry_monthly') }}"
+          yearly: "{{ states('sensor.laundry_yearly') }}"
+
+      - name: "Main Eskom Switch Summary"
+        unique_id: main_eskom_switch_summary
+        state: "{{ states('sensor.main_eskom_switch_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.main_eskom_switch_energy') }}"
+          hourly: "{{ states('sensor.main_eskom_switch_hourly') }}"
+          daily: "{{ states('sensor.main_eskom_switch_daily') }}"
+          weekly: "{{ states('sensor.main_eskom_switch_weekly') }}"
+          monthly: "{{ states('sensor.main_eskom_switch_monthly') }}"
+          yearly: "{{ states('sensor.main_eskom_switch_yearly') }}"
+
+      - name: "Main PC Setup Summary"
+        unique_id: main_pc_setup_summary
+        state: "{{ states('sensor.main_pc_setup_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.main_pc_setup_energy') }}"
+          hourly: "{{ states('sensor.main_pc_setup_hourly') }}"
+          daily: "{{ states('sensor.main_pc_setup_daily') }}"
+          weekly: "{{ states('sensor.main_pc_setup_weekly') }}"
+          monthly: "{{ states('sensor.main_pc_setup_monthly') }}"
+          yearly: "{{ states('sensor.main_pc_setup_yearly') }}"
+
+      - name: "Plugs 1 Summary"
+        unique_id: plugs_1_summary
+        state: "{{ states('sensor.plugs_1_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.plugs_1_energy') }}"
+          hourly: "{{ states('sensor.plugs_1_hourly') }}"
+          daily: "{{ states('sensor.plugs_1_daily') }}"
+          weekly: "{{ states('sensor.plugs_1_weekly') }}"
+          monthly: "{{ states('sensor.plugs_1_monthly') }}"
+          yearly: "{{ states('sensor.plugs_1_yearly') }}"
+
+      - name: "Plugs 2 Summary"
+        unique_id: plugs_2_summary
+        state: "{{ states('sensor.plugs_2_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.plugs_2_energy') }}"
+          hourly: "{{ states('sensor.plugs_2_hourly') }}"
+          daily: "{{ states('sensor.plugs_2_daily') }}"
+          weekly: "{{ states('sensor.plugs_2_weekly') }}"
+          monthly: "{{ states('sensor.plugs_2_monthly') }}"
+          yearly: "{{ states('sensor.plugs_2_yearly') }}"
+
+      - name: "Plugs 3 Summary"
+        unique_id: plugs_3_summary
+        state: "{{ states('sensor.plugs_3_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.plugs_3_energy') }}"
+          hourly: "{{ states('sensor.plugs_3_hourly') }}"
+          daily: "{{ states('sensor.plugs_3_daily') }}"
+          weekly: "{{ states('sensor.plugs_3_weekly') }}"
+          monthly: "{{ states('sensor.plugs_3_monthly') }}"
+          yearly: "{{ states('sensor.plugs_3_yearly') }}"
+
+      - name: "Plugs Kas Summary"
+        unique_id: plugs_kas_summary
+        state: "{{ states('sensor.plugs_kas_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.plugs_kas_energy') }}"
+          hourly: "{{ states('sensor.plugs_kas_hourly') }}"
+          daily: "{{ states('sensor.plugs_kas_daily') }}"
+          weekly: "{{ states('sensor.plugs_kas_weekly') }}"
+          monthly: "{{ states('sensor.plugs_kas_monthly') }}"
+          yearly: "{{ states('sensor.plugs_kas_yearly') }}"
+
+      - name: "Printers Router Summary"
+        unique_id: printers_router_summary
+        state: "{{ states('sensor.printers_router_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.printers_router_energy') }}"
+          hourly: "{{ states('sensor.printers_router_hourly') }}"
+          daily: "{{ states('sensor.printers_router_daily') }}"
+          weekly: "{{ states('sensor.printers_router_weekly') }}"
+          monthly: "{{ states('sensor.printers_router_monthly') }}"
+          yearly: "{{ states('sensor.printers_router_yearly') }}"
+
+      - name: "Top Floor Summary"
+        unique_id: top_floor_summary
+        state: "{{ states('sensor.top_floor_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.top_floor_energy') }}"
+          hourly: "{{ states('sensor.top_floor_hourly') }}"
+          daily: "{{ states('sensor.top_floor_daily') }}"
+          weekly: "{{ states('sensor.top_floor_weekly') }}"
+          monthly: "{{ states('sensor.top_floor_monthly') }}"
+          yearly: "{{ states('sensor.top_floor_yearly') }}"

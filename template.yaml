@@ -189,6 +189,16 @@
         {{ states('input_text.prepaid_daily_accuracy_snapshot') }}
       icon: mdi:clipboard-text-outline
 
+    - name: "Sonoff 10023b8a5d Weekly Energy (Sunday Start)"
+      unit_of_measurement: "kWh"
+      state_class: total
+      state: >
+          {% if now().weekday() == 6 %}
+            {{ states('sensor.sonoff_10023b8a5d_energy') | float(0) }}
+          {% else %}
+            {{ states('sensor.sonoff_10023b8a5d_daily') | float(0) + 
+               (now().strftime('%U') | int - 1) * states('sensor.sonoff_10023b8a5d_daily') | float(0) }}
+          {% endif %}
     # -----------------------------------------------------------------------
     # Inverter Automations
     # -----------------------------------------------------------------------

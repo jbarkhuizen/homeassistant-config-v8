@@ -5,7 +5,12 @@ Purpose: Export entities to CSV with predictable filename for email automation
 """
 
 import csv
+import smtplib
 from datetime import datetime
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
+from email import encoders
 
 @pyscript_executor
 def write_csv_file(filename, data):
@@ -28,6 +33,45 @@ def write_csv_file(filename, data):
         return len(data), None
     except Exception as exc:
         return None, str(exc)
+
+
+@pyscript_executor
+def send_export_email(filename, entity_count, gmail_password):
+    """Send the export CSV file via email."""
+    try:
+        # Email config
+        sender_email = "jbarkhuizen@gmail.com"
+        receiver_email = "jbarkhuizen@gmail.com"
+        
+        # Create message
+        message = MIMEMultipart()
+        message["From"] = sender_email
+        message["To"] = receiver_email
+        message["Subject"] = f"Daily Entity Export - {datetime.now().strftime('%Y-%m-%d')}"
+        
+        # Body text
+        body = f"Attached: Daily entity export with {entity_count} entities.\nFile: {filename}"
+        message.attach(MIMEText(body, "plain"))
+        
+        # Attach CSV file
+        with open(filename, "rb") as attachment:
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(attachment.read())
+        
+        encoders.encode_base64(part)
+        part.add_header("Content-Disposition", f"attachment; filename={filename.split('/')[-1]}")
+        message.attach(part)
+        
+        # Send email
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(sender_email, gmail_password)
+        server.sendmail(sender_email, receiver_email, message.as_string())
+        server.quit()
+        
+        return True, "Email sent successfully"
+    except Exception as exc:
+        return False, str(exc)
 
 
 @service
@@ -108,11 +152,39 @@ def export_entities_daily():
         return False
     else:
         log.info(f"Successfully exported {count} entities to {filename}")
-        persistent_notification.create(
-            title="Entity Export Complete",
-            message=f"Exported {count} entities to {filename}",
-            notification_id="entity_export_success"
-        )
+        
+        # Get Gmail app password from secrets
+        try:
+            gmail_password = pyscript.get_state("secret.gmail_app_password")
+        except:
+            gmail_password = None
+        
+        if gmail_password:
+            # Send email with attachment
+            email_sent, email_msg = send_export_email(filename, count, gmail_password)
+            
+            if email_sent:
+                log.info(f"Export email sent successfully")
+                persistent_notification.create(
+                    title="Entity Export Complete",
+                    message=f"Exported {count} entities to {filename} and emailed to jbarkhuizen@gmail.com",
+                    notification_id="entity_export_success"
+                )
+            else:
+                log.error(f"Export completed but email failed: {email_msg}")
+                persistent_notification.create(
+                    title="Entity Export Complete - Email Failed",
+                    message=f"Exported {count} entities to {filename} but email send failed: {email_msg}",
+                    notification_id="entity_export_email_error"
+                )
+        else:
+            log.warning("Gmail password not found in secrets - skipping email")
+            persistent_notification.create(
+                title="Entity Export Complete - Email Skipped",
+                message=f"Exported {count} entities to {filename} but email password not configured",
+                notification_id="entity_export_no_password"
+            )
+        
         return True
 
 
