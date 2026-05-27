@@ -308,6 +308,10 @@ mobile_app:
 logger:
   default: warning
   logs:
+    custom_components.nodered: debug
+    custom_components.nodered.websocket: debug
+    homeassistant.components.websocket_api: info
+    aiohttp.websocket: info
     # TEMP (for Deye entry_id discovery): log config entries at startup
     homeassistant.config_entries: warning
 
@@ -472,4 +476,8 @@ recorder:
       - sensor.telegram_*
       - sensor.spotify_*
 
-# ==========
+device_tracker:
+  - platform: google_maps
+    username: "jbarkhuizen@gmail.com"
+
+      # ==========

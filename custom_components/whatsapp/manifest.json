@@ -1,0 +1,23 @@
+{
+  "domain": "whatsapp",
+  "name": "WhatsApp Integration",
+  "after_dependencies": [
+    "hassio"
+  ],
+  "codeowners": [
+    "@FaserF"
+  ],
+  "config_flow": true,
+  "documentation": "https://faserf.github.io/ha-whatsapp/",
+  "integration_type": "hub",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/FaserF/ha-whatsapp/issues/",
+  "requirements": [],
+  "version": "1.5.4",
+  "zeroconf": [
+    {
+      "name": "whatsapp*",
+      "type": "_ha-whatsapp._tcp.local."
+    }
+  ]
+}

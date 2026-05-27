@@ -1,0 +1,7 @@
+"""Global Variable."""
+PROGRAMS = {}
+ZONES = {}
+QUEUEDPROGRAMS = []
+REMAINING_ZONES = []
+RUNNING_ZONES = []
+RUNNINGPROGRAM = False

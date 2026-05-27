@@ -1,0 +1,732 @@
+"""HA WhatsApp integration entry point.
+
+This module is the heart of the Home Assistant WhatsApp integration. It
+is responsible for:
+
+1. **Setup** (:func:`async_setup_entry`) – Reads the config entry, creates
+   a :class:`~.api.WhatsAppApiClient`, starts the WebSocket/polling loop,
+   registers HA services (``send_message``, ``send_image``, …), and spins
+   up the :class:`~.coordinator.WhatsAppDataUpdateCoordinator`.
+2. **Tear-down** (:func:`async_unload_entry`) – Cancels all background
+   tasks, closes the HTTP session, and unloads all platform entities.
+3. **Incoming-message handling** – Fires
+   :attr:`~.const.EVENT_MESSAGE_RECEIVED` Home Assistant events for every
+   message received from the addon, optionally marks them as read, and
+   applies whitelist filtering.
+4. **Service registration** – Binds ``whatsapp.send_message``,
+   ``whatsapp.send_image``, ``whatsapp.send_document``, … services to
+   the :class:`~.api.WhatsAppApiClient` methods so that automations can
+   call them directly.
+"""
+
+from __future__ import annotations
+
+from logging import getLogger
+from typing import Any
+
+import homeassistant.helpers.config_validation as cv
+import voluptuous as vol
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_URL, Platform
+from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.exceptions import ServiceValidationError
+
+from .api import WhatsAppApiClient
+from .const import (
+    CONF_API_KEY,
+    CONF_MARK_AS_READ,
+    CONF_POLLING_INTERVAL,
+    CONF_SELF_MESSAGES,
+    CONF_WHITELIST,
+    DOMAIN,
+    EVENT_MESSAGE_RECEIVED,
+)
+from .coordinator import WhatsAppDataUpdateCoordinator
+
+_LOGGER = getLogger(__name__)
+
+_SERVICES_REGISTERED = False
+
+PLATFORMS: list[Platform] = [
+    Platform.BINARY_SENSOR,
+    getattr(Platform, "BUTTON", "button"),
+    Platform.NOTIFY,
+    Platform.SENSOR,
+]
+
+_SERVICES = [
+    "send_message",
+    "send_poll",
+    "send_image",
+    "send_document",
+    "send_video",
+    "send_audio",
+    "revoke_message",
+    "edit_message",
+    "send_list",
+    "send_contact",
+    "configure_webhook",
+    "send_location",
+    "send_reaction",
+    "update_presence",
+    "send_buttons",
+    "search_groups",
+    "mark_as_read",
+]
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up the WhatsApp integration from a config entry.
+
+    Called by Home Assistant when the integration is first loaded or when
+    the user completes the config flow. This function:
+
+    * Creates the :class:`~.api.WhatsAppApiClient` and starts the addon
+      polling loop.
+    * Creates and refreshes the
+      :class:`~.coordinator.WhatsAppDataUpdateCoordinator`.
+    * Forwards platform setup to ``binary_sensor``, ``sensor``, and
+      ``notify`` platforms.
+    * Registers all ``whatsapp.*`` services in the HA service registry.
+    * Sets up the incoming-message callback that fires HA events.
+
+    Args:
+        hass: The Home Assistant instance.
+        entry: The config entry being loaded. Contains all configuration
+            values entered by the user (URL, API key, options …).
+
+    Returns:
+        ``True`` on success. Raises
+        :class:`~homeassistant.exceptions.ConfigEntryNotReady` if the
+        initial coordinator refresh fails.
+    """
+
+    addon_url = entry.data.get(CONF_URL, "http://localhost:8066")
+    api_key = entry.data.get(CONF_API_KEY)
+    mask_sensitive_data = entry.options.get("mask_sensitive_data", False)
+    whitelist_str = entry.options.get(CONF_WHITELIST, "")
+    whitelist = None
+    if whitelist_str:
+        whitelist = [x.strip() for x in whitelist_str.split(",") if x.strip()]
+
+    session_id = entry.data.get("session_id", "default")
+
+    # Resolve localhost/127.0.0.1 for the 'Visit' button to the HA URL if possible
+    # This ensures the link works even when accessing HA from a remote device.
+    config_url = addon_url
+    if "localhost" in addon_url or "127.0.0.1" in addon_url:
+        try:
+            import homeassistant.helpers.network as network_helper
+            from yarl import URL
+
+            # We prefer the external URL if configured, otherwise internal
+            ha_base_url = network_helper.get_url(hass)
+            ha_host = URL(ha_base_url).host
+            if ha_host:
+                config_url = str(URL(addon_url).with_host(ha_host))
+                _LOGGER.debug(
+                    "Resolved addon URL for Visit button: %s -> %s",
+                    addon_url,
+                    config_url,
+                )
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.debug("Could not resolve HA URL for Visit button", exc_info=True)
+
+    client = WhatsAppApiClient(
+        host=addon_url,
+        api_key=api_key,
+        session_id=session_id,
+        mask_sensitive_data=mask_sensitive_data,
+        whitelist=whitelist,
+        config_url=config_url,
+    )
+
+    coordinator = WhatsAppDataUpdateCoordinator(hass, client, entry)
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][entry.entry_id] = {
+        "client": client,
+        "coordinator": coordinator,
+    }
+
+    await coordinator.async_config_entry_first_refresh()
+
+    # Handle incoming messages
+    def handle_incoming_message(data: dict[str, Any]) -> None:
+        """Handle incoming message from API."""
+        # Normalize sender for the event
+        # The addon now sends 'sender_number' which is the best-effort phone number
+        # We prefer that over splitting the raw JID which might be an LID (UUID)
+        full_sender = data.get("sender", "")
+        sender_number = data.get("sender_number")
+
+        # The 'sender' field should be the full JID for direct use in replies/services
+        data["sender"] = full_sender
+        data["raw_sender"] = full_sender
+
+        if sender_number:
+            clean_sender = sender_number
+        else:
+            # Fallback for older addon versions or weird cases
+            clean_sender = full_sender
+            if "@s.whatsapp.net" in full_sender or "@lid" in full_sender:
+                clean_sender = full_sender.split("@")[0]
+
+        data["sender_number"] = clean_sender
+
+        # Self-message filtering (fromMe)
+        # Default: Don't monitor 'fromMe' messages unless explicitly enabled in options
+        raw_msg = data.get("raw", {})
+        from_me = raw_msg.get("key", {}).get("fromMe", False)
+        if from_me and not entry.options.get(CONF_SELF_MESSAGES, False):
+            _LOGGER.debug(
+                "Ignoring self-message (fromMe) as it's disabled in configuration"
+            )
+            return
+
+        # Whitelist filtering
+        if whitelist is not None:
+            # For groups, the raw data contains the group JID in remoteJid
+            remote_id = raw_msg.get("key", {}).get("remoteJid", "")
+            is_group = "@g.us" in remote_id
+            target = remote_id if is_group else full_sender
+
+            if not client.is_allowed(target):
+                _LOGGER.debug(
+                    "Ignoring incoming message from non-whitelisted %s: %s",
+                    "group" if is_group else "sender",
+                    client.mask(target),
+                )
+                return
+
+        # Add session identifiers to let users distinguish between multiple bots
+        data["entry_id"] = entry.entry_id
+        data["session_id"] = session_id
+
+        _LOGGER.debug("Firing WhatsApp event: %s", data)
+        hass.bus.async_fire(EVENT_MESSAGE_RECEIVED, data)
+
+        # Automatically mark as read if enabled
+        if entry.options.get(CONF_MARK_AS_READ, False):
+            # Extract ID and sender JID from the nested raw data
+            # Try to get message_id from 'raw.key.id' or fallback to top-level 'id'
+            message_id = raw_msg.get("key", {}).get("id") or data.get("id")
+            number = data.get("sender")  # Full JID (e.g. 123456789@s.whatsapp.net)
+
+            if message_id and number:
+                hass.async_create_task(client.mark_as_read(number, message_id))
+            else:
+                _LOGGER.warning(
+                    "Auto-mark-as-read enabled but missing data. "
+                    "Message ID: %s, Number: %s",
+                    message_id,
+                    number,
+                )
+
+    client.register_callback(handle_incoming_message)
+    polling_interval = entry.options.get(CONF_POLLING_INTERVAL, 5)
+    await client.start_polling(interval=polling_interval)
+
+    # Automatically try to start the session on HA startup/load
+    # This ensures that the addon starts working without manual intervention
+    hass.async_create_task(client.start_session())
+
+    # Register services globally
+    await async_setup_services(hass)
+
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    entry.async_on_unload(entry.add_update_listener(async_update_options))
+
+    return True
+
+
+def get_client_for_account(
+    hass: HomeAssistant, account: str | None
+) -> WhatsAppApiClient:
+    """Get the correct client based on the account (entry_id or unique ID)."""
+    clients: dict[str, WhatsAppApiClient] = {
+        entry_id: data["client"]
+        for entry_id, data in hass.data.get(DOMAIN, {}).items()
+        if "client" in data
+    }
+
+    if not clients:
+        raise ServiceValidationError("No WhatsApp accounts configured")
+
+    # If only one client exists and no account specified, use it
+    if account is None:
+        if len(clients) == 1:
+            return list(clients.values())[0]
+        raise ServiceValidationError(
+            "Multiple WhatsApp accounts found. "
+            "Please specify the 'account' (entry ID or unique ID)."
+        )
+
+    # Try mapping by entry_id
+    if account in clients:
+        return clients[account]
+
+    # Try mapping by unique_id (my_number)
+    for entry_id, client in clients.items():
+        entry = hass.config_entries.async_get_entry(entry_id)
+        if entry and entry.unique_id == account:
+            return client
+
+    # Fallback to title with ambiguity check
+    title_matches: list[tuple[str, WhatsAppApiClient]] = []
+    for entry_id, client in clients.items():
+        entry = hass.config_entries.async_get_entry(entry_id)
+        if entry and entry.title == account:
+            title_matches.append((entry_id, client))
+
+    if len(title_matches) > 1:
+        raise ServiceValidationError(
+            f"Multiple WhatsApp accounts found with title '{account}'. "
+            "Please disambiguate by using the entry ID or unique ID instead."
+        )
+
+    if len(title_matches) == 1:
+        _LOGGER.warning(
+            "Using title-based fallback for WhatsApp account '%s'. "
+            "Please update your automation to use the entry ID or unique ID "
+            "to avoid future collisions.",
+            account,
+        )
+        return title_matches[0][1]
+
+    raise ServiceValidationError(f"WhatsApp account '{account}' not found")
+
+
+async def async_setup_services(hass: HomeAssistant) -> None:
+    """Set up global WhatsApp services."""
+    global _SERVICES_REGISTERED
+    if _SERVICES_REGISTERED:
+        return
+
+    async def _handle_service(call: ServiceCall) -> None:
+        """General service handler for routing."""
+        account = call.data.get("account")
+        client = get_client_for_account(hass, account)
+
+        service = call.service
+        data: dict[str, Any] = {k: v for k, v in call.data.items() if k != "account"}
+
+        def _get_quoted() -> str | None:
+            return data["quote"] if "quote" in data else data.get("reply_to")
+
+        if service == "send_message":
+            await client.send_message(
+                data["target"],
+                data["message"],
+                quoted_message_id=_get_quoted(),
+                expiration=data.get("expiration"),
+            )
+        elif service == "send_poll":
+            await client.send_poll(
+                data["target"],
+                data["question"],
+                data.get("options", []),
+                quoted_message_id=_get_quoted(),
+                expiration=data.get("expiration"),
+                allow_multiple_responses=data.get("allow_multiple_responses", False),
+            )
+        elif service == "send_image":
+            await client.send_image(
+                data["target"],
+                data["url"],
+                data.get("caption"),
+                quoted_message_id=_get_quoted(),
+                expiration=data.get("expiration"),
+            )
+        elif service == "send_location":
+            await client.send_location(
+                data["target"],
+                float(data["latitude"]),
+                float(data["longitude"]),
+                data.get("name"),
+                data.get("address"),
+                quoted_message_id=_get_quoted(),
+                expiration=data.get("expiration"),
+            )
+        elif service == "send_reaction":
+            await client.send_reaction(
+                data["target"], data["reaction"], data["message_id"]
+            )
+        elif service == "send_document":
+            await client.send_document(
+                data["target"],
+                data["url"],
+                data.get("file_name"),
+                data.get("message"),
+                quoted_message_id=_get_quoted(),
+                expiration=data.get("expiration"),
+            )
+        elif service == "send_video":
+            await client.send_video(
+                data["target"],
+                data["url"],
+                data.get("message"),
+                quoted_message_id=_get_quoted(),
+                expiration=data.get("expiration"),
+            )
+        elif service == "send_audio":
+            await client.send_audio(
+                data["target"],
+                data["url"],
+                data.get("ptt", False),
+                quoted_message_id=_get_quoted(),
+                expiration=data.get("expiration"),
+            )
+        elif service == "revoke_message":
+            await client.revoke_message(data["target"], data["message_id"])
+        elif service == "edit_message":
+            await client.edit_message(
+                data["target"], data["message_id"], data["message"]
+            )
+        elif service == "send_list":
+            await client.send_list(
+                data["target"],
+                data.get("title") or "",
+                data.get("text") or "",
+                data.get("button_text") or "",
+                data["sections"],
+                quoted_message_id=_get_quoted(),
+                expiration=data.get("expiration"),
+            )
+        elif service == "send_contact":
+            await client.send_contact(
+                data["target"], data["name"], data["contact_number"]
+            )
+        elif service == "configure_webhook":
+            await client.set_webhook(
+                data["url"], data.get("enabled", True), data.get("token")
+            )
+        elif service == "update_presence":
+            await client.set_presence(data["target"], data["presence"])
+        elif service == "send_buttons":
+            await client.send_buttons(
+                data["target"],
+                data["message"],
+                data["buttons"],
+                data.get("footer"),
+                quoted_message_id=_get_quoted(),
+                expiration=data.get("expiration"),
+            )
+        elif service == "mark_as_read":
+            await client.mark_as_read(data["target"], data.get("message_id"))
+        elif service == "search_groups":
+            await _handle_search_groups(hass, client, data.get("name_filter", ""))
+
+    async def _handle_search_groups(
+        hass: HomeAssistant, client: WhatsAppApiClient, name_filter: str
+    ) -> None:
+        """Handle search_groups separately to keep generic router cleaner."""
+        name_filter = name_filter.lower()
+        try:
+            groups = await client.get_groups()
+            if name_filter:
+                groups = [g for g in groups if name_filter in g["name"].lower()]
+
+            if not groups:
+                msg_suffix = f' matching "{name_filter}"' if name_filter else ""
+                message = f"No groups found{msg_suffix}."
+            else:
+                table = "| Name | Group ID | Participants |\n| :--- | :--- | :--- |\n"
+                for g in groups:
+                    table += f"| {g['name']} | `{g['id']}` | {g['participants']} |\n"
+
+                message = (
+                    f"Found {len(groups)} group(s):\n\n{table}\n\n"
+                    "*Tip: Use the Group ID in the 'target' field of other services.*"
+                )
+
+            await hass.services.async_call(
+                "persistent_notification",
+                "create",
+                {
+                    "title": "WhatsApp Group Search",
+                    "message": message,
+                    "notification_id": "whatsapp_group_search",
+                },
+            )
+        except Exception as e:  # Changed from bare except
+            _LOGGER.error("Failed to search groups", exc_info=e)
+            error_str = str(e)
+            error_details = error_str[:200]
+            await hass.services.async_call(
+                "persistent_notification",
+                "create",
+                {
+                    "title": "WhatsApp Group Search Error",
+                    "message": (
+                        f"An error occurred while searching groups: {error_details}"
+                    ),
+                    "notification_id": "whatsapp_group_search_error",
+                },
+            )
+
+    # Define common schemas
+    s_account: dict[vol.Marker, Any] = {vol.Optional("account"): cv.string}  # type: ignore[misc]
+    # Note: Both 'quote' and 'reply_to' are accepted for backwards compatibility.
+    # If both are provided, 'quote' takes precedence over 'reply_to'.
+    s_quotable: dict[vol.Marker, Any] = {  # type: ignore[misc]
+        **s_account,
+        vol.Optional("quote"): cv.string,
+        vol.Optional("reply_to"): cv.string,
+        vol.Optional("expiration"): vol.Any(None, vol.Coerce(int)),
+    }
+
+    msg_schema: dict[vol.Marker, Any] = {  # type: ignore[misc]
+        **s_quotable,
+        vol.Required("target"): cv.string,
+        vol.Required("message"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "send_message",
+        _handle_service,
+        schema=vol.Schema(msg_schema),
+    )
+
+    poll_schema: dict[vol.Marker, Any] = {  # type: ignore[misc]
+        **s_quotable,
+        vol.Required("target"): cv.string,
+        vol.Required("question"): cv.string,
+        vol.Required("options"): vol.All(cv.ensure_list, [cv.string]),
+        vol.Optional("allow_multiple_responses", default=False): cv.boolean,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "send_poll",
+        _handle_service,
+        schema=vol.Schema(poll_schema),
+    )
+    image_schema: dict[vol.Marker, Any] = {  # type: ignore[misc]
+        **s_quotable,
+        vol.Required("target"): cv.string,
+        vol.Required("url"): cv.string,
+        vol.Optional("caption"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "send_image",
+        _handle_service,
+        schema=vol.Schema(image_schema),
+    )
+    doc_schema: dict[vol.Marker, Any] = {  # type: ignore[misc]
+        **s_quotable,
+        vol.Required("target"): cv.string,
+        vol.Required("url"): cv.string,
+        vol.Optional("file_name"): cv.string,
+        vol.Optional("message"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "send_document",
+        _handle_service,
+        schema=vol.Schema(doc_schema),
+    )
+    video_schema: dict[vol.Marker, Any] = {  # type: ignore[misc]
+        **s_quotable,
+        vol.Required("target"): cv.string,
+        vol.Required("url"): cv.string,
+        vol.Optional("message"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "send_video",
+        _handle_service,
+        schema=vol.Schema(video_schema),
+    )
+    audio_schema: dict[vol.Marker, Any] = {  # type: ignore[misc]
+        **s_quotable,
+        vol.Required("target"): cv.string,
+        vol.Required("url"): cv.string,
+        vol.Optional("ptt", default=False): cv.boolean,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "send_audio",
+        _handle_service,
+        schema=vol.Schema(audio_schema),
+    )
+    revoke_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Required("message_id"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "revoke_message",
+        _handle_service,
+        schema=vol.Schema(revoke_schema),
+    )
+    edit_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Required("message_id"): cv.string,
+        vol.Required("message"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "edit_message",
+        _handle_service,
+        schema=vol.Schema(edit_schema),
+    )
+    list_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Required("sections"): cv.match_all,
+        vol.Optional("expiration"): vol.Any(None, vol.Coerce(int)),
+        vol.Optional("title"): cv.string,
+        vol.Optional("text"): cv.string,
+        vol.Optional("button_text"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "send_list",
+        _handle_service,
+        schema=vol.Schema(list_schema),
+    )
+    contact_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Required("name"): cv.string,
+        vol.Required("contact_number"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "send_contact",
+        _handle_service,
+        schema=vol.Schema(contact_schema),
+    )
+    webhook_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("url"): cv.string,
+        vol.Optional("enabled", default=True): cv.boolean,
+        vol.Optional("token"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "configure_webhook",
+        _handle_service,
+        schema=vol.Schema(webhook_schema),
+    )
+    loc_schema: dict[vol.Marker, Any] = {
+        **s_quotable,
+        vol.Required("target"): cv.string,
+        vol.Required("latitude"): vol.Coerce(float),
+        vol.Required("longitude"): vol.Coerce(float),
+        vol.Optional("name"): cv.string,
+        vol.Optional("address"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "send_location",
+        _handle_service,
+        schema=vol.Schema(loc_schema),
+    )
+    react_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Required("reaction"): cv.string,
+        vol.Required("message_id"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "send_reaction",
+        _handle_service,
+        schema=vol.Schema(react_schema),
+    )
+    presence_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Required("presence"): vol.In(
+            ["available", "unavailable", "composing", "recording", "paused"]
+        ),
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "update_presence",
+        _handle_service,
+        schema=vol.Schema(presence_schema),
+    )
+    buttons_schema: dict[vol.Marker, Any] = {
+        **s_quotable,
+        vol.Required("target"): cv.string,
+        vol.Required("message"): cv.string,
+        vol.Required("buttons"): vol.All(cv.ensure_list, [dict]),
+        vol.Optional("footer"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "send_buttons",
+        _handle_service,
+        schema=vol.Schema(buttons_schema),
+    )
+    search_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Optional("name_filter", default=""): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "search_groups",
+        _handle_service,
+        schema=vol.Schema(search_schema),
+    )
+    mark_as_read_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Optional("message_id"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "mark_as_read",
+        _handle_service,
+        schema=vol.Schema(mark_as_read_schema),
+    )
+
+    _SERVICES_REGISTERED = True
+
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload the WhatsApp integration config entry.
+
+    Called by Home Assistant when the user removes the integration or
+    when HA shuts down.  This function:
+
+    * Cancels the polling task and closes the HTTP session.
+    * Unloads all platform entities (binary sensor, sensor, notify).
+    * Removes all ``whatsapp.*`` services from the service registry.
+    * Cleans up ``hass.data`` entries for the removed config entry.
+
+    Args:
+        hass: The Home Assistant instance.
+        entry: The config entry being unloaded.
+
+    Returns:
+        ``True`` if unloading succeeded, ``False`` otherwise.
+    """
+    data = hass.data[DOMAIN][entry.entry_id]
+    client: WhatsAppApiClient = data["client"]
+    await client.close()
+
+    if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        hass.data[DOMAIN].pop(entry.entry_id)
+
+    # If this was the last entry, remove global services
+    if not hass.data[DOMAIN]:
+        for service in _SERVICES:
+            if hass.services.has_service(DOMAIN, service):
+                hass.services.async_remove(DOMAIN, service)
+        hass.data.pop(DOMAIN)
+
+        global _SERVICES_REGISTERED
+        _SERVICES_REGISTERED = False
+
+    return bool(unload_ok)
+
+
+async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Update options."""
+    await hass.config_entries.async_reload(entry.entry_id)
