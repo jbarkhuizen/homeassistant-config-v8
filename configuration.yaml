@@ -1,7 +1,7 @@
 # ==============================================================================
 # Home Assistant Main Configuration
 # File: configuration.yaml
-# Updated: 2025-10-21
+# Updated: 2026-05-27
 # ==============================================================================
 
 # Loads default set of integrations. Do not remove.
@@ -434,6 +434,10 @@ recorder:
       - sensor.mqtt_broker_cpu_state_detail
       - sensor.mqtt_broker_memory_state_detail
       - binary_sensor.mqtt_broker_alert_active
+      # Speedtest sensors
+      - sensor.speedtest_download
+      - sensor.speedtest_upload
+      - sensor.speedtest_ping
     entity_globs:
       - sensor.deyeinverter*_pv_power
       - sensor.deyeinverter*_inverter_output_power

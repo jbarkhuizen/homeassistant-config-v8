@@ -11,11 +11,11 @@ input_number:
   gdacs_radius_km:
     name: GDACS Radius (km)
     min: 50
-    max: 1000
+    max: 5000
     step: 50
     mode: slider
     icon: mdi:map-marker-radius
-    initial: 200
+    initial: 2000
 
 input_select:
   gdacs_min_severity:
