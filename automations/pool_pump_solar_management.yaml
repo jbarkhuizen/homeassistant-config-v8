@@ -1,8 +1,8 @@
 #===============================================================================
-# SOLAR: Pool Pump Management by PV Production (09:00–15:00)
+# SOLAR: Pool Pump Management by PV Production (09:30–12:00)
 # File: automations/pool_pump_solar_management.yaml
-# Updated: 2026-05-25
-# - Turn OFF if PV < 2500 W for 15 min, only during 09:00-15:00
+# Updated: 2026-05-27
+# - Turn OFF if PV < 2500 W for 15 min, only during 09:30-12:00
 # - Turn ON if PV > 3000 W for 15 min, at least 10 min after last OFF
 # - Pool pump is controlled only by this dedicated automation
 # - Generic solar optimization package must not control the pool pump
@@ -18,10 +18,10 @@
 # Turn OFF pool pump when PV is insufficient
 #----------------------------------------------------------------------------
 - id: pool_pump_off_on_low_pv
-  alias: "Solar: Pool Pump OFF when PV < 2500 W (09:00–15:00)"
+  alias: "Solar: Pool Pump OFF when PV < 2500 W (09:30–12:00)"
   description: >
     If PV production drops below 2500 W, sustained for 15 minutes during
-    09:00–15:00, turn the pool pump OFF if it is running.
+    09:30–12:00, turn the pool pump OFF if it is running.
     Guarded by Maintenance Mode.
     Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent, System Log.
 
@@ -39,8 +39,8 @@
       entity_id: input_boolean.maintenance_mode
       state: "off"
     - condition: time
-      after: "09:00:00"
-      before: "15:00:00"
+      after: "09:30:00"
+      before: "12:00:00"
     - condition: state
       entity_id: switch.sonoff_10009ce3f9
       state: "on"
@@ -85,7 +85,7 @@
           • Load Power: {{ load_power }}
 
           Pump will restart automatically when PV exceeds {{ threshold_on }} W
-          for 15 minutes between 09:00 and 15:00, and at least 10 minutes
+          for 15 minutes between 09:30 and 12:00, and at least 10 minutes
           have passed since this OFF event.
 
           Local: {{ local_url }}
@@ -127,7 +127,7 @@
 
           WHAT HAPPENS NEXT:
           The pool pump will restart automatically when PV production exceeds
-          {{ threshold_on }} W for 15 consecutive minutes between 09:00 and 15:00,
+          {{ threshold_on }} W for 15 consecutive minutes between 09:30 and 12:00,
           and at least 10 minutes have passed since this OFF event.
 
           Managed by: Solar Pool Pump Automation
@@ -167,10 +167,10 @@
 # Turn ON pool pump when PV is sufficient
 #----------------------------------------------------------------------------
 - id: pool_pump_on_on_high_pv
-  alias: "Solar: Pool Pump ON when PV > 3000 W (09:00–15:00)"
+  alias: "Solar: Pool Pump ON when PV > 3000 W (09:30–12:00)"
   description: >
     If PV production rises above 3000 W, sustained for 15 minutes during
-    09:00–15:00, turn the pool pump ON if it is OFF and at least 10 minutes
+    09:30–12:00, turn the pool pump ON if it is OFF and at least 10 minutes
     have passed since the last solar OFF event.
     Guarded by Maintenance Mode.
     Channels: Email, Telegram, Mobile Push (SM-G996B), Persistent, System Log.
@@ -189,8 +189,8 @@
       entity_id: input_boolean.maintenance_mode
       state: "off"
     - condition: time
-      after: "09:00:00"
-      before: "15:00:00"
+      after: "09:30:00"
+      before: "12:00:00"
     - condition: state
       entity_id: switch.sonoff_10009ce3f9
       state: "off"
@@ -311,15 +311,15 @@
 
   mode: single
 
-- id: pool_pump_force_off_at_1500
-  alias: "Solar: Pool Pump Force OFF at 15:00"
+- id: pool_pump_force_off_at_1200
+  alias: "Solar: Pool Pump Force OFF at 12:00"
   description: >
-    Force the pool pump OFF every day at 15:00, regardless of PV level.
-    Recommended: do not block this with Maintenance Mode, so 15:00 OFF is absolute.
+    Force the pool pump OFF every day at 12:00, regardless of PV level.
+    Recommended: do not block this with Maintenance Mode, so 12:00 OFF is absolute.
 
   trigger:
     - platform: time
-      at: "15:00:00"
+      at: "12:00:00"
 
   action:
     - service: input_datetime.set_datetime
@@ -335,7 +335,7 @@
     - service: system_log.write
       data:
         message: >-
-          Pool Pump FORCE OFF at 15:00 on {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+          Pool Pump FORCE OFF at 12:00 on {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
         level: info
 
   mode: single

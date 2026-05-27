@@ -21,19 +21,19 @@ template:
       - name: "Pool Pump Diagnostics Time Window Active"
         unique_id: pool_pump_diag_time_window_active
         state: >
-          {{ now().strftime('%H:%M:%S') >= '09:00:00' and now().strftime('%H:%M:%S') < '15:00:00' }}
+          {{ now().strftime('%H:%M:%S') >= '09:30:00' and now().strftime('%H:%M:%S') < '12:00:00' }}
         icon: >
-          {% if now().strftime('%H:%M:%S') >= '09:00:00' and now().strftime('%H:%M:%S') < '15:00:00' %}
+          {% if now().strftime('%H:%M:%S') >= '09:30:00' and now().strftime('%H:%M:%S') < '12:00:00' %}
             mdi:clock-check
           {% else %}
             mdi:clock-alert
           {% endif %}
         attributes:
           detail: >
-            {% if now().strftime('%H:%M:%S') >= '09:00:00' and now().strftime('%H:%M:%S') < '15:00:00' %}
-              Current time is inside the 09:00 to 15:00 window
+            {% if now().strftime('%H:%M:%S') >= '09:30:00' and now().strftime('%H:%M:%S') < '12:00:00' %}
+              Current time is inside the 09:30 to 12:00 window
             {% else %}
-              Current time is outside the 09:00 to 15:00 window
+              Current time is outside the 09:30 to 12:00 window
             {% endif %}
 
       - name: "Pool Pump Diagnostics Sonoff Ready For Start"
@@ -121,8 +121,8 @@ template:
           {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
           {{
             is_state('input_boolean.maintenance_mode', 'off')
-            and now().strftime('%H:%M:%S') >= '09:00:00'
-            and now().strftime('%H:%M:%S') < '15:00:00'
+            and now().strftime('%H:%M:%S') >= '09:30:00'
+            and now().strftime('%H:%M:%S') < '12:00:00'
             and is_state('switch.sonoff_10009ce3f9', 'off')
             and (states('sensor.deyeinvertercombined_pv_power') | float(0) > 3000)
             and (
@@ -134,8 +134,8 @@ template:
           {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
           {% if
             is_state('input_boolean.maintenance_mode', 'off')
-            and now().strftime('%H:%M:%S') >= '09:00:00'
-            and now().strftime('%H:%M:%S') < '15:00:00'
+            and now().strftime('%H:%M:%S') >= '09:30:00'
+            and now().strftime('%H:%M:%S') < '12:00:00'
             and is_state('switch.sonoff_10009ce3f9', 'off')
             and (states('sensor.deyeinvertercombined_pv_power') | float(0) > 3000)
             and (
@@ -152,8 +152,8 @@ template:
             {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
             {% if
               is_state('input_boolean.maintenance_mode', 'off')
-              and now().strftime('%H:%M:%S') >= '09:00:00'
-              and now().strftime('%H:%M:%S') < '15:00:00'
+              and now().strftime('%H:%M:%S') >= '09:30:00'
+              and now().strftime('%H:%M:%S') < '12:00:00'
               and is_state('switch.sonoff_10009ce3f9', 'off')
               and (states('sensor.deyeinvertercombined_pv_power') | float(0) > 3000)
               and (
@@ -171,7 +171,7 @@ template:
         unique_id: pool_pump_diag_current_status
         state: >
           {% set maintenance_ok = is_state('input_boolean.maintenance_mode', 'off') %}
-          {% set time_ok = now().strftime('%H:%M:%S') >= '09:00:00' and now().strftime('%H:%M:%S') < '15:00:00' %}
+          {% set time_ok = now().strftime('%H:%M:%S') >= '09:30:00' and now().strftime('%H:%M:%S') < '12:00:00' %}
           {% set switch_ok = is_state('switch.sonoff_10009ce3f9', 'off') %}
           {% set pv = states('sensor.deyeinvertercombined_pv_power') | float(0) %}
           {% set pv_ok = pv > 3000 %}
@@ -181,7 +181,7 @@ template:
           {% if not maintenance_ok %}
             Blocked: Maintenance Mode ON
           {% elif not time_ok %}
-            Blocked: Outside 09:00–15:00 window
+            Blocked: Outside 09:30–12:00 window
           {% elif not switch_ok %}
             Blocked: Sonoff switch already ON
           {% elif not pv_ok %}
@@ -193,7 +193,7 @@ template:
           {% endif %}
         icon: >
           {% set maintenance_ok = is_state('input_boolean.maintenance_mode', 'off') %}
-          {% set time_ok = now().strftime('%H:%M:%S') >= '09:00:00' and now().strftime('%H:%M:%S') < '15:00:00' %}
+          {% set time_ok = now().strftime('%H:%M:%S') >= '09:30:00' and now().strftime('%H:%M:%S') < '12:00:00' %}
           {% set switch_ok = is_state('switch.sonoff_10009ce3f9', 'off') %}
           {% set pv = states('sensor.deyeinvertercombined_pv_power') | float(0) %}
           {% set pv_ok = pv > 3000 %}
