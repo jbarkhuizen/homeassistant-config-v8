@@ -1,0 +1,76 @@
+# ==============================================================================
+# Main Eskom Dashboard Metrics
+# File: packages/main_eskom_dashboard.yaml
+# Purpose:
+# - Add exact helper sensors for Main Eskom dashboard reporting
+# - Reuse existing utility meter entities from packages/sonoff_tuya_energy.yaml
+# - Provide daily, monthly, rolling 7 day average and peak 45 day usage
+# ==============================================================================
+
+sensor:
+  - platform: statistics
+    name: main_eskom_daily_average_7d_stats
+    unique_id: main_eskom_daily_average_7d_stats
+    entity_id: sensor.main_eskom_switch_daily
+    state_characteristic: average_step
+    max_age:
+      days: 7
+    sampling_size: 10000
+
+  - platform: statistics
+    name: main_eskom_peak_45d_stats
+    unique_id: main_eskom_peak_45d_stats
+    entity_id: sensor.main_eskom_switch_daily
+    state_characteristic: value_max
+    max_age:
+      days: 45
+    sampling_size: 20000
+
+template:
+  - trigger:
+      - platform: time
+        at: "06:00:00"
+      - platform: time
+        at: "07:00:00"
+      - platform: time
+        at: "08:00:00"
+      - platform: time
+        at: "09:00:00"
+      - platform: homeassistant
+        event: start
+    sensor:
+      - name: "Main Eskom Today Usage"
+        unique_id: main_eskom_today_usage
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: measurement
+        icon: mdi:flash
+        state: "{{ states('sensor.main_eskom_switch_daily') | float(0) | round(2) }}"
+
+      - name: "Main Eskom Monthly Total"
+        unique_id: main_eskom_monthly_total
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: measurement
+        icon: mdi:calendar-month
+        state: "{{ states('sensor.main_eskom_switch_monthly') | float(0) | round(2) }}"
+
+      - name: "Main Eskom 7 Day Average"
+        unique_id: main_eskom_7_day_average
+        unit_of_measurement: "kWh"
+        state_class: measurement
+        icon: mdi:chart-line
+        state: "{{ states('sensor.main_eskom_daily_average_7d_stats') | float(0) | round(2) }}"
+
+      - name: "Main Eskom Peak Usage 45 Days"
+        unique_id: main_eskom_peak_usage_45_days
+        unit_of_measurement: "kWh"
+        state_class: measurement
+        icon: mdi:chart-bar
+        state: "{{ states('sensor.main_eskom_peak_45d_stats') | float(0) | round(2) }}"
+
+      - name: "Main Eskom Peak Usage Day Label"
+        unique_id: main_eskom_peak_usage_day_label
+        icon: mdi:calendar-star
+        state: >
+          Last 45 days

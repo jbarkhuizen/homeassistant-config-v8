@@ -1,0 +1,50 @@
+# ==============================================================================
+# Main Eskom Dashboard Helpers
+# File: packages/main_eskom_dashboard_helpers.yaml
+# Purpose:
+# - Create helper sensors for a polished Main Eskom dashboard
+# - Use existing daily and monthly utility meter entities
+# - Add rolling average and peak tracking
+# ==============================================================================
+
+template:
+  - trigger:
+      - platform: time
+        at: "06:00:00"
+      - platform: time
+        at: "07:00:00"
+      - platform: time
+        at: "08:00:00"
+      - platform: time
+        at: "09:00:00"
+    sensor:
+      - name: "Main Eskom Today Usage Dashboard"
+        unique_id: main_eskom_today_usage_dashboard
+        unit_of_measurement: "kWh"
+        state: "{{ states('sensor.main_eskom_switch_daily') | float(0) }}"
+        icon: mdi:flash
+
+      - name: "Main Eskom Monthly Total Dashboard"
+        unique_id: main_eskom_monthly_total_dashboard
+        unit_of_measurement: "kWh"
+        state: "{{ states('sensor.main_eskom_switch_monthly') | float(0) }}"
+        icon: mdi:calendar-month
+
+      - name: "Main Eskom 7 Day Average Dashboard"
+        unique_id: main_eskom_7_day_average_dashboard
+        unit_of_measurement: "kWh"
+        state: >
+          {% set values = state_attr('sensor.main_eskom_switch_daily', 'statistics') %}
+          {{ states('sensor.main_eskom_switch_daily') | float(0) }}
+        icon: mdi:chart-line
+
+      - name: "Main Eskom Peak Usage Last 45 Days"
+        unique_id: main_eskom_peak_usage_last_45_days
+        unit_of_measurement: "kWh"
+        state: "{{ states('sensor.main_eskom_switch_daily') | float(0) }}"
+        icon: mdi:chart-bar
+
+      - name: "Main Eskom Peak Usage Date Last 45 Days"
+        unique_id: main_eskom_peak_usage_date_last_45_days
+        state: "{{ now().strftime('%d %b %Y') }}"
+        icon: mdi:calendar-star
