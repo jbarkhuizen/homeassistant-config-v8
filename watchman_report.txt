@@ -1,0 +1,850 @@
+-== Watchman Report ==- 
+
+-== Missing 2 action(s) from 33 found in your config:
++--------------------------------+----------+---------------------------------------------------------------+
+| Action ID                      | State    | Location                                                      |
++--------------------------------+----------+---------------------------------------------------------------+
+| notify.email_notification_jbar | missing  | 📄 backup/ha-config-                                          |
+| khuizen_gmail_com              |          | 20260502_101939/automations/battery_weekly_summary.yaml:68    |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/gdac_notifications.yaml:84,206    |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/git_snapshot_0855.yaml:109        |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/grafana_memory_alert.yaml:76      |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/maintanance_mode_reminder.yaml:8  |
+|                                |          | 4                                                             |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/mqtt_broker_alerts.yaml:96,172    |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/pool_pump_solar_management.yaml:  |
+|                                |          | 116,280                                                       |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/prepaid_meter_recharge.yaml:96    |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/recorder_maintanance.yaml:175     |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/security_anomaly_detection.yaml:  |
+|                                |          | 167,260                                                       |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/security_ipban_spike.yaml:93,190  |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/solar_daily_report.yaml:69        |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/solar_forecast_notifications.yam  |
+|                                |          | l:80,196                                                      |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/solar_weekly_report.yaml:62       |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/system_morning_overview.yaml:70   |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/update_report_email.yaml:45,589   |
+| notify.email_alerts_jbarkhuize | missing  | 📄 backup/ha-                                                 |
+| n_gmail_com                    |          | config-20260502_101939/automations/gdacs_alert.yaml:123       |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/prepaid_meter_automations.yaml:6  |
+|                                |          | 1,250,356,460,613,722                                         |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/solar_production_automation.yaml  |
+|                                |          | :73,199,341,484,646,834                                       |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/packages/battery_monitoring.yaml:337,464,599  |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/packages/solar_power_optimization.yaml:145,2  |
+|                                |          | 02,253,293,329                                                |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/packages/system_health_monitoring.yaml:204,3  |
+|                                |          | 11,417,524,670,777                                            |
++--------------------------------+----------+---------------------------------------------------------------+
+
+-== Missing 291 entity(ies) from 1229 found in your config:
++--------------------------------+----------+---------------------------------------------------------------+
+| Entity ID                      | State    | Location                                                      |
++--------------------------------+----------+---------------------------------------------------------------+
+| sensor.auto_update_status      | unknown  | 📄 .storage/lovelace.12_automation_updates:17,42,88,153,176   |
+|                                |          | 📄 .storage/lovelace.23_security_maintenance:33,39            |
+|                                |          | 📄 .storage/lovelace.27_system_health:186                     |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/automation_updates.yaml:9,81,115   |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/security_maintanance.yaml:28,37    |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/system_health.yaml:122      |
+| sensor.backup_health_status    | unknown  | 📄 .storage/lovelace.12_automation_updates:46,92,153,180      |
+|                                |          | 📄 .storage/lovelace.23_security_maintenance:33,40            |
+|                                |          | 📄 .storage/lovelace.27_system_health:182                     |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/automation_updates.yaml:81,116     |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/security_maintanance.yaml:28,38    |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/system_health.yaml:121      |
+| sensor.sonoff_a480098890_batte | unavail  | 📄 .storage/lovelace.15_battery:85,140                        |
+| ry                             |          | 📄 backup/ha-config-20260502_101939/customize.yaml:49         |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/battery.yaml:46,65          |
+|                                |          | 📄 customize.yaml:49                                          |
+| sensor.sonoff_a4800d7025_batte | unavail  | 📄 .storage/lovelace.15_battery:89,144                        |
+| ry                             |          | 📄 automations/system_morning_overview.yaml:72                |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/system_morning_overview.yaml:72   |
+|                                |          | 📄 backup/ha-config-20260502_101939/customize.yaml:53         |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/battery.yaml:47,64          |
+|                                |          | 📄 customize.yaml:53                                          |
+| sensor.sonoff_a48008e4cc_batte | unavail  | 📄 .storage/lovelace.15_battery:93,158                        |
+| ry                             |          | 📄 backup/ha-config-20260502_101939/customize.yaml:23         |
+|                                |          | 📄 customize.yaml:23                                          |
+| sensor.sonoff_a4800986dd_batte | unavail  | 📄 .storage/lovelace.15_battery:97,170                        |
+| ry                             |          | 📄 backup/ha-config-20260502_101939/customize.yaml:7          |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/battery.yaml:77             |
+|                                |          | 📄 customize.yaml:7                                           |
+| sensor.sonoff_1002357619_batte | unavail  | 📄 .storage/lovelace.15_battery:132                           |
+| ry                             |          | 📄 backup/ha-config-20260502_101939/customize.yaml:79         |
+|                                |          | 📄 customize.yaml:79                                          |
+| sensor.sonoff_a48005596e_batte | unavail  | 📄 .storage/lovelace.15_battery:136                           |
+| ry                             |          | 📄 backup/ha-config-20260502_101939/customize.yaml:45         |
+|                                |          | 📄 customize.yaml:45                                          |
+| sensor.sonoff_a4800e446e_batte | unavail  | 📄 .storage/lovelace.15_battery:148                           |
+| ry                             |          | 📄 backup/ha-config-20260502_101939/customize.yaml:75         |
+|                                |          | 📄 customize.yaml:75                                          |
+| sensor.sonoff_a48008e4cc_tempe | unavail  | 📄 .storage/lovelace.15_battery:162                           |
+| rature                         |          | 📄 backup/ha-config-20260502_101939/customize.yaml:19         |
+|                                |          | 📄 customize.yaml:19                                          |
+| sensor.sonoff_a48008e4cc_humid | unavail  | 📄 .storage/lovelace.15_battery:166                           |
+| ity                            |          | 📄 backup/ha-config-20260502_101939/customize.yaml:21         |
+|                                |          | 📄 customize.yaml:21                                          |
+| sensor.sonoff_a4800986dd_tempe | unavail  | 📄 .storage/lovelace.15_battery:174                           |
+| rature                         |          | 📄 backup/ha-config-20260502_101939/customize.yaml:3          |
+|                                |          | 📄 customize.yaml:3                                           |
+| sensor.sonoff_a4800986dd_humid | unavail  | 📄 .storage/lovelace.15_battery:178                           |
+| ity                            |          | 📄 backup/ha-config-20260502_101939/customize.yaml:5          |
+|                                |          | 📄 customize.yaml:5                                           |
+| binary_sensor.motioneye_runnin | disabled | 📄 .storage/lovelace.16_camera_s_security:17,41,170           |
+| g                              |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/camera_security.yaml:9,29,121      |
+| binary_sensor.ip_camera_motion | missing  | 📄 .storage/lovelace.16_camera_s_security:17,83,125,182,216   |
+| _alarm                         |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/camera_security.yaml:9,54,87,131,  |
+|                                |          | 157                                                           |
+| binary_sensor.ip_camera_tamper | missing  | 📄 .storage/lovelace.16_camera_s_security:17,84,126,183,217   |
+| _detection                     |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/camera_security.yaml:9,55,88,132,  |
+|                                |          | 158                                                           |
+| binary_sensor.ip_camera_motion | missing  | 📄 .storage/lovelace.16_camera_s_security:17,86,145,185,218   |
+| _alarm_2                       |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/camera_security.yaml:9,57,103,134  |
+|                                |          | ,159                                                          |
+| binary_sensor.ip_camera_tamper | missing  | 📄 .storage/lovelace.16_camera_s_security:17,87,146,186,219   |
+| _detection_2                   |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/camera_security.yaml:9,58,104,135  |
+|                                |          | ,160                                                          |
+| binary_sensor.sonoff_a4800d702 | unavail  | 📄 .storage/lovelace.16_camera_s_security:17,56,106,228       |
+| 5                              |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/camera_security.yaml:9,38,73,167   |
+| binary_sensor.sonoff_100150e8d | missing  | 📄 .storage/lovelace.16_camera_s_security:17,60,107,229       |
+| 2                              |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/camera_security.yaml:9,40,74,168   |
+| binary_sensor.sonoff_a48009889 | unavail  | 📄 .storage/lovelace.16_camera_s_security:72,231              |
+| 0                              |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/camera_security.yaml:46,170        |
+| binary_sensor.sonoff_a4800986e | missing  | 📄 .storage/lovelace.16_camera_s_security:82,109              |
+| 6                              |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/camera_security.yaml:53,76  |
+| binary_sensor.ip_camera_digita | missing  | 📄 .storage/lovelace.16_camera_s_security:85,127              |
+| l_input                        |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/camera_security.yaml:56,89  |
+| binary_sensor.ip_camera_digita | missing  | 📄 .storage/lovelace.16_camera_s_security:88,147              |
+| l_input_2                      |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/camera_security.yaml:59,105        |
+| camera.ip_camera_mainstream    | missing  | 📄 .storage/lovelace.16_camera_s_security:122                 |
+|                                |          | 📄 .storage/lovelace.6_camera:15                              |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/camera_security.yaml:84     |
+| switch.ip_camera_ir_lamp       | missing  | 📄 .storage/lovelace.16_camera_s_security:134                 |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/camera_security.yaml:94     |
+| switch.ip_camera_wiper         | missing  | 📄 .storage/lovelace.16_camera_s_security:135                 |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/camera_security.yaml:95     |
+| switch.ip_camera_autofocus     | missing  | 📄 .storage/lovelace.16_camera_s_security:136                 |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/camera_security.yaml:96     |
+| camera.ip_camera_mainstream_2  | missing  | 📄 .storage/lovelace.16_camera_s_security:142                 |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/camera_security.yaml:100    |
+| switch.ip_camera_ir_lamp_2     | missing  | 📄 .storage/lovelace.16_camera_s_security:154                 |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/camera_security.yaml:110    |
+| switch.ip_camera_wiper_2       | missing  | 📄 .storage/lovelace.16_camera_s_security:155                 |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/camera_security.yaml:111    |
+| switch.ip_camera_autofocus_2   | missing  | 📄 .storage/lovelace.16_camera_s_security:156                 |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/camera_security.yaml:112    |
+| sensor.motioneye_version       | disabled | 📄 .storage/lovelace.16_camera_s_security:171                 |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/camera_security.yaml:122    |
+| sensor.motioneye_newest_versio | disabled | 📄 .storage/lovelace.16_camera_s_security:172                 |
+| n                              |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/camera_security.yaml:123    |
+| sensor.motioneye_cpu_percent   | disabled | 📄 .storage/lovelace.16_camera_s_security:174,200             |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/camera_security.yaml:125,146       |
+| sensor.motioneye_memory_percen | disabled | 📄 .storage/lovelace.16_camera_s_security:175,201             |
+| t                              |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/camera_security.yaml:126,147       |
+| binary_sensor.ip_camera_cell_m | missing  | 📄 .storage/lovelace.16_camera_s_security:184                 |
+| otion_detection                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/camera_security.yaml:133    |
+| binary_sensor.ip_camera_cell_m | missing  | 📄 .storage/lovelace.16_camera_s_security:187                 |
+| otion_detection_2              |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/camera_security.yaml:136    |
+| sensor.flightradar24_most_trac | unavail  | 📄 .storage/lovelace.17_flight_radar:17,37,81,139             |
+| ked                            |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/flightradar.yaml:9,30,54,97        |
+| button.flightradar24_clear_add | unknown  | 📄 .storage/lovelace.17_flight_radar:63,168                   |
+| itional_tracked                |          |                                                               |
+| sensor.gdacs_highest_severity_ | unknown  | 📄 .storage/lovelace.18_gdacs:17                              |
+| within_radius                  |          | 📄 automations/gdac_notifications.yaml:44,52,58,157,174       |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/gdac_notifications.yaml:44,52,58  |
+|                                |          | ,157,174                                                      |
+|                                |          | 📄 backup/ha-config-20260502_101939/dashboards/gdac.yaml:9    |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/packages/gdac_helpers.yaml:186         |
+|                                |          | 📄 packages/gdac_helpers.yaml:186                             |
+| automation.prepaid_meter_recha | unavail  | 📄 .storage/lovelace.1_prepaid_meter:19                       |
+| rge                            |          |                                                               |
+| input_number.prepaid_meter_inv | unavail  | 📄 .storage/lovelace.1_prepaid_meter:27,211                   |
+| erter_total_units              |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/prepaid_meter_recharge.yaml:54,6  |
+|                                |          | 0,99                                                          |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/packages/prepaidmeter_automation.yaml:19      |
+| sensor.deyeinvertermaster_summ | missing  | 📄 .storage/lovelace.1_prepaid_meter:64,116,196               |
+| ary_daily_grid_import_buy      |          | 📄 automations/prepaid_meter_automations.yaml:27,34,65,185,23 |
+|                                |          | 0,253,331,359,705,725,750,765                                 |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/prepaid_meter_automations.yaml:2  |
+|                                |          | 7,34,65,185,230,253,331,359,705,725,750,765                   |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/prepaid_meter_recharge.yaml:41,4  |
+|                                |          | 4                                                             |
+| sensor.deyeinvertermaster_summ | missing  | 📄 .storage/lovelace.1b_sunsync_master:897                    |
+| ary_day_generator              |          | 📄 .storage/lovelace.1c_sunsync_slave:897                     |
+|                                |          | 📄 .storage/lovelace.1d_sunsync_combined:897                  |
+|                                |          | 📄 .storage/lovelace.1e_sunsync_flow:120                      |
+|                                |          | 📄 .storage/lovelace.sunsync_desktop:897                      |
+| sensor.load_shedding_stage_cap | missing  | 📄 .storage/lovelace.1b_sunsync_master:1086                   |
+| etown                          |          | 📄 .storage/lovelace.1c_sunsync_slave:1086                    |
+|                                |          | 📄 .storage/lovelace.1d_sunsync_combined:1086                 |
+|                                |          | 📄 .storage/lovelace.sunsync_desktop:1086                     |
+| sensor.load_shedding_stage_esk | missing  | 📄 .storage/lovelace.1b_sunsync_master:1091                   |
+| om                             |          | 📄 .storage/lovelace.1c_sunsync_slave:1091                    |
+|                                |          | 📄 .storage/lovelace.1d_sunsync_combined:1091                 |
+|                                |          | 📄 .storage/lovelace.sunsync_desktop:1091                     |
+| sensor.load_shedding_area_tshw | missing  | 📄 .storage/lovelace.1b_sunsync_master:1096                   |
+| ane_8_monumentpark             |          | 📄 .storage/lovelace.1c_sunsync_slave:1096                    |
+|                                |          | 📄 .storage/lovelace.1d_sunsync_combined:1096                 |
+|                                |          | 📄 .storage/lovelace.sunsync_desktop:1096                     |
+| sensor.load_shedding_sepush_ap | missing  | 📄 .storage/lovelace.1b_sunsync_master:1102                   |
+| i_quota                        |          | 📄 .storage/lovelace.1c_sunsync_slave:1102                    |
+|                                |          | 📄 .storage/lovelace.1d_sunsync_combined:1102                 |
+|                                |          | 📄 .storage/lovelace.sunsync_desktop:1102                     |
+| calendar.load_shedding_forecas | missing  | 📄 .storage/lovelace.1b_sunsync_master:1121                   |
+| t                              |          | 📄 .storage/lovelace.1c_sunsync_slave:1121                    |
+|                                |          | 📄 .storage/lovelace.1d_sunsync_combined:1121                 |
+|                                |          | 📄 .storage/lovelace.sunsync_desktop:1121                     |
+| button.deyeinvertermaster_inve | unknown  | 📄 .storage/lovelace.1b_sunsync_master:1529                   |
+| rter_sync_clock                |          | 📄 .storage/lovelace.1c_sunsync_slave:1529                    |
+|                                |          | 📄 .storage/lovelace.1d_sunsync_combined:1529                 |
+|                                |          | 📄 .storage/lovelace.sunsync_desktop:1529                     |
+| sensor.deyeinvertercmaster_inv | missing  | 📄 .storage/lovelace.1c_sunsync_slave:895                     |
+| erter_system_state             |          | 📄 .storage/lovelace.1e_sunsync_flow:118                      |
+|                                |          | 📄 .storage/lovelace.sunsync_desktop:895                      |
+| sensor.deyeinvertercombined_ba | missing  | 📄 .storage/lovelace.1d_sunsync_combined:884                  |
+| ttery_temperature              |          |                                                               |
+| sensor.deyeinvertercombined_pv | missing  | 📄 .storage/lovelace.1d_sunsync_combined:886                  |
+| 1_voltage                      |          |                                                               |
+| sensor.deyeinvertercombined_pv | missing  | 📄 .storage/lovelace.1d_sunsync_combined:887                  |
+| 1_current                      |          |                                                               |
+| sensor.deyeinvertercombined_pv | missing  | 📄 .storage/lovelace.1d_sunsync_combined:888                  |
+| 2_voltage                      |          |                                                               |
+| sensor.deyeinvertercombined_pv | missing  | 📄 .storage/lovelace.1d_sunsync_combined:889                  |
+| 2_current                      |          |                                                               |
+| sensor.deyeinvertercombined_pv | missing  | 📄 .storage/lovelace.1d_sunsync_combined:890                  |
+| 3_voltage                      |          |                                                               |
+| sensor.deyeinvertercombined_pv | missing  | 📄 .storage/lovelace.1d_sunsync_combined:891                  |
+| 3_current                      |          |                                                               |
+| sensor.deyeinvertercombined_pv | missing  | 📄 .storage/lovelace.1d_sunsync_combined:892                  |
+| 4_voltage                      |          |                                                               |
+| sensor.deyeinvertercombined_pv | missing  | 📄 .storage/lovelace.1d_sunsync_combined:893                  |
+| 4_current                      |          |                                                               |
+| switch.deyeinvertercombined_ex | missing  | 📄 .storage/lovelace.1d_sunsync_combined:899                  |
+| port_solar_enabled             |          |                                                               |
+| sensor.deyeinvertercombined_lo | missing  | 📄 .storage/lovelace.1d_sunsync_combined:1157                 |
+| ad_power                       |          | 📄 automations/pool_pump_solar_management.yaml:58,216         |
+|                                |          | 📄 automations/solar_daily_report.yaml:53                     |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/pool_pump_solar_management.yaml:  |
+|                                |          | 60,231                                                        |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/solar_daily_report.yaml:55        |
+| sensor.jbarkhuizen_homeassista | missing  | 📄 .storage/lovelace.20_github_devops:17                      |
+| nt_config_v5_latest_commit     |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/github_devops.yaml:9        |
+| sensor.jbarkhuizen_homeassista | missing  | 📄 .storage/lovelace.20_github_devops:17                      |
+| nt_config_v5_stars             |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/github_devops.yaml:9        |
+| sensor.jbarkhuizen_homeassista | missing  | 📄 .storage/lovelace.20_github_devops:17                      |
+| nt_config_v5_watchers          |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/github_devops.yaml:9        |
+| sensor.jbarkhuizen_homeassista | missing  | 📄 .storage/lovelace.20_github_devops:17                      |
+| nt_config_v5_forks             |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/github_devops.yaml:9        |
+| sensor.jbarkhuizen_homeassista | missing  | 📄 .storage/lovelace.20_github_devops:17                      |
+| nt_config_v5_issues            |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/github_devops.yaml:9        |
+| sensor.jbarkhuizen_homeassista | missing  | 📄 .storage/lovelace.20_github_devops:17                      |
+| nt_config_v5_pull_requests     |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/github_devops.yaml:9        |
+| sensor.jbarkhuizen_smarthome_l | missing  | 📄 .storage/lovelace.20_github_devops:22                      |
+| atest_commit                   |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/github_devops.yaml:19       |
+| sensor.jbarkhuizen_smarthome_s | missing  | 📄 .storage/lovelace.20_github_devops:22                      |
+| tars                           |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/github_devops.yaml:19       |
+| sensor.jbarkhuizen_smarthome_w | missing  | 📄 .storage/lovelace.20_github_devops:22                      |
+| atchers                        |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/github_devops.yaml:19       |
+| sensor.jbarkhuizen_smarthome_f | missing  | 📄 .storage/lovelace.20_github_devops:22                      |
+| orks                           |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/github_devops.yaml:19       |
+| sensor.jbarkhuizen_smarthome_i | missing  | 📄 .storage/lovelace.20_github_devops:22                      |
+| ssues                          |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/github_devops.yaml:19       |
+| sensor.jbarkhuizen_smarthome_p | missing  | 📄 .storage/lovelace.20_github_devops:22                      |
+| ull_requests                   |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/github_devops.yaml:19       |
+| sensor.prepaid_hourly_snapshot | unavail  | 📄 .storage/lovelace.23_prepaid_info:62                       |
+| _display                       |          | 📄 .storage/lovelace.prepaid_info:88                          |
+| binary_sensor.samba_share_runn | disabled | 📄 .storage/lovelace.23_security_maintenance:76               |
+| ing                            |          | 📄 automations/git_snapshot_0855.yaml:32                      |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/automations/git_snapshot_0855.yaml:32  |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/dashboards/security_maintanance.yaml:66       |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/system_health.yaml:98       |
+| sensor.solar_optimization_ener | unavail  | 📄 .storage/lovelace.24_solar_energy:17                       |
+| gy_saved_today                 |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/solar_energy.yaml:9         |
+| sensor.sonoff_1000cd8649_power | unavail  | 📄 .storage/lovelace.26_sonoff_tuya_energy:21                 |
+|                                |          | 📄 packages/sonoff_tuya_energy.yaml:20                        |
+| sensor.geyser_external_power   | unavail  | 📄 .storage/lovelace.26_sonoff_tuya_energy:45                 |
+|                                |          | 📄 packages/sonoff_tuya_energy.yaml:76                        |
+| sensor.openweathermap_feels_li | missing  | 📄 .storage/lovelace.29_weather_sky:27                        |
+| ke_temperature                 |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/weather_sky.yaml:17         |
+| sensor.openweathermap_wind_bea | missing  | 📄 .storage/lovelace.29_weather_sky:27                        |
+| ring                           |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/weather_sky.yaml:17         |
+| sensor.openweathermap_rain     | missing  | 📄 .storage/lovelace.29_weather_sky:27                        |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/weather_sky.yaml:17         |
+| device_tracker.dsldevice       | missing  | 📄 .storage/lovelace.2_network:193                            |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/network_devices.yaml:60     |
+| device_tracker.apple_cd_c0_59  | missing  | 📄 .storage/lovelace.2_network:195                            |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/network_devices.yaml:62     |
+| device_tracker.tuya_smart_ad_5 | missing  | 📄 .storage/lovelace.2_network:198                            |
+| d_64                           |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/network_devices.yaml:65     |
+| device_tracker.tuya_smart_95_d | missing  | 📄 .storage/lovelace.2_network:199                            |
+| 9_d1                           |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/network_devices.yaml:66     |
+| sensor.folding_home_cpu_percen | missing  | 📄 .storage/lovelace.31_network_devices:28                    |
+| t                              |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/network_devices.yaml:90     |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/system_health.yaml:10,34    |
+| sensor.folding_home_memory_per | missing  | 📄 .storage/lovelace.31_network_devices:42                    |
+| cent                           |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/network_devices.yaml:102    |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/system_health.yaml:35       |
+| sensor.astroweather_backyard_l | unknown  | 📄 .storage/lovelace.7_weather:251                            |
+| ocation_name                   |          |                                                               |
+| sensor.astroweather_backyard_t | unknown  | 📄 .storage/lovelace.7_weather:391                            |
+| ransparency_plain              |          |                                                               |
+| light.garage                   | missing  | 📄 .storage/lovelace.9_floorplan:34,35,44,57                  |
+| switch.living_area_fan         | missing  | 📄 .storage/lovelace.9_floorplan:67,78,89,94                  |
+| camera.zagreb_ban_jelacic_squa | missing  | 📄 .storage/lovelace.9_floorplan:104                          |
+| re                             |          |                                                               |
+| binary_sensor.main_bedroom     | missing  | 📄 .storage/lovelace.9_floorplan:116                          |
+| binary_sensor.living_area      | missing  | 📄 .storage/lovelace.9_floorplan:117                          |
+| sensor.p2s_22e8bj5c0301558_gco | unavail  | 📄 .storage/lovelace.bambu_labs:88                            |
+| de_file_downloaded             |          |                                                               |
+| sensor.p2s_22e8bj5c0301558_ams | unknown  | 📄 .storage/lovelace.bambu_labs:271                           |
+| _1_drying_duration             |          |                                                               |
+| sensor.p2s_22e8bj5c0301558_ams | unknown  | 📄 .storage/lovelace.bambu_labs:275                           |
+| _1_drying_filament             |          |                                                               |
+| sensor.p2s_22e8bj5c0301558_ams | unknown  | 📄 .storage/lovelace.bambu_labs:279                           |
+| _1_drying_temperature          |          |                                                               |
+| button.home_flat_arm_stay_1    | unknown  | 📄 .storage/lovelace.ids_hyyp:61                              |
+| button.home_home_inside_arm_st | unknown  | 📄 .storage/lovelace.ids_hyyp:81                              |
+| ay_1                           |          |                                                               |
+| button.home_home_inside_arm_st | unknown  | 📄 .storage/lovelace.ids_hyyp:85                              |
+| ay_2                           |          |                                                               |
+| button.home_panic_button       | unknown  | 📄 .storage/lovelace.ids_hyyp:109                             |
+| button.home_refresh_button     | unknown  | 📄 .storage/lovelace.ids_hyyp:129                             |
+| sensor.home_arm_failure_cause  | unknown  | 📄 .storage/lovelace.ids_hyyp:327                             |
+| sensor.home_ids_push_notificat | unknown  | 📄 .storage/lovelace.ids_hyyp:347                             |
+| ions                           |          |                                                               |
+| sensor.d_printers_summary      | missing  | 📄 .storage/lovelace.sonoff_tuya_energy:29,89                 |
+| sensor.sonoff_1000cd8649_summa | unknown  | 📄 .storage/lovelace.sonoff_tuya_energy:89                    |
+| ry                             |          |                                                               |
+| sensor.boorgat_summary         | unknown  | 📄 .storage/lovelace.sonoff_tuya_energy:89                    |
+| sensor.geyser_external_summary | unknown  | 📄 .storage/lovelace.sonoff_tuya_energy:89                    |
+| sensor.plugs_1_summary         | unknown  | 📄 .storage/lovelace.sonoff_tuya_energy:89                    |
+| sensor.plugs_kas_summary       | unknown  | 📄 .storage/lovelace.sonoff_tuya_energy:89                    |
+| sensor.printers_router_summary | unknown  | 📄 .storage/lovelace.sonoff_tuya_energy:89                    |
+| sensor.top_floor_summary       | unknown  | 📄 .storage/lovelace.sonoff_tuya_energy:89                    |
+| sensor.battery_monitored_devic | missing  | 📄 automations/battery_weekly_summary.yaml:48,51              |
+| e_count                        |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/battery_weekly_summary.yaml:48,5  |
+|                                |          | 1                                                             |
+| sensor.battery_lowest_device_n | missing  | 📄 automations/battery_weekly_summary.yaml:55                 |
+| ame                            |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/battery_weekly_summary.yaml:55    |
+| sensor.battery_lowest_device_l | missing  | 📄 automations/battery_weekly_summary.yaml:58                 |
+| evel                           |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/battery_weekly_summary.yaml:58    |
+| alert.country                  | missing  | 📄 automations/gdacs_alert.yaml:89,125,193                    |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/gdacs_alert.yaml:90,126,194       |
+| alert.event_type               | missing  | 📄 automations/gdacs_alert.yaml:89,125,193                    |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/gdacs_alert.yaml:90,126,194       |
+| alert.severity                 | missing  | 📄 automations/gdacs_alert.yaml:89,125,193                    |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/gdacs_alert.yaml:90,126,194       |
+| alert.alert_level              | missing  | 📄 automations/gdacs_alert.yaml:89,125,193                    |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/gdacs_alert.yaml:90,126,194       |
+| alert.population               | missing  | 📄 automations/gdacs_alert.yaml:89,125,193                    |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/gdacs_alert.yaml:90,126,194       |
+| alert.from_date                | missing  | 📄 automations/gdacs_alert.yaml:89,125                        |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/automations/gdacs_alert.yaml:90,126    |
+| alert.url                      | missing  | 📄 automations/gdacs_alert.yaml:89,125,193                    |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/gdacs_alert.yaml:90,126,194       |
+| alert.to_date                  | missing  | 📄 automations/gdacs_alert.yaml:125                           |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/automations/gdacs_alert.yaml:126       |
+| alert.description              | missing  | 📄 automations/gdacs_alert.yaml:125                           |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/automations/gdacs_alert.yaml:126       |
+| sensor.deyeinvertercombined_gr | missing  | 📄 automations/solar_daily_report.yaml:39                     |
+| id_power                       |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/solar_daily_report.yaml:41        |
+| sensor.solar_daily_report_18h0 | unknown  | 📄 automations/solar_daily_report_18h00.yaml:12,17,22,31      |
+| 0_message                      |          |                                                               |
+| pyscript.solar_hourly_report_s | missing  | 📄 automations/solar_hourly_report.yaml:84,85,86,87,88,89,90, |
+| tatus                          |          | 91,92,93,94                                                   |
+| sensor.sonoff_a4800986e6_batte | missing  | 📄 automations/system_morning_overview.yaml:72                |
+| ry                             |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/system_morning_overview.yaml:72   |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/battery.yaml:41,63,148      |
+| sensor.uptime                  | missing  | 📄 automations/system_up_email.yaml:22,85,118                 |
+|                                |          | 📄 automations/system_up_telegram.yaml:24                     |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/system_up_email.yaml:22,85,118    |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/system_up_telegram.yaml:24        |
+|                                |          | 📄 backup/ha-config-20260502_101939/configuration.yaml:429    |
+|                                |          | 📄 backup/ha-config-20260502_101939/packages/influxdb.yaml:30 |
+|                                |          | 📄 packages/influxdb.yaml:24                                  |
+| notify.email_notification_jbar | missing  | 📄 backup/ha-config-                                          |
+| khuizen_gmail_com              |          | 20260502_101939/automations/battery_weekly_summary.yaml:115   |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/solar_daily_report.yaml:109       |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/solar_weekly_report.yaml:102      |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/automations/update_report_email.yaml:190      |
+| sensor.gdacs_my_location       | missing  | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/automations/gdacs_alert.yaml:20        |
+| sensor.deyeinvertermaster_toda | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:384    |
+| y_energy_bought                |          |                                                               |
+| sensor.deyeinvertermaster_toda | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:385    |
+| y_energy_sold                  |          |                                                               |
+| sensor.deyeinvertermaster_toda | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:386    |
+| y_load_consumption             |          |                                                               |
+| sensor.deyeinverterslave_today | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:387    |
+| _energy_bought                 |          |                                                               |
+| sensor.deyeinverterslave_today | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:388    |
+| _energy_sold                   |          |                                                               |
+| sensor.deyeinverterslave_today | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:389    |
+| _load_consumption              |          |                                                               |
+| sensor.system_monitor_network_ | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:402    |
+| in_enp2s0                      |          |                                                               |
+| sensor.system_monitor_network_ | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:403    |
+| out_enp2s0                     |          |                                                               |
+| sensor.system_monitor_network_ | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:404    |
+| throughput_in_enp2s0           |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/flightradar.yaml:61         |
+| sensor.system_monitor_network_ | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:405    |
+| throughput_out_enp2s0          |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/flightradar.yaml:62         |
+| sensor.date_time               | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:424    |
+| sensor.date_time_utc           | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:426    |
+| sensor.date_time_iso           | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:427    |
+| sensor.time_date               | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:428    |
+| sensor.time_utc                | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:430    |
+| sensor.last_boot               | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:431    |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/packages/influxdb.yaml:29,66           |
+|                                |          | 📄 packages/influxdb.yaml:23,63                               |
+| sensor.processor_use           | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:432    |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/packages/update_monitoring.yaml:244,277       |
+|                                |          | 📄 packages/update_monitoring.yaml:244,277                    |
+| sensor.processor_temperature   | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:433    |
+| sensor.memory_use_percent      | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:434    |
+|                                |          | 📄 backup/ha-config-20260502_101939/groups.yaml:99            |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/packages/system_health_monitoring.yaml:56,66  |
+|                                |          | ,67,76,87,124,132,139,180,207,231,246,263,289,314,353,370,38  |
+|                                |          | 4,396,420,443,458,475,498,527,565,592,617,648,673,712,730,75  |
+|                                |          | 4,780,822,841                                                 |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/packages/update_monitoring.yaml:244,279       |
+|                                |          | 📄 groups.yaml:99                                             |
+|                                |          | 📄 packages/system_health_monitoring.yaml:56,66,67,76,87,124, |
+|                                |          | 132,139,180,207,231,246,263,289,314,353,370,384,396,420,443,  |
+|                                |          | 458,475,498,527,565,592,617,648,673,712,730,754,780,822,841   |
+|                                |          | 📄 packages/update_monitoring.yaml:244,279                    |
+| sensor.swap_use_percent        | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:435    |
+| sensor.load_1m                 | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:436    |
+| sensor.load_5m                 | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:437    |
+| sensor.load_15m                | missing  | 📄 backup/ha-config-20260502_101939/configuration.yaml:438    |
+| sensor.braai_afdak_temperature | missing  | 📄 backup/ha-config-20260502_101939/customize.yaml:11         |
+| _humidity_sensor_temperature   |          | 📄 customize.yaml:11                                          |
+| sensor.braai_afdak_temperature | missing  | 📄 backup/ha-config-20260502_101939/customize.yaml:13         |
+| _humidity_sensor_humidity      |          | 📄 customize.yaml:13                                          |
+| sensor.braai_afdak_temperature | missing  | 📄 backup/ha-config-20260502_101939/customize.yaml:15         |
+| _humidity_sensor_battery       |          | 📄 customize.yaml:15                                          |
+| sensor.study_temperature_humid | missing  | 📄 backup/ha-config-20260502_101939/customize.yaml:27         |
+| ity_sensor_temperature         |          | 📄 customize.yaml:27                                          |
+| sensor.study_temperature_humid | missing  | 📄 backup/ha-config-20260502_101939/customize.yaml:29         |
+| ity_sensor_humidity            |          | 📄 customize.yaml:29                                          |
+| sensor.study_temperature_humid | missing  | 📄 backup/ha-config-20260502_101939/customize.yaml:31         |
+| ity_sensor_battery             |          | 📄 customize.yaml:31                                          |
+| sensor.tv_room_temperature_hum | unavail  | 📄 backup/ha-config-20260502_101939/customize.yaml:35         |
+| idity_sensor_temperature       |          | 📄 customize.yaml:35                                          |
+| sensor.tv_room_temperature_hum | unavail  | 📄 backup/ha-config-20260502_101939/customize.yaml:37         |
+| idity_sensor_humidity          |          | 📄 customize.yaml:37                                          |
+| sensor.tv_room_temperature_hum | unavail  | 📄 backup/ha-config-20260502_101939/customize.yaml:39         |
+| idity_sensor_battery           |          | 📄 customize.yaml:39                                          |
+| binary_sensor.sonoff_a48005596 | unavail  | 📄 backup/ha-config-20260502_101939/customize.yaml:43         |
+| e                              |          | 📄 customize.yaml:43                                          |
+| sensor.sonoff_100150e8d2_batte | missing  | 📄 backup/ha-config-20260502_101939/customize.yaml:61         |
+| ry_voltage                     |          | 📄 customize.yaml:61                                          |
+| binary_sensor.sonoff_a4800e446 | unavail  | 📄 backup/ha-config-20260502_101939/customize.yaml:73         |
+| e_moisture                     |          | 📄 customize.yaml:73                                          |
+| sensor.back_door_sensor_batter | missing  | 📄 backup/ha-                                                 |
+| y_plus                         |          | config-20260502_101939/dashboards/battery.yaml:42,149         |
+| binary_sensor.back_door_sensor | missing  | 📄 backup/ha-                                                 |
+| _battery_plus_low              |          | config-20260502_101939/dashboards/battery.yaml:43             |
+| sensor.braai_door_sensor_new_b | missing  | 📄 backup/ha-                                                 |
+| attery_plus                    |          | config-20260502_101939/dashboards/battery.yaml:44,67,150      |
+| binary_sensor.braai_door_senso | missing  | 📄 backup/ha-                                                 |
+| r_new_battery_plus_low         |          | config-20260502_101939/dashboards/battery.yaml:45,68          |
+| sensor.temperature_humidity_se | unavail  | 📄 backup/ha-                                                 |
+| nsor_battery_2                 |          | config-20260502_101939/dashboards/battery.yaml:48,78          |
+|                                |          | 📄 backup/ha-config-20260502_101939/packages/influxdb.yaml:92 |
+|                                |          | 📄 packages/influxdb.yaml:89                                  |
+| sensor.study_window_1_battery_ | missing  | 📄 backup/ha-                                                 |
+| plus                           |          | config-20260502_101939/dashboards/battery.yaml:69             |
+| binary_sensor.study_window_1_b | missing  | 📄 backup/ha-                                                 |
+| attery_plus_low                |          | config-20260502_101939/dashboards/battery.yaml:70             |
+| sensor.snzb_05p_battery_plus   | missing  | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/battery.yaml:71             |
+| binary_sensor.snzb_05p_battery | missing  | 📄 backup/ha-                                                 |
+| _plus_low                      |          | config-20260502_101939/dashboards/battery.yaml:72             |
+| sensor.temperature_humidity_se | unavail  | 📄 backup/ha-                                                 |
+| nsor_humidity_2                |          | config-20260502_101939/dashboards/battery.yaml:79             |
+| sensor.temperature_humidity_se | unavail  | 📄 backup/ha-                                                 |
+| nsor_temperature_2             |          | config-20260502_101939/dashboards/battery.yaml:80             |
+| button.back_door_sensor_batter | missing  | 📄 backup/ha-                                                 |
+| y_replaced                     |          | config-20260502_101939/dashboards/battery.yaml:101            |
+| sensor.back_door_sensor_batter | missing  | 📄 backup/ha-                                                 |
+| y_type                         |          | config-20260502_101939/dashboards/battery.yaml:102            |
+| sensor.back_door_sensor_batter | missing  | 📄 backup/ha-                                                 |
+| y_last_replaced                |          | config-20260502_101939/dashboards/battery.yaml:103            |
+| button.braai_door_sensor_batte | missing  | 📄 backup/ha-                                                 |
+| ry_replaced                    |          | config-20260502_101939/dashboards/battery.yaml:105            |
+| sensor.braai_door_sensor_batte | missing  | 📄 backup/ha-                                                 |
+| ry_type                        |          | config-20260502_101939/dashboards/battery.yaml:106            |
+| sensor.braai_door_sensor_batte | missing  | 📄 backup/ha-                                                 |
+| ry_last_replaced               |          | config-20260502_101939/dashboards/battery.yaml:107            |
+| button.braai_door_sensor_new_b | missing  | 📄 backup/ha-                                                 |
+| attery_replaced                |          | config-20260502_101939/dashboards/battery.yaml:109            |
+| sensor.braai_door_sensor_new_b | missing  | 📄 backup/ha-                                                 |
+| attery_type                    |          | config-20260502_101939/dashboards/battery.yaml:110            |
+| sensor.braai_door_sensor_new_b | missing  | 📄 backup/ha-                                                 |
+| attery_last_replaced           |          | config-20260502_101939/dashboards/battery.yaml:111            |
+| button.garage_mid_door_sensor_ | missing  | 📄 backup/ha-                                                 |
+| battery_replaced               |          | config-20260502_101939/dashboards/battery.yaml:113            |
+| sensor.garage_mid_door_sensor_ | missing  | 📄 backup/ha-                                                 |
+| battery_type                   |          | config-20260502_101939/dashboards/battery.yaml:114            |
+| sensor.garage_mid_door_sensor_ | missing  | 📄 backup/ha-                                                 |
+| battery_last_replaced          |          | config-20260502_101939/dashboards/battery.yaml:115            |
+| button.salon_front_door_sensor | missing  | 📄 backup/ha-                                                 |
+| _battery_replaced              |          | config-20260502_101939/dashboards/battery.yaml:117            |
+| sensor.salon_front_door_sensor | missing  | 📄 backup/ha-                                                 |
+| _battery_type                  |          | config-20260502_101939/dashboards/battery.yaml:118            |
+| sensor.salon_front_door_sensor | missing  | 📄 backup/ha-                                                 |
+| _battery_last_replaced         |          | config-20260502_101939/dashboards/battery.yaml:119            |
+| button.study_window_1_battery_ | missing  | 📄 backup/ha-                                                 |
+| replaced                       |          | config-20260502_101939/dashboards/battery.yaml:121            |
+| sensor.study_window_1_battery_ | missing  | 📄 backup/ha-                                                 |
+| type                           |          | config-20260502_101939/dashboards/battery.yaml:122            |
+| sensor.study_window_1_battery_ | missing  | 📄 backup/ha-                                                 |
+| last_replaced                  |          | config-20260502_101939/dashboards/battery.yaml:123            |
+| button.snzb_05p_battery_replac | missing  | 📄 backup/ha-                                                 |
+| ed                             |          | config-20260502_101939/dashboards/battery.yaml:125            |
+| sensor.snzb_05p_battery_type   | missing  | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/battery.yaml:126            |
+| sensor.snzb_05p_battery_last_r | missing  | 📄 backup/ha-                                                 |
+| eplaced                        |          | config-20260502_101939/dashboards/battery.yaml:127            |
+| switch.api_data_fetching       | missing  | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/dashboards/flightradar.yaml:38         |
+| button.clear_additional_tracke | missing  | 📄 backup/ha-                                                 |
+| d                              |          | config-20260502_101939/dashboards/flightradar.yaml:41,116     |
+| automation.gdacs_daily_summary | missing  | 📄 backup/ha-config-20260502_101939/dashboards/gdac.yaml:56   |
+| _0635                          |          |                                                               |
+| automation.gdacs_high_severity | missing  | 📄 backup/ha-config-20260502_101939/dashboards/gdac.yaml:57   |
+| _alert_0805                    |          |                                                               |
+| automation.pool_pump_off_on_lo | missing  | 📄 backup/ha-                                                 |
+| w_pv                           |          | config-20260502_101939/dashboards/pool_garden.yaml:46         |
+| automation.pool_pump_on_on_hig | missing  | 📄 backup/ha-                                                 |
+| h_pv                           |          | config-20260502_101939/dashboards/pool_garden.yaml:47         |
+| automation.solar_power_turn_on | unavail  | 📄 backup/ha-                                                 |
+| _sonoff_device_priority_1      |          | config-20260502_101939/dashboards/pool_garden.yaml:48         |
+| automation.solar_power_turn_of | unavail  | 📄 backup/ha-                                                 |
+| f_sonoff_device_when_solar_low |          | config-20260502_101939/dashboards/pool_garden.yaml:49         |
+| automation.solar_power_morning | unavail  | 📄 backup/ha-                                                 |
+| _check_at_07_15                |          | config-20260502_101939/dashboards/pool_garden.yaml:50         |
+| automation.solar_power_safety_ | unavail  | 📄 backup/ha-                                                 |
+| turn_off_at_17_00              |          | config-20260502_101939/dashboards/pool_garden.yaml:51         |
+| sensor.onedrive_storage_percen | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:71            |
+| tage_calculated                |          | 📄 groups.yaml:71                                             |
+| sensor.onedrive_storage_status | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:72            |
+| _enhanced                      |          | 📄 groups.yaml:72                                             |
+| sensor.onedrive_days_until_ful | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:73            |
+| l_calculated                   |          | 📄 groups.yaml:73                                             |
+| sensor.onedrive_connection_sum | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:74            |
+| mary                           |          | 📄 groups.yaml:74                                             |
+| sensor.onedrive_storage_health | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:75            |
+| _score                         |          | 📄 groups.yaml:75                                             |
+| binary_sensor.onedrive_storage | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:76            |
+| _warning_calculated            |          | 📄 groups.yaml:76                                             |
+| binary_sensor.onedrive_health_ | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:77            |
+| calculated                     |          | 📄 groups.yaml:77                                             |
+| binary_sensor.onedrive_storage | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:78            |
+| _critical_alert                |          | 📄 groups.yaml:78                                             |
+| script.create_onedrive_backup  | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:80            |
+|                                |          | 📄 groups.yaml:80                                             |
+| script.force_onedrive_sync     | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:81            |
+|                                |          | 📄 groups.yaml:81                                             |
+| script.onedrive_health_check   | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:82            |
+|                                |          | 📄 groups.yaml:82                                             |
+| script.onedrive_diagnostic_che | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:83            |
+| ck                             |          | 📄 groups.yaml:83                                             |
+| sensor.home_assistant_uptime   | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:89            |
+|                                |          | 📄 groups.yaml:89                                             |
+| sensor.system_health_status    | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:90            |
+|                                |          | 📄 groups.yaml:90                                             |
+| binary_sensor.system_health_al | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:91            |
+| ert                            |          | 📄 groups.yaml:91                                             |
+| sensor.time_period             | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:92            |
+|                                |          | 📄 groups.yaml:92                                             |
+| sensor.disk_use_percent        | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:100           |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/packages/system_health_monitoring.yaml:87,12  |
+|                                |          | 5,132,139,180,207,231,246,263,289,314,353,370,396,420,443,45  |
+|                                |          | 8,475,498,527,565,592,617,638,648,673,697,712,730,744,754,78  |
+|                                |          | 0,807,822,841                                                 |
+|                                |          | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/packages/update_monitoring.yaml:244,278       |
+|                                |          | 📄 groups.yaml:100                                            |
+|                                |          | 📄 packages/system_health_monitoring.yaml:87,125,132,139,180, |
+|                                |          | 207,231,246,263,289,314,353,370,396,420,443,458,475,498,527,  |
+|                                |          | 565,592,617,638,648,673,697,712,730,744,754,780,807,822,841   |
+|                                |          | 📄 packages/update_monitoring.yaml:244,278                    |
+| input_boolean.system_health_al | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:101           |
+| ert_enabled                    |          | 📄 groups.yaml:101                                            |
+| sensor.daily_energy_production | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:107           |
+|                                |          | 📄 groups.yaml:107                                            |
+| sensor.total_power_output      | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:108           |
+|                                |          | 📄 groups.yaml:108                                            |
+| sensor.solar_efficiency        | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:109           |
+|                                |          | 📄 groups.yaml:109                                            |
+| binary_sensor.solar_production | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:110           |
+| _active                        |          | 📄 groups.yaml:110                                            |
+| binary_sensor.high_production_ | missing  | 📄 backup/ha-config-20260502_101939/groups.yaml:111           |
+| day                            |          | 📄 groups.yaml:111                                            |
+| sensor.homeassistant_log_size_ | missing  | 📄 backup/ha-                                                 |
+| mb                             |          | config-20260502_101939/packages/daily_maintanance.yaml:516    |
+| sensor.temperature_humidity_se | unavail  | 📄 backup/ha-config-20260502_101939/packages/influxdb.yaml:91 |
+| nsor_battery                   |          | 📄 packages/influxdb.yaml:88                                  |
+| sensor.motion_sensor_battery   | unavail  | 📄 backup/ha-config-20260502_101939/packages/influxdb.yaml:93 |
+|                                |          | 📄 packages/influxdb.yaml:90                                  |
+| sensor.snzb_05p_battery        | unavail  | 📄 backup/ha-config-20260502_101939/packages/influxdb.yaml:94 |
+|                                |          | 📄 packages/influxdb.yaml:91                                  |
+| sensor.deyeinvertermaster_summ | missing  | 📄 backup/ha-config-20260502_101939/packages/influxdb.yaml:99 |
+| ary_total_pv_generation        |          | 📄 packages/influxdb.yaml:96                                  |
+| sensor.deyeinverterslave_summa | missing  | 📄 backup/ha-                                                 |
+| ry_total_pv_generation         |          | config-20260502_101939/packages/influxdb.yaml:100             |
+|                                |          | 📄 packages/influxdb.yaml:97                                  |
+| sensor.deyeinvertermaster_summ | missing  | 📄 backup/ha-                                                 |
+| ary_total_grid_export          |          | config-20260502_101939/packages/influxdb.yaml:101             |
+|                                |          | 📄 packages/influxdb.yaml:98                                  |
+| sensor.deyeinverterslave_summa | missing  | 📄 backup/ha-                                                 |
+| ry_total_grid_export           |          | config-20260502_101939/packages/influxdb.yaml:102             |
+|                                |          | 📄 packages/influxdb.yaml:99                                  |
+| sensor.combined_solar_power    | missing  | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/packages/influxdb.yaml:105             |
+|                                |          | 📄 packages/influxdb.yaml:102                                 |
+| sensor.combined_battery_soc    | missing  | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/packages/influxdb.yaml:106             |
+|                                |          | 📄 packages/influxdb.yaml:103                                 |
+| sensor.total_grid_import       | missing  | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/packages/influxdb.yaml:107             |
+|                                |          | 📄 packages/influxdb.yaml:104                                 |
+| sensor.total_grid_export       | missing  | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/packages/influxdb.yaml:108             |
+|                                |          | 📄 packages/influxdb.yaml:105                                 |
+| sensor.daily_solar_generation_ | missing  | 📄 backup/ha-                                                 |
+| combined                       |          | config-20260502_101939/packages/influxdb.yaml:109             |
+|                                |          | 📄 packages/influxdb.yaml:106                                 |
+| sensor.energy_independence_per | missing  | 📄 backup/ha-                                                 |
+| centage                        |          | config-20260502_101939/packages/influxdb.yaml:110             |
+|                                |          | 📄 packages/influxdb.yaml:107                                 |
+| sensor.battery_efficiency_mast | missing  | 📄 backup/ha-                                                 |
+| er                             |          | config-20260502_101939/packages/influxdb.yaml:113             |
+|                                |          | 📄 packages/influxdb.yaml:110                                 |
+| sensor.battery_efficiency_slav | missing  | 📄 backup/ha-                                                 |
+| e                              |          | config-20260502_101939/packages/influxdb.yaml:114             |
+|                                |          | 📄 packages/influxdb.yaml:111                                 |
+| sensor.deyeinvertermaster_summ | missing  | 📄 backup/ha-                                                 |
+| ary_day_pv_generation          |          | config-20260502_101939/packages/influxdb.yaml:119             |
+|                                |          | 📄 packages/influxdb.yaml:116                                 |
+| sensor.deyeinverterslave_summa | missing  | 📄 backup/ha-                                                 |
+| ry_day_pv_generation           |          | config-20260502_101939/packages/influxdb.yaml:120             |
+|                                |          | 📄 packages/influxdb.yaml:117                                 |
+| sensor.deyeinvertermaster_summ | missing  | 📄 backup/ha-                                                 |
+| ary_day_grid_export            |          | config-20260502_101939/packages/influxdb.yaml:121             |
+|                                |          | 📄 packages/influxdb.yaml:118                                 |
+| sensor.deyeinverterslave_summa | missing  | 📄 backup/ha-                                                 |
+| ry_day_grid_export             |          | config-20260502_101939/packages/influxdb.yaml:122             |
+|                                |          | 📄 packages/influxdb.yaml:119                                 |
+| sensor.deyeinvertermaster_deye | missing  | 📄 backup/ha-config-                                          |
+| invertermaster_output_power    |          | 20260502_101939/packages/masterslave_system.yaml:19,26        |
+|                                |          | 📄 packages/masterslave_system.yaml:19,26                     |
+| sensor.deyeinvertermaster_aux_ | missing  | 📄 backup/ha-config-                                          |
+| output_power                   |          | 20260502_101939/packages/masterslave_system.yaml:19,26        |
+|                                |          | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/packages/smartdeyedongle.yaml:20       |
+|                                |          | 📄 backup/ha-config-20260502_101939/template.yaml:31          |
+|                                |          | 📄 packages/masterslave_system.yaml:19,26                     |
+|                                |          | 📄 packages/smartdeyedongle.yaml:20                           |
+|                                |          | 📄 template.yaml:30                                           |
+| sensor.deyeinverterslave_deyei | missing  | 📄 backup/ha-config-                                          |
+| nverterslave_output_power      |          | 20260502_101939/packages/masterslave_system.yaml:81,88        |
+|                                |          | 📄 packages/masterslave_system.yaml:81,88                     |
+| sensor.deyeinverterslave_aux_o | missing  | 📄 backup/ha-config-                                          |
+| utput_power                    |          | 20260502_101939/packages/masterslave_system.yaml:81,88        |
+|                                |          | 📄 packages/masterslave_system.yaml:81,88                     |
+| sensor.deyeinvertermaster_esse | unavail  | 📄 backup/ha-                                                 |
+| ntial_load                     |          | config-20260502_101939/packages/masterslave_system.yaml:314   |
+|                                |          | 📄 packages/influxdb.yaml:124                                 |
+|                                |          | 📄 packages/masterslave_system.yaml:314                       |
+| sensor.deyeinverterslave_essen | unavail  | 📄 backup/ha-                                                 |
+| tial_load                      |          | config-20260502_101939/packages/masterslave_system.yaml:314   |
+|                                |          | 📄 packages/masterslave_system.yaml:314                       |
+| sensor.network_active_devices  | missing  | 📄 backup/ha-                                                 |
+|                                |          | config-20260502_101939/packages/network_devices.yaml:38       |
+|                                |          | 📄 packages/network_devices.yaml:38                           |
+| binary_sensor.nokia_router_onl | missing  | 📄 backup/ha-                                                 |
+| ine                            |          | config-20260502_101939/packages/network_devices.yaml:41,103   |
+|                                |          | 📄 packages/network_devices.yaml:41,104                       |
+| sensor.network_devices_table   | unknown  | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/packages/network_devices.yaml:97,99,100       |
+|                                |          | 📄 backup/ha-config-20260502_101939/template.yaml:429         |
+|                                |          | 📄 packages/network_devices.yaml:98,100,101                   |
+|                                |          | 📄 template.yaml:626                                          |
+| binary_sensor.internet_connect | missing  | 📄 backup/ha-                                                 |
+| ed                             |          | config-20260502_101939/packages/network_devices.yaml:104      |
+|                                |          | 📄 packages/network_devices.yaml:105                          |
+| sensor.deyeinvertermaster_summ | unknown  | 📄 backup/ha-                                                 |
+| ary_total_pv4_fix              |          | config-20260502_101939/packages/smartdeyedongle.yaml:126      |
+|                                |          | 📄 packages/smartdeyedongle.yaml:126                          |
+| notify.email_alerts_jbarkhuize | missing  | 📄 backup/ha-config-                                          |
+| n_gmail_com                    |          | 20260502_101939/packages/system_health_monitoring.yaml:592    |
+| update.home_assistant          | missing  | 📄 backup/ha-config-                                          |
+|                                |          | 20260502_101939/packages/update_monitoring.yaml:17,56,82,108  |
+|                                |          | ,188,206,318                                                  |
+|                                |          | 📄 packages/update_monitoring.yaml:17,56,82,108,188,206,318   |
+| automation.security_badlogin_i | missing  | 📄 backup/ha-config-20260502_101939/template.yaml:100,111     |
+| nitialize_baseline             |          | 📄 template.yaml:252,263                                      |
+| automation.system_daily_update | missing  | 📄 backup/ha-config-20260502_101939/template.yaml:361,372     |
+| _status_report_at_89_15_telegr |          | 📄 template.yaml:513,524                                      |
+| am                             |          |                                                               |
+| automation.system_critical_upd | missing  | 📄 backup/ha-config-20260502_101939/template.yaml:403,414     |
+| ate_alert_immediate            |          | 📄 template.yaml:555,566                                      |
+| sensor.plugs_1_power           | unavail  | 📄 packages/sonoff_tuya_energy.yaml:111                       |
+| sensor.printers_router_power   | unavail  | 📄 packages/sonoff_tuya_energy.yaml:139                       |
+| sensor.sonoff_1000cd8649_energ | unavail  | 📄                                                            |
+| y                              |          | packages/sonoff_tuya_energy.yaml:175,179,183,187,191,589,593  |
+| sensor.boorgat_energy          | unknown  | 📄                                                            |
+|                                |          | packages/sonoff_tuya_energy.yaml:301,305,309,313,317,667,671  |
+| sensor.geyser_external_energy  | unavail  | 📄                                                            |
+|                                |          | packages/sonoff_tuya_energy.yaml:343,347,351,355,359,693,697  |
+| sensor.plugs_1_energy          | unavail  | 📄                                                            |
+|                                |          | packages/sonoff_tuya_energy.yaml:448,452,456,460,464,758,762  |
+| sensor.plugs_kas_energy        | unknown  | 📄                                                            |
+|                                |          | packages/sonoff_tuya_energy.yaml:511,515,519,523,527,797,801  |
+| sensor.printers_router_energy  | unavail  | 📄                                                            |
+|                                |          | packages/sonoff_tuya_energy.yaml:532,536,540,544,548,810,814  |
+| sensor.top_floor_energy        | unknown  | 📄                                                            |
+|                                |          | packages/sonoff_tuya_energy.yaml:553,557,561,565,569,823,827  |
+| sensor.sonoff_1000cd8649_weekl | unknown  | 📄 packages/sonoff_tuya_energy.yaml:596                       |
+| y                              |          |                                                               |
+| sensor.sonoff_1000cd8649_month | unknown  | 📄 packages/sonoff_tuya_energy.yaml:597                       |
+| ly                             |          |                                                               |
+| sensor.sonoff_1000cd8649_yearl | unknown  | 📄 packages/sonoff_tuya_energy.yaml:598                       |
+| y                              |          |                                                               |
+| sensor.boorgat_weekly          | unknown  | 📄 packages/sonoff_tuya_energy.yaml:674                       |
+| sensor.boorgat_monthly         | unknown  | 📄 packages/sonoff_tuya_energy.yaml:675                       |
+| sensor.boorgat_yearly          | unknown  | 📄 packages/sonoff_tuya_energy.yaml:676                       |
+| sensor.geyser_external_weekly  | unknown  | 📄 packages/sonoff_tuya_energy.yaml:700                       |
+| sensor.geyser_external_monthly | unknown  | 📄 packages/sonoff_tuya_energy.yaml:701                       |
+| sensor.geyser_external_yearly  | unknown  | 📄 packages/sonoff_tuya_energy.yaml:702                       |
+| sensor.top_floor_weekly        | unknown  | 📄 packages/sonoff_tuya_energy.yaml:830                       |
+| sensor.top_floor_monthly       | unknown  | 📄 packages/sonoff_tuya_energy.yaml:831                       |
+| sensor.top_floor_yearly        | unknown  | 📄 packages/sonoff_tuya_energy.yaml:832                       |
++--------------------------------+----------+---------------------------------------------------------------+
+
+-== Report created on 29 May 2026 13:55:01
+-== Parsed 212 files in 6.48s., ignored 0 files 
+-== Generated in: 0.35s. Validated in: 0.00s.
