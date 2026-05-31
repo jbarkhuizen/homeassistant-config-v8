@@ -14875,11 +14875,12 @@ const style = i$3 `
         position: relative;
         aspect-ratio: 16/8;
         height: auto;
+        max-height: 200px;
         width: 100%;
         will-change: transform;
         transform: translateZ(0);       /* helps WKWebView compositing */
         backface-visibility: hidden;
-        contain: size layout paint;     /* isolate layout/paint */
+        contain: layout paint;          /* isolate layout/paint; size removed so max-height applies */
     }
     canvas {
         width: 100% !important;
@@ -14889,8 +14890,7 @@ const style = i$3 `
     ha-card {
         cursor: pointer;
         overflow: hidden;
-        display: flex
-        letter-spacing: -0.288px
+        letter-spacing: -0.288px;
         font-weight: 400;
     }
 
@@ -14906,7 +14906,7 @@ const style = i$3 `
         font-size: 24px;
         color: var(--primary-text-color);
         line-height: 48px;
-        align-items: center
+        align-items: center;
     }
 
     .current-location {
@@ -14914,9 +14914,9 @@ const style = i$3 `
         font-size: 24px;
     }
 
-        .current-condition {
+    .current-condition {
         position: absolute;
-        // font-size: 14px;
+        /* font-size: 14px; */
         right: 16px;
     }
 
@@ -15014,8 +15014,8 @@ const style = i$3 `
     }
 
     .forecast .forecastrow:nth-last-child(1) {
-    border-right: none;
-    margin  -right: 0;
+        border-right: none;
+        margin-right: 0;
     }
 
     .value_item {
@@ -15055,6 +15055,13 @@ const style = i$3 `
     .withoutMargin {
         margin: 0;
     }
+
+    .not-found {
+        flex: 1;
+        background-color: yellow;
+        color: black;
+        padding: 8px;
+    }
 `;
 
 var t,r;!function(e){e.language="language",e.system="system",e.comma_decimal="comma_decimal",e.decimal_comma="decimal_comma",e.space_comma="space_comma",e.none="none";}(t||(t={})),function(e){e.language="language",e.system="system",e.am_pm="12",e.twenty_four="24";}(r||(r={}));var ne=function(e,t,r,n){n=n||{},r=null==r?{}:r;var i=new Event(t,{bubbles:void 0===n.bubbles||n.bubbles,cancelable:Boolean(n.cancelable),composed:void 0===n.composed||n.composed});return i.detail=r,e.dispatchEvent(i),i};
@@ -15085,19 +15092,15 @@ let AstroWeatherCardEditor = class AstroWeatherCardEditor extends r$3 {
         this._initialized = true;
     }
     async loadCardHelpers() {
-        this._helpers = await window.loadCardHelpers();
-        // Load the ha-entity-picker
+        const helpers = await window.loadCardHelpers();
+        this._helpers = helpers;
+        if (helpers?.importMoreInfoControl) {
+            helpers.importMoreInfoControl("fan");
+        }
         if (!this._glanceCard) {
             this._glanceCard = customElements.get("hui-glance-card");
             this._glanceCard.getConfigElement().then(() => this.requestUpdate());
         }
-    }
-    firstUpdated() {
-        this._helpers.then((help) => {
-            if (help.importMoreInfoControl) {
-                help.importMoreInfoControl("fan");
-            }
-        });
     }
     static get properties() {
         return { hass: {}, _config: {} };
@@ -15126,6 +15129,9 @@ let AstroWeatherCardEditor = class AstroWeatherCardEditor extends r$3 {
     get _graph_cloudless() {
         return this._config?.graph_cloudless !== false;
     }
+    get _graph_temperature() {
+        return this._config?.graph_temperature !== false;
+    }
     get _graph_seeing() {
         return this._config?.graph_seeing !== false;
     }
@@ -15152,6 +15158,9 @@ let AstroWeatherCardEditor = class AstroWeatherCardEditor extends r$3 {
     }
     get _line_color_cloudless() {
         return this._config?.line_color_cloudless || "#c3e88d";
+    }
+    get _line_color_temperature() {
+        return this._config?.line_color_temperature || "#ffcb6b";
     }
     get _line_color_seeing() {
         return this._config?.line_color_seeing || "#ffcb6b";
@@ -15245,16 +15254,14 @@ let AstroWeatherCardEditor = class AstroWeatherCardEditor extends r$3 {
               ><span>Show hourly forecast</span>
             </div> -->
           </div>
-          ${this._graph == true || this._forecast == true
-            ? x `<ha-textfield
-                label="Number of future forcasts"
-                type="number"
-                min="1"
-                max="72"
-                value=${this._number_of_forecasts}
-                .configValue="${"number_of_forecasts"}"
-                @change="${this._valueChanged}"
-              ></ha-textfield>`
+          ${this._graph || this._forecast
+            ? x `<ha-selector
+                .hass=${this.hass}
+                .selector=${{ number: { min: 1, max: 72, step: 1, mode: "box" } }}
+                .value=${Number(this._number_of_forecasts)}
+                .label=${"Number of future forecasts"}
+                @value-changed=${this._forecastCountChanged}
+              ></ha-selector>`
             : ""}
           ${this._graph == true
             ? x ` <div class="switches">
@@ -15297,6 +15304,26 @@ let AstroWeatherCardEditor = class AstroWeatherCardEditor extends r$3 {
                     </span>
                   </div>
                 </div>
+
+                <div class="switch">
+                  <ha-switch
+                    .checked=${this._graph_temperature}
+                    .configValue="${"graph_temperature"}"
+                    @change="${this._valueChanged}"
+                  ></ha-switch
+                  ><span>Graph temperature</span>
+                  <div style="margin-left: auto;">
+                    <span>
+                      <input
+                        type="color"
+                        .value=${this._line_color_temperature || "#ffffff"}
+                        .configValue="${"line_color_temperature"}"
+                        @input="${this._valueChanged}"
+                      />
+                    </span>
+                  </div>
+                </div>
+
                 <div class="switch">
                   <ha-switch
                     .checked=${this._graph_seeing}
@@ -15411,30 +15438,33 @@ let AstroWeatherCardEditor = class AstroWeatherCardEditor extends r$3 {
       </div>
     `;
     }
+    _forecastCountChanged(ev) {
+        this._config = { ...this._config, number_of_forecasts: ev.detail.value };
+        ne(this, "config-changed", { config: this._config });
+    }
     _valueChanged(ev) {
         if (!this.hass || !this._config) {
             return;
         }
         const target = ev.target;
-        if (this[`_${target.configValue}`] === target.value) {
+        if (!target.configValue) {
             return;
         }
-        if (target.configValue) {
-            if (target.value === "") {
-                delete this._config[target.configValue];
-            }
-            if (target.value !== undefined) {
-                this._config = {
-                    ...this._config,
-                    [target.configValue]: target.value,
-                };
-            }
-            else {
-                this._config = {
-                    ...this._config,
-                    [target.configValue]: target.checked !== undefined ? target.checked : target.value,
-                };
-            }
+        if (target.checked !== undefined) {
+            this._config = {
+                ...this._config,
+                [target.configValue]: target.checked,
+            };
+        }
+        else if (target.value === "") {
+            const { [target.configValue]: _, ...rest } = this._config;
+            this._config = rest;
+        }
+        else {
+            this._config = {
+                ...this._config,
+                [target.configValue]: target.value,
+            };
         }
         ne(this, "config-changed", { config: this._config });
     }
@@ -15467,9 +15497,6 @@ __decorate([
 ], AstroWeatherCardEditor.prototype, "hass", void 0);
 __decorate([
     r$1()
-], AstroWeatherCardEditor.prototype, "_hass", void 0);
-__decorate([
-    r$1()
 ], AstroWeatherCardEditor.prototype, "_config", void 0);
 __decorate([
     r$1()
@@ -15479,7 +15506,7 @@ AstroWeatherCardEditor = __decorate([
 ], AstroWeatherCardEditor);
 
 var AstroWeatherCard_1;
-const CARD_VERSION = "v0.74.2";
+const CARD_VERSION = "v0.80.0";
 console.info(`%c  ASTROWEATHER-CARD  \n%c Version ${CARD_VERSION}  `, "color: yellow; font-weight: bold; background: navy", "color: white; font-weight: bold; background: black");
 // This puts your card into the UI card picker dialog
 window.customCards = window.customCards || [];
@@ -15489,29 +15516,52 @@ window.customCards.push({
     description: "A custom weather card made for AstroWeather. Repo: https://github.com/mawinkler/astroweather-card",
     preview: true,
 });
+const DATASET = {
+    CONDITION: 0,
+    CLOUDLESS: 1,
+    CLOUDS_HIGH: 2,
+    CLOUDS_MEDIUM: 3,
+    CLOUDS_LOW: 4,
+    TEMPERATURE: 5,
+    SEEING: 6,
+    TRANSPARENCY: 7,
+    CALM: 8,
+    LI: 9,
+    PRECIP: 10,
+    FOG: 11,
+};
+function rescaleY(chart, { axisId = "y", precipMax = 1, pad = 0.1, beginAtZero = true, hard = false, } = {}) {
+    const paddedMax = precipMax * (1 + pad);
+    const scaleOpts = (chart.options.scales[axisId] ||= {});
+    scaleOpts.beginAtZero = beginAtZero;
+    if (hard) {
+        delete scaleOpts.suggestedMin;
+        delete scaleOpts.suggestedMax;
+        scaleOpts.min = beginAtZero ? 0 : undefined;
+        scaleOpts.max = paddedMax || (beginAtZero ? 1 : undefined);
+    }
+    else {
+        delete scaleOpts.min;
+        delete scaleOpts.max;
+        scaleOpts.suggestedMin = beginAtZero ? 0 : undefined;
+        scaleOpts.suggestedMax = paddedMax || (beginAtZero ? 1 : undefined);
+    }
+}
 let AstroWeatherCard = class AstroWeatherCard extends r$3 {
     static { AstroWeatherCard_1 = this; }
-    static get properties() {
-        return {
-            _config: { attribute: false },
-            _hass: { attribute: false },
-        };
-    }
     // tune these
     static { this.REDRAW_DEBOUNCE_MS = 300; }
     static { this.RESIZE_DEBOUNCE_MS = 200; }
     constructor() {
         super();
-        this._component_loaded = false;
         this._forecasts = [];
         this._lastDataTs = 0;
         this._lastResizeTs = 0;
-        this.initialise();
     }
     static async getConfigElement() {
         return document.createElement("astroweather-card-editor");
     }
-    static getStubConfig(hass, unusedEntities, allEntities) {
+    static getStubConfig(_hass, unusedEntities, allEntities) {
         let entity = unusedEntities.find((eid) => eid.split("_")[0] === "weather.astroweather");
         if (!entity) {
             entity = allEntities.find((eid) => eid.split("_")[0] === "weather.astroweather");
@@ -15525,6 +15575,7 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
             graph: true,
             graph_condition: true,
             graph_cloudless: true,
+            graph_temperature: true,
             graph_seeing: true,
             graph_transparency: true,
             graph_calm: true,
@@ -15535,6 +15586,7 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
             line_color_condition: "#f07178", // magenta
             line_color_condition_night: "#eeffff", // white
             line_color_cloudless: "#c3e88d", // green
+            line_color_temperature: "#ffcb6b", // yellow
             line_color_seeing: "#ffcb6b", // yellow
             line_color_transparency: "#82aaff", // blue
             line_color_calm: "#ff5370", // red
@@ -15579,18 +15631,6 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
             this.subscribeForecastEvents();
         }
     }
-    async initialise() {
-        if (await this.isComponentLoaded()) {
-            this._component_loaded = true;
-        }
-        return true;
-    }
-    async isComponentLoaded() {
-        while (!this._hass || !this._hass.config.components.includes("wiser")) {
-            await new Promise((resolve) => setTimeout(resolve, 100));
-        }
-        return true;
-    }
     getCardSize() {
         const card = this.shadowRoot?.querySelector("ha-card");
         if (!card)
@@ -15620,12 +15660,12 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
     supportsFeature(feature) {
         return (this._weather.attributes.supported_features & feature) !== 0;
     }
-    connectedCallback() {
-        super.connectedCallback();
-    }
     disconnectedCallback() {
         super.disconnectedCallback();
         this._resizeObs?.disconnect();
+        if (typeof this._forecastSubscriber === "function") {
+            this._forecastSubscriber();
+        }
     }
     shouldUpdate(changedProps) {
         // Only re-render DOM when config changes (or first render).
@@ -15639,10 +15679,16 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
         const eid = this._config?.entity;
         return oldHass.states[eid] !== this._hass?.states[eid];
     }
-    firstUpdated() {
-        // Get chart canvas
-        const chartCanvas = this.shadowRoot.getElementById("forecastChart");
+    _initChartIfNeeded() {
+        if (this._forecastChart || this._config?.graph === false)
+            return;
+        const chartCanvas = this.shadowRoot?.getElementById("forecastChart");
+        if (!chartCanvas)
+            return;
         this._drawChart(chartCanvas);
+    }
+    firstUpdated() {
+        this._initChartIfNeeded();
         // Throttled resize handling
         this._resizeObs = new ResizeObserver(() => {
             const now = Date.now();
@@ -15660,6 +15706,7 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
     }
     async updated(changedProperties) {
         await this.updateComplete;
+        this._initChartIfNeeded();
         if (changedProperties.has("_config") &&
             changedProperties.get("_config") !== undefined) {
             const oldConfig = changedProperties.get("_config");
@@ -15680,31 +15727,33 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
                 changedProperties.get("_config") !== undefined) {
                 this._updateChart();
             }
-            if (changedProperties.has("weather")) {
+            if (changedProperties.has("_weather")) {
                 this._updateChart();
             }
         }
     }
     static get styles() {
-        return style;
+        return [
+            style,
+            i$3 `
+        .not-found {
+          flex: 1;
+          background-color: yellow;
+          color: black;
+          padding: 8px;
+        }
+      `,
+        ];
     }
     // Render card
     render() {
         if (!this._config || !this._hass) {
             return x ``;
         }
-        this._numberElements = 0;
         const lang = this._hass.selectedLanguage || this._hass.language;
         const stateObj = this._hass.states[this._config.entity];
         if (!stateObj) {
             return x `
-        <style>
-          .not-found {
-            flex: 1;
-            background-color: yellow;
-            padding: 8px;
-          }
-        </style>
         <ha-card>
           <div class="not-found">
             Entity not available: ${this._config.entity}
@@ -15712,16 +15761,8 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
         </ha-card>
       `;
         }
-        if (!stateObj.attributes.attribution.startsWith("Powered by Met.no")) {
+        if (!stateObj.attributes.attribution?.startsWith("Powered by Met.no")) {
             return x `
-        <style>
-          .not-found {
-            flex: 1;
-            background-color: yellow;
-            color: black;
-            padding: 8px;
-          }
-        </style>
         <ha-card>
           <div class="not-found">
             Entity is not an AstroWeather entity: ${this._config.entity}
@@ -15750,7 +15791,6 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
     `;
     }
     _renderCurrent(stateObj) {
-        this._numberElements++;
         return x `
       <div class="current">
         <span class="current-location"
@@ -15766,101 +15806,88 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
     `;
     }
     _renderDetails(stateObj, lang) {
-        let sun_next_rising;
-        let sun_next_setting;
-        let sun_next_rising_nautical;
-        let sun_next_setting_nautical;
-        let sun_next_rising_astro;
-        let sun_next_setting_astro;
-        let moon_next_rising;
-        let moon_next_setting;
-        let moon_next_new_moon;
-        let moon_next_full_moon;
-        let moon_next_dark_night;
-        let local_time;
-        sun_next_rising = new Date(stateObj.attributes.sun_next_rising).toLocaleTimeString(lang, {
+        const sun_next_rising = new Date(stateObj.attributes.sun_next_rising).toLocaleTimeString(lang, {
             month: "2-digit",
             day: "2-digit",
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
         });
-        sun_next_setting = new Date(stateObj.attributes.sun_next_setting).toLocaleTimeString(lang, {
+        const sun_next_setting = new Date(stateObj.attributes.sun_next_setting).toLocaleTimeString(lang, {
             month: "2-digit",
             day: "2-digit",
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
         });
-        sun_next_rising_nautical = new Date(stateObj.attributes.sun_next_rising_nautical).toLocaleTimeString(lang, {
+        const sun_next_rising_nautical = new Date(stateObj.attributes.sun_next_rising_nautical).toLocaleTimeString(lang, {
             month: "2-digit",
             day: "2-digit",
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
         });
-        sun_next_setting_nautical = new Date(stateObj.attributes.sun_next_setting_nautical).toLocaleTimeString(lang, {
+        const sun_next_setting_nautical = new Date(stateObj.attributes.sun_next_setting_nautical).toLocaleTimeString(lang, {
             month: "2-digit",
             day: "2-digit",
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
         });
-        sun_next_rising_astro = new Date(stateObj.attributes.sun_next_rising_astro).toLocaleTimeString(lang, {
+        const sun_next_rising_astro = new Date(stateObj.attributes.sun_next_rising_astro).toLocaleTimeString(lang, {
             month: "2-digit",
             day: "2-digit",
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
         });
-        sun_next_setting_astro = new Date(stateObj.attributes.sun_next_setting_astro).toLocaleTimeString(lang, {
+        const sun_next_setting_astro = new Date(stateObj.attributes.sun_next_setting_astro).toLocaleTimeString(lang, {
             month: "2-digit",
             day: "2-digit",
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
         });
-        moon_next_rising = new Date(stateObj.attributes.moon_next_rising).toLocaleTimeString(lang, {
+        const moon_next_rising = new Date(stateObj.attributes.moon_next_rising).toLocaleTimeString(lang, {
             month: "2-digit",
             day: "2-digit",
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
         });
-        moon_next_setting = new Date(stateObj.attributes.moon_next_setting).toLocaleTimeString(lang, {
+        const moon_next_setting = new Date(stateObj.attributes.moon_next_setting).toLocaleTimeString(lang, {
             month: "2-digit",
             day: "2-digit",
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
         });
-        moon_next_new_moon = new Date(stateObj.attributes.moon_next_new_moon).toLocaleDateString(lang, {
+        const moon_next_new_moon = new Date(stateObj.attributes.moon_next_new_moon).toLocaleDateString(lang, {
             month: "2-digit",
             day: "2-digit",
         });
-        moon_next_full_moon = new Date(stateObj.attributes.moon_next_full_moon).toLocaleDateString(lang, {
+        const moon_next_full_moon = new Date(stateObj.attributes.moon_next_full_moon).toLocaleDateString(lang, {
             month: "2-digit",
             day: "2-digit",
         });
-        moon_next_dark_night = new Date(stateObj.attributes.moon_next_dark_night).toLocaleDateString(lang, {
+        const moon_next_dark_night = new Date(stateObj.attributes.moon_next_dark_night).toLocaleDateString(lang, {
             month: "2-digit",
             day: "2-digit",
         });
-        let diff = new Date().getTimezoneOffset();
-        local_time = new Date(Date.now() + stateObj.attributes.time_shift * 1000 + diff * 60000).toLocaleTimeString(lang, {
+        const diff = new Date().getTimezoneOffset();
+        const local_time = new Date(Date.now() + stateObj.attributes.time_shift * 1000 + diff * 60000).toLocaleTimeString(lang, {
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
         });
-        var asd_duration = stateObj.attributes.night_duration_astronomical / 60;
-        var asd_h = Math.floor(asd_duration / 60);
-        var asd_m = Math.round(asd_duration - asd_h * 60);
-        var dsd_duration = stateObj.attributes.deep_sky_darkness / 60;
-        var dsd_h = Math.floor(dsd_duration / 60);
-        var dsd_m = Math.round(dsd_duration - dsd_h * 60);
-        this._numberElements++;
+        const asd_duration = stateObj.attributes.night_duration_astronomical / 60;
+        const asd_h = Math.floor(asd_duration / 60);
+        const asd_m = Math.round(asd_duration - asd_h * 60);
+        const dsd_duration = stateObj.attributes.deep_sky_darkness / 60;
+        const dsd_h = Math.floor(dsd_duration / 60);
+        const dsd_m = Math.round(dsd_duration - dsd_h * 60);
         return x `
-      <div class="details ${this._numberElements > 1 ? "spacer" : ""}">
+      <div class="details">
         <li>
           <ha-icon icon="mdi:shield-sun"></ha-icon>
           <b>ASD: ${asd_h}h ${asd_m}min</b>
@@ -16008,17 +16035,16 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
           <ha-icon icon="mdi:map-clock-outline"></ha-icon>
           Local Time: ${local_time}
         </li>
+        <li>
+          <ha-icon icon="mdi:satellite-uplink"></ha-icon>
+          GFS: ${stateObj.attributes.gfs_supplementary_data ? "Active" : "Estimated"}
+        </li>
       </div>
     `;
     }
     _renderDeepSkyForecast(stateObj) {
-        this._numberElements++;
         return x `
-      <div
-        class="deepskyforecast clear ${this._numberElements > 1
-            ? "spacer"
-            : ""}"
-      >
+      <div class="deepskyforecast clear">
         ${stateObj.attributes.deepsky_forecast_today_plain
             ? x `
               <li>
@@ -16070,9 +16096,8 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
         if (!this._forecasts || !this._forecasts.length || !this._config) {
             return [];
         }
-        this._numberElements++;
         return x `
-      <div class="forecast clear ${this._numberElements > 1 ? "spacer" : ""}">
+      <div class="forecast clear">
         <div class="forecastrow">
           <ha-icon icon="mdi:progress-clock"></ha-icon><br />
           ${this._config.graph_condition
@@ -16103,11 +16128,7 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
         </div>
         ${this._forecasts
             ? this._forecasts
-                .slice(0, this._config.number_of_forecasts
-                ? this._config.number_of_forecasts > 7
-                    ? 7
-                    : this._config.number_of_forecasts
-                : 5)
+                .slice(0, Math.min(Number(this._config.number_of_forecasts) || 5, 7))
                 .map((hourly) => x `
                   <div class="forecastrow">
                     <div class="forecastrowname">
@@ -16179,10 +16200,9 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
     `;
     }
     _drawChart(chartCanvas) {
-        var lang = "en";
-        if (this._hass) {
-            lang = this._hass.selectedLanguage || this._hass.language;
-        }
+        const lang = this._hass
+            ? (this._hass.selectedLanguage || this._hass.language)
+            : "en";
         if (!this._forecasts || !this._config || !chartCanvas) {
             return [];
         }
@@ -16191,13 +16211,10 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
             return [];
         }
         // Render forecast
-        this._forecasts
-            ? this._forecasts.slice(0, this._config.number_of_forecasts
-                ? this._config.number_of_forecasts
-                : 5)
-            : [];
+        this._forecasts.slice(0, Number(this._config.number_of_forecasts) || 5);
         const graphCondition = this._config.graph_condition;
         const graphCloudless = this._config.graph_cloudless;
+        const graphTemperature = this._config.graph_temperature;
         const graphSeeing = this._config.graph_seeing;
         const graphTransparency = this._config.graph_transparency;
         const graphCalm = this._config.graph_calm;
@@ -16217,6 +16234,9 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
             ? this._config.line_color_cloudless
             : "#c3e88d";
         const colorCloudlessLevels = colorCloudless + "80";
+        const colorTemperature = this._config.line_color_temperature
+            ? this._config.line_color_temperature
+            : "#ffcb6b";
         const colorSeeing = this._config.line_color_seeing
             ? this._config.line_color_seeing
             : "#ffcb6b";
@@ -16237,18 +16257,19 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
             : "#dde8ff";
         const colorDivider = style.getPropertyValue("--divider-color");
         const fillLine = false;
-        var dateTime = [];
-        var condition = [];
-        var clouds = [];
-        var clouds_high = [];
-        var clouds_medium = [];
-        var clouds_low = [];
-        var seeing = [];
-        var transparency = [];
-        var calm = [];
-        var li = [];
-        var precip = [];
-        var fog = [];
+        const dateTime = [];
+        const condition = [];
+        const clouds = [];
+        const clouds_high = [];
+        const clouds_medium = [];
+        const clouds_low = [];
+        const temperature = [];
+        const seeing = [];
+        const transparency = [];
+        const calm = [];
+        const li = [];
+        const precip = [];
+        const fog = [];
         Chart.defaults.color = textColor;
         Chart.defaults.scale.grid.color = colorDivider;
         Chart.defaults.elements.line.fill = false;
@@ -16259,18 +16280,21 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
         Chart.defaults.plugins.legend.position = "bottom";
         Chart.defaults.animation = false;
         Chart.defaults.transitions.active.animation.duration = 0;
-        var colorConditionGradient = ctx.createLinearGradient(0, 0, 0, 300);
-        var colorCloudlessGradient = ctx.createLinearGradient(0, 0, 0, 300);
-        var colorSeeingGradient = ctx.createLinearGradient(0, 0, 0, 300);
-        var colorTransparencyGradient = ctx.createLinearGradient(0, 0, 0, 300);
-        var colorCalmGradient = ctx.createLinearGradient(0, 0, 0, 300);
-        var colorLiGradient = ctx.createLinearGradient(0, 0, 0, 300);
-        var colorPrecipGradient = ctx.createLinearGradient(0, 0, 0, 300);
-        var colorFogGradient = ctx.createLinearGradient(0, 0, 0, 300);
+        const colorConditionGradient = ctx.createLinearGradient(0, 0, 0, 300);
+        const colorCloudlessGradient = ctx.createLinearGradient(0, 0, 0, 300);
+        const colorTemperatureGradient = ctx.createLinearGradient(0, 0, 0, 300);
+        const colorSeeingGradient = ctx.createLinearGradient(0, 0, 0, 300);
+        const colorTransparencyGradient = ctx.createLinearGradient(0, 0, 0, 300);
+        const colorCalmGradient = ctx.createLinearGradient(0, 0, 0, 300);
+        const colorLiGradient = ctx.createLinearGradient(0, 0, 0, 300);
+        const colorPrecipGradient = ctx.createLinearGradient(0, 0, 0, 300);
+        const colorFogGradient = ctx.createLinearGradient(0, 0, 0, 300);
         colorConditionGradient.addColorStop(0, colorCondition);
         colorConditionGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
         colorCloudlessGradient.addColorStop(0, colorCloudless);
         colorCloudlessGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+        colorTemperatureGradient.addColorStop(0, colorTemperature);
+        colorTemperatureGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
         colorSeeingGradient.addColorStop(0, colorSeeing);
         colorSeeingGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
         colorTransparencyGradient.addColorStop(0, colorTransparency);
@@ -16283,8 +16307,12 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
         colorPrecipGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
         colorFogGradient.addColorStop(0, colorFog);
         colorFogGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
-        var sun_next_setting_astro = new Date(this._weather.attributes.sun_next_setting_astro).getHours();
-        var sun_next_rising_astro = new Date(this._weather.attributes.sun_next_rising_astro).getHours();
+        const sun_next_setting_astro = this._weather
+            ? new Date(this._weather.attributes.sun_next_setting_astro).getHours()
+            : 0;
+        const sun_next_rising_astro = this._weather
+            ? new Date(this._weather.attributes.sun_next_rising_astro).getHours()
+            : 0;
         const astroDarknessBackgroundPlugin = {
             id: "astroDarknessBackground",
             beforeDraw(chart, _args, pluginOptions) {
@@ -16405,6 +16433,18 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
                         pointStyle: "rect",
                     },
                     {
+                        label: "Temperature",
+                        type: "line",
+                        data: temperature,
+                        yAxisID: "TemperatureAxis",
+                        backgroundColor: colorTemperatureGradient,
+                        fill: fillLine,
+                        borderColor: colorTemperature,
+                        pointBorderColor: colorTemperature,
+                        pointRadius: 0,
+                        pointStyle: "triangle",
+                    },
+                    {
                         label: "Seeing",
                         type: "line",
                         data: seeing,
@@ -16495,18 +16535,12 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
                                 size: 8,
                             },
                             callback: function (value) {
-                                var datetime = this.getLabelForValue(Number(value));
-                                new Date(datetime).toLocaleDateString(lang, {
-                                    weekday: "short",
-                                });
-                                var time = new Date(datetime).toLocaleTimeString(lang, {
+                                const datetime = this.getLabelForValue(Number(value));
+                                return new Date(datetime).toLocaleTimeString(lang, {
                                     hour12: false,
                                     hour: "numeric",
                                     minute: "numeric",
                                 });
-                                {
-                                    return time;
-                                }
                             },
                         },
                     },
@@ -16526,6 +16560,25 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
                             },
                             callback: function (value) {
                                 return value + "%"; // Add unit
+                            },
+                        },
+                    },
+                    TemperatureAxis: {
+                        position: "right",
+                        beginAtZero: true,
+                        min: -10,
+                        max: 35,
+                        grid: {
+                            display: false,
+                            drawTicks: true,
+                        },
+                        ticks: {
+                            display: graphTemperature !== undefined ? !!graphTemperature : true,
+                            font: {
+                                size: 8,
+                            },
+                            callback: function (value) {
+                                return value + "°C"; // Add unit
                             },
                         },
                     },
@@ -16581,7 +16634,7 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
                     legend: {
                         display: true,
                         position: "bottom",
-                        onClick: (e, legendItem, legend) => {
+                        onClick: (_e, legendItem, legend) => {
                             const index = legendItem.datasetIndex;
                             const ci = legend.chart;
                             ci.setDatasetVisibility(Number(index), !ci.isDatasetVisible(Number(index)));
@@ -16615,6 +16668,7 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
                                         legendItem.text == "M" ||
                                         legendItem.text == "L") &&
                                         graphCloudless) ||
+                                    (legendItem.text == "Temperature" && graphTemperature) ||
                                     (legendItem.text == "Seeing" && graphSeeing) ||
                                     (legendItem.text == "Transp" && graphTransparency) ||
                                     (legendItem.text == "Calm" && graphCalm) ||
@@ -16645,12 +16699,13 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
                                     2: "%",
                                     3: "%",
                                     4: "%",
-                                    5: "%",
+                                    5: "°C",
                                     6: "%",
                                     7: "%",
-                                    8: "°C",
-                                    9: "mm",
-                                    10: "%",
+                                    8: "%",
+                                    9: "°C",
+                                    10: "mm",
+                                    11: "%",
                                 };
                                 // Get dataset index and corresponding unit
                                 const datasetIndex = tooltipItem.datasetIndex; // Index of the data point
@@ -16663,10 +16718,12 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
                             },
                         },
                     },
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore: custom plugin options not in Chart.js type definitions
                     astroDarknessBackground: {
                         sunSetHour: sun_next_setting_astro,
                         sunRiseHour: sun_next_rising_astro,
-                        color: "rgba(0, 0, 0, 0.25)", // or rgba(255,255,255,0.06) for a light band
+                        color: "rgba(0, 0, 0, 0.25)",
                     },
                 },
             },
@@ -16680,35 +16737,32 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
             return;
         }
         // Update forecast
-        const forecast = this._forecasts
-            ? this._forecasts.slice(0, this._config.number_of_forecasts
-                ? this._config.number_of_forecasts
-                : 5)
-            : [];
+        const forecast = this._forecasts.slice(0, Number(this._config.number_of_forecasts) || 5);
         const graphCondition = this._config.graph_condition;
         const graphCloudless = this._config.graph_cloudless;
+        const graphTemperature = this._config.graph_temperature;
         const graphSeeing = this._config.graph_seeing;
         const graphTransparency = this._config.graph_transparency;
         const graphCalm = this._config.graph_calm;
         const graphLi = this._config.graph_li;
         const graphPrecip = this._config.graph_precip;
         const graphFog = this._config.graph_fog;
-        let i;
         const dateTime = [];
         const condition = [];
         const clouds = [];
         const clouds_high = [];
         const clouds_medium = [];
         const clouds_low = [];
+        const temperature = [];
         const seeing = [];
         const transparency = [];
         const calm = [];
         const li = [];
         const precip = [];
-        var precipMax = 0;
+        let precipMax = 0;
         const fog = [];
-        for (i = 0; i < forecast.length; i++) {
-            var d = forecast[i];
+        for (let i = 0; i < forecast.length; i++) {
+            const d = forecast[i];
             dateTime.push(d.datetime);
             if (graphCondition != undefined ? graphCondition : true) {
                 condition.push(d.condition);
@@ -16718,6 +16772,9 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
                 clouds_high.push(100 - d.cloud_area_fraction_high);
                 clouds_medium.push(100 - d.cloud_area_fraction_medium);
                 clouds_low.push(100 - d.cloud_area_fraction_low);
+            }
+            if (graphTemperature != undefined ? graphTemperature : true) {
+                temperature.push(d.temperature);
             }
             if (graphSeeing != undefined ? graphSeeing : true) {
                 seeing.push(d.seeing_percentage);
@@ -16770,42 +16827,22 @@ let AstroWeatherCard = class AstroWeatherCard extends r$3 {
                 condPointRadius.push(0); // hidden point
             }
         }
-        function rescaleY(chart, { axisId = "y", precipMax = 1, pad = 0.1, // 10% headroom
-        beginAtZero = true, // clamp min to 0 if desired
-        hard = false, // false -> use suggested*, true -> use hard min/max
-         } = {}) {
-            const yMax = precipMax; //getVisibleYMax(chart, axisId);
-            const paddedMax = yMax * (1 + pad);
-            const scaleOpts = (chart.options.scales[axisId] ||= {});
-            scaleOpts.beginAtZero = beginAtZero;
-            if (hard) {
-                delete scaleOpts.suggestedMin;
-                delete scaleOpts.suggestedMax;
-                scaleOpts.min = beginAtZero ? 0 : undefined;
-                scaleOpts.max = paddedMax || (beginAtZero ? 1 : undefined);
-            }
-            else {
-                delete scaleOpts.min;
-                delete scaleOpts.max;
-                scaleOpts.suggestedMin = beginAtZero ? 0 : undefined;
-                scaleOpts.suggestedMax = paddedMax || (beginAtZero ? 1 : undefined);
-            }
-        }
         if (this._forecastChart) {
             this._forecastChart.data.labels = dateTime;
-            this._forecastChart.data.datasets[0].data = condition;
-            this._forecastChart.data.datasets[1].data = clouds;
-            this._forecastChart.data.datasets[2].data = clouds_high;
-            this._forecastChart.data.datasets[3].data = clouds_medium;
-            this._forecastChart.data.datasets[4].data = clouds_low;
-            this._forecastChart.data.datasets[5].data = seeing;
-            this._forecastChart.data.datasets[6].data = transparency;
-            this._forecastChart.data.datasets[7].data = calm;
-            this._forecastChart.data.datasets[8].data = li;
-            this._forecastChart.data.datasets[9].data = precip;
-            this._forecastChart.data.datasets[10].data = fog;
+            this._forecastChart.data.datasets[DATASET.CONDITION].data = condition;
+            this._forecastChart.data.datasets[DATASET.CLOUDLESS].data = clouds;
+            this._forecastChart.data.datasets[DATASET.CLOUDS_HIGH].data = clouds_high;
+            this._forecastChart.data.datasets[DATASET.CLOUDS_MEDIUM].data = clouds_medium;
+            this._forecastChart.data.datasets[DATASET.CLOUDS_LOW].data = clouds_low;
+            this._forecastChart.data.datasets[DATASET.TEMPERATURE].data = temperature;
+            this._forecastChart.data.datasets[DATASET.SEEING].data = seeing;
+            this._forecastChart.data.datasets[DATASET.TRANSPARENCY].data = transparency;
+            this._forecastChart.data.datasets[DATASET.CALM].data = calm;
+            this._forecastChart.data.datasets[DATASET.LI].data = li;
+            this._forecastChart.data.datasets[DATASET.PRECIP].data = precip;
+            this._forecastChart.data.datasets[DATASET.FOG].data = fog;
             // Apply the per-point styling to the "Condition" dataset
-            const conditionDataset = this._forecastChart.data.datasets[0];
+            const conditionDataset = this._forecastChart.data.datasets[DATASET.CONDITION];
             conditionDataset.pointBorderColor = condPointBorderColor;
             conditionDataset.pointRadius = condPointRadius;
             rescaleY(this._forecastChart, {
@@ -16896,9 +16933,6 @@ __decorate([
 ], AstroWeatherCard.prototype, "_weather", void 0);
 __decorate([
     r$1()
-], AstroWeatherCard.prototype, "_component_loaded", void 0);
-__decorate([
-    r$1()
 ], AstroWeatherCard.prototype, "_forecasts", void 0);
 __decorate([
     r$1()
@@ -16906,9 +16940,6 @@ __decorate([
 __decorate([
     r$1()
 ], AstroWeatherCard.prototype, "_forecastSubscriber", void 0);
-__decorate([
-    r$1()
-], AstroWeatherCard.prototype, "_numberElements", void 0);
 AstroWeatherCard = AstroWeatherCard_1 = __decorate([
     t$1("astroweather-card")
 ], AstroWeatherCard);

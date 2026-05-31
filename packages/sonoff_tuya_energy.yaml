@@ -51,6 +51,13 @@ sensor:
     method: left
 
   - platform: integration
+    name: "Sonoff 1000cd8453 Energy"
+    source: sensor.sonoff_1000cd8453_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
     name: "3D Printers Energy"
     source: sensor.3d_printers_power
     unit_prefix: k
@@ -144,6 +151,13 @@ sensor:
   - platform: integration
     name: "Top Floor Energy"
     source: sensor.top_floor_power
+    unit_prefix: k
+    round: 3
+    method: left
+
+  - platform: integration
+    name: "Woonstel Energy"
+    source: sensor.woonstel_power
     unit_prefix: k
     round: 3
     method: left
@@ -273,6 +287,27 @@ utility_meter:
   sonoff_10023b8a40_yearly:
     name: "Sonoff 10023b8a40 Yearly"
     source: sensor.sonoff_10023b8a40_energy
+    cycle: yearly
+
+  sonoff_1000cd8453_hourly:
+    name: "Sonoff 1000cd8453 Hourly"
+    source: sensor.sonoff_1000cd8453_energy
+    cycle: hourly
+  sonoff_1000cd8453_daily:
+    name: "Sonoff 1000cd8453 Daily"
+    source: sensor.sonoff_1000cd8453_energy
+    cycle: daily
+  sonoff_1000cd8453_weekly:
+    name: "Sonoff 1000cd8453 Weekly"
+    source: sensor.sonoff_1000cd8453_energy
+    cycle: weekly
+  sonoff_1000cd8453_monthly:
+    name: "Sonoff 1000cd8453 Monthly"
+    source: sensor.sonoff_1000cd8453_energy
+    cycle: monthly
+  sonoff_1000cd8453_yearly:
+    name: "Sonoff 1000cd8453 Yearly"
+    source: sensor.sonoff_1000cd8453_energy
     cycle: yearly
 
   d_printers_hourly:
@@ -569,6 +604,27 @@ utility_meter:
     source: sensor.top_floor_energy
     cycle: yearly
 
+  woonstel_hourly:
+    name: "Woonstel Hourly"
+    source: sensor.woonstel_energy
+    cycle: hourly
+  woonstel_daily:
+    name: "Woonstel Daily"
+    source: sensor.woonstel_energy
+    cycle: daily
+  woonstel_weekly:
+    name: "Woonstel Weekly"
+    source: sensor.woonstel_energy
+    cycle: weekly
+  woonstel_monthly:
+    name: "Woonstel Monthly"
+    source: sensor.woonstel_energy
+    cycle: monthly
+  woonstel_yearly:
+    name: "Woonstel Yearly"
+    source: sensor.woonstel_energy
+    cycle: yearly
+
 template:
   - sensor:
       - name: "Sonoff 10023b8a5d Summary"
@@ -648,6 +704,19 @@ template:
           weekly: "{{ states('sensor.sonoff_10023b8a40_weekly') }}"
           monthly: "{{ states('sensor.sonoff_10023b8a40_monthly') }}"
           yearly: "{{ states('sensor.sonoff_10023b8a40_yearly') }}"
+
+      - name: "Sonoff 1000cd8453 Summary"
+        unique_id: sonoff_1000cd8453_summary
+        state: "{{ states('sensor.sonoff_1000cd8453_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.sonoff_1000cd8453_energy') }}"
+          hourly: "{{ states('sensor.sonoff_1000cd8453_hourly') }}"
+          daily: "{{ states('sensor.sonoff_1000cd8453_daily') }}"
+          weekly: "{{ states('sensor.sonoff_1000cd8453_weekly') }}"
+          monthly: "{{ states('sensor.sonoff_1000cd8453_monthly') }}"
+          yearly: "{{ states('sensor.sonoff_1000cd8453_yearly') }}"
 
       - name: "3D Printers Summary"
         unique_id: d_printers_summary
@@ -830,3 +899,16 @@ template:
           weekly: "{{ states('sensor.top_floor_weekly') }}"
           monthly: "{{ states('sensor.top_floor_monthly') }}"
           yearly: "{{ states('sensor.top_floor_yearly') }}"
+
+      - name: "Woonstel Summary"
+        unique_id: woonstel_summary
+        state: "{{ states('sensor.woonstel_energy') }}"
+        unit_of_measurement: "kWh"
+        attributes:
+          measure_type: "kWh"
+          total_kwh: "{{ states('sensor.woonstel_energy') }}"
+          hourly: "{{ states('sensor.woonstel_hourly') }}"
+          daily: "{{ states('sensor.woonstel_daily') }}"
+          weekly: "{{ states('sensor.woonstel_weekly') }}"
+          monthly: "{{ states('sensor.woonstel_monthly') }}"
+          yearly: "{{ states('sensor.woonstel_yearly') }}"

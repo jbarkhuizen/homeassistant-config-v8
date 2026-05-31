@@ -118,13 +118,12 @@
       const frac = Math.max(0, Math.min(1, (value - min) / (max - min)));
       return arcStart + frac * arcSweep;
     }
-    // Bidirectional: zero is at 0° (top / 12 o'clock) in the arc
-    const arcOffset  = ((0 - arcStart) % 360 + 360) % 360; // degrees from arcStart to top
-    const is360      = arcSweep >= 360;
-    const zeroFrac   = is360 ? 0 : Math.min(arcOffset / arcSweep, 1);
-    const refAngle   = arcStart + zeroFrac * arcSweep;      // angle of the zero reference
-
+    // Bidirectional: zero (or range midpoint) sits at its proportional position in the arc,
+    // exactly like a non-bidirectional gauge would place value=0 in [min, max].
     const refPoint   = (min <= 0 && max >= 0) ? 0 : (min + max) / 2;
+    const zeroFrac   = Math.max(0, Math.min(1, (refPoint - min) / (max - min)));
+    const refAngle   = arcStart + zeroFrac * arcSweep;
+
     const lowerRange = refPoint - min;
     const upperRange = max - refPoint;
 
@@ -607,19 +606,16 @@
 
   function updateLeds(ctx, value, ledsCount, min, max) {
     const cfg       = ctx.config;
-    const arcSweep  = cfg.arc_sweep || 360;
-    const arcStart  = cfg.arc_start || 0;
-    const is360     = arcSweep >= 360;
     const ledInfo   = calculateBidirectionalLeds(value, min, max, ledsCount, cfg.bidirectional);
     const color     = getLedColor(ledInfo.normalizedValue, cfg.severity, min, max);
 
     const gc = ctx.shadowRoot.getElementById('gauge-container');
     if (gc) gc.style.boxShadow = cfg.enable_shadow ? `0 0 30px 2px ${color}` : '';
 
-    // Zero LED index for partial-arc bidirectional:
-    // Find how many degrees from arcStart to 0° (top), then convert to LED index.
-    const arcOffset  = ((0 - arcStart) % 360 + 360) % 360;
-    const zeroLedIdx = is360 ? 0 : Math.round((arcOffset / arcSweep) * ledsCount);
+    // Zero LED index: proportional to where refPoint falls in [min, max], same logic as valueToArcAngle.
+    const biRef      = cfg.bidirectional ? ((min <= 0 && max >= 0) ? 0 : (min + max) / 2) : min;
+    const zeroFrac   = Math.max(0, Math.min(1, (biRef - min) / (max - min)));
+    const zeroLedIdx = Math.round(zeroFrac * ledsCount);
 
     for (let i = 0; i < ledsCount; i++) {
       const led = ctx.shadowRoot.getElementById(`led-${i}`);
@@ -628,19 +624,11 @@
 
       if (ledInfo.direction === 'unidirectional') {
         isActive = i < ledInfo.activeLeds;
-      } else if (is360) {
-        // 360° bidirectional: zero at LED 0, negative wraps around the circle
-        isActive = ledInfo.direction === 'positive'
-          ? i < ledInfo.activeLeds
-          : (i === 0) || (i > ledsCount - ledInfo.activeLeds);
+      } else if (ledInfo.direction === 'positive') {
+        isActive = i >= zeroLedIdx && i < zeroLedIdx + ledInfo.activeLeds;
       } else {
-        // Partial arc bidirectional: zero at zeroLedIdx, no wrap
-        if (ledInfo.direction === 'positive') {
-          isActive = i >= zeroLedIdx && i < zeroLedIdx + ledInfo.activeLeds;
-        } else {
-          // zero LED always lit as reference point
-          isActive = (i === zeroLedIdx) || (i >= zeroLedIdx - ledInfo.activeLeds && i < zeroLedIdx);
-        }
+        // negative: zero LED always lit as reference point
+        isActive = (i === zeroLedIdx) || (i >= zeroLedIdx - ledInfo.activeLeds && i < zeroLedIdx);
       }
 
       if (isActive) {
@@ -967,7 +955,7 @@
         .cols-2 { grid-template-columns: 1fr 1fr; }
         .cols-3 { grid-template-columns: 1fr 1fr 1fr; }
         .cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
-        ha-selector, ha-entity-picker { display: block; }
+        ha-selector { display: block; }
         .info { font-size: 12px; color: var(--secondary-text-color); font-style: italic;
                 padding: 8px 10px; background: var(--secondary-background-color);
                 border-radius: 6px; margin: 0; line-height: 1.5; }
@@ -1005,20 +993,8 @@
       const root = shadow.getElementById('root');
 
       // ── Essentials ──────────────────────────────────────────────────────────
-      const epWrap = document.createElement('div');
-      epWrap.className = 'field';
-      const epLbl = document.createElement('label');
-      epLbl.className = 'field-label';
-      epLbl.textContent = 'Entity *';
-      const ep = document.createElement('ha-entity-picker');
-      ep.setAttribute('data-sel', '');
-      ep.value = cfg.entity || '';
-      if (this._hass) ep.hass = this._hass;
-      ep.addEventListener('value-changed', e => { e.stopPropagation(); this._change('entity', e.detail.value); });
-      epWrap.append(epLbl, ep);
-
       root.appendChild(this._section('Essentials',
-        epWrap,
+        this._sel('entity', { entity: {} }, 'Entity *'),
         this._row(2,
           this._sel('name',     { text: {} },   'Display name'),
           this._sel('unit',     { text: {} },   'Unit'),

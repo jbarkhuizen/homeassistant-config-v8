@@ -1,0 +1,419 @@
+input_boolean:
+  energy_email_try_images:
+    name: Energy Email Try Images
+    icon: mdi:image-email
+    initial: false
+
+input_text:
+  grafana_ingress_base_url:
+    name: Grafana Ingress Base URL
+    initial: "http://192.168.1.31:8123/a0d7b954_grafana"
+    max: 255
+  energy_email_last_report_type:
+    name: Energy Email Last Report Type
+    initial: "None"
+    max: 100
+  energy_email_last_status:
+    name: Energy Email Last Status
+    initial: "Not sent yet"
+    max: 255
+
+input_datetime:
+  energy_email_last_sent:
+    name: Energy Email Last Sent
+    has_date: true
+    has_time: true
+
+template:
+  - sensor:
+      - name: "Energy Report Grid Daily Friendly"
+        unique_id: energy_report_grid_daily_friendly
+        unit_of_measurement: "kWh"
+        state: >
+          {% set v = states('sensor.main_eskom_switch_daily') | float(0) %}
+          {{ v | round(2) }}
+
+      - name: "Energy Report Grid Weekly Friendly"
+        unique_id: energy_report_grid_weekly_friendly
+        unit_of_measurement: "kWh"
+        state: >
+          {% set v = states('sensor.main_eskom_switch_weekly') | float(0) %}
+          {{ v | round(2) }}
+
+      - name: "Energy Report Grid Monthly Friendly"
+        unique_id: energy_report_grid_monthly_friendly
+        unit_of_measurement: "kWh"
+        state: >
+          {% set v = states('sensor.main_eskom_switch_monthly') | float(0) %}
+          {{ v | round(2) }}
+
+      - name: "Energy Report Borehole Daily Friendly"
+        unique_id: energy_report_borehole_daily_friendly
+        unit_of_measurement: "kWh"
+        state: >
+          {% set v = states('sensor.boorgat_daily') | float(0) %}
+          {{ v | round(2) }}
+
+      - name: "Energy Report Plugs Cabinet Daily Friendly"
+        unique_id: energy_report_plugs_cabinet_daily_friendly
+        unit_of_measurement: "kWh"
+        state: >
+          {% set v = states('sensor.plugs_kas_daily') | float(0) %}
+          {{ v | round(2) }}
+
+      - name: "Energy Report Main PC Setup Daily Friendly"
+        unique_id: energy_report_main_pc_setup_daily_friendly
+        unit_of_measurement: "kWh"
+        state: >
+          {% set v = states('sensor.main_pc_setup_daily') | float(0) %}
+          {{ v | round(2) }}
+
+      - name: "Energy Report Indoor Geyser Daily Friendly"
+        unique_id: energy_report_indoor_geyser_daily_friendly
+        unit_of_measurement: "kWh"
+        state: >
+          {% set v = states('sensor.geyser_indoor_daily') | float(0) %}
+          {{ v | round(2) }}
+
+      - name: "Energy Report External Geyser Daily Friendly"
+        unique_id: energy_report_external_geyser_daily_friendly
+        unit_of_measurement: "kWh"
+        state: >
+          {% set v = states('sensor.geyser_external_daily') | float(0) %}
+          {{ v | round(2) }}
+
+      - name: "Energy Email Last Sent Summary"
+        unique_id: energy_email_last_sent_summary
+        state: >
+          {{ states('input_text.energy_email_last_report_type') }} |
+          {{ states('input_text.energy_email_last_status') }} |
+          {{ states('input_datetime.energy_email_last_sent') }}
+
+      - name: "Energy Top Consumer Daily"
+        unique_id: energy_top_consumer_daily
+        state: >
+          {% set data = [
+            ('Borehole', states('sensor.boorgat_daily')|float(0)),
+            ('Plugs Cabinet', states('sensor.plugs_kas_daily')|float(0)),
+            ('Main PC Setup', states('sensor.main_pc_setup_daily')|float(0)),
+            ('Indoor Geyser', states('sensor.geyser_indoor_daily')|float(0)),
+            ('External Geyser', states('sensor.geyser_external_daily')|float(0))
+          ] %}
+          {% set top = data | sort(attribute=1, reverse=true) | first %}
+          {{ top[0] if top is not none else 'No monitored load data' }}
+        attributes:
+          value_kwh: >
+            {% set data = [
+              ('Borehole', states('sensor.boorgat_daily')|float(0)),
+              ('Plugs Cabinet', states('sensor.plugs_kas_daily')|float(0)),
+              ('Main PC Setup', states('sensor.main_pc_setup_daily')|float(0)),
+              ('Indoor Geyser', states('sensor.geyser_indoor_daily')|float(0)),
+              ('External Geyser', states('sensor.geyser_external_daily')|float(0))
+            ] %}
+            {% set top = data | sort(attribute=1, reverse=true) | first %}
+            {{ (top[1] | round(2)) if top is not none else 0 }}
+
+script:
+  energy_email_update_status:
+    alias: Energy Email Update Status
+    mode: queued
+    fields:
+      report_type:
+        description: Report type
+      status_text:
+        description: Status text
+    sequence:
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_email_last_report_type
+        data:
+          value: "{{ report_type }}"
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_email_last_status
+        data:
+          value: "{{ status_text }}"
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.energy_email_last_sent
+        data:
+          datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+  energy_email_hourly_report:
+    alias: Energy Email Hourly Report
+    mode: single
+    sequence:
+      - variables:
+          ingress_url: "{{ states('input_text.grafana_ingress_base_url') }}/d/home-energy-hourly/home-energy-hourly"
+          grid_total: "{{ (states('sensor.main_eskom_switch_hourly') | float(0)) | round(2) }}"
+          main_pc: "{{ (states('sensor.main_pc_setup_hourly') | float(0)) | round(2) }}"
+          router: "{{ (states('sensor.printers_router_hourly') | float(0)) | round(2) }}"
+          printers_3d: "{{ (states('sensor.3d_printers_hourly') | float(0)) | round(2) }}"
+          report_date: "{{ now().strftime('%Y-%m-%d') }}"
+          report_title: "Home Energy Hourly Report | {{ report_date }}"
+          report_message: >
+            Home Energy Hourly Report
+
+            Date
+            {{ report_date }}
+
+            Period
+            Last 24 hours
+
+            Grid energy total
+            {{ 'No usage' if grid_total == 0 else grid_total ~ ' kWh' }}
+
+            Key monitored loads
+            Main PC Setup: {{ 'No usage' if main_pc == 0 else main_pc ~ ' kWh' }}
+            Printers and Router: {{ 'No usage' if router == 0 else router ~ ' kWh' }}
+            3D Printers: {{ 'No usage' if printers_3d == 0 else printers_3d ~ ' kWh' }}
+
+            Open in Home Assistant
+            {{ ingress_url }}
+
+            Sent by Home Assistant at {{ now().strftime('%H:%M') }}
+          report_html: >
+            <html>
+              <body>
+                <h2>Home Energy Hourly Report</h2>
+                <p><b>Date</b><br>{{ report_date }}</p>
+                <p><b>Period</b><br>Last 24 hours</p>
+                <p><b>Grid energy total</b><br>{{ 'No usage' if grid_total == 0 else grid_total ~ ' kWh' }}</p>
+                <p><b>Key monitored loads</b><br>
+                Main PC Setup: {{ 'No usage' if main_pc == 0 else main_pc ~ ' kWh' }}<br>
+                Printers and Router: {{ 'No usage' if router == 0 else router ~ ' kWh' }}<br>
+                3D Printers: {{ 'No usage' if printers_3d == 0 else printers_3d ~ ' kWh' }}</p>
+                <p><b>Open in Home Assistant</b><br>
+                <a href="{{ ingress_url }}">{{ ingress_url }}</a></p>
+                <p>Sent by Home Assistant at {{ now().strftime('%H:%M') }}</p>
+              </body>
+            </html>
+      - action: notify.email_ha
+        data:
+          title: "{{ report_title }}"
+          message: "{{ report_message }}"
+          data:
+            html: "{{ report_html }}"
+      - action: script.energy_email_update_status
+        data:
+          report_type: "Hourly"
+          status_text: "Sent successfully"
+
+  energy_email_daily_report:
+    alias: Energy Email Daily Report
+    mode: single
+    sequence:
+      - variables:
+          ingress_url: "{{ states('input_text.grafana_ingress_base_url') }}/d/home-energy-daily/home-energy-daily"
+          grid_daily: "{{ states('sensor.energy_report_grid_daily_friendly') | float(0) }}"
+          borehole_daily: "{{ states('sensor.energy_report_borehole_daily_friendly') | float(0) }}"
+          plugs_cabinet_daily: "{{ states('sensor.energy_report_plugs_cabinet_daily_friendly') | float(0) }}"
+          pc_daily: "{{ states('sensor.energy_report_main_pc_setup_daily_friendly') | float(0) }}"
+          indoor_geyser_daily: "{{ states('sensor.energy_report_indoor_geyser_daily_friendly') | float(0) }}"
+          external_geyser_daily: "{{ states('sensor.energy_report_external_geyser_daily_friendly') | float(0) }}"
+          top_consumer_name: "{{ states('sensor.energy_top_consumer_daily') }}"
+          top_consumer_value: "{{ state_attr('sensor.energy_top_consumer_daily', 'value_kwh') | float(0) }}"
+          report_date: "{{ now().strftime('%Y-%m-%d') }}"
+          report_title: "Home Energy Daily Report | {{ report_date }}"
+          report_message: >
+            Home Energy Daily Report
+
+            Date
+            {{ report_date }}
+
+            Period
+            Today and recent daily trend
+
+            Grid energy total
+            {{ 'No usage' if grid_daily == 0 else grid_daily ~ ' kWh' }}
+
+            Monitored loads
+            Borehole: {{ 'No usage' if borehole_daily == 0 else borehole_daily ~ ' kWh' }}
+            Plugs Cabinet: {{ 'No usage' if plugs_cabinet_daily == 0 else plugs_cabinet_daily ~ ' kWh' }}
+            Main PC Setup: {{ 'No usage' if pc_daily == 0 else pc_daily ~ ' kWh' }}
+            Indoor Geyser: {{ 'No usage' if indoor_geyser_daily == 0 else indoor_geyser_daily ~ ' kWh' }}
+            External Geyser: {{ 'No usage' if external_geyser_daily == 0 else external_geyser_daily ~ ' kWh' }}
+
+            Top monitored load today
+            {{ top_consumer_name }}: {{ 'No usage' if top_consumer_value == 0 else top_consumer_value ~ ' kWh' }}
+
+            Open in Home Assistant
+            {{ ingress_url }}
+
+            Sent by Home Assistant at {{ now().strftime('%H:%M') }}
+          report_html: >
+            <html>
+              <body>
+                <h2>Home Energy Daily Report</h2>
+                <p><b>Date</b><br>{{ report_date }}</p>
+                <p><b>Period</b><br>Today and recent daily trend</p>
+                <p><b>Grid energy total</b><br>{{ 'No usage' if grid_daily == 0 else grid_daily ~ ' kWh' }}</p>
+                <p><b>Monitored loads</b><br>
+                Borehole: {{ 'No usage' if borehole_daily == 0 else borehole_daily ~ ' kWh' }}<br>
+                Plugs Cabinet: {{ 'No usage' if plugs_cabinet_daily == 0 else plugs_cabinet_daily ~ ' kWh' }}<br>
+                Main PC Setup: {{ 'No usage' if pc_daily == 0 else pc_daily ~ ' kWh' }}<br>
+                Indoor Geyser: {{ 'No usage' if indoor_geyser_daily == 0 else indoor_geyser_daily ~ ' kWh' }}<br>
+                External Geyser: {{ 'No usage' if external_geyser_daily == 0 else external_geyser_daily ~ ' kWh' }}</p>
+                <p><b>Top monitored load today</b><br>
+                {{ top_consumer_name }}: {{ 'No usage' if top_consumer_value == 0 else top_consumer_value ~ ' kWh' }}</p>
+                <p><b>Open in Home Assistant</b><br>
+                <a href="{{ ingress_url }}">{{ ingress_url }}</a></p>
+                <p>Sent by Home Assistant at {{ now().strftime('%H:%M') }}</p>
+              </body>
+            </html>
+      - action: notify.email_ha
+        data:
+          title: "{{ report_title }}"
+          message: "{{ report_message }}"
+          data:
+            html: "{{ report_html }}"
+      - action: script.energy_email_update_status
+        data:
+          report_type: "Daily"
+          status_text: "Sent successfully"
+
+  energy_email_weekly_report:
+    alias: Energy Email Weekly Report
+    mode: single
+    sequence:
+      - variables:
+          ingress_url: "{{ states('input_text.grafana_ingress_base_url') }}/d/home-energy-weekly/home-energy-weekly"
+          grid_weekly: "{{ states('sensor.energy_report_grid_weekly_friendly') | float(0) }}"
+          report_date: "{{ now().strftime('%Y-%m-%d') }}"
+          report_title: "Home Energy Weekly Report | {{ report_date }}"
+          report_message: >
+            Home Energy Weekly Report
+
+            Date
+            {{ report_date }}
+
+            Period
+            This week and recent weekly trend
+
+            Grid energy total
+            {{ 'No usage' if grid_weekly == 0 else grid_weekly ~ ' kWh' }}
+
+            Open in Home Assistant
+            {{ ingress_url }}
+
+            Sent by Home Assistant at {{ now().strftime('%H:%M') }}
+          report_html: >
+            <html>
+              <body>
+                <h2>Home Energy Weekly Report</h2>
+                <p><b>Date</b><br>{{ report_date }}</p>
+                <p><b>Period</b><br>This week and recent weekly trend</p>
+                <p><b>Grid energy total</b><br>{{ 'No usage' if grid_weekly == 0 else grid_weekly ~ ' kWh' }}</p>
+                <p><b>Open in Home Assistant</b><br>
+                <a href="{{ ingress_url }}">{{ ingress_url }}</a></p>
+                <p>Sent by Home Assistant at {{ now().strftime('%H:%M') }}</p>
+              </body>
+            </html>
+      - action: notify.email_ha
+        data:
+          title: "{{ report_title }}"
+          message: "{{ report_message }}"
+          data:
+            html: "{{ report_html }}"
+      - action: script.energy_email_update_status
+        data:
+          report_type: "Weekly"
+          status_text: "Sent successfully"
+
+  energy_email_monthly_report:
+    alias: Energy Email Monthly Report
+    mode: single
+    sequence:
+      - variables:
+          ingress_url: "{{ states('input_text.grafana_ingress_base_url') }}/d/home-energy-monthly/home-energy-monthly"
+          grid_monthly: "{{ states('sensor.energy_report_grid_monthly_friendly') | float(0) }}"
+          report_date: "{{ now().strftime('%Y-%m-%d') }}"
+          report_title: "Home Energy Monthly Report | {{ report_date }}"
+          report_message: >
+            Home Energy Monthly Report
+
+            Date
+            {{ report_date }}
+
+            Period
+            This month and recent monthly trend
+
+            Grid energy total
+            {{ 'No usage' if grid_monthly == 0 else grid_monthly ~ ' kWh' }}
+
+            Open in Home Assistant
+            {{ ingress_url }}
+
+            Sent by Home Assistant at {{ now().strftime('%H:%M') }}
+          report_html: >
+            <html>
+              <body>
+                <h2>Home Energy Monthly Report</h2>
+                <p><b>Date</b><br>{{ report_date }}</p>
+                <p><b>Period</b><br>This month and recent monthly trend</p>
+                <p><b>Grid energy total</b><br>{{ 'No usage' if grid_monthly == 0 else grid_monthly ~ ' kWh' }}</p>
+                <p><b>Open in Home Assistant</b><br>
+                <a href="{{ ingress_url }}">{{ ingress_url }}</a></p>
+                <p>Sent by Home Assistant at {{ now().strftime('%H:%M') }}</p>
+              </body>
+            </html>
+      - action: notify.email_ha
+        data:
+          title: "{{ report_title }}"
+          message: "{{ report_message }}"
+          data:
+            html: "{{ report_html }}"
+      - action: script.energy_email_update_status
+        data:
+          report_type: "Monthly"
+          status_text: "Sent successfully"
+
+automation:
+  - id: energy_hourly_email_report
+    alias: Energy Hourly Email Report
+    description: Sends the last 24 hours grid and load report every day at 07:00
+    trigger:
+      - platform: time
+        at: "07:00:00"
+    condition: []
+    action:
+      - action: script.energy_email_hourly_report
+    mode: single
+
+  - id: energy_daily_email_report
+    alias: Energy Daily Email Report
+    description: Sends the daily grid and load report every day at 07:30
+    trigger:
+      - platform: time
+        at: "07:30:00"
+    condition: []
+    action:
+      - action: script.energy_email_daily_report
+    mode: single
+
+  - id: energy_weekly_email_report
+    alias: Energy Weekly Email Report
+    description: Sends the weekly grid report every Sunday at 08:00
+    trigger:
+      - platform: time
+        at: "08:00:00"
+    condition:
+      - condition: time
+        weekday:
+          - sun
+    action:
+      - action: script.energy_email_weekly_report
+    mode: single
+
+  - id: energy_monthly_email_report
+    alias: Energy Monthly Email Report
+    description: Sends the monthly grid report on the 1st day of each month at 08:30
+    trigger:
+      - platform: time
+        at: "08:30:00"
+    condition:
+      - condition: template
+        value_template: "{{ now().day == 1 }}"
+    action:
+      - action: script.energy_email_monthly_report
+    mode: single
