@@ -1,0 +1,332 @@
+#===============================================================================
+# SOLAR BATTERY ALERTS
+# File: packages/solar_battery_alerts.yaml
+# Purpose: Dedicated live SOC alerts for Sunsynk and BSL battery bank
+# Behavior: Sends alerts when a level is reached, not by time window
+#===============================================================================
+
+input_number:
+  solar_battery_soc_advisory_threshold:
+    name: Solar Battery SOC Advisory Threshold
+    min: 10
+    max: 80
+    step: 1
+    initial: 40
+    unit_of_measurement: "%"
+    icon: mdi:battery-medium
+
+  solar_battery_soc_warning_threshold:
+    name: Solar Battery SOC Warning Threshold
+    min: 10
+    max: 70
+    step: 1
+    initial: 30
+    unit_of_measurement: "%"
+    icon: mdi:battery-low
+
+  solar_battery_soc_critical_threshold:
+    name: Solar Battery SOC Critical Threshold
+    min: 5
+    max: 60
+    step: 1
+    initial: 20
+    unit_of_measurement: "%"
+    icon: mdi:battery-alert
+
+input_boolean:
+  solar_battery_alerts_enabled:
+    name: Enable Solar Battery Alerts
+    initial: true
+    icon: mdi:solar-power
+
+template:
+  - sensor:
+      - name: "Solar Battery Alert Level"
+        unique_id: solar_battery_alert_level
+        state: >
+          {% set soc = states('sensor.deyeinvertercombined_battery_soc') | float(-1) %}
+          {% set advisory = states('input_number.solar_battery_soc_advisory_threshold') | float(40) %}
+          {% set warning = states('input_number.solar_battery_soc_warning_threshold') | float(30) %}
+          {% set critical = states('input_number.solar_battery_soc_critical_threshold') | float(20) %}
+          {% if soc < 0 %}
+            unknown
+          {% elif soc < critical %}
+            critical
+          {% elif soc < warning %}
+            warning
+          {% elif soc < advisory %}
+            advisory
+          {% else %}
+            normal
+          {% endif %}
+        icon: >
+          {% set level = states('sensor.solar_battery_alert_level') %}
+          {% if level == 'critical' %}
+            mdi:battery-alert
+          {% elif level == 'warning' %}
+            mdi:battery-low
+          {% elif level == 'advisory' %}
+            mdi:battery-medium
+          {% elif level == 'normal' %}
+            mdi:battery-high
+          {% else %}
+            mdi:battery-unknown
+          {% endif %}
+        attributes:
+          combined_soc: "{{ states('sensor.deyeinvertercombined_battery_soc') }}"
+          master_soc: "{{ states('sensor.deyeinvertermaster_battery_soc') }}"
+          slave_soc: "{{ states('sensor.deyeinverterslave_battery_soc') }}"
+          advisory_threshold: "{{ states('input_number.solar_battery_soc_advisory_threshold') }}"
+          warning_threshold: "{{ states('input_number.solar_battery_soc_warning_threshold') }}"
+          critical_threshold: "{{ states('input_number.solar_battery_soc_critical_threshold') }}"
+
+automation:
+  - id: solar_battery_alert_advisory
+    alias: "Solar Battery: Advisory Alert"
+    description: "Send alert when combined SOC reaches advisory level"
+
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.deyeinvertercombined_battery_soc
+        below: input_number.solar_battery_soc_advisory_threshold
+
+    condition:
+      - condition: state
+        entity_id: input_boolean.solar_battery_alerts_enabled
+        state: "on"
+      - condition: template
+        value_template: >
+          {{ states('sensor.solar_battery_alert_level') == 'advisory' }}
+
+    action:
+      - variables:
+          soc: "{{ states('sensor.deyeinvertercombined_battery_soc') | float(0) }}"
+          master_soc: "{{ states('sensor.deyeinvertermaster_battery_soc') }}"
+          slave_soc: "{{ states('sensor.deyeinverterslave_battery_soc') }}"
+          advisory: "{{ states('input_number.solar_battery_soc_advisory_threshold') }}"
+
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "Solar Battery Advisory"
+          message: >-
+            Combined battery SOC is {{ soc | round(0) }}%. Monitor recovery and planned load.
+          data:
+            channel: "Solar Battery Alerts"
+            importance: default
+            group: "ha-solar-battery"
+            color: "#2196F3"
+            actions:
+              - action: "OPEN_HA"
+                title: "Open HA"
+                uri: "http://192.168.1.31:8123"
+
+      - service: notify.email_ha
+        data:
+          title: "Solar Battery Advisory Alert"
+          message: >
+            SOLAR BATTERY ADVISORY ALERT
+
+            Battery reserve is below your advisory target.
+
+            Combined SOC: {{ soc | round(1) }}%
+            Master SOC: {{ master_soc }}%
+            Slave SOC: {{ slave_soc }}%
+            Advisory Threshold: {{ advisory }}%
+
+            Recommended action:
+            1. Monitor charging recovery
+            2. Check planned load
+            3. Review solar forecast if needed
+
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+            Home Assistant: http://192.168.1.31:8123
+
+      - service: persistent_notification.create
+        data:
+          title: "Solar Battery Advisory Alert"
+          message: >
+            Combined battery SOC is {{ soc | round(1) }}%.
+
+            Action:
+            Monitor battery recovery and planned load.
+
+            Master SOC: {{ master_soc }}%
+            Slave SOC: {{ slave_soc }}%
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          notification_id: "solar_battery_alert"
+
+      - service: system_log.write
+        data:
+          message: "Solar battery advisory alert. Combined SOC {{ soc | round(1) }}%"
+          level: info
+
+    mode: single
+
+  - id: solar_battery_alert_warning
+    alias: "Solar Battery: Warning Alert"
+    description: "Send alert when combined SOC reaches warning level"
+
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.deyeinvertercombined_battery_soc
+        below: input_number.solar_battery_soc_warning_threshold
+
+    condition:
+      - condition: state
+        entity_id: input_boolean.solar_battery_alerts_enabled
+        state: "on"
+      - condition: template
+        value_template: >
+          {{ states('sensor.solar_battery_alert_level') == 'warning' }}
+
+    action:
+      - variables:
+          soc: "{{ states('sensor.deyeinvertercombined_battery_soc') | float(0) }}"
+          master_soc: "{{ states('sensor.deyeinvertermaster_battery_soc') }}"
+          slave_soc: "{{ states('sensor.deyeinverterslave_battery_soc') }}"
+          warning: "{{ states('input_number.solar_battery_soc_warning_threshold') }}"
+
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "Solar Battery Warning"
+          message: >-
+            Combined battery SOC is {{ soc | round(0) }}%. Review loads and charging plan.
+          data:
+            channel: "Solar Battery Alerts"
+            importance: high
+            group: "ha-solar-battery"
+            color: "#FF9800"
+            actions:
+              - action: "OPEN_HA"
+                title: "Open HA"
+                uri: "http://192.168.1.31:8123"
+
+      - service: notify.email_ha
+        data:
+          title: "Solar Battery Warning Alert"
+          message: >
+            SOLAR BATTERY WARNING ALERT
+
+            Battery reserve is below target.
+
+            Combined SOC: {{ soc | round(1) }}%
+            Master SOC: {{ master_soc }}%
+            Slave SOC: {{ slave_soc }}%
+            Warning Threshold: {{ warning }}%
+
+            Recommended action:
+            1. Review non-essential loads
+            2. Check expected solar production
+            3. Review inverter operating mode
+            4. Monitor SOC recovery
+
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+            Home Assistant: http://192.168.1.31:8123
+
+      - service: persistent_notification.create
+        data:
+          title: "Solar Battery Warning Alert"
+          message: >
+            Combined battery SOC is {{ soc | round(1) }}%.
+
+            Action:
+            Review load plan and monitor SOC recovery.
+
+            Master SOC: {{ master_soc }}%
+            Slave SOC: {{ slave_soc }}%
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          notification_id: "solar_battery_alert"
+
+      - service: system_log.write
+        data:
+          message: "Solar battery warning alert. Combined SOC {{ soc | round(1) }}%"
+          level: warning
+
+    mode: single
+
+  - id: solar_battery_alert_critical
+    alias: "Solar Battery: Critical Alert"
+    description: "Send alert when combined SOC reaches critical level"
+
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.deyeinvertercombined_battery_soc
+        below: input_number.solar_battery_soc_critical_threshold
+
+    condition:
+      - condition: state
+        entity_id: input_boolean.solar_battery_alerts_enabled
+        state: "on"
+      - condition: template
+        value_template: >
+          {{ states('sensor.solar_battery_alert_level') == 'critical' }}
+
+    action:
+      - variables:
+          soc: "{{ states('sensor.deyeinvertercombined_battery_soc') | float(0) }}"
+          master_soc: "{{ states('sensor.deyeinvertermaster_battery_soc') }}"
+          slave_soc: "{{ states('sensor.deyeinverterslave_battery_soc') }}"
+          critical: "{{ states('input_number.solar_battery_soc_critical_threshold') }}"
+
+      - service: notify.mobile_app_sm_g996b
+        data:
+          title: "Solar Battery Critical"
+          message: >-
+            Combined battery SOC is {{ soc | round(0) }}%. Immediate action needed.
+            Reduce non-essential loads and check charging conditions.
+          data:
+            channel: "Solar Battery Alerts"
+            importance: high
+            group: "ha-solar-battery"
+            color: "#F44336"
+            actions:
+              - action: "OPEN_HA"
+                title: "Open HA"
+                uri: "http://192.168.1.31:8123"
+
+      - service: notify.email_ha
+        data:
+          title: "Solar Battery Critical Alert"
+          message: >
+            SOLAR BATTERY CRITICAL ALERT
+
+            Battery reserve is low.
+
+            Combined SOC: {{ soc | round(1) }}%
+            Master SOC: {{ master_soc }}%
+            Slave SOC: {{ slave_soc }}%
+            Critical Threshold: {{ critical }}%
+
+            Recommended action:
+            1. Reduce non-essential loads
+            2. Check grid availability
+            3. Review inverter operating mode
+            4. Confirm charging conditions for today
+            5. Check both inverters are reporting normally
+
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+            Home Assistant: http://192.168.1.31:8123
+
+      - service: persistent_notification.create
+        data:
+          title: "Solar Battery Critical Alert"
+          message: >
+            Combined battery SOC is {{ soc | round(1) }}%.
+
+            Action:
+            Reduce non-essential loads and review charging plan.
+
+            Master SOC: {{ master_soc }}%
+            Slave SOC: {{ slave_soc }}%
+            Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          notification_id: "solar_battery_alert"
+
+      - service: system_log.write
+        data:
+          message: "Solar battery critical alert. Combined SOC {{ soc | round(1) }}%"
+          level: error
+
+    mode: single
+#===============================================================================
+# END OF SOLAR BATTERY ALERTS
+#===============================================================================

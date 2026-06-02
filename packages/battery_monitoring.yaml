@@ -62,14 +62,23 @@ template:
       - name: "Battery Devices Low Count"
         unique_id: battery_devices_low_count
         state: >
+          {% set excluded_entities = [
+            'sensor.min_soc_battery',
+            'sensor.deyeinvertermaster_battery_soc',
+            'sensor.deyeinverterslave_battery_soc',
+            'sensor.deyeinvertercombined_battery_soc',
+            'sensor.sm_g996b_battery_level'
+          ] %}
           {% set ns = namespace(count=0) %}
           {% for state in states.sensor
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'battery') %}
-            {% if state.state not in ['unknown', 'unavailable', 'none'] %}
-              {% set battery_level = state.state | float(100) %}
-              {% if battery_level < states('input_number.battery_low_threshold') | float %}
-                {% set ns.count = ns.count + 1 %}
+            {% if state.entity_id not in excluded_entities %}
+              {% if state.state not in ['unknown', 'unavailable', 'none'] %}
+                {% set battery_level = state.state | float(100) %}
+                {% if battery_level < states('input_number.battery_low_threshold') | float %}
+                  {% set ns.count = ns.count + 1 %}
+                {% endif %}
               {% endif %}
             {% endif %}
           {% endfor %}
@@ -78,19 +87,28 @@ template:
         icon: mdi:battery-alert
         attributes:
           devices: >
+            {% set excluded_entities = [
+              'sensor.min_soc_battery',
+              'sensor.deyeinvertermaster_battery_soc',
+              'sensor.deyeinverterslave_battery_soc',
+              'sensor.deyeinvertercombined_battery_soc',
+              'sensor.sm_g996b_battery_level'
+            ] %}
             {% set ns = namespace(devices=[]) %}
             {% for state in states.sensor
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'battery') %}
-              {% if state.state not in ['unknown', 'unavailable', 'none'] %}
-                {% set battery_level = state.state | float(100) %}
-                {% if battery_level < states('input_number.battery_low_threshold') | float %}
-                  {% set ns.devices = ns.devices + [{
-                    'name': state.name,
-                    'entity_id': state.entity_id,
-                    'battery': battery_level,
-                    'last_updated': state.last_updated.strftime('%Y-%m-%d %H:%M')
-                  }] %}
+              {% if state.entity_id not in excluded_entities %}
+                {% if state.state not in ['unknown', 'unavailable', 'none'] %}
+                  {% set battery_level = state.state | float(100) %}
+                  {% if battery_level < states('input_number.battery_low_threshold') | float %}
+                    {% set ns.devices = ns.devices + [{
+                      'name': state.name,
+                      'entity_id': state.entity_id,
+                      'battery': battery_level,
+                      'last_updated': state.last_updated.strftime('%Y-%m-%d %H:%M')
+                    }] %}
+                  {% endif %}
                 {% endif %}
               {% endif %}
             {% endfor %}
@@ -102,14 +120,23 @@ template:
       - name: "Battery Devices Critical Count"
         unique_id: battery_devices_critical_count
         state: >
+          {% set excluded_entities = [
+            'sensor.min_soc_battery',
+            'sensor.deyeinvertermaster_battery_soc',
+            'sensor.deyeinverterslave_battery_soc',
+            'sensor.deyeinvertercombined_battery_soc',
+            'sensor.sm_g996b_battery_level'
+          ] %}
           {% set ns = namespace(count=0) %}
           {% for state in states.sensor
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'battery') %}
-            {% if state.state not in ['unknown', 'unavailable', 'none'] %}
-              {% set battery_level = state.state | float(100) %}
-              {% if battery_level < states('input_number.battery_critical_threshold') | float %}
-                {% set ns.count = ns.count + 1 %}
+            {% if state.entity_id not in excluded_entities %}
+              {% if state.state not in ['unknown', 'unavailable', 'none'] %}
+                {% set battery_level = state.state | float(100) %}
+                {% if battery_level < states('input_number.battery_critical_threshold') | float %}
+                  {% set ns.count = ns.count + 1 %}
+                {% endif %}
               {% endif %}
             {% endif %}
           {% endfor %}
@@ -118,19 +145,28 @@ template:
         icon: mdi:battery-alert-variant-outline
         attributes:
           devices: >
+            {% set excluded_entities = [
+              'sensor.min_soc_battery',
+              'sensor.deyeinvertermaster_battery_soc',
+              'sensor.deyeinverterslave_battery_soc',
+              'sensor.deyeinvertercombined_battery_soc',
+              'sensor.sm_g996b_battery_level'
+            ] %}
             {% set ns = namespace(devices=[]) %}
             {% for state in states.sensor
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'battery') %}
-              {% if state.state not in ['unknown', 'unavailable', 'none'] %}
-                {% set battery_level = state.state | float(100) %}
-                {% if battery_level < states('input_number.battery_critical_threshold') | float %}
-                  {% set ns.devices = ns.devices + [{
-                    'name': state.name,
-                    'entity_id': state.entity_id,
-                    'battery': battery_level,
-                    'last_updated': state.last_updated.strftime('%Y-%m-%d %H:%M')
-                  }] %}
+              {% if state.entity_id not in excluded_entities %}
+                {% if state.state not in ['unknown', 'unavailable', 'none'] %}
+                  {% set battery_level = state.state | float(100) %}
+                  {% if battery_level < states('input_number.battery_critical_threshold') | float %}
+                    {% set ns.devices = ns.devices + [{
+                      'name': state.name,
+                      'entity_id': state.entity_id,
+                      'battery': battery_level,
+                      'last_updated': state.last_updated.strftime('%Y-%m-%d %H:%M')
+                    }] %}
+                  {% endif %}
                 {% endif %}
               {% endif %}
             {% endfor %}
@@ -142,12 +178,21 @@ template:
       - name: "Battery Devices Total Count"
         unique_id: battery_devices_total_count
         state: >
+          {% set excluded_entities = [
+            'sensor.min_soc_battery',
+            'sensor.deyeinvertermaster_battery_soc',
+            'sensor.deyeinverterslave_battery_soc',
+            'sensor.deyeinvertercombined_battery_soc',
+            'sensor.sm_g996b_battery_level'
+          ] %}
           {% set ns = namespace(count=0) %}
           {% for state in states.sensor
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'battery') %}
-            {% if state.state not in ['unknown', 'unavailable', 'none'] %}
-              {% set ns.count = ns.count + 1 %}
+            {% if state.entity_id not in excluded_entities %}
+              {% if state.state not in ['unknown', 'unavailable', 'none'] %}
+                {% set ns.count = ns.count + 1 %}
+              {% endif %}
             {% endif %}
           {% endfor %}
           {{ ns.count }}
@@ -160,14 +205,23 @@ template:
       - name: "Battery System Health Score"
         unique_id: battery_system_health_score
         state: >
+          {% set excluded_entities = [
+            'sensor.min_soc_battery',
+            'sensor.deyeinvertermaster_battery_soc',
+            'sensor.deyeinverterslave_battery_soc',
+            'sensor.deyeinvertercombined_battery_soc',
+            'sensor.sm_g996b_battery_level'
+          ] %}
           {% set ns = namespace(total=0, count=0) %}
           {% for state in states.sensor
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'battery') %}
-            {% if state.state not in ['unknown', 'unavailable', 'none'] %}
-              {% set battery_level = state.state | float(0) %}
-              {% set ns.total = ns.total + battery_level %}
-              {% set ns.count = ns.count + 1 %}
+            {% if state.entity_id not in excluded_entities %}
+              {% if state.state not in ['unknown', 'unavailable', 'none'] %}
+                {% set battery_level = state.state | float(0) %}
+                {% set ns.total = ns.total + battery_level %}
+                {% set ns.count = ns.count + 1 %}
+              {% endif %}
             {% endif %}
           {% endfor %}
           {% if ns.count > 0 %}
@@ -211,15 +265,24 @@ template:
       - name: "Battery Next Replacement Needed"
         unique_id: battery_next_replacement_needed
         state: >
+          {% set excluded_entities = [
+            'sensor.min_soc_battery',
+            'sensor.deyeinvertermaster_battery_soc',
+            'sensor.deyeinverterslave_battery_soc',
+            'sensor.deyeinvertercombined_battery_soc',
+            'sensor.sm_g996b_battery_level'
+          ] %}
           {% set ns = namespace(lowest_battery=100, device_name='None') %}
           {% for state in states.sensor
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'battery') %}
-            {% if state.state not in ['unknown', 'unavailable', 'none'] %}
-              {% set battery_level = state.state | float(100) %}
-              {% if battery_level < ns.lowest_battery %}
-                {% set ns.lowest_battery = battery_level %}
-                {% set ns.device_name = state.name | replace(' Battery', '') %}
+            {% if state.entity_id not in excluded_entities %}
+              {% if state.state not in ['unknown', 'unavailable', 'none'] %}
+                {% set battery_level = state.state | float(100) %}
+                {% if battery_level < ns.lowest_battery %}
+                  {% set ns.lowest_battery = battery_level %}
+                  {% set ns.device_name = state.name | replace(' Battery', '') %}
+                {% endif %}
               {% endif %}
             {% endif %}
           {% endfor %}
@@ -227,14 +290,23 @@ template:
         icon: mdi:battery-sync
         attributes:
           battery_level: >
+            {% set excluded_entities = [
+              'sensor.min_soc_battery',
+              'sensor.deyeinvertermaster_battery_soc',
+              'sensor.deyeinverterslave_battery_soc',
+              'sensor.deyeinvertercombined_battery_soc',
+              'sensor.sm_g996b_battery_level'
+            ] %}
             {% set ns = namespace(lowest_battery=100) %}
             {% for state in states.sensor
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'battery') %}
-              {% if state.state not in ['unknown', 'unavailable', 'none'] %}
-                {% set battery_level = state.state | float(100) %}
-                {% if battery_level < ns.lowest_battery %}
-                  {% set ns.lowest_battery = battery_level %}
+              {% if state.entity_id not in excluded_entities %}
+                {% if state.state not in ['unknown', 'unavailable', 'none'] %}
+                  {% set battery_level = state.state | float(100) %}
+                  {% if battery_level < ns.lowest_battery %}
+                    {% set ns.lowest_battery = battery_level %}
+                  {% endif %}
                 {% endif %}
               {% endif %}
             {% endfor %}
@@ -268,17 +340,25 @@ automation:
     description: "Send alert when any device battery drops below low threshold"
 
     trigger:
-      # Trigger when any battery sensor goes below low threshold
       - platform: template
         value_template: >
+          {% set excluded_entities = [
+            'sensor.min_soc_battery',
+            'sensor.deyeinvertermaster_battery_soc',
+            'sensor.deyeinverterslave_battery_soc',
+            'sensor.deyeinvertercombined_battery_soc',
+            'sensor.sm_g996b_battery_level'
+          ] %}
           {% for state in states.sensor
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'battery') %}
-            {% if state.state not in ['unknown', 'unavailable', 'none'] %}
-              {% set battery_level = state.state | float(100) %}
-              {% if battery_level < states('input_number.battery_low_threshold') | float
-                 and battery_level >= states('input_number.battery_critical_threshold') | float %}
-                {{ true }}
+            {% if state.entity_id not in excluded_entities %}
+              {% if state.state not in ['unknown', 'unavailable', 'none'] %}
+                {% set battery_level = state.state | float(100) %}
+                {% if battery_level < states('input_number.battery_low_threshold') | float
+                   and battery_level >= states('input_number.battery_critical_threshold') | float %}
+                  {{ true }}
+                {% endif %}
               {% endif %}
             {% endif %}
           {% endfor %}
@@ -291,26 +371,33 @@ automation:
     action:
       - repeat:
           for_each: >
+            {% set excluded_entities = [
+              'sensor.min_soc_battery',
+              'sensor.deyeinvertermaster_battery_soc',
+              'sensor.deyeinverterslave_battery_soc',
+              'sensor.deyeinvertercombined_battery_soc',
+              'sensor.sm_g996b_battery_level'
+            ] %}
             {% set ns = namespace(devices=[]) %}
             {% for state in states.sensor
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'battery') %}
-              {% if state.state not in ['unknown', 'unavailable', 'none'] %}
-                {% set battery_level = state.state | float(100) %}
-                {% if battery_level < states('input_number.battery_low_threshold') | float
-                   and battery_level >= states('input_number.battery_critical_threshold') | float %}
-                  {% set ns.devices = ns.devices + [{
-                    'name': state.name,
-                    'entity_id': state.entity_id,
-                    'battery': battery_level
-                  }] %}
+              {% if state.entity_id not in excluded_entities %}
+                {% if state.state not in ['unknown', 'unavailable', 'none'] %}
+                  {% set battery_level = state.state | float(100) %}
+                  {% if battery_level < states('input_number.battery_low_threshold') | float
+                     and battery_level >= states('input_number.battery_critical_threshold') | float %}
+                    {% set ns.devices = ns.devices + [{
+                      'name': state.name,
+                      'entity_id': state.entity_id,
+                      'battery': battery_level
+                    }] %}
+                  {% endif %}
                 {% endif %}
               {% endif %}
             {% endfor %}
             {{ ns.devices }}
           sequence:
-            # Send Telegram Alert
-            # Telegram Notification Service
             - service: telegram_bot.send_message
               data:
                 chat_id: !secret telegram_chat_id_2
@@ -332,8 +419,6 @@ automation:
                   📅 {{ now().strftime('%A, %d %B %Y %H:%M') }}
                 parse_mode: markdown
 
-            # Send Email Alert
-            # Email Notification Service
             - service: notify.email_ha
               data:
                 title: "🟡 Low Battery Alert - {{ repeat.item.name | replace(' Battery', '') }}"
@@ -381,7 +466,6 @@ automation:
 
                   ================================================================================
 
-            # Send Mobile Push Alert
             - service: notify.mobile_app_sm_g996b
               data:
                 title: "🟡 Low Battery Alert"
@@ -398,7 +482,6 @@ automation:
                       title: "Open HA"
                       uri: "http://192.168.1.31:8123"
 
-            # Send HA Persistent Notification
             - service: persistent_notification.create
               data:
                 title: "🟡 Low Battery Alert - {{ repeat.item.name | replace(' Battery', '') }}"
@@ -416,7 +499,6 @@ automation:
                   Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
                 notification_id: "battery_low_{{ repeat.item.entity_id | replace('.', '_') }}"
 
-            # Log Event
             - service: system_log.write
               data:
                 message: "Low battery alert: {{ repeat.item.name }} at {{ repeat.item.battery | round(1) }}%"
@@ -434,13 +516,22 @@ automation:
     trigger:
       - platform: template
         value_template: >
+          {% set excluded_entities = [
+            'sensor.min_soc_battery',
+            'sensor.deyeinvertermaster_battery_soc',
+            'sensor.deyeinverterslave_battery_soc',
+            'sensor.deyeinvertercombined_battery_soc',
+            'sensor.sm_g996b_battery_level'
+          ] %}
           {% for state in states.sensor
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'battery') %}
-            {% if state.state not in ['unknown', 'unavailable', 'none'] %}
-              {% set battery_level = state.state | float(100) %}
-              {% if battery_level < states('input_number.battery_critical_threshold') | float %}
-                {{ true }}
+            {% if state.entity_id not in excluded_entities %}
+              {% if state.state not in ['unknown', 'unavailable', 'none'] %}
+                {% set battery_level = state.state | float(100) %}
+                {% if battery_level < states('input_number.battery_critical_threshold') | float %}
+                  {{ true }}
+                {% endif %}
               {% endif %}
             {% endif %}
           {% endfor %}
@@ -453,25 +544,32 @@ automation:
     action:
       - repeat:
           for_each: >
+            {% set excluded_entities = [
+              'sensor.min_soc_battery',
+              'sensor.deyeinvertermaster_battery_soc',
+              'sensor.deyeinverterslave_battery_soc',
+              'sensor.deyeinvertercombined_battery_soc',
+              'sensor.sm_g996b_battery_level'
+            ] %}
             {% set ns = namespace(devices=[]) %}
             {% for state in states.sensor
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'battery') %}
-              {% if state.state not in ['unknown', 'unavailable', 'none'] %}
-                {% set battery_level = state.state | float(100) %}
-                {% if battery_level < states('input_number.battery_critical_threshold') | float %}
-                  {% set ns.devices = ns.devices + [{
-                    'name': state.name,
-                    'entity_id': state.entity_id,
-                    'battery': battery_level
-                  }] %}
+              {% if state.entity_id not in excluded_entities %}
+                {% if state.state not in ['unknown', 'unavailable', 'none'] %}
+                  {% set battery_level = state.state | float(100) %}
+                  {% if battery_level < states('input_number.battery_critical_threshold') | float %}
+                    {% set ns.devices = ns.devices + [{
+                      'name': state.name,
+                      'entity_id': state.entity_id,
+                      'battery': battery_level
+                    }] %}
+                  {% endif %}
                 {% endif %}
               {% endif %}
             {% endfor %}
             {{ ns.devices }}
           sequence:
-            # Send Urgent Telegram Alert
-            # Telegram Notification Service
             - service: telegram_bot.send_message
               data:
                 chat_id: !secret telegram_chat_id_2
@@ -495,8 +593,6 @@ automation:
                   📅 {{ now().strftime('%A, %d %B %Y %H:%M') }}
                 parse_mode: markdown
 
-            # Send Urgent Email
-            # Email Notification Service
             - service: notify.email_ha
               data:
                 title: '🔴 CRITICAL - Battery Emergency: {{ repeat.item.name | replace(" Battery", "") }}'
@@ -522,7 +618,6 @@ automation:
 
                   Home Assistant: http://192.168.1.31:8123
 
-            # Send Mobile Push Alert
             - service: notify.mobile_app_sm_g996b
               data:
                 title: "🔴 Critical Battery Alert"
@@ -539,7 +634,6 @@ automation:
                       title: "Open HA"
                       uri: "http://192.168.1.31:8123"
 
-            # Send HA Persistent Notification
             - service: persistent_notification.create
               data:
                 title: "🔴 Critical Battery Alert - {{ repeat.item.name | replace(' Battery', '') }}"
@@ -557,7 +651,6 @@ automation:
                   Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
                 notification_id: "battery_critical_{{ repeat.item.entity_id | replace('.', '_') }}"
 
-            # Log Critical Event
             - service: system_log.write
               data:
                 message: "CRITICAL: Battery at {{ repeat.item.battery | round(1) }}% for {{ repeat.item.name }} - Immediate replacement required"
@@ -585,35 +678,41 @@ automation:
         state: "on"
 
     action:
-      # Generate battery device list
       - variables:
           battery_devices: >
+            {% set excluded_entities = [
+              'sensor.min_soc_battery',
+              'sensor.deyeinvertermaster_battery_soc',
+              'sensor.deyeinverterslave_battery_soc',
+              'sensor.deyeinvertercombined_battery_soc',
+              'sensor.sm_g996b_battery_level'
+            ] %}
             {% set ns = namespace(devices=[]) %}
             {% for state in states.sensor
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'battery') %}
-              {% if state.state not in ['unknown', 'unavailable', 'none'] %}
-                {% set battery_level = state.state | float(0) %}
-                {% set status = 'Good' %}
-                {% if battery_level < states('input_number.battery_critical_threshold') | float %}
-                  {% set status = 'CRITICAL' %}
-                {% elif battery_level < states('input_number.battery_low_threshold') | float %}
-                  {% set status = 'Low' %}
-                {% elif battery_level < states('input_number.battery_warning_threshold') | float %}
-                  {% set status = 'Warning' %}
+              {% if state.entity_id not in excluded_entities %}
+                {% if state.state not in ['unknown', 'unavailable', 'none'] %}
+                  {% set battery_level = state.state | float(0) %}
+                  {% set status = 'Good' %}
+                  {% if battery_level < states('input_number.battery_critical_threshold') | float %}
+                    {% set status = 'CRITICAL' %}
+                  {% elif battery_level < states('input_number.battery_low_threshold') | float %}
+                    {% set status = 'Low' %}
+                  {% elif battery_level < states('input_number.battery_warning_threshold') | float %}
+                    {% set status = 'Warning' %}
+                  {% endif %}
+                  {% set ns.devices = ns.devices + [{
+                    'name': state.name | replace(' Battery', ''),
+                    'battery': battery_level | round(1),
+                    'status': status,
+                    'entity_id': state.entity_id
+                  }] %}
                 {% endif %}
-                {% set ns.devices = ns.devices + [{
-                  'name': state.name | replace(' Battery', ''),
-                  'battery': battery_level | round(1),
-                  'status': status,
-                  'entity_id': state.entity_id
-                }] %}
               {% endif %}
             {% endfor %}
             {{ ns.devices | sort(attribute='battery') }}
 
-      # Send Telegram Report with Table
-      # Telegram Notification Service
       - service: telegram_bot.send_message
         data:
           chat_id: !secret telegram_chat_id_2
@@ -665,8 +764,6 @@ automation:
             🏠 System: 192.168.1.31:8123
           parse_mode: markdown
 
-      # Send Email Report with HTML Table
-      # Email Notification Service
       - service: notify.email_ha
         data:
           title: '📊 Weekly Battery Status Report - {{ now().strftime("%d %B %Y") }}'
@@ -689,26 +786,35 @@ automation:
             DETAILED BATTERY STATUS TABLE
             ================================================================================
 
+            {% set excluded_entities = [
+              'sensor.min_soc_battery',
+              'sensor.deyeinvertermaster_battery_soc',
+              'sensor.deyeinverterslave_battery_soc',
+              'sensor.deyeinvertercombined_battery_soc',
+              'sensor.sm_g996b_battery_level'
+            ] %}
             {% set ns = namespace(devices=[]) %}
             {% for state in states.sensor
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'battery') %}
-              {% if state.state not in ['unknown', 'unavailable', 'none'] %}
-                {% set battery_level = state.state | float(0) %}
-                {% set status = 'Good' %}
-                {% if battery_level < states('input_number.battery_critical_threshold') | float %}
-                  {% set status = 'CRITICAL' %}
-                {% elif battery_level < states('input_number.battery_low_threshold') | float %}
-                  {% set status = 'Low' %}
-                {% elif battery_level < states('input_number.battery_warning_threshold') | float %}
-                  {% set status = 'Warning' %}
+              {% if state.entity_id not in excluded_entities %}
+                {% if state.state not in ['unknown', 'unavailable', 'none'] %}
+                  {% set battery_level = state.state | float(0) %}
+                  {% set status = 'Good' %}
+                  {% if battery_level < states('input_number.battery_critical_threshold') | float %}
+                    {% set status = 'CRITICAL' %}
+                  {% elif battery_level < states('input_number.battery_low_threshold') | float %}
+                    {% set status = 'Low' %}
+                  {% elif battery_level < states('input_number.battery_warning_threshold') | float %}
+                    {% set status = 'Warning' %}
+                  {% endif %}
+                  {% set ns.devices = ns.devices + [{
+                    'name': state.name | replace(' Battery', ''),
+                    'battery': battery_level | round(1),
+                    'status': status,
+                    'last_updated': state.last_updated.strftime('%Y-%m-%d %H:%M')
+                  }] %}
                 {% endif %}
-                {% set ns.devices = ns.devices + [{
-                  'name': state.name | replace(' Battery', ''),
-                  'battery': battery_level | round(1),
-                  'status': status,
-                  'last_updated': state.last_updated.strftime('%Y-%m-%d %H:%M')
-                }] %}
               {% endif %}
             {% endfor %}
             {% for device in ns.devices | sort(attribute='battery') %}
@@ -784,7 +890,6 @@ automation:
             Home Assistant: http://192.168.1.31:8123
             Generated: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
 
-      # Send Mobile Push Report
       - service: notify.mobile_app_sm_g996b
         data:
           title: "📊 Weekly Battery Status Report"
@@ -803,7 +908,6 @@ automation:
                 title: "Open HA"
                 uri: "http://192.168.1.31:8123"
 
-      # Send HA Persistent Notification
       - service: persistent_notification.create
         data:
           title: "📊 Weekly Battery Status Report"
@@ -821,7 +925,6 @@ automation:
             Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
           notification_id: "battery_weekly_status_report"
 
-      # Log Weekly Report
       - service: system_log.write
         data:
           message: "Weekly battery report sent: {{ states('sensor.battery_devices_total_count') }} devices, {{ states('sensor.battery_devices_critical_count') }} critical"
@@ -849,8 +952,6 @@ automation:
         above: 0
 
     action:
-      # Send Daily Telegram Reminder
-      # Telegram Notification Service
       - service: telegram_bot.send_message
         data:
           chat_id: !secret telegram_chat_id_2
@@ -874,7 +975,6 @@ automation:
             📅 {{ now().strftime('%A, %d %B %Y') }}
           parse_mode: markdown
 
-      # Send Daily Email Reminder
       - service: notify.email_ha
         data:
           title: "⚠️ Daily Battery Reminder"
@@ -895,7 +995,6 @@ automation:
 
             Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
 
-      # Send Daily Mobile Push Reminder
       - service: notify.mobile_app_sm_g996b
         data:
           title: "⚠️ Daily Battery Reminder"
@@ -912,7 +1011,6 @@ automation:
                 title: "Open HA"
                 uri: "http://192.168.1.31:8123"
 
-      # Send HA Persistent Notification
       - service: persistent_notification.create
         data:
           title: "⚠️ Daily Battery Reminder"
@@ -929,7 +1027,6 @@ automation:
             Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
           notification_id: "battery_daily_critical_reminder"
 
-      # Log Reminder
       - service: system_log.write
         data:
           message: "Daily critical battery reminder: {{ states('sensor.battery_devices_critical_count') }} devices need attention"
