@@ -577,14 +577,34 @@
     - name: "Solar Daily Report 18h00 Message"
       unique_id: solar_daily_report_18h00_message
       icon: mdi:solar-power
+      availability: >
+        {{ states('sensor.daily_total_solar_production') not in ['unknown', 'unavailable', 'None', '', none]
+           and states('sensor.solar_forecast_total_today') not in ['unknown', 'unavailable', 'None', '', none]
+           and states('sensor.energy_production_today_remaining') not in ['unknown', 'unavailable', 'None', '', none]
+           and states('sensor.solar_forecast_accuracy_so_far') not in ['unknown', 'unavailable', 'None', '', none] }}
       state: >
-        {% set actual_production = states('sensor.daily_total_solar_production') | float(0) %}
-        {% set forecast_value = states('sensor.solar_forecast_total_today') | float(0) %}
-        {% set remaining = states('sensor.energy_production_today_remaining') | float(0) %}
-        {% set accuracy = states('sensor.solar_forecast_accuracy_so_far') | float(0) %}
-        {% set peak_time = states('sensor.solar_forecast_peak_time_today') %}
+        {% set actual_raw = states('sensor.daily_total_solar_production') %}
+        {% set forecast_raw = states('sensor.solar_forecast_total_today') %}
+        {% set remaining_raw = states('sensor.energy_production_today_remaining') %}
+        {% set accuracy_raw = states('sensor.solar_forecast_accuracy_so_far') %}
+        {% set peak_raw = states('sensor.solar_forecast_peak_time_today') %}
+
+        {% set actual_production = actual_raw | float(0) %}
+        {% set forecast_value = forecast_raw | float(0) %}
+        {% set remaining = remaining_raw | float(0) %}
+        {% set accuracy = accuracy_raw | float(0) %}
         {% set variance = actual_production - forecast_value %}
-        {% set peak_display = peak_time[11:16] if peak_time not in ['unknown', 'unavailable', '', none] else 'N/A' %}
+
+        {% if peak_raw in ['unknown', 'unavailable', 'None', '', none] %}
+          {% set peak_display = 'N/A' %}
+        {% else %}
+          {% set peak_dt = as_datetime(peak_raw) %}
+          {% if peak_dt %}
+            {% set peak_display = peak_dt.strftime('%H:%M') %}
+          {% else %}
+            {% set peak_display = 'N/A' %}
+          {% endif %}
+        {% endif %}
 
         Daily Solar Report - {{ now().strftime('%d %B %Y') }}
 

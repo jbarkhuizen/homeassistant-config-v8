@@ -6,20 +6,40 @@
       at: "18:00:00"
   condition: []
   action:
+    - variables:
+        report_message: >-
+          {% set msg = states('sensor.solar_daily_report_18h00_message') %}
+          {% if msg in ['unknown', 'unavailable', 'None', '', none] %}
+          Daily Solar Report - {{ now().strftime('%d %B %Y') }}
+
+          The formatted solar report message was not available at send time.
+
+          Please check these source sensors:
+          • sensor.daily_total_solar_production
+          • sensor.solar_forecast_total_today
+          • sensor.energy_production_today_remaining
+          • sensor.solar_forecast_accuracy_so_far
+          • sensor.solar_forecast_peak_time_today
+
+          Home Assistant: http://192.168.1.31:8123
+          {% else %}
+          {{ msg }}
+          {% endif %}
+
     - service: notify.email_ha
       data:
         title: "Daily Solar Report"
-        message: "{{ states('sensor.solar_daily_report_18h00_message') }}"
+        message: "{{ report_message }}"
 
     - service: telegram_bot.send_message
       data:
         chat_id: !secret telegram_chat_id_2
-        message: "{{ states('sensor.solar_daily_report_18h00_message') }}"
+        message: "{{ report_message }}"
 
     - service: notify.mobile_app_sm_g996b
       data:
         title: "Daily Solar Report"
-        message: "{{ states('sensor.solar_daily_report_18h00_message') }}"
+        message: "{{ report_message }}"
         data:
           channel: "solar_reports"
           importance: "default"
@@ -28,6 +48,6 @@
     - service: persistent_notification.create
       data:
         title: "Daily Solar Report - {{ now().strftime('%d %b %Y') }}"
-        message: "{{ states('sensor.solar_daily_report_18h00_message') }}"
+        message: "{{ report_message }}"
         notification_id: "solar_daily_report_{{ now().strftime('%Y%m%d') }}"
   mode: single

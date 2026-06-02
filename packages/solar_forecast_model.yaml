@@ -52,7 +52,17 @@ template:
         unique_id: solar_forecast_peak_time_today
         icon: mdi:clock
         state: >
-          {{ states('sensor.power_highest_peak_time_today') }}
+          {% set raw = states('sensor.power_highest_peak_time_today') %}
+          {% if raw in ['unknown', 'unavailable', 'None', '', none] %}
+            unknown
+          {% else %}
+            {% set dt = as_datetime(raw) %}
+            {% if dt %}
+              {{ dt.isoformat() }}
+            {% else %}
+              unknown
+            {% endif %}
+          {% endif %}
 
       # Peak time tomorrow
       - name: "Solar Forecast Peak Time Tomorrow"
@@ -102,15 +112,19 @@ template:
         icon: mdi:calendar-clock
         state: >
           {% set peak_raw = states('sensor.power_highest_peak_time_today') %}
-          {% if peak_raw in ['unknown','unavailable','None',''] %}
+          {% if peak_raw in ['unknown','unavailable','None','', none] %}
             Unavailable
           {% else %}
             {% set peak = as_datetime(peak_raw) %}
-            {% set morning = (peak - timedelta(hours=1)).strftime('%H:%M') %}
-            {% set peak_h = peak.strftime('%H:%M') %}
-            {% set peak_plus1 = (peak + timedelta(hours=1)).strftime('%H:%M') %}
-            {% set peak_plus2 = (peak + timedelta(hours=2)).strftime('%H:%M') %}
-            Morning {{ morning }}–{{ peak_h }}, Peak {{ peak_h }}–{{ peak_plus1 }}, Afternoon {{ peak_plus1 }}–{{ peak_plus2 }}
+            {% if peak %}
+              {% set morning = (peak - timedelta(hours=1)).strftime('%H:%M') %}
+              {% set peak_h = peak.strftime('%H:%M') %}
+              {% set peak_plus1 = (peak + timedelta(hours=1)).strftime('%H:%M') %}
+              {% set peak_plus2 = (peak + timedelta(hours=2)).strftime('%H:%M') %}
+              Morning {{ morning }}–{{ peak_h }}, Peak {{ peak_h }}–{{ peak_plus1 }}, Afternoon {{ peak_plus1 }}–{{ peak_plus2 }}
+            {% else %}
+              Unavailable
+            {% endif %}
           {% endif %}
         attributes:
           peak_time: "{{ states('sensor.power_highest_peak_time_today') }}"
