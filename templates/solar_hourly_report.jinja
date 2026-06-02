@@ -80,26 +80,26 @@
 {%- endmacro %}
 
 {% macro solar_hourly_report_telegram() -%}
-🔆 *Solar Hourly Report — {{ _a('report_date') }}*
+🔆 Solar Hourly Report | {{ _a('report_date') }}
 
-*Last completed hour:* {{ _a('last_completed_hour') }}
+Last completed hour: {{ _a('last_completed_hour') }}
 PV1: {{ _f(_a('last_pv1_kwh')) }} kWh
 PV2: {{ _f(_a('last_pv2_kwh')) }} kWh
 Total: {{ _f(_a('last_total_kwh')) }} kWh
 
-*Today so far*
+Today so far
 PV1: {{ _f(_a('total_pv1_kwh')) }} kWh
 PV2: {{ _f(_a('total_pv2_kwh')) }} kWh
 Total: {{ _f(_a('total_combined_kwh')) }} kWh
 
-*Performance*
+Performance
 Best hour: {{ _a('best_hour') }}
 Best hour total: {{ _f(_a('best_hour_total_kwh')) }} kWh
 Target: {{ _f(_a('target_kwh')) }} kWh
 Achievement: {{ _f(_a('achievement_pct'), 1) }}%
 
-```text
-Hour          PV1    PV2   Total  CumTot
-{% for row in _rows() -%}
-{{ "%-13s"|format(row.hour) }} {{ "%5.2f"|format(row.pv1_kwh|float(0)) }} {{ "%5.2f"|format(row.pv2_kwh|float(0)) }} {{ "%6.2f"|format(row.total_kwh|float(0)) }} {{ "%7.2f"|format(row.cum_total|float(0)) }}
-{% endfor -%}
+Hourly breakdown
+{% for row in _rows() %}
+{{ row.hour }} | PV1 {{ _f(row.pv1_kwh) }} | PV2 {{ _f(row.pv2_kwh) }} | Total {{ _f(row.total_kwh) }} | Cum {{ _f(row.cum_total) }}
+{% endfor %}
+{%- endmacro %}

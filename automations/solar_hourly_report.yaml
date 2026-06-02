@@ -7,7 +7,7 @@
 # - Send hourly report from 06:00 to 20:00
 # - Channels: Persistent | Mobile | Telegram | Email
 # - Skip low-value or empty sends when status data is not ready
-# - Use the dedicated HTML email template for richer output
+# - Use dedicated templates for email and Telegram
 #===============================================================================
 
 - id: solar_hourly_report_init_0500
@@ -142,28 +142,14 @@
               data:
                 chat_id: !secret telegram_chat_id_2
                 message: >-
-                  Solar Hourly Report
-
-                  Date: {{ report_date }}
-                  Hour: {{ last_completed_hour }}
-
-                  PV1: {{ last_pv1 }} kWh
-                  PV2: {{ last_pv2 }} kWh
-                  Total hour: {{ last_total }} kWh
-
-                  Total today: {{ total_today }} kWh
-                  Best hour: {{ best_hour }}
-                  Best hour total: {{ best_hour_total }} kWh
-
-                  Target: {{ target_kwh }} kWh
-                  Achievement: {{ achievement_pct }}%
-                  Rows: {{ row_count }}
+                  {% from 'solar_hourly_report.jinja' import solar_hourly_report_telegram %}
+                  {{ solar_hourly_report_telegram() }}
 
             - service: notify.email_ha
               data:
                 title: "Solar Hourly Report {{ report_date }} {{ last_completed_hour }}"
                 message: >-
-                  {% from 'solar_hourly_report,jinja' import solar_hourly_report_email %}
+                  {% from 'solar_hourly_report.jinja' import solar_hourly_report_email %}
                   {{ solar_hourly_report_email() }}
 
             - service: system_log.write
