@@ -1,0 +1,536 @@
+input_text:
+  energy_monthly_history_labels:
+    name: Energy Monthly History Labels
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_grid_energy_usage:
+    name: Energy Monthly History Row Grid Energy Usage
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_main_eskom_switch:
+    name: Energy Monthly History Row Main Eskom Switch
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_main_pc_setup:
+    name: Energy Monthly History Row Main PC Setup
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_d_printers:
+    name: Energy Monthly History Row 3D Printers
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_boorgat:
+    name: Energy Monthly History Row Borehole
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_db_switch_pool_outbuilding:
+    name: Energy Monthly History Row DB Switch Pool Outbuilding
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_geyser_external:
+    name: Energy Monthly History Row Geyser External
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_geyser_indoor:
+    name: Energy Monthly History Row Geyser Indoor
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_laundry:
+    name: Energy Monthly History Row Laundry
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_plugs_1:
+    name: Energy Monthly History Row Plugs 1
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_plugs_2:
+    name: Energy Monthly History Row Plugs 2
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_plugs_3:
+    name: Energy Monthly History Row Plugs 3
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_plugs_kas:
+    name: Energy Monthly History Row Plugs Cabinet
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_printers_router:
+    name: Energy Monthly History Row Printers Router
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_top_floor:
+    name: Energy Monthly History Row Top Floor
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_woonstel:
+    name: Energy Monthly History Row Apartment
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_sonoff_10009ce3f9:
+    name: Energy Monthly History Row Sonoff 10009CE3F9
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_sonoff_1000cd8453:
+    name: Energy Monthly History Row Sonoff 1000CD8453
+    max: 255
+    initial: ""
+
+  energy_monthly_history_row_sonoff_10023b8a40:
+    name: Energy Monthly History Row Sonoff 10023B8A40
+    max: 255
+    initial: ""
+
+script:
+  energy_monthly_history_snapshot:
+    alias: Energy Monthly History Snapshot
+    mode: single
+    sequence:
+      - variables:
+          current_month_label: "{{ now().strftime('%b %Y') }}"
+          existing_labels_raw: "{{ states('input_text.energy_monthly_history_labels') }}"
+          first_label: >
+            {% set items = existing_labels_raw.split('|') if existing_labels_raw not in ['unknown', 'unavailable', '', none] else [] %}
+            {{ items[0] if items | length > 0 else '' }}
+
+          current_grid_energy_usage: >
+            {% set v = states('sensor.main_eskom_switch_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_main_eskom_switch: >
+            {% set v = states('sensor.main_eskom_switch_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_main_pc_setup: >
+            {% set v = states('sensor.main_pc_setup_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_d_printers: >
+            {% set v = states('sensor.3d_printers_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_boorgat: >
+            {% set v = states('sensor.boorgat_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_db_switch_pool_outbuilding: >
+            {% set v = states('sensor.db_switch_pool_outbuilding_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_geyser_external: >
+            {% set v = states('sensor.geyser_external_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_geyser_indoor: >
+            {% set v = states('sensor.geyser_indoor_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_laundry: >
+            {% set v = states('sensor.laundry_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_plugs_1: >
+            {% set v = states('sensor.plugs_1_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_plugs_2: >
+            {% set v = states('sensor.plugs_2_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_plugs_3: >
+            {% set v = states('sensor.plugs_3_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_plugs_kas: >
+            {% set v = states('sensor.plugs_kas_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_printers_router: >
+            {% set v = states('sensor.printers_router_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_top_floor: >
+            {% set v = states('sensor.top_floor_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_woonstel: >
+            {% set v = states('sensor.woonstel_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_sonoff_10009ce3f9: >
+            {% set v = states('sensor.sonoff_10009ce3f9_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_sonoff_1000cd8453: >
+            {% set v = states('sensor.sonoff_1000cd8453_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          current_sonoff_10023b8a40: >
+            {% set v = states('sensor.sonoff_10023b8a40_monthly') %}
+            {{ (v | float(0) | round(2)) if is_number(v) else 'unknown' }}
+
+          new_labels: >
+            {% set items = existing_labels_raw.split('|') if existing_labels_raw not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ items[:6] | join('|') }}
+            {% else %}
+              {{ ([current_month_label] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_grid_energy_usage: >
+            {% set existing = states('input_text.energy_monthly_history_row_grid_energy_usage') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_grid_energy_usage|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_grid_energy_usage|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_main_eskom_switch: >
+            {% set existing = states('input_text.energy_monthly_history_row_main_eskom_switch') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_main_eskom_switch|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_main_eskom_switch|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_main_pc_setup: >
+            {% set existing = states('input_text.energy_monthly_history_row_main_pc_setup') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_main_pc_setup|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_main_pc_setup|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_d_printers: >
+            {% set existing = states('input_text.energy_monthly_history_row_d_printers') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_d_printers|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_d_printers|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_boorgat: >
+            {% set existing = states('input_text.energy_monthly_history_row_boorgat') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_boorgat|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_boorgat|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_db_switch_pool_outbuilding: >
+            {% set existing = states('input_text.energy_monthly_history_row_db_switch_pool_outbuilding') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_db_switch_pool_outbuilding|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_db_switch_pool_outbuilding|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_geyser_external: >
+            {% set existing = states('input_text.energy_monthly_history_row_geyser_external') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_geyser_external|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_geyser_external|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_geyser_indoor: >
+            {% set existing = states('input_text.energy_monthly_history_row_geyser_indoor') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_geyser_indoor|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_geyser_indoor|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_laundry: >
+            {% set existing = states('input_text.energy_monthly_history_row_laundry') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_laundry|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_laundry|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_plugs_1: >
+            {% set existing = states('input_text.energy_monthly_history_row_plugs_1') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_plugs_1|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_plugs_1|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_plugs_2: >
+            {% set existing = states('input_text.energy_monthly_history_row_plugs_2') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_plugs_2|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_plugs_2|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_plugs_3: >
+            {% set existing = states('input_text.energy_monthly_history_row_plugs_3') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_plugs_3|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_plugs_3|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_plugs_kas: >
+            {% set existing = states('input_text.energy_monthly_history_row_plugs_kas') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_plugs_kas|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_plugs_kas|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_printers_router: >
+            {% set existing = states('input_text.energy_monthly_history_row_printers_router') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_printers_router|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_printers_router|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_top_floor: >
+            {% set existing = states('input_text.energy_monthly_history_row_top_floor') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_top_floor|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_top_floor|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_woonstel: >
+            {% set existing = states('input_text.energy_monthly_history_row_woonstel') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_woonstel|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_woonstel|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_sonoff_10009ce3f9: >
+            {% set existing = states('input_text.energy_monthly_history_row_sonoff_10009ce3f9') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_sonoff_10009ce3f9|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_sonoff_10009ce3f9|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_sonoff_1000cd8453: >
+            {% set existing = states('input_text.energy_monthly_history_row_sonoff_1000cd8453') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_sonoff_1000cd8453|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_sonoff_1000cd8453|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+          new_row_sonoff_10023b8a40: >
+            {% set existing = states('input_text.energy_monthly_history_row_sonoff_10023b8a40') %}
+            {% set items = existing.split('|') if existing not in ['unknown', 'unavailable', '', none] else [] %}
+            {% if first_label == current_month_label %}
+              {{ ([current_sonoff_10023b8a40|string] + items[1:])[:6] | join('|') }}
+            {% else %}
+              {{ ([current_sonoff_10023b8a40|string] + items)[:6] | join('|') }}
+            {% endif %}
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_labels
+        data:
+          value: "{{ new_labels }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_grid_energy_usage
+        data:
+          value: "{{ new_row_grid_energy_usage }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_main_eskom_switch
+        data:
+          value: "{{ new_row_main_eskom_switch }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_main_pc_setup
+        data:
+          value: "{{ new_row_main_pc_setup }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_d_printers
+        data:
+          value: "{{ new_row_d_printers }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_boorgat
+        data:
+          value: "{{ new_row_boorgat }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_db_switch_pool_outbuilding
+        data:
+          value: "{{ new_row_db_switch_pool_outbuilding }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_geyser_external
+        data:
+          value: "{{ new_row_geyser_external }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_geyser_indoor
+        data:
+          value: "{{ new_row_geyser_indoor }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_laundry
+        data:
+          value: "{{ new_row_laundry }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_plugs_1
+        data:
+          value: "{{ new_row_plugs_1 }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_plugs_2
+        data:
+          value: "{{ new_row_plugs_2 }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_plugs_3
+        data:
+          value: "{{ new_row_plugs_3 }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_plugs_kas
+        data:
+          value: "{{ new_row_plugs_kas }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_printers_router
+        data:
+          value: "{{ new_row_printers_router }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_top_floor
+        data:
+          value: "{{ new_row_top_floor }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_woonstel
+        data:
+          value: "{{ new_row_woonstel }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_sonoff_10009ce3f9
+        data:
+          value: "{{ new_row_sonoff_10009ce3f9 }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_sonoff_1000cd8453
+        data:
+          value: "{{ new_row_sonoff_1000cd8453 }}"
+
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_row_sonoff_10023b8a40
+        data:
+          value: "{{ new_row_sonoff_10023b8a40 }}"
+
+  energy_monthly_history_reset:
+    alias: Energy Monthly History Reset
+    mode: single
+    sequence:
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.energy_monthly_history_labels
+        data:
+          value: ""
+
+      - action: input_text.set_value
+        target:
+          entity_id:
+            - input_text.energy_monthly_history_row_grid_energy_usage
+            - input_text.energy_monthly_history_row_main_eskom_switch
+            - input_text.energy_monthly_history_row_main_pc_setup
+            - input_text.energy_monthly_history_row_d_printers
+            - input_text.energy_monthly_history_row_boorgat
+            - input_text.energy_monthly_history_row_db_switch_pool_outbuilding
+            - input_text.energy_monthly_history_row_geyser_external
+            - input_text.energy_monthly_history_row_geyser_indoor
+            - input_text.energy_monthly_history_row_laundry
+            - input_text.energy_monthly_history_row_plugs_1
+            - input_text.energy_monthly_history_row_plugs_2
+            - input_text.energy_monthly_history_row_plugs_3
+            - input_text.energy_monthly_history_row_plugs_kas
+            - input_text.energy_monthly_history_row_printers_router
+            - input_text.energy_monthly_history_row_top_floor
+            - input_text.energy_monthly_history_row_woonstel
+            - input_text.energy_monthly_history_row_sonoff_10009ce3f9
+            - input_text.energy_monthly_history_row_sonoff_1000cd8453
+            - input_text.energy_monthly_history_row_sonoff_10023b8a40
+        data:
+          value: ""
+
+automation:
+  - id: energy_monthly_history_snapshot
+    alias: Energy Monthly History Snapshot
+    description: Stores the latest monthly energy usage values into 6 month rolling history helpers on the 1st day of each month at 06:45
+    trigger:
+      - platform: time
+        at: "06:45:00"
+    condition:
+      - condition: template
+        value_template: "{{ now().day == 1 }}"
+    action:
+      - action: script.energy_monthly_history_snapshot
+    mode: single

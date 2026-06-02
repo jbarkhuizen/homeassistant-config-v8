@@ -1,0 +1,100 @@
+input_text:
+  energy_daily_history_labels:
+    name: Energy Daily History Labels
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_grid_energy_usage:
+    name: Energy Daily History Row Grid Energy Usage
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_main_eskom_switch:
+    name: Energy Daily History Row Main Eskom Switch
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_main_pc_setup:
+    name: Energy Daily History Row Main PC Setup
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_d_printers:
+    name: Energy Daily History Row 3D Printers
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_boorgat:
+    name: Energy Daily History Row Borehole
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_db_switch_pool_outbuilding:
+    name: Energy Daily History Row DB Switch Pool Outbuilding
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_geyser_external:
+    name: Energy Daily History Row Geyser External
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_geyser_indoor:
+    name: Energy Daily History Row Geyser Indoor
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_laundry:
+    name: Energy Daily History Row Laundry
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_plugs_1:
+    name: Energy Daily History Row Plugs 1
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_plugs_2:
+    name: Energy Daily History Row Plugs 2
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_plugs_3:
+    name: Energy Daily History Row Plugs 3
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_plugs_kas:
+    name: Energy Daily History Row Plugs Cabinet
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_printers_router:
+    name: Energy Daily History Row Printers Router
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_top_floor:
+    name: Energy Daily History Row Top Floor
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_woonstel:
+    name: Energy Daily History Row Apartment
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_sonoff_10009ce3f9:
+    name: Energy Daily History Row Sonoff 10009CE3F9
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_sonoff_1000cd8453:
+    name: Energy Daily History Row Sonoff 1000CD8453
+    max: 255
+    initial: ""
+
+  energy_daily_history_row_sonoff_10023b8a40:
+    name: Energy Daily History Row Sonoff 10023B8A40
+    max: 255
+    initial: ""

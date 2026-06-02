@@ -1,9 +1,3 @@
-input_boolean:
-  energy_email_try_images:
-    name: Energy Email Try Images
-    icon: mdi:image-email
-    initial: false
-
 input_text:
   grafana_ingress_base_url:
     name: Grafana Ingress Base URL
@@ -26,92 +20,12 @@ input_datetime:
 
 template:
   - sensor:
-      - name: "Energy Report Grid Daily Friendly"
-        unique_id: energy_report_grid_daily_friendly
-        unit_of_measurement: "kWh"
-        state: >
-          {% set v = states('sensor.main_eskom_switch_daily') | float(0) %}
-          {{ v | round(2) }}
-
-      - name: "Energy Report Grid Weekly Friendly"
-        unique_id: energy_report_grid_weekly_friendly
-        unit_of_measurement: "kWh"
-        state: >
-          {% set v = states('sensor.main_eskom_switch_weekly') | float(0) %}
-          {{ v | round(2) }}
-
-      - name: "Energy Report Grid Monthly Friendly"
-        unique_id: energy_report_grid_monthly_friendly
-        unit_of_measurement: "kWh"
-        state: >
-          {% set v = states('sensor.main_eskom_switch_monthly') | float(0) %}
-          {{ v | round(2) }}
-
-      - name: "Energy Report Borehole Daily Friendly"
-        unique_id: energy_report_borehole_daily_friendly
-        unit_of_measurement: "kWh"
-        state: >
-          {% set v = states('sensor.boorgat_daily') | float(0) %}
-          {{ v | round(2) }}
-
-      - name: "Energy Report Plugs Cabinet Daily Friendly"
-        unique_id: energy_report_plugs_cabinet_daily_friendly
-        unit_of_measurement: "kWh"
-        state: >
-          {% set v = states('sensor.plugs_kas_daily') | float(0) %}
-          {{ v | round(2) }}
-
-      - name: "Energy Report Main PC Setup Daily Friendly"
-        unique_id: energy_report_main_pc_setup_daily_friendly
-        unit_of_measurement: "kWh"
-        state: >
-          {% set v = states('sensor.main_pc_setup_daily') | float(0) %}
-          {{ v | round(2) }}
-
-      - name: "Energy Report Indoor Geyser Daily Friendly"
-        unique_id: energy_report_indoor_geyser_daily_friendly
-        unit_of_measurement: "kWh"
-        state: >
-          {% set v = states('sensor.geyser_indoor_daily') | float(0) %}
-          {{ v | round(2) }}
-
-      - name: "Energy Report External Geyser Daily Friendly"
-        unique_id: energy_report_external_geyser_daily_friendly
-        unit_of_measurement: "kWh"
-        state: >
-          {% set v = states('sensor.geyser_external_daily') | float(0) %}
-          {{ v | round(2) }}
-
       - name: "Energy Email Last Sent Summary"
         unique_id: energy_email_last_sent_summary
         state: >
           {{ states('input_text.energy_email_last_report_type') }} |
           {{ states('input_text.energy_email_last_status') }} |
           {{ states('input_datetime.energy_email_last_sent') }}
-
-      - name: "Energy Top Consumer Daily"
-        unique_id: energy_top_consumer_daily
-        state: >
-          {% set data = [
-            ('Borehole', states('sensor.boorgat_daily')|float(0)),
-            ('Plugs Cabinet', states('sensor.plugs_kas_daily')|float(0)),
-            ('Main PC Setup', states('sensor.main_pc_setup_daily')|float(0)),
-            ('Indoor Geyser', states('sensor.geyser_indoor_daily')|float(0)),
-            ('External Geyser', states('sensor.geyser_external_daily')|float(0))
-          ] %}
-          {% set top = data | sort(attribute=1, reverse=true) | first %}
-          {{ top[0] if top is not none else 'No monitored load data' }}
-        attributes:
-          value_kwh: >
-            {% set data = [
-              ('Borehole', states('sensor.boorgat_daily')|float(0)),
-              ('Plugs Cabinet', states('sensor.plugs_kas_daily')|float(0)),
-              ('Main PC Setup', states('sensor.main_pc_setup_daily')|float(0)),
-              ('Indoor Geyser', states('sensor.geyser_indoor_daily')|float(0)),
-              ('External Geyser', states('sensor.geyser_external_daily')|float(0))
-            ] %}
-            {% set top = data | sort(attribute=1, reverse=true) | first %}
-            {{ (top[1] | round(2)) if top is not none else 0 }}
 
 script:
   energy_email_update_status:
@@ -145,47 +59,239 @@ script:
     sequence:
       - variables:
           ingress_url: "{{ states('input_text.grafana_ingress_base_url') }}/d/home-energy-hourly/home-energy-hourly"
-          grid_total: "{{ (states('sensor.main_eskom_switch_hourly') | float(0)) | round(2) }}"
-          main_pc: "{{ (states('sensor.main_pc_setup_hourly') | float(0)) | round(2) }}"
-          router: "{{ (states('sensor.printers_router_hourly') | float(0)) | round(2) }}"
-          printers_3d: "{{ (states('sensor.3d_printers_hourly') | float(0)) | round(2) }}"
+          report_name: "Home Energy Hourly Report"
+          period_label: "Last 24 hours"
           report_date: "{{ now().strftime('%Y-%m-%d') }}"
-          report_title: "Home Energy Hourly Report | {{ report_date }}"
+          sent_time: "{{ now().strftime('%H:%M') }}"
+          grid_energy_usage: "{{ (states('sensor.main_eskom_switch_hourly') | float(0)) | round(2) }}"
+          grid_power_now: "{{ (states('sensor.main_eskom_switch_power') | float(0)) | round(2) }}"
+          main_pc_setup_power: "{{ (states('sensor.main_pc_setup_power') | float(0)) | round(2) }}"
+          printers_router_power: "{{ (states('sensor.printers_router_power') | float(0)) | round(2) }}"
+          printers_3d_power: "{{ (states('sensor.3d_printers_power') | float(0)) | round(2) }}"
+          borehole_power: "{{ (states('sensor.boorgat_power') | float(0)) | round(2) }}"
+          pool_outbuilding_power: "{{ (states('sensor.db_switch_pool_outbuilding_power') | float(0)) | round(2) }}"
+          geyser_external_power: "{{ (states('sensor.geyser_external_power') | float(0)) | round(2) }}"
+          geyser_indoor_power: "{{ (states('sensor.geyser_indoor_power') | float(0)) | round(2) }}"
+          laundry_power: "{{ (states('sensor.laundry_power') | float(0)) | round(2) }}"
+          plugs_1_power: "{{ (states('sensor.plugs_1_power') | float(0)) | round(2) }}"
+          plugs_2_power: "{{ (states('sensor.plugs_2_power') | float(0)) | round(2) }}"
+          plugs_3_power: "{{ (states('sensor.plugs_3_power') | float(0)) | round(2) }}"
+          plugs_kas_power: "{{ (states('sensor.plugs_kas_power_2') | float(0)) | round(2) }}"
+          top_floor_power: "{{ (states('sensor.top_floor_power') | float(0)) | round(2) }}"
+          woonstel_power: "{{ (states('sensor.woonstel_power') | float(0)) | round(2) }}"
+          sonoff_10009ce3f9_power: "{{ (states('sensor.sonoff_10009ce3f9_power') | float(0)) | round(2) }}"
+          sonoff_1000cd8453_power: "{{ (states('sensor.sonoff_1000cd8453_power') | float(0)) | round(2) }}"
+          sonoff_10023b8a40_power: "{{ (states('sensor.sonoff_10023b8a40_power') | float(0)) | round(2) }}"
+          monitored_load_total: >
+            {{
+              (
+                states('sensor.main_pc_setup_power') | float(0) +
+                states('sensor.printers_router_power') | float(0) +
+                states('sensor.3d_printers_power') | float(0) +
+                states('sensor.boorgat_power') | float(0) +
+                states('sensor.db_switch_pool_outbuilding_power') | float(0) +
+                states('sensor.geyser_external_power') | float(0) +
+                states('sensor.geyser_indoor_power') | float(0) +
+                states('sensor.laundry_power') | float(0) +
+                states('sensor.plugs_1_power') | float(0) +
+                states('sensor.plugs_2_power') | float(0) +
+                states('sensor.plugs_3_power') | float(0) +
+                states('sensor.plugs_kas_power_2') | float(0) +
+                states('sensor.top_floor_power') | float(0) +
+                states('sensor.woonstel_power') | float(0) +
+                states('sensor.sonoff_10009ce3f9_power') | float(0) +
+                states('sensor.sonoff_1000cd8453_power') | float(0) +
+                states('sensor.sonoff_10023b8a40_power') | float(0)
+              ) | round(2)
+            }}
+          loads_html: >
+            {% macro render_load(name, value) %}
+              {% set v = value | float(0) %}
+              {% if v == 0 %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#6b7280;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#9ca3af; text-align:right;">No usage</td>
+                </tr>
+              {% elif v > 500 %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827; font-weight:600;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#b91c1c; font-weight:700; text-align:right;">{{ v }} W</td>
+                </tr>
+              {% elif v >= 100 %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#c2410c; font-weight:600; text-align:right;">{{ v }} W</td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#374151; text-align:right;">{{ v }} W</td>
+                </tr>
+              {% endif %}
+            {% endmacro %}
+            <table style="width:100%; border-collapse:collapse; font-family:Arial, sans-serif; font-size:14px;">
+              <tr>
+                <th style="text-align:left; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">Device</th>
+                <th style="text-align:right; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">Current Load</th>
+              </tr>
+              {{ render_load('Main PC Setup', main_pc_setup_power) }}
+              {{ render_load('Printers and Router', printers_router_power) }}
+              {{ render_load('3D Printers', printers_3d_power) }}
+              {{ render_load('Borehole', borehole_power) }}
+              {{ render_load('Pool Outbuilding DB', pool_outbuilding_power) }}
+              {{ render_load('External Geyser', geyser_external_power) }}
+              {{ render_load('Indoor Geyser', geyser_indoor_power) }}
+              {{ render_load('Laundry', laundry_power) }}
+              {{ render_load('Plugs 1', plugs_1_power) }}
+              {{ render_load('Plugs 2', plugs_2_power) }}
+              {{ render_load('Plugs 3', plugs_3_power) }}
+              {{ render_load('Plugs Cabinet', plugs_kas_power) }}
+              {{ render_load('Top Floor', top_floor_power) }}
+              {{ render_load('Apartment', woonstel_power) }}
+              {{ render_load('Sonoff 10009CE3F9', sonoff_10009ce3f9_power) }}
+              {{ render_load('Sonoff 1000CD8453', sonoff_1000cd8453_power) }}
+              {{ render_load('Sonoff 10023B8A40', sonoff_10023b8a40_power) }}
+            </table>
+          hourly_history_table_html: >
+            {% set labels_raw = states('input_text.energy_hourly_history_labels') %}
+            {% set labels = labels_raw.split('|') if labels_raw not in ['unknown', 'unavailable', '', none] else [] %}
+
+            {% set row_map = [
+              ('Grid Energy Usage', states('input_text.energy_hourly_history_row_grid_energy_usage')),
+              ('Main Eskom Switch', states('input_text.energy_hourly_history_row_main_eskom_switch')),
+              ('Main PC Setup', states('input_text.energy_hourly_history_row_main_pc_setup')),
+              ('3D Printers', states('input_text.energy_hourly_history_row_d_printers')),
+              ('Borehole', states('input_text.energy_hourly_history_row_boorgat')),
+              ('DB Switch Pool Outbuilding', states('input_text.energy_hourly_history_row_db_switch_pool_outbuilding')),
+              ('Geyser External', states('input_text.energy_hourly_history_row_geyser_external')),
+              ('Geyser Indoor', states('input_text.energy_hourly_history_row_geyser_indoor')),
+              ('Laundry', states('input_text.energy_hourly_history_row_laundry')),
+              ('Plugs 1', states('input_text.energy_hourly_history_row_plugs_1')),
+              ('Plugs 2', states('input_text.energy_hourly_history_row_plugs_2')),
+              ('Plugs 3', states('input_text.energy_hourly_history_row_plugs_3')),
+              ('Plugs Cabinet', states('input_text.energy_hourly_history_row_plugs_kas')),
+              ('Printers and Router', states('input_text.energy_hourly_history_row_printers_router')),
+              ('Top Floor', states('input_text.energy_hourly_history_row_top_floor')),
+              ('Apartment', states('input_text.energy_hourly_history_row_woonstel')),
+              ('Sonoff 10009CE3F9', states('input_text.energy_hourly_history_row_sonoff_10009ce3f9')),
+              ('Sonoff 1000CD8453', states('input_text.energy_hourly_history_row_sonoff_1000cd8453')),
+              ('Sonoff 10023B8A40', states('input_text.energy_hourly_history_row_sonoff_10023b8a40'))
+            ] %}
+
+            {% macro render_cell(value) %}
+              {% set v = value | trim %}
+              {% if v in ['', none] %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#d1d5db; text-align:right;">—</td>
+              {% elif v == 'unknown' %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#9ca3af; font-style:italic; text-align:right;">unknown</td>
+              {% elif v | float(0) == 0 %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#9ca3af; text-align:right;">0.00</td>
+              {% elif v | float(0) >= 1 %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#b91c1c; font-weight:700; text-align:right;">{{ (v | float(0)) | round(2) }}</td>
+              {% else %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#374151; text-align:right;">{{ (v | float(0)) | round(2) }}</td>
+              {% endif %}
+            {% endmacro %}
+
+            <div style="margin-top:24px;">
+              <h3 style="margin:0 0 12px 0; color:#111827; font-size:18px;">Previous 12 Hours Usage History</h3>
+              <p style="margin:0 0 14px 0; color:#6b7280; font-size:13px;">
+                Hourly energy usage in kWh. Newest hour appears first.
+              </p>
+              <div style="overflow-x:auto;">
+                <table style="width:100%; min-width:1200px; border-collapse:collapse; font-family:Arial, sans-serif; font-size:13px;">
+                  <tr>
+                    <th style="text-align:left; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">Device</th>
+                    {% for label in labels %}
+                      <th style="text-align:right; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">{{ label }}</th>
+                    {% endfor %}
+                  </tr>
+                  {% for row_name, row_state in row_map %}
+                    {% set values = row_state.split('|') if row_state not in ['unknown', 'unavailable', '', none] else [] %}
+                    <tr>
+                      <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827; font-weight:600;">{{ row_name }}</td>
+                      {% for i in range(labels | length) %}
+                        {% set cell_value = values[i] if i < values | length else '' %}
+                        {{ render_cell(cell_value) }}
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                </table>
+              </div>
+            </div>
+          report_title: "{{ report_name }} | {{ report_date }}"
           report_message: >
-            Home Energy Hourly Report
+            {{ report_name }}
 
             Date
             {{ report_date }}
 
             Period
-            Last 24 hours
+            {{ period_label }}
 
-            Grid energy total
-            {{ 'No usage' if grid_total == 0 else grid_total ~ ' kWh' }}
+            Grid Energy Usage
+            {{ 'No usage' if grid_energy_usage == 0 else grid_energy_usage ~ ' kWh' }}
 
-            Key monitored loads
-            Main PC Setup: {{ 'No usage' if main_pc == 0 else main_pc ~ ' kWh' }}
-            Printers and Router: {{ 'No usage' if router == 0 else router ~ ' kWh' }}
-            3D Printers: {{ 'No usage' if printers_3d == 0 else printers_3d ~ ' kWh' }}
+            Current Monitored Load Total
+            {{ 'No usage' if monitored_load_total == 0 else monitored_load_total ~ ' W' }}
+
+            Grid Power Now
+            {{ 'No usage' if grid_power_now == 0 else grid_power_now ~ ' W' }}
 
             Open in Home Assistant
             {{ ingress_url }}
 
-            Sent by Home Assistant at {{ now().strftime('%H:%M') }}
+            Sent by Home Assistant at {{ sent_time }}
           report_html: >
             <html>
-              <body>
-                <h2>Home Energy Hourly Report</h2>
-                <p><b>Date</b><br>{{ report_date }}</p>
-                <p><b>Period</b><br>Last 24 hours</p>
-                <p><b>Grid energy total</b><br>{{ 'No usage' if grid_total == 0 else grid_total ~ ' kWh' }}</p>
-                <p><b>Key monitored loads</b><br>
-                Main PC Setup: {{ 'No usage' if main_pc == 0 else main_pc ~ ' kWh' }}<br>
-                Printers and Router: {{ 'No usage' if router == 0 else router ~ ' kWh' }}<br>
-                3D Printers: {{ 'No usage' if printers_3d == 0 else printers_3d ~ ' kWh' }}</p>
-                <p><b>Open in Home Assistant</b><br>
-                <a href="{{ ingress_url }}">{{ ingress_url }}</a></p>
-                <p>Sent by Home Assistant at {{ now().strftime('%H:%M') }}</p>
+              <body style="margin:0; padding:0; background-color:#f3f4f6; font-family:Arial, sans-serif;">
+                <div style="max-width:760px; margin:0 auto; padding:24px;">
+                  <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden;">
+                    <div style="background:#111827; color:#ffffff; padding:20px 24px;">
+                      <h2 style="margin:0; font-size:24px;">{{ report_name }}</h2>
+                      <p style="margin:8px 0 0 0; font-size:14px; color:#d1d5db;">{{ report_date }} | {{ period_label }}</p>
+                    </div>
+                    <div style="padding:24px;">
+                      <table style="width:100%; border-collapse:separate; border-spacing:12px;">
+                        <tr>
+                          <td style="width:33.3%; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px; vertical-align:top;">
+                            <div style="font-size:12px; color:#6b7280; text-transform:uppercase;">Grid Energy Usage</div>
+                            <div style="margin-top:8px; font-size:24px; font-weight:700; color:#111827;">
+                              {{ 'No usage' if grid_energy_usage == 0 else grid_energy_usage ~ ' kWh' }}
+                            </div>
+                          </td>
+                          <td style="width:33.3%; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px; vertical-align:top;">
+                            <div style="font-size:12px; color:#6b7280; text-transform:uppercase;">Current Monitored Load Total</div>
+                            <div style="margin-top:8px; font-size:24px; font-weight:700; color:#111827;">
+                              {{ 'No usage' if monitored_load_total == 0 else monitored_load_total ~ ' W' }}
+                            </div>
+                          </td>
+                          <td style="width:33.3%; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px; vertical-align:top;">
+                            <div style="font-size:12px; color:#6b7280; text-transform:uppercase;">Grid Power Now</div>
+                            <div style="margin-top:8px; font-size:24px; font-weight:700; color:#111827;">
+                              {{ 'No usage' if grid_power_now == 0 else grid_power_now ~ ' W' }}
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                      <div style="margin-top:20px;">
+                        <h3 style="margin:0 0 12px 0; color:#111827; font-size:18px;">Current Monitored Loads</h3>
+                        <p style="margin:0 0 14px 0; color:#6b7280; font-size:13px;">
+                          Red highlights highest usage. Orange shows medium usage. Gray shows no usage.
+                        </p>
+                        {{ loads_html }}
+                      </div>
+                      {{ hourly_history_table_html }}
+                      <div style="margin-top:24px; padding-top:20px; border-top:1px solid #e5e7eb;">
+                        <div style="font-size:14px; color:#111827; margin-bottom:8px; font-weight:600;">Open in Home Assistant</div>
+                        <a href="{{ ingress_url }}" style="color:#2563eb; text-decoration:none; word-break:break-all;">{{ ingress_url }}</a>
+                      </div>
+                    </div>
+                    <div style="background:#f9fafb; border-top:1px solid #e5e7eb; padding:14px 24px; color:#6b7280; font-size:12px;">
+                      Sent by Home Assistant at {{ sent_time }}
+                    </div>
+                  </div>
+                </div>
               </body>
             </html>
       - action: notify.email_ha
@@ -205,60 +311,239 @@ script:
     sequence:
       - variables:
           ingress_url: "{{ states('input_text.grafana_ingress_base_url') }}/d/home-energy-daily/home-energy-daily"
-          grid_daily: "{{ states('sensor.energy_report_grid_daily_friendly') | float(0) }}"
-          borehole_daily: "{{ states('sensor.energy_report_borehole_daily_friendly') | float(0) }}"
-          plugs_cabinet_daily: "{{ states('sensor.energy_report_plugs_cabinet_daily_friendly') | float(0) }}"
-          pc_daily: "{{ states('sensor.energy_report_main_pc_setup_daily_friendly') | float(0) }}"
-          indoor_geyser_daily: "{{ states('sensor.energy_report_indoor_geyser_daily_friendly') | float(0) }}"
-          external_geyser_daily: "{{ states('sensor.energy_report_external_geyser_daily_friendly') | float(0) }}"
-          top_consumer_name: "{{ states('sensor.energy_top_consumer_daily') }}"
-          top_consumer_value: "{{ state_attr('sensor.energy_top_consumer_daily', 'value_kwh') | float(0) }}"
+          report_name: "Home Energy Daily Report"
+          period_label: "Today and recent daily trend"
           report_date: "{{ now().strftime('%Y-%m-%d') }}"
-          report_title: "Home Energy Daily Report | {{ report_date }}"
+          sent_time: "{{ now().strftime('%H:%M') }}"
+          grid_energy_usage: "{{ (states('sensor.main_eskom_switch_daily') | float(0)) | round(2) }}"
+          grid_power_now: "{{ (states('sensor.main_eskom_switch_power') | float(0)) | round(2) }}"
+          main_pc_setup_power: "{{ (states('sensor.main_pc_setup_power') | float(0)) | round(2) }}"
+          printers_router_power: "{{ (states('sensor.printers_router_power') | float(0)) | round(2) }}"
+          printers_3d_power: "{{ (states('sensor.3d_printers_power') | float(0)) | round(2) }}"
+          borehole_power: "{{ (states('sensor.boorgat_power') | float(0)) | round(2) }}"
+          pool_outbuilding_power: "{{ (states('sensor.db_switch_pool_outbuilding_power') | float(0)) | round(2) }}"
+          geyser_external_power: "{{ (states('sensor.geyser_external_power') | float(0)) | round(2) }}"
+          geyser_indoor_power: "{{ (states('sensor.geyser_indoor_power') | float(0)) | round(2) }}"
+          laundry_power: "{{ (states('sensor.laundry_power') | float(0)) | round(2) }}"
+          plugs_1_power: "{{ (states('sensor.plugs_1_power') | float(0)) | round(2) }}"
+          plugs_2_power: "{{ (states('sensor.plugs_2_power') | float(0)) | round(2) }}"
+          plugs_3_power: "{{ (states('sensor.plugs_3_power') | float(0)) | round(2) }}"
+          plugs_kas_power: "{{ (states('sensor.plugs_kas_power_2') | float(0)) | round(2) }}"
+          top_floor_power: "{{ (states('sensor.top_floor_power') | float(0)) | round(2) }}"
+          woonstel_power: "{{ (states('sensor.woonstel_power') | float(0)) | round(2) }}"
+          sonoff_10009ce3f9_power: "{{ (states('sensor.sonoff_10009ce3f9_power') | float(0)) | round(2) }}"
+          sonoff_1000cd8453_power: "{{ (states('sensor.sonoff_1000cd8453_power') | float(0)) | round(2) }}"
+          sonoff_10023b8a40_power: "{{ (states('sensor.sonoff_10023b8a40_power') | float(0)) | round(2) }}"
+          monitored_load_total: >
+            {{
+              (
+                states('sensor.main_pc_setup_power') | float(0) +
+                states('sensor.printers_router_power') | float(0) +
+                states('sensor.3d_printers_power') | float(0) +
+                states('sensor.boorgat_power') | float(0) +
+                states('sensor.db_switch_pool_outbuilding_power') | float(0) +
+                states('sensor.geyser_external_power') | float(0) +
+                states('sensor.geyser_indoor_power') | float(0) +
+                states('sensor.laundry_power') | float(0) +
+                states('sensor.plugs_1_power') | float(0) +
+                states('sensor.plugs_2_power') | float(0) +
+                states('sensor.plugs_3_power') | float(0) +
+                states('sensor.plugs_kas_power_2') | float(0) +
+                states('sensor.top_floor_power') | float(0) +
+                states('sensor.woonstel_power') | float(0) +
+                states('sensor.sonoff_10009ce3f9_power') | float(0) +
+                states('sensor.sonoff_1000cd8453_power') | float(0) +
+                states('sensor.sonoff_10023b8a40_power') | float(0)
+              ) | round(2)
+            }}
+          loads_html: >
+            {% macro render_load(name, value) %}
+              {% set v = value | float(0) %}
+              {% if v == 0 %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#6b7280;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#9ca3af; text-align:right;">No usage</td>
+                </tr>
+              {% elif v > 500 %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827; font-weight:600;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#b91c1c; font-weight:700; text-align:right;">{{ v }} W</td>
+                </tr>
+              {% elif v >= 100 %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#c2410c; font-weight:600; text-align:right;">{{ v }} W</td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#374151; text-align:right;">{{ v }} W</td>
+                </tr>
+              {% endif %}
+            {% endmacro %}
+            <table style="width:100%; border-collapse:collapse; font-family:Arial, sans-serif; font-size:14px;">
+              <tr>
+                <th style="text-align:left; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">Device</th>
+                <th style="text-align:right; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">Current Load</th>
+              </tr>
+              {{ render_load('Main PC Setup', main_pc_setup_power) }}
+              {{ render_load('Printers and Router', printers_router_power) }}
+              {{ render_load('3D Printers', printers_3d_power) }}
+              {{ render_load('Borehole', borehole_power) }}
+              {{ render_load('Pool Outbuilding DB', pool_outbuilding_power) }}
+              {{ render_load('External Geyser', geyser_external_power) }}
+              {{ render_load('Indoor Geyser', geyser_indoor_power) }}
+              {{ render_load('Laundry', laundry_power) }}
+              {{ render_load('Plugs 1', plugs_1_power) }}
+              {{ render_load('Plugs 2', plugs_2_power) }}
+              {{ render_load('Plugs 3', plugs_3_power) }}
+              {{ render_load('Plugs Cabinet', plugs_kas_power) }}
+              {{ render_load('Top Floor', top_floor_power) }}
+              {{ render_load('Apartment', woonstel_power) }}
+              {{ render_load('Sonoff 10009CE3F9', sonoff_10009ce3f9_power) }}
+              {{ render_load('Sonoff 1000CD8453', sonoff_1000cd8453_power) }}
+              {{ render_load('Sonoff 10023B8A40', sonoff_10023b8a40_power) }}
+            </table>
+          daily_history_table_html: >
+            {% set labels_raw = states('input_text.energy_daily_history_labels') %}
+            {% set labels = labels_raw.split('|') if labels_raw not in ['unknown', 'unavailable', '', none] else [] %}
+
+            {% set row_map = [
+              ('Grid Energy Usage', states('input_text.energy_daily_history_row_grid_energy_usage')),
+              ('Main Eskom Switch', states('input_text.energy_daily_history_row_main_eskom_switch')),
+              ('Main PC Setup', states('input_text.energy_daily_history_row_main_pc_setup')),
+              ('3D Printers', states('input_text.energy_daily_history_row_d_printers')),
+              ('Borehole', states('input_text.energy_daily_history_row_boorgat')),
+              ('DB Switch Pool Outbuilding', states('input_text.energy_daily_history_row_db_switch_pool_outbuilding')),
+              ('Geyser External', states('input_text.energy_daily_history_row_geyser_external')),
+              ('Geyser Indoor', states('input_text.energy_daily_history_row_geyser_indoor')),
+              ('Laundry', states('input_text.energy_daily_history_row_laundry')),
+              ('Plugs 1', states('input_text.energy_daily_history_row_plugs_1')),
+              ('Plugs 2', states('input_text.energy_daily_history_row_plugs_2')),
+              ('Plugs 3', states('input_text.energy_daily_history_row_plugs_3')),
+              ('Plugs Cabinet', states('input_text.energy_daily_history_row_plugs_kas')),
+              ('Printers and Router', states('input_text.energy_daily_history_row_printers_router')),
+              ('Top Floor', states('input_text.energy_daily_history_row_top_floor')),
+              ('Apartment', states('input_text.energy_daily_history_row_woonstel')),
+              ('Sonoff 10009CE3F9', states('input_text.energy_daily_history_row_sonoff_10009ce3f9')),
+              ('Sonoff 1000CD8453', states('input_text.energy_daily_history_row_sonoff_1000cd8453')),
+              ('Sonoff 10023B8A40', states('input_text.energy_daily_history_row_sonoff_10023b8a40'))
+            ] %}
+
+            {% macro render_cell(value) %}
+              {% set v = value | trim %}
+              {% if v in ['', none] %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#d1d5db; text-align:right;">—</td>
+              {% elif v == 'unknown' %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#9ca3af; font-style:italic; text-align:right;">unknown</td>
+              {% elif v | float(0) == 0 %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#9ca3af; text-align:right;">0.00</td>
+              {% elif v | float(0) >= 10 %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#b91c1c; font-weight:700; text-align:right;">{{ (v | float(0)) | round(2) }}</td>
+              {% else %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#374151; text-align:right;">{{ (v | float(0)) | round(2) }}</td>
+              {% endif %}
+            {% endmacro %}
+
+            <div style="margin-top:24px;">
+              <h3 style="margin:0 0 12px 0; color:#111827; font-size:18px;">Previous 7 Days Usage History</h3>
+              <p style="margin:0 0 14px 0; color:#6b7280; font-size:13px;">
+                Daily energy usage in kWh. Newest day appears first.
+              </p>
+              <div style="overflow-x:auto;">
+                <table style="width:100%; min-width:900px; border-collapse:collapse; font-family:Arial, sans-serif; font-size:13px;">
+                  <tr>
+                    <th style="text-align:left; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">Device</th>
+                    {% for label in labels %}
+                      <th style="text-align:right; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">{{ label }}</th>
+                    {% endfor %}
+                  </tr>
+                  {% for row_name, row_state in row_map %}
+                    {% set values = row_state.split('|') if row_state not in ['unknown', 'unavailable', '', none] else [] %}
+                    <tr>
+                      <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827; font-weight:600;">{{ row_name }}</td>
+                      {% for i in range(labels | length) %}
+                        {% set cell_value = values[i] if i < values | length else '' %}
+                        {{ render_cell(cell_value) }}
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                </table>
+              </div>
+            </div>
+          report_title: "{{ report_name }} | {{ report_date }}"
           report_message: >
-            Home Energy Daily Report
+            {{ report_name }}
 
             Date
             {{ report_date }}
 
             Period
-            Today and recent daily trend
+            {{ period_label }}
 
-            Grid energy total
-            {{ 'No usage' if grid_daily == 0 else grid_daily ~ ' kWh' }}
+            Grid Energy Usage
+            {{ 'No usage' if grid_energy_usage == 0 else grid_energy_usage ~ ' kWh' }}
 
-            Monitored loads
-            Borehole: {{ 'No usage' if borehole_daily == 0 else borehole_daily ~ ' kWh' }}
-            Plugs Cabinet: {{ 'No usage' if plugs_cabinet_daily == 0 else plugs_cabinet_daily ~ ' kWh' }}
-            Main PC Setup: {{ 'No usage' if pc_daily == 0 else pc_daily ~ ' kWh' }}
-            Indoor Geyser: {{ 'No usage' if indoor_geyser_daily == 0 else indoor_geyser_daily ~ ' kWh' }}
-            External Geyser: {{ 'No usage' if external_geyser_daily == 0 else external_geyser_daily ~ ' kWh' }}
+            Current Monitored Load Total
+            {{ 'No usage' if monitored_load_total == 0 else monitored_load_total ~ ' W' }}
 
-            Top monitored load today
-            {{ top_consumer_name }}: {{ 'No usage' if top_consumer_value == 0 else top_consumer_value ~ ' kWh' }}
+            Grid Power Now
+            {{ 'No usage' if grid_power_now == 0 else grid_power_now ~ ' W' }}
 
             Open in Home Assistant
             {{ ingress_url }}
 
-            Sent by Home Assistant at {{ now().strftime('%H:%M') }}
+            Sent by Home Assistant at {{ sent_time }}
           report_html: >
             <html>
-              <body>
-                <h2>Home Energy Daily Report</h2>
-                <p><b>Date</b><br>{{ report_date }}</p>
-                <p><b>Period</b><br>Today and recent daily trend</p>
-                <p><b>Grid energy total</b><br>{{ 'No usage' if grid_daily == 0 else grid_daily ~ ' kWh' }}</p>
-                <p><b>Monitored loads</b><br>
-                Borehole: {{ 'No usage' if borehole_daily == 0 else borehole_daily ~ ' kWh' }}<br>
-                Plugs Cabinet: {{ 'No usage' if plugs_cabinet_daily == 0 else plugs_cabinet_daily ~ ' kWh' }}<br>
-                Main PC Setup: {{ 'No usage' if pc_daily == 0 else pc_daily ~ ' kWh' }}<br>
-                Indoor Geyser: {{ 'No usage' if indoor_geyser_daily == 0 else indoor_geyser_daily ~ ' kWh' }}<br>
-                External Geyser: {{ 'No usage' if external_geyser_daily == 0 else external_geyser_daily ~ ' kWh' }}</p>
-                <p><b>Top monitored load today</b><br>
-                {{ top_consumer_name }}: {{ 'No usage' if top_consumer_value == 0 else top_consumer_value ~ ' kWh' }}</p>
-                <p><b>Open in Home Assistant</b><br>
-                <a href="{{ ingress_url }}">{{ ingress_url }}</a></p>
-                <p>Sent by Home Assistant at {{ now().strftime('%H:%M') }}</p>
+              <body style="margin:0; padding:0; background-color:#f3f4f6; font-family:Arial, sans-serif;">
+                <div style="max-width:760px; margin:0 auto; padding:24px;">
+                  <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden;">
+                    <div style="background:#111827; color:#ffffff; padding:20px 24px;">
+                      <h2 style="margin:0; font-size:24px;">{{ report_name }}</h2>
+                      <p style="margin:8px 0 0 0; font-size:14px; color:#d1d5db;">{{ report_date }} | {{ period_label }}</p>
+                    </div>
+                    <div style="padding:24px;">
+                      <table style="width:100%; border-collapse:separate; border-spacing:12px;">
+                        <tr>
+                          <td style="width:33.3%; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px; vertical-align:top;">
+                            <div style="font-size:12px; color:#6b7280; text-transform:uppercase;">Grid Energy Usage</div>
+                            <div style="margin-top:8px; font-size:24px; font-weight:700; color:#111827;">
+                              {{ 'No usage' if grid_energy_usage == 0 else grid_energy_usage ~ ' kWh' }}
+                            </div>
+                          </td>
+                          <td style="width:33.3%; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px; vertical-align:top;">
+                            <div style="font-size:12px; color:#6b7280; text-transform:uppercase;">Current Monitored Load Total</div>
+                            <div style="margin-top:8px; font-size:24px; font-weight:700; color:#111827;">
+                              {{ 'No usage' if monitored_load_total == 0 else monitored_load_total ~ ' W' }}
+                            </div>
+                          </td>
+                          <td style="width:33.3%; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px; vertical-align:top;">
+                            <div style="font-size:12px; color:#6b7280; text-transform:uppercase;">Grid Power Now</div>
+                            <div style="margin-top:8px; font-size:24px; font-weight:700; color:#111827;">
+                              {{ 'No usage' if grid_power_now == 0 else grid_power_now ~ ' W' }}
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                      <div style="margin-top:20px;">
+                        <h3 style="margin:0 0 12px 0; color:#111827; font-size:18px;">Current Monitored Loads</h3>
+                        <p style="margin:0 0 14px 0; color:#6b7280; font-size:13px;">
+                          Red highlights highest usage. Orange shows medium usage. Gray shows no usage.
+                        </p>
+                        {{ loads_html }}
+                      </div>
+                      {{ daily_history_table_html }}
+                      <div style="margin-top:24px; padding-top:20px; border-top:1px solid #e5e7eb;">
+                        <div style="font-size:14px; color:#111827; margin-bottom:8px; font-weight:600;">Open in Home Assistant</div>
+                        <a href="{{ ingress_url }}" style="color:#2563eb; text-decoration:none; word-break:break-all;">{{ ingress_url }}</a>
+                      </div>
+                    </div>
+                    <div style="background:#f9fafb; border-top:1px solid #e5e7eb; padding:14px 24px; color:#6b7280; font-size:12px;">
+                      Sent by Home Assistant at {{ sent_time }}
+                    </div>
+                  </div>
+                </div>
               </body>
             </html>
       - action: notify.email_ha
@@ -278,35 +563,239 @@ script:
     sequence:
       - variables:
           ingress_url: "{{ states('input_text.grafana_ingress_base_url') }}/d/home-energy-weekly/home-energy-weekly"
-          grid_weekly: "{{ states('sensor.energy_report_grid_weekly_friendly') | float(0) }}"
+          report_name: "Home Energy Weekly Report"
+          period_label: "This week and recent weekly trend"
           report_date: "{{ now().strftime('%Y-%m-%d') }}"
-          report_title: "Home Energy Weekly Report | {{ report_date }}"
+          sent_time: "{{ now().strftime('%H:%M') }}"
+          grid_energy_usage: "{{ (states('sensor.main_eskom_switch_weekly') | float(0)) | round(2) }}"
+          grid_power_now: "{{ (states('sensor.main_eskom_switch_power') | float(0)) | round(2) }}"
+          main_pc_setup_power: "{{ (states('sensor.main_pc_setup_power') | float(0)) | round(2) }}"
+          printers_router_power: "{{ (states('sensor.printers_router_power') | float(0)) | round(2) }}"
+          printers_3d_power: "{{ (states('sensor.3d_printers_power') | float(0)) | round(2) }}"
+          borehole_power: "{{ (states('sensor.boorgat_power') | float(0)) | round(2) }}"
+          pool_outbuilding_power: "{{ (states('sensor.db_switch_pool_outbuilding_power') | float(0)) | round(2) }}"
+          geyser_external_power: "{{ (states('sensor.geyser_external_power') | float(0)) | round(2) }}"
+          geyser_indoor_power: "{{ (states('sensor.geyser_indoor_power') | float(0)) | round(2) }}"
+          laundry_power: "{{ (states('sensor.laundry_power') | float(0)) | round(2) }}"
+          plugs_1_power: "{{ (states('sensor.plugs_1_power') | float(0)) | round(2) }}"
+          plugs_2_power: "{{ (states('sensor.plugs_2_power') | float(0)) | round(2) }}"
+          plugs_3_power: "{{ (states('sensor.plugs_3_power') | float(0)) | round(2) }}"
+          plugs_kas_power: "{{ (states('sensor.plugs_kas_power_2') | float(0)) | round(2) }}"
+          top_floor_power: "{{ (states('sensor.top_floor_power') | float(0)) | round(2) }}"
+          woonstel_power: "{{ (states('sensor.woonstel_power') | float(0)) | round(2) }}"
+          sonoff_10009ce3f9_power: "{{ (states('sensor.sonoff_10009ce3f9_power') | float(0)) | round(2) }}"
+          sonoff_1000cd8453_power: "{{ (states('sensor.sonoff_1000cd8453_power') | float(0)) | round(2) }}"
+          sonoff_10023b8a40_power: "{{ (states('sensor.sonoff_10023b8a40_power') | float(0)) | round(2) }}"
+          monitored_load_total: >
+            {{
+              (
+                states('sensor.main_pc_setup_power') | float(0) +
+                states('sensor.printers_router_power') | float(0) +
+                states('sensor.3d_printers_power') | float(0) +
+                states('sensor.boorgat_power') | float(0) +
+                states('sensor.db_switch_pool_outbuilding_power') | float(0) +
+                states('sensor.geyser_external_power') | float(0) +
+                states('sensor.geyser_indoor_power') | float(0) +
+                states('sensor.laundry_power') | float(0) +
+                states('sensor.plugs_1_power') | float(0) +
+                states('sensor.plugs_2_power') | float(0) +
+                states('sensor.plugs_3_power') | float(0) +
+                states('sensor.plugs_kas_power_2') | float(0) +
+                states('sensor.top_floor_power') | float(0) +
+                states('sensor.woonstel_power') | float(0) +
+                states('sensor.sonoff_10009ce3f9_power') | float(0) +
+                states('sensor.sonoff_1000cd8453_power') | float(0) +
+                states('sensor.sonoff_10023b8a40_power') | float(0)
+              ) | round(2)
+            }}
+          loads_html: >
+            {% macro render_load(name, value) %}
+              {% set v = value | float(0) %}
+              {% if v == 0 %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#6b7280;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#9ca3af; text-align:right;">No usage</td>
+                </tr>
+              {% elif v > 500 %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827; font-weight:600;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#b91c1c; font-weight:700; text-align:right;">{{ v }} W</td>
+                </tr>
+              {% elif v >= 100 %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#c2410c; font-weight:600; text-align:right;">{{ v }} W</td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#374151; text-align:right;">{{ v }} W</td>
+                </tr>
+              {% endif %}
+            {% endmacro %}
+            <table style="width:100%; border-collapse:collapse; font-family:Arial, sans-serif; font-size:14px;">
+              <tr>
+                <th style="text-align:left; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">Device</th>
+                <th style="text-align:right; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">Current Load</th>
+              </tr>
+              {{ render_load('Main PC Setup', main_pc_setup_power) }}
+              {{ render_load('Printers and Router', printers_router_power) }}
+              {{ render_load('3D Printers', printers_3d_power) }}
+              {{ render_load('Borehole', borehole_power) }}
+              {{ render_load('Pool Outbuilding DB', pool_outbuilding_power) }}
+              {{ render_load('External Geyser', geyser_external_power) }}
+              {{ render_load('Indoor Geyser', geyser_indoor_power) }}
+              {{ render_load('Laundry', laundry_power) }}
+              {{ render_load('Plugs 1', plugs_1_power) }}
+              {{ render_load('Plugs 2', plugs_2_power) }}
+              {{ render_load('Plugs 3', plugs_3_power) }}
+              {{ render_load('Plugs Cabinet', plugs_kas_power) }}
+              {{ render_load('Top Floor', top_floor_power) }}
+              {{ render_load('Apartment', woonstel_power) }}
+              {{ render_load('Sonoff 10009CE3F9', sonoff_10009ce3f9_power) }}
+              {{ render_load('Sonoff 1000CD8453', sonoff_1000cd8453_power) }}
+              {{ render_load('Sonoff 10023B8A40', sonoff_10023b8a40_power) }}
+            </table>
+          weekly_history_table_html: >
+            {% set labels_raw = states('input_text.energy_weekly_history_labels') %}
+            {% set labels = labels_raw.split('|') if labels_raw not in ['unknown', 'unavailable', '', none] else [] %}
+
+            {% set row_map = [
+              ('Grid Energy Usage', states('input_text.energy_weekly_history_row_grid_energy_usage')),
+              ('Main Eskom Switch', states('input_text.energy_weekly_history_row_main_eskom_switch')),
+              ('Main PC Setup', states('input_text.energy_weekly_history_row_main_pc_setup')),
+              ('3D Printers', states('input_text.energy_weekly_history_row_d_printers')),
+              ('Borehole', states('input_text.energy_weekly_history_row_boorgat')),
+              ('DB Switch Pool Outbuilding', states('input_text.energy_weekly_history_row_db_switch_pool_outbuilding')),
+              ('Geyser External', states('input_text.energy_weekly_history_row_geyser_external')),
+              ('Geyser Indoor', states('input_text.energy_weekly_history_row_geyser_indoor')),
+              ('Laundry', states('input_text.energy_weekly_history_row_laundry')),
+              ('Plugs 1', states('input_text.energy_weekly_history_row_plugs_1')),
+              ('Plugs 2', states('input_text.energy_weekly_history_row_plugs_2')),
+              ('Plugs 3', states('input_text.energy_weekly_history_row_plugs_3')),
+              ('Plugs Cabinet', states('input_text.energy_weekly_history_row_plugs_kas')),
+              ('Printers and Router', states('input_text.energy_weekly_history_row_printers_router')),
+              ('Top Floor', states('input_text.energy_weekly_history_row_top_floor')),
+              ('Apartment', states('input_text.energy_weekly_history_row_woonstel')),
+              ('Sonoff 10009CE3F9', states('input_text.energy_weekly_history_row_sonoff_10009ce3f9')),
+              ('Sonoff 1000CD8453', states('input_text.energy_weekly_history_row_sonoff_1000cd8453')),
+              ('Sonoff 10023B8A40', states('input_text.energy_weekly_history_row_sonoff_10023b8a40'))
+            ] %}
+
+            {% macro render_cell(value) %}
+              {% set v = value | trim %}
+              {% if v in ['', none] %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#d1d5db; text-align:right;">—</td>
+              {% elif v == 'unknown' %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#9ca3af; font-style:italic; text-align:right;">unknown</td>
+              {% elif v | float(0) == 0 %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#9ca3af; text-align:right;">0.00</td>
+              {% elif v | float(0) >= 20 %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#b91c1c; font-weight:700; text-align:right;">{{ (v | float(0)) | round(2) }}</td>
+              {% else %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#374151; text-align:right;">{{ (v | float(0)) | round(2) }}</td>
+              {% endif %}
+            {% endmacro %}
+
+            <div style="margin-top:24px;">
+              <h3 style="margin:0 0 12px 0; color:#111827; font-size:18px;">Previous 5 Weeks Usage History</h3>
+              <p style="margin:0 0 14px 0; color:#6b7280; font-size:13px;">
+                Weekly energy usage in kWh. Newest week appears first.
+              </p>
+              <div style="overflow-x:auto;">
+                <table style="width:100%; min-width:900px; border-collapse:collapse; font-family:Arial, sans-serif; font-size:13px;">
+                  <tr>
+                    <th style="text-align:left; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">Device</th>
+                    {% for label in labels %}
+                      <th style="text-align:right; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">{{ label }}</th>
+                    {% endfor %}
+                  </tr>
+                  {% for row_name, row_state in row_map %}
+                    {% set values = row_state.split('|') if row_state not in ['unknown', 'unavailable', '', none] else [] %}
+                    <tr>
+                      <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827; font-weight:600;">{{ row_name }}</td>
+                      {% for i in range(labels | length) %}
+                        {% set cell_value = values[i] if i < values | length else '' %}
+                        {{ render_cell(cell_value) }}
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                </table>
+              </div>
+            </div>
+          report_title: "{{ report_name }} | {{ report_date }}"
           report_message: >
-            Home Energy Weekly Report
+            {{ report_name }}
 
             Date
             {{ report_date }}
 
             Period
-            This week and recent weekly trend
+            {{ period_label }}
 
-            Grid energy total
-            {{ 'No usage' if grid_weekly == 0 else grid_weekly ~ ' kWh' }}
+            Grid Energy Usage
+            {{ 'No usage' if grid_energy_usage == 0 else grid_energy_usage ~ ' kWh' }}
+
+            Current Monitored Load Total
+            {{ 'No usage' if monitored_load_total == 0 else monitored_load_total ~ ' W' }}
+
+            Grid Power Now
+            {{ 'No usage' if grid_power_now == 0 else grid_power_now ~ ' W' }}
 
             Open in Home Assistant
             {{ ingress_url }}
 
-            Sent by Home Assistant at {{ now().strftime('%H:%M') }}
+            Sent by Home Assistant at {{ sent_time }}
           report_html: >
             <html>
-              <body>
-                <h2>Home Energy Weekly Report</h2>
-                <p><b>Date</b><br>{{ report_date }}</p>
-                <p><b>Period</b><br>This week and recent weekly trend</p>
-                <p><b>Grid energy total</b><br>{{ 'No usage' if grid_weekly == 0 else grid_weekly ~ ' kWh' }}</p>
-                <p><b>Open in Home Assistant</b><br>
-                <a href="{{ ingress_url }}">{{ ingress_url }}</a></p>
-                <p>Sent by Home Assistant at {{ now().strftime('%H:%M') }}</p>
+              <body style="margin:0; padding:0; background-color:#f3f4f6; font-family:Arial, sans-serif;">
+                <div style="max-width:760px; margin:0 auto; padding:24px;">
+                  <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden;">
+                    <div style="background:#111827; color:#ffffff; padding:20px 24px;">
+                      <h2 style="margin:0; font-size:24px;">{{ report_name }}</h2>
+                      <p style="margin:8px 0 0 0; font-size:14px; color:#d1d5db;">{{ report_date }} | {{ period_label }}</p>
+                    </div>
+                    <div style="padding:24px;">
+                      <table style="width:100%; border-collapse:separate; border-spacing:12px;">
+                        <tr>
+                          <td style="width:33.3%; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px; vertical-align:top;">
+                            <div style="font-size:12px; color:#6b7280; text-transform:uppercase;">Grid Energy Usage</div>
+                            <div style="margin-top:8px; font-size:24px; font-weight:700; color:#111827;">
+                              {{ 'No usage' if grid_energy_usage == 0 else grid_energy_usage ~ ' kWh' }}
+                            </div>
+                          </td>
+                          <td style="width:33.3%; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px; vertical-align:top;">
+                            <div style="font-size:12px; color:#6b7280; text-transform:uppercase;">Current Monitored Load Total</div>
+                            <div style="margin-top:8px; font-size:24px; font-weight:700; color:#111827;">
+                              {{ 'No usage' if monitored_load_total == 0 else monitored_load_total ~ ' W' }}
+                            </div>
+                          </td>
+                          <td style="width:33.3%; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px; vertical-align:top;">
+                            <div style="font-size:12px; color:#6b7280; text-transform:uppercase;">Grid Power Now</div>
+                            <div style="margin-top:8px; font-size:24px; font-weight:700; color:#111827;">
+                              {{ 'No usage' if grid_power_now == 0 else grid_power_now ~ ' W' }}
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                      <div style="margin-top:20px;">
+                        <h3 style="margin:0 0 12px 0; color:#111827; font-size:18px;">Current Monitored Loads</h3>
+                        <p style="margin:0 0 14px 0; color:#6b7280; font-size:13px;">
+                          Red highlights highest usage. Orange shows medium usage. Gray shows no usage.
+                        </p>
+                        {{ loads_html }}
+                      </div>
+                      {{ weekly_history_table_html }}
+                      <div style="margin-top:24px; padding-top:20px; border-top:1px solid #e5e7eb;">
+                        <div style="font-size:14px; color:#111827; margin-bottom:8px; font-weight:600;">Open in Home Assistant</div>
+                        <a href="{{ ingress_url }}" style="color:#2563eb; text-decoration:none; word-break:break-all;">{{ ingress_url }}</a>
+                      </div>
+                    </div>
+                    <div style="background:#f9fafb; border-top:1px solid #e5e7eb; padding:14px 24px; color:#6b7280; font-size:12px;">
+                      Sent by Home Assistant at {{ sent_time }}
+                    </div>
+                  </div>
+                </div>
               </body>
             </html>
       - action: notify.email_ha
@@ -326,35 +815,239 @@ script:
     sequence:
       - variables:
           ingress_url: "{{ states('input_text.grafana_ingress_base_url') }}/d/home-energy-monthly/home-energy-monthly"
-          grid_monthly: "{{ states('sensor.energy_report_grid_monthly_friendly') | float(0) }}"
+          report_name: "Home Energy Monthly Report"
+          period_label: "This month and recent monthly trend"
           report_date: "{{ now().strftime('%Y-%m-%d') }}"
-          report_title: "Home Energy Monthly Report | {{ report_date }}"
+          sent_time: "{{ now().strftime('%H:%M') }}"
+          grid_energy_usage: "{{ (states('sensor.main_eskom_switch_monthly') | float(0)) | round(2) }}"
+          grid_power_now: "{{ (states('sensor.main_eskom_switch_power') | float(0)) | round(2) }}"
+          main_pc_setup_power: "{{ (states('sensor.main_pc_setup_power') | float(0)) | round(2) }}"
+          printers_router_power: "{{ (states('sensor.printers_router_power') | float(0)) | round(2) }}"
+          printers_3d_power: "{{ (states('sensor.3d_printers_power') | float(0)) | round(2) }}"
+          borehole_power: "{{ (states('sensor.boorgat_power') | float(0)) | round(2) }}"
+          pool_outbuilding_power: "{{ (states('sensor.db_switch_pool_outbuilding_power') | float(0)) | round(2) }}"
+          geyser_external_power: "{{ (states('sensor.geyser_external_power') | float(0)) | round(2) }}"
+          geyser_indoor_power: "{{ (states('sensor.geyser_indoor_power') | float(0)) | round(2) }}"
+          laundry_power: "{{ (states('sensor.laundry_power') | float(0)) | round(2) }}"
+          plugs_1_power: "{{ (states('sensor.plugs_1_power') | float(0)) | round(2) }}"
+          plugs_2_power: "{{ (states('sensor.plugs_2_power') | float(0)) | round(2) }}"
+          plugs_3_power: "{{ (states('sensor.plugs_3_power') | float(0)) | round(2) }}"
+          plugs_kas_power: "{{ (states('sensor.plugs_kas_power_2') | float(0)) | round(2) }}"
+          top_floor_power: "{{ (states('sensor.top_floor_power') | float(0)) | round(2) }}"
+          woonstel_power: "{{ (states('sensor.woonstel_power') | float(0)) | round(2) }}"
+          sonoff_10009ce3f9_power: "{{ (states('sensor.sonoff_10009ce3f9_power') | float(0)) | round(2) }}"
+          sonoff_1000cd8453_power: "{{ (states('sensor.sonoff_1000cd8453_power') | float(0)) | round(2) }}"
+          sonoff_10023b8a40_power: "{{ (states('sensor.sonoff_10023b8a40_power') | float(0)) | round(2) }}"
+          monitored_load_total: >
+            {{
+              (
+                states('sensor.main_pc_setup_power') | float(0) +
+                states('sensor.printers_router_power') | float(0) +
+                states('sensor.3d_printers_power') | float(0) +
+                states('sensor.boorgat_power') | float(0) +
+                states('sensor.db_switch_pool_outbuilding_power') | float(0) +
+                states('sensor.geyser_external_power') | float(0) +
+                states('sensor.geyser_indoor_power') | float(0) +
+                states('sensor.laundry_power') | float(0) +
+                states('sensor.plugs_1_power') | float(0) +
+                states('sensor.plugs_2_power') | float(0) +
+                states('sensor.plugs_3_power') | float(0) +
+                states('sensor.plugs_kas_power_2') | float(0) +
+                states('sensor.top_floor_power') | float(0) +
+                states('sensor.woonstel_power') | float(0) +
+                states('sensor.sonoff_10009ce3f9_power') | float(0) +
+                states('sensor.sonoff_1000cd8453_power') | float(0) +
+                states('sensor.sonoff_10023b8a40_power') | float(0)
+              ) | round(2)
+            }}
+          loads_html: >
+            {% macro render_load(name, value) %}
+              {% set v = value | float(0) %}
+              {% if v == 0 %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#6b7280;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#9ca3af; text-align:right;">No usage</td>
+                </tr>
+              {% elif v > 500 %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827; font-weight:600;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#b91c1c; font-weight:700; text-align:right;">{{ v }} W</td>
+                </tr>
+              {% elif v >= 100 %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#c2410c; font-weight:600; text-align:right;">{{ v }} W</td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827;">{{ name }}</td>
+                  <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#374151; text-align:right;">{{ v }} W</td>
+                </tr>
+              {% endif %}
+            {% endmacro %}
+            <table style="width:100%; border-collapse:collapse; font-family:Arial, sans-serif; font-size:14px;">
+              <tr>
+                <th style="text-align:left; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">Device</th>
+                <th style="text-align:right; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">Current Load</th>
+              </tr>
+              {{ render_load('Main PC Setup', main_pc_setup_power) }}
+              {{ render_load('Printers and Router', printers_router_power) }}
+              {{ render_load('3D Printers', printers_3d_power) }}
+              {{ render_load('Borehole', borehole_power) }}
+              {{ render_load('Pool Outbuilding DB', pool_outbuilding_power) }}
+              {{ render_load('External Geyser', geyser_external_power) }}
+              {{ render_load('Indoor Geyser', geyser_indoor_power) }}
+              {{ render_load('Laundry', laundry_power) }}
+              {{ render_load('Plugs 1', plugs_1_power) }}
+              {{ render_load('Plugs 2', plugs_2_power) }}
+              {{ render_load('Plugs 3', plugs_3_power) }}
+              {{ render_load('Plugs Cabinet', plugs_kas_power) }}
+              {{ render_load('Top Floor', top_floor_power) }}
+              {{ render_load('Apartment', woonstel_power) }}
+              {{ render_load('Sonoff 10009CE3F9', sonoff_10009ce3f9_power) }}
+              {{ render_load('Sonoff 1000CD8453', sonoff_1000cd8453_power) }}
+              {{ render_load('Sonoff 10023B8A40', sonoff_10023b8a40_power) }}
+            </table>
+          monthly_history_table_html: >
+            {% set labels_raw = states('input_text.energy_monthly_history_labels') %}
+            {% set labels = labels_raw.split('|') if labels_raw not in ['unknown', 'unavailable', '', none] else [] %}
+
+            {% set row_map = [
+              ('Grid Energy Usage', states('input_text.energy_monthly_history_row_grid_energy_usage')),
+              ('Main Eskom Switch', states('input_text.energy_monthly_history_row_main_eskom_switch')),
+              ('Main PC Setup', states('input_text.energy_monthly_history_row_main_pc_setup')),
+              ('3D Printers', states('input_text.energy_monthly_history_row_d_printers')),
+              ('Borehole', states('input_text.energy_monthly_history_row_boorgat')),
+              ('DB Switch Pool Outbuilding', states('input_text.energy_monthly_history_row_db_switch_pool_outbuilding')),
+              ('Geyser External', states('input_text.energy_monthly_history_row_geyser_external')),
+              ('Geyser Indoor', states('input_text.energy_monthly_history_row_geyser_indoor')),
+              ('Laundry', states('input_text.energy_monthly_history_row_laundry')),
+              ('Plugs 1', states('input_text.energy_monthly_history_row_plugs_1')),
+              ('Plugs 2', states('input_text.energy_monthly_history_row_plugs_2')),
+              ('Plugs 3', states('input_text.energy_monthly_history_row_plugs_3')),
+              ('Plugs Cabinet', states('input_text.energy_monthly_history_row_plugs_kas')),
+              ('Printers and Router', states('input_text.energy_monthly_history_row_printers_router')),
+              ('Top Floor', states('input_text.energy_monthly_history_row_top_floor')),
+              ('Apartment', states('input_text.energy_monthly_history_row_woonstel')),
+              ('Sonoff 10009CE3F9', states('input_text.energy_monthly_history_row_sonoff_10009ce3f9')),
+              ('Sonoff 1000CD8453', states('input_text.energy_monthly_history_row_sonoff_1000cd8453')),
+              ('Sonoff 10023B8A40', states('input_text.energy_monthly_history_row_sonoff_10023b8a40'))
+            ] %}
+
+            {% macro render_cell(value) %}
+              {% set v = value | trim %}
+              {% if v in ['', none] %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#d1d5db; text-align:right;">—</td>
+              {% elif v == 'unknown' %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#9ca3af; font-style:italic; text-align:right;">unknown</td>
+              {% elif v | float(0) == 0 %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#9ca3af; text-align:right;">0.00</td>
+              {% elif v | float(0) >= 50 %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#b91c1c; font-weight:700; text-align:right;">{{ (v | float(0)) | round(2) }}</td>
+              {% else %}
+                <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#374151; text-align:right;">{{ (v | float(0)) | round(2) }}</td>
+              {% endif %}
+            {% endmacro %}
+
+            <div style="margin-top:24px;">
+              <h3 style="margin:0 0 12px 0; color:#111827; font-size:18px;">Previous 6 Months Usage History</h3>
+              <p style="margin:0 0 14px 0; color:#6b7280; font-size:13px;">
+                Monthly energy usage in kWh. Newest month appears first.
+              </p>
+              <div style="overflow-x:auto;">
+                <table style="width:100%; min-width:900px; border-collapse:collapse; font-family:Arial, sans-serif; font-size:13px;">
+                  <tr>
+                    <th style="text-align:left; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">Device</th>
+                    {% for label in labels %}
+                      <th style="text-align:right; padding:8px 10px; background:#f3f4f6; color:#111827; border-bottom:2px solid #d1d5db;">{{ label }}</th>
+                    {% endfor %}
+                  </tr>
+                  {% for row_name, row_state in row_map %}
+                    {% set values = row_state.split('|') if row_state not in ['unknown', 'unavailable', '', none] else [] %}
+                    <tr>
+                      <td style="padding:8px 10px; border-bottom:1px solid #e5e7eb; color:#111827; font-weight:600;">{{ row_name }}</td>
+                      {% for i in range(labels | length) %}
+                        {% set cell_value = values[i] if i < values | length else '' %}
+                        {{ render_cell(cell_value) }}
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                </table>
+              </div>
+            </div>
+          report_title: "{{ report_name }} | {{ report_date }}"
           report_message: >
-            Home Energy Monthly Report
+            {{ report_name }}
 
             Date
             {{ report_date }}
 
             Period
-            This month and recent monthly trend
+            {{ period_label }}
 
-            Grid energy total
-            {{ 'No usage' if grid_monthly == 0 else grid_monthly ~ ' kWh' }}
+            Grid Energy Usage
+            {{ 'No usage' if grid_energy_usage == 0 else grid_energy_usage ~ ' kWh' }}
+
+            Current Monitored Load Total
+            {{ 'No usage' if monitored_load_total == 0 else monitored_load_total ~ ' W' }}
+
+            Grid Power Now
+            {{ 'No usage' if grid_power_now == 0 else grid_power_now ~ ' W' }}
 
             Open in Home Assistant
             {{ ingress_url }}
 
-            Sent by Home Assistant at {{ now().strftime('%H:%M') }}
+            Sent by Home Assistant at {{ sent_time }}
           report_html: >
             <html>
-              <body>
-                <h2>Home Energy Monthly Report</h2>
-                <p><b>Date</b><br>{{ report_date }}</p>
-                <p><b>Period</b><br>This month and recent monthly trend</p>
-                <p><b>Grid energy total</b><br>{{ 'No usage' if grid_monthly == 0 else grid_monthly ~ ' kWh' }}</p>
-                <p><b>Open in Home Assistant</b><br>
-                <a href="{{ ingress_url }}">{{ ingress_url }}</a></p>
-                <p>Sent by Home Assistant at {{ now().strftime('%H:%M') }}</p>
+              <body style="margin:0; padding:0; background-color:#f3f4f6; font-family:Arial, sans-serif;">
+                <div style="max-width:760px; margin:0 auto; padding:24px;">
+                  <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden;">
+                    <div style="background:#111827; color:#ffffff; padding:20px 24px;">
+                      <h2 style="margin:0; font-size:24px;">{{ report_name }}</h2>
+                      <p style="margin:8px 0 0 0; font-size:14px; color:#d1d5db;">{{ report_date }} | {{ period_label }}</p>
+                    </div>
+                    <div style="padding:24px;">
+                      <table style="width:100%; border-collapse:separate; border-spacing:12px;">
+                        <tr>
+                          <td style="width:33.3%; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px; vertical-align:top;">
+                            <div style="font-size:12px; color:#6b7280; text-transform:uppercase;">Grid Energy Usage</div>
+                            <div style="margin-top:8px; font-size:24px; font-weight:700; color:#111827;">
+                              {{ 'No usage' if grid_energy_usage == 0 else grid_energy_usage ~ ' kWh' }}
+                            </div>
+                          </td>
+                          <td style="width:33.3%; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px; vertical-align:top;">
+                            <div style="font-size:12px; color:#6b7280; text-transform:uppercase;">Current Monitored Load Total</div>
+                            <div style="margin-top:8px; font-size:24px; font-weight:700; color:#111827;">
+                              {{ 'No usage' if monitored_load_total == 0 else monitored_load_total ~ ' W' }}
+                            </div>
+                          </td>
+                          <td style="width:33.3%; background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:16px; vertical-align:top;">
+                            <div style="font-size:12px; color:#6b7280; text-transform:uppercase;">Grid Power Now</div>
+                            <div style="margin-top:8px; font-size:24px; font-weight:700; color:#111827;">
+                              {{ 'No usage' if grid_power_now == 0 else grid_power_now ~ ' W' }}
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                      <div style="margin-top:20px;">
+                        <h3 style="margin:0 0 12px 0; color:#111827; font-size:18px;">Current Monitored Loads</h3>
+                        <p style="margin:0 0 14px 0; color:#6b7280; font-size:13px;">
+                          Red highlights highest usage. Orange shows medium usage. Gray shows no usage.
+                        </p>
+                        {{ loads_html }}
+                      </div>
+                      {{ monthly_history_table_html }}
+                      <div style="margin-top:24px; padding-top:20px; border-top:1px solid #e5e7eb;">
+                        <div style="font-size:14px; color:#111827; margin-bottom:8px; font-weight:600;">Open in Home Assistant</div>
+                        <a href="{{ ingress_url }}" style="color:#2563eb; text-decoration:none; word-break:break-all;">{{ ingress_url }}</a>
+                      </div>
+                    </div>
+                    <div style="background:#f9fafb; border-top:1px solid #e5e7eb; padding:14px 24px; color:#6b7280; font-size:12px;">
+                      Sent by Home Assistant at {{ sent_time }}
+                    </div>
+                  </div>
+                </div>
               </body>
             </html>
       - action: notify.email_ha
@@ -371,7 +1064,7 @@ script:
 automation:
   - id: energy_hourly_email_report
     alias: Energy Hourly Email Report
-    description: Sends the last 24 hours grid and load report every day at 07:00
+    description: Sends the last 24 hours grid and monitored load report every day at 07:00
     trigger:
       - platform: time
         at: "07:00:00"
@@ -382,7 +1075,7 @@ automation:
 
   - id: energy_daily_email_report
     alias: Energy Daily Email Report
-    description: Sends the daily grid and load report every day at 07:30
+    description: Sends the daily grid and monitored load report every day at 07:30
     trigger:
       - platform: time
         at: "07:30:00"
@@ -393,7 +1086,7 @@ automation:
 
   - id: energy_weekly_email_report
     alias: Energy Weekly Email Report
-    description: Sends the weekly grid report every Sunday at 08:00
+    description: Sends the weekly grid and monitored load report every Sunday at 08:00
     trigger:
       - platform: time
         at: "08:00:00"
@@ -407,7 +1100,7 @@ automation:
 
   - id: energy_monthly_email_report
     alias: Energy Monthly Email Report
-    description: Sends the monthly grid report on the 1st day of each month at 08:30
+    description: Sends the monthly grid and monitored load report on the 1st day of each month at 08:30
     trigger:
       - platform: time
         at: "08:30:00"
