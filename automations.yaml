@@ -131,3 +131,35 @@
       data:
         value: "{{ current }}"
   mode: single
+
+- alias: 'Monitor AI Automation Suggester Connection'
+  description: 'Alert when Groq connection fails'
+  trigger:
+    - platform: state
+      entity_id: sensor.ai_automation_suggester_groq_ai_provider_status_groq
+      to: 'error'
+  action:
+    - service: notify.email_notification
+      data:
+        message: 'AI Automation Suggester (Groq) connection failed. Check logs for details.'
+        title: 'Home Assistant Alert'
+
+#- alias: 'AI Automation Suggester - Weekly Scan'
+#  description: 'Generate new automation suggestions every Monday'
+#  trigger:
+#    - platform: time
+#      at: '07:00:00'
+#      weekday:
+#        - mon
+#  action:
+#    - service: ai_automation_suggester.request_suggestions
+#      data: {}
+
+- alias: 'AI Automation Suggester - Daily Scan'
+  description: 'Generate new automation suggestions every day'
+  trigger:
+    - platform: time
+      at: '07:00:00'
+  action:
+    - service: ai_automation_suggester.request_suggestions
+      data: {}
