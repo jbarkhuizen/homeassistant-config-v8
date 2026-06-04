@@ -1,0 +1,43 @@
+#===============================================================================
+# AI: Automation Suggestion Email Alert
+# File: automations/ai_automation_suggestion_email.yaml
+# Updated: 2026-06-04
+# Purpose: Email new AI automation suggestions when the suggestion sensor changes.
+# Channel: Email only
+#===============================================================================
+
+- id: ai_automation_suggestion_email
+  alias: "AI: Automation Suggestion Email"
+  description: >
+    Sends an email when sensor.ai_automation_suggestion changes to a new valid
+    suggestion. Ignores unknown, unavailable and empty states.
+
+  trigger:
+    - platform: state
+      entity_id: sensor.ai_automation_suggestion
+
+  condition:
+    - condition: template
+      value_template: >-
+        {{ trigger.to_state is not none
+           and trigger.from_state is not none
+           and trigger.to_state.state not in ['unknown', 'unavailable', 'none', 'None', '']
+           and trigger.to_state.state != trigger.from_state.state }}
+
+  action:
+    - service: notify.email_ha
+      data:
+        title: "AI Automation Suggestion - {{ now().strftime('%Y-%m-%d %H:%M') }}"
+        message: >-
+          A new AI automation suggestion was detected in Home Assistant.
+
+          Time: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          Entity: sensor.ai_automation_suggestion
+
+          Suggestion:
+          {{ states('sensor.ai_automation_suggestion') }}
+
+          Home Assistant: http://192.168.1.31:8123
+          Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
+
+  mode: single

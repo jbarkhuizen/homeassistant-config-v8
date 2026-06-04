@@ -5,25 +5,6 @@
 #  mac_mapping_3: "00:08:9b:c2:e5:14;Johanba-Server Port 2"
 
 device_tracker:
-  # NMAP Network Scanner - Primary tracking method
-  - platform: nmap_tracker
-    hosts:
-      - 192.168.1.0/24 # Primary network subnet
-      - 192.168.0.0/24 # Secondary network
-      - 192.168.2.0/24 # Additional subnets
-      - 192.168.3.0/24
-      - 192.168.4.0/24
-      - 192.168.5.0/24
-      - 192.168.56.0/24
-      - 172.25.80.0/24
-      - 10.0.0.0/24
-      - 10.1.1.0/24
-    scan_options: "-F --host-timeout 5s"
-    home_interval: 10
-    consider_home: 180
-    new_device_defaults:
-      track_new_devices: true
-
   # PING Device Tracker - Backup tracking method
   - platform: ping
     hosts:
@@ -35,7 +16,7 @@ device_tracker:
     consider_home: 180
 #===============================================================================
 # NOTES:
-# 1. NMAP scans are resource-intensive - runs every 10 minutes
+# 1. NMAP tracker YAML removed due to Home Assistant Core breaking change
 # 2. Ping tracker provides faster updates for critical devices
 # 3. All tracked devices will appear as device_tracker entities
 # 4. Configure device names in Home Assistant UI under Configuration > Devices

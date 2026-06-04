@@ -2,33 +2,22 @@
 # Fresh Network Device Discovery Package
 # Clean implementation with minimal dependencies
 
-# Network device discovery using nmap
-device_tracker:
-  - platform: nmap_tracker
-    hosts: 192.168.1.1/24
-    home_interval: 10
-    scan_options: " --privileged -sn "
-    new_device_defaults:
-      track_new_devices: true
-
 # Basic network sensors
-sensor:
-  # Count active devices
-  - platform: command_line
-    name: "Network Active Devices"
-    command: 'nmap -sn 192.168.1.0/24 2>/dev/null | grep "Nmap scan report" | wc -l'
-    scan_interval: 300
-    unit_of_measurement: "devices"
+command_line:
+  - sensor:
+      name: "Network Active Devices"
+      command: 'nmap -sn 192.168.1.0/24 2>/dev/null | grep "Nmap scan report" | wc -l'
+      scan_interval: 300
+      unit_of_measurement: "devices"
 
-  # List network devices
-  - platform: command_line
-    name: "Network Device List"
-    command: >
-      nmap -sn 192.168.1.0/24 2>/dev/null | 
-      grep "Nmap scan report" | 
-      sed 's/Nmap scan report for //' | 
-      head -20
-    scan_interval: 300
+  - sensor:
+      name: "Network Device List"
+      command: >
+        nmap -sn 192.168.1.0/24 2>/dev/null |
+        grep "Nmap scan report" |
+        sed 's/Nmap scan report for //' |
+        head -20
+      scan_interval: 300
 
 # Template sensors to process device information
 template:
@@ -58,7 +47,7 @@ template:
             {# Add Router #}
             {% set router_device = {
               'name': 'Nokia Beacon 2 Router',
-              'ip': '192.168.1.1', 
+              'ip': '192.168.1.1',
               'status': 'Online' if is_state('binary_sensor.nokia_router_online', 'on') else 'Offline',
               'type': 'Router',
               'vendor': 'Nokia',
