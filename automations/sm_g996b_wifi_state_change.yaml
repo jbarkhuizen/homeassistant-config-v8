@@ -1,0 +1,48 @@
+#===============================================================================
+# MOBILE: SM-G996B Wi-Fi Disconnected
+# File: automations/sm_g996b_wifi_disconnected.yaml
+# Updated: 2026-06-04
+# Purpose: Notify only when the SM-G996B Wi-Fi disconnects.
+# Channel: Mobile Push (SM-G996B) | System Log
+#===============================================================================
+
+- id: sm_g996b_wifi_disconnected
+  alias: "Mobile: SM-G996B Wi-Fi Disconnected"
+  description: >
+    Sends a notification only when the SM-G996B Wi-Fi changes to off.
+    Ignores unknown and unavailable state noise.
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.sm_g996b_wi_fi_state
+      to: "off"
+
+  condition:
+    - condition: template
+      value_template: >-
+        {{ trigger.from_state is not none
+           and trigger.from_state.state not in ['unknown', 'unavailable'] }}
+
+  action:
+    - service: notify.mobile_app_sm_g996b
+      data:
+        title: "Wi-Fi Disconnected"
+        message: >-
+          SM-G996B Wi-Fi changed to off at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+        data:
+          channel: "Device Status"
+          importance: high
+          group: "ha-mobile-status"
+          color: "#FF9800"
+          actions:
+            - action: "OPEN_HA"
+              title: "Open HA"
+              uri: "http://192.168.1.31:8123"
+
+    - service: system_log.write
+      data:
+        message: >-
+          SM-G996B Wi-Fi changed to off at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+        level: warning
+
+  mode: single

@@ -1,20 +1,18 @@
 #===============================================================================
 # SECURITY: IP Ban Daily Summary (06:15)
-# File: automations/security_ipban_spike.yaml
+# File: automations/security_ipban_daily_summary.yaml
 # Updated: 2026-06-04
-# Sends a daily IP ban summary only when new bans occurred since the previous
-# baseline. When no new bans occurred, writes a quiet system log entry only.
-# Channels on ban activity: Email | Telegram | Mobile Push (SM-G996B) |
-# Persistent | System Log
+# Sends a daily summary only when new IP bans occurred since the previous
+# baseline. Updates the baseline after the check.
+# Channels: Email | Telegram | Mobile Push (SM-G996B) | Persistent | System Log
 #===============================================================================
 
 - id: security_ip_ban_daily_summary_0615
   alias: "Security - IP Ban Daily Summary (06:15)"
   description: >
-    Compares the current Home Assistant IP ban count against the stored previous
-    count. Sends a daily summary only when new IP bans occurred in the last
-    cycle. When no new bans occurred, writes a quiet system log entry only.
-    Updates the baseline after the check.
+    Compares the current Home Assistant IP ban count to the stored previous
+    count. Sends a daily summary only when new IP bans occurred since the last
+    baseline. Updates the baseline after the check.
 
   trigger:
     - platform: time
@@ -39,25 +37,6 @@
           {% elif diff >= 1 %}#FF9800
           {% else %}#4CAF50
           {% endif %}
-        summary_title: >-
-          Security: IP Ban Daily Summary - {{ risk_level }} (06:15 {{ now().strftime('%d %b %Y') }})
-        summary_message: >-
-          Daily IP ban summary generated at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
-
-          Security activity detected:
-          • Previous count: {{ baseline }}
-          • Current count: {{ current }}
-          • New IP bans: {{ diff }}
-          • Risk level: {{ risk_level }}
-
-          Recommended checks:
-          • Review Settings > People > Users > Failed logins if needed
-          • Review /config/ip_bans.yaml for banned IP details
-          • Review /config/home-assistant.log for authentication failures
-          • Confirm no trusted device or service was blocked by mistake
-
-          Local: http://192.168.1.31:8123
-          Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
 
     - choose:
         - conditions:
@@ -66,8 +45,23 @@
           sequence:
             - service: persistent_notification.create
               data:
-                title: "{{ summary_title }}"
-                message: "{{ summary_message }}"
+                title: "Security: IP Ban Daily Summary - {{ risk_level }} (06:15 {{ now().strftime('%d %b %Y') }})"
+                message: >-
+                  Daily IP ban summary generated at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
+
+                  Summary:
+                  • Previous count: {{ baseline }}
+                  • Current count: {{ current }}
+                  • New IP bans: {{ diff }}
+                  • Risk level: {{ risk_level }}
+
+                  Recommended checks:
+                  • Review /config/ip_bans.yaml
+                  • Review /config/home-assistant.log
+                  • Confirm no trusted device or service was blocked by mistake
+
+                  Local: http://192.168.1.31:8123
+                  Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
                 notification_id: "security_ip_ban_daily_summary"
 
             - service: telegram_bot.send_message
@@ -81,20 +75,18 @@
                   New IP bans: {{ diff }}
                   Risk: *{{ risk_level }}*
 
-                  Review `/config/ip_bans.yaml` and authentication logs.
+                  Review `/config/ip_bans.yaml` and `/config/home-assistant.log`
                   _{{ now().strftime('%Y-%m-%d %H:%M:%S') }}_
                   🌐 192.168.1.31:8123
                 parse_mode: markdown
 
             - service: notify.email_ha
               data:
-                title: "{{ summary_title }}"
+                title: "Security: IP Ban Daily Summary - {{ risk_level }} ({{ now().strftime('%Y-%m-%d') }})"
                 message: >-
                   SECURITY IP BAN DAILY SUMMARY
 
                   Date: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
-
-                  ================================================================================
 
                   SUMMARY
                   Previous count: {{ baseline }}
@@ -103,12 +95,10 @@
                   Risk level: {{ risk_level }}
 
                   RECOMMENDED ACTIONS
-                  1. Review /config/ip_bans.yaml for the blocked IP addresses
+                  1. Review /config/ip_bans.yaml for blocked IP addresses
                   2. Review /config/home-assistant.log for failed authentication events
                   3. Confirm no valid device or service was blocked
-                  4. If activity looks repeated or hostile, review network and access controls
-
-                  ================================================================================
+                  4. Review network access controls if repeated attempts continue
 
                   System: http://192.168.1.31:8123
                   Cloud: https://gy98slwcfto2t5oia2xnqjeabx480gs6.ui.nabu.casa/
@@ -126,26 +116,14 @@
                   actions:
                     - action: "OPEN_HA"
                       title: "Open HA"
-                      uri: "http://192.168.1.31:8123/config/logs"
+                      uri: "http://192.168.1.31:8123"
 
             - service: system_log.write
               data:
                 message: >-
                   Security IP Ban Daily Summary sent at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
                   Previous: {{ baseline }}, Current: {{ current }}, New bans: {{ diff }}, Risk: {{ risk_level }}.
-                  Channels: Email, Telegram, Mobile Push, Persistent.
                 level: warning
-
-        - conditions:
-            - condition: template
-              value_template: "{{ diff == 0 }}"
-          sequence:
-            - service: system_log.write
-              data:
-                message: >-
-                  Security IP Ban Daily Summary check completed at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}.
-                  No new IP bans detected. Previous: {{ baseline }}, Current: {{ current }}.
-                level: info
 
     - service: input_number.set_value
       target:
