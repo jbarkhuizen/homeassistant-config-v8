@@ -30,6 +30,7 @@ from typing import Any, cast
 
 import aiohttp
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.device_registry import DeviceInfo
 
 from .const import DOMAIN
 
@@ -77,10 +78,12 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
         mask_sensitive_data: bool = False,
         whitelist: list[str] | None = None,
         config_url: str | None = None,
+        ha_base_url: str | None = None,
     ) -> None:
         """Initialize the API client."""
         self.host = host.rstrip("/")
         self.config_url = config_url.rstrip("/") if config_url else self.host
+        self.ha_base_url = ha_base_url
         self.api_key = api_key
         self.session_id = session_id
         self.mask_sensitive_data = mask_sensitive_data
@@ -211,6 +214,17 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
         """Deprecated: use mask()."""
         return self.mask(text)
 
+    def _normalize_url(self, url: str) -> str:
+        """Prepend HA base URL to relative URLs starting with '/'."""
+        if (
+            url
+            and url.startswith("/")
+            and not url.startswith("//")
+            and self.ha_base_url
+        ):
+            return f"{self.ha_base_url.rstrip('/')}{url}"
+        return url
+
     async def start_polling(self, interval: int = 2) -> None:
         """Start the polling loop."""
         if self._polling_task:
@@ -286,7 +300,7 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
                     url,
                     headers=headers,
                     params=params,
-                    timeout=aiohttp.ClientTimeout(total=5),
+                    timeout=aiohttp.ClientTimeout(total=20),
                 ) as resp:
                     if resp.status == 401:
                         raise HomeAssistantError("Invalid API Key")
@@ -311,7 +325,7 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
                     url,
                     headers=headers,
                     params=params,
-                    timeout=aiohttp.ClientTimeout(total=5),
+                    timeout=aiohttp.ClientTimeout(total=20),
                 ) as resp:
                     if resp.status == 401:
                         raise HomeAssistantError("Invalid API Key")
@@ -412,21 +426,21 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
         """Return the reason for the last disconnection, if any."""
         return self._disconnect_reason
 
-    def get_device_info(self) -> dict[str, Any]:
+    def get_device_info(self) -> DeviceInfo:
         """Return device information for HA."""
         name = f"WhatsApp ({self.session_id})"
         number = self.stats.get("my_number")
         if number and number != "Unknown":
             name = f"WhatsApp ({number})"
 
-        return {
-            "identifiers": {(DOMAIN, self.session_id)},
-            "name": name,
-            "manufacturer": "WhatsApp",
-            "model": "WhatsApp API",
-            "sw_version": self.stats.get("version"),
-            "configuration_url": self.config_url,
-        }
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.session_id)},
+            name=name,
+            manufacturer="WhatsApp",
+            model="WhatsApp API",
+            sw_version=self.stats.get("version"),
+            configuration_url=self.config_url,
+        )
 
     def get_my_jid(self) -> str | None:
         """Return the JID for the current session."""
@@ -448,7 +462,7 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
                     url,
                     headers=headers,
                     params=params,
-                    timeout=aiohttp.ClientTimeout(total=5),
+                    timeout=aiohttp.ClientTimeout(total=20),
                 ) as resp:
                     if resp.status == 401:
                         _LOGGER.error(
@@ -489,7 +503,7 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
                     url,
                     headers=headers,
                     params=params,
-                    timeout=aiohttp.ClientTimeout(total=5),
+                    timeout=aiohttp.ClientTimeout(total=20),
                 ) as resp:
                     if resp.status == 200:
                         return cast(dict[str, Any], await resp.json())
@@ -508,7 +522,7 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
             try:
                 async with session.get(
                     url,
-                    timeout=aiohttp.ClientTimeout(total=5),
+                    timeout=aiohttp.ClientTimeout(total=20),
                 ) as resp:
                     if resp.status == 200:
                         return cast(dict[str, Any], await resp.json())
@@ -789,7 +803,7 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
         url = f"{self.host}/send_image"
         payload: dict[str, Any] = {
             "number": number,
-            "url": image_url,
+            "url": self._normalize_url(image_url),
             "caption": caption,
         }
         if quoted_message_id is not None:
@@ -872,7 +886,7 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
         api_url = f"{self.host}/send_document"
         payload: dict[str, Any] = {
             "number": number,
-            "url": url,
+            "url": self._normalize_url(url),
             "fileName": file_name,
             "caption": caption,
         }
@@ -939,7 +953,7 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
         api_url = f"{self.host}/send_video"
         payload: dict[str, Any] = {
             "number": number,
-            "url": url,
+            "url": self._normalize_url(url),
             "caption": caption,
         }
         if quoted_message_id is not None:
@@ -1016,7 +1030,7 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
         api_url = f"{self.host}/send_audio"
         payload: dict[str, Any] = {
             "number": number,
-            "url": url,
+            "url": self._normalize_url(url),
             "ptt": ptt,
         }
         if quoted_message_id is not None:
