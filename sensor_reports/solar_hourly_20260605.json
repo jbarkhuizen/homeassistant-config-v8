@@ -1,0 +1,105 @@
+{
+  "report_date": "2026-06-05",
+  "created_at": "2026-06-05 09:00:00",
+  "updated_at": "2026-06-05 20:00:00",
+  "baseline": {
+    "pv1_total": 421.264,
+    "pv2_total": 239.371
+  },
+  "last_snapshot": {
+    "pv1_total": 429.527,
+    "pv2_total": 243.204
+  },
+  "rows": [
+    {
+      "hour": "09:00-09:59",
+      "pv1_kwh": 0.0,
+      "pv2_kwh": 0.0,
+      "total_kwh": 0.0,
+      "cum_pv1": 0.0,
+      "cum_pv2": 0.0,
+      "cum_total": 0.0
+    },
+    {
+      "hour": "11:00-11:59",
+      "pv1_kwh": 423.48,
+      "pv2_kwh": 240.64,
+      "total_kwh": 664.12,
+      "cum_pv1": 423.48,
+      "cum_pv2": 240.64,
+      "cum_total": 664.12
+    },
+    {
+      "hour": "12:00-12:59",
+      "pv1_kwh": 0.0,
+      "pv2_kwh": 0.0,
+      "total_kwh": 0.0,
+      "cum_pv1": 423.48,
+      "cum_pv2": 240.64,
+      "cum_total": 664.12
+    },
+    {
+      "hour": "13:00-13:59",
+      "pv1_kwh": 426.77,
+      "pv2_kwh": 242.44,
+      "total_kwh": 669.21,
+      "cum_pv1": 850.25,
+      "cum_pv2": 483.08,
+      "cum_total": 1333.33
+    },
+    {
+      "hour": "14:00-14:59",
+      "pv1_kwh": 1.51,
+      "pv2_kwh": 0.7,
+      "total_kwh": 2.21,
+      "cum_pv1": 851.76,
+      "cum_pv2": 483.78,
+      "cum_total": 1335.54
+    },
+    {
+      "hour": "15:00-15:59",
+      "pv1_kwh": 0.99,
+      "pv2_kwh": 0.05,
+      "total_kwh": 1.04,
+      "cum_pv1": 852.75,
+      "cum_pv2": 483.83,
+      "cum_total": 1336.58
+    },
+    {
+      "hour": "16:00-16:59",
+      "pv1_kwh": 0.26,
+      "pv2_kwh": 0.01,
+      "total_kwh": 0.27,
+      "cum_pv1": 853.01,
+      "cum_pv2": 483.84,
+      "cum_total": 1336.85
+    },
+    {
+      "hour": "17:00-17:59",
+      "pv1_kwh": 0.0,
+      "pv2_kwh": 0.0,
+      "total_kwh": 0.0,
+      "cum_pv1": 853.01,
+      "cum_pv2": 483.84,
+      "cum_total": 1336.85
+    },
+    {
+      "hour": "18:00-18:59",
+      "pv1_kwh": 0.0,
+      "pv2_kwh": 0.0,
+      "total_kwh": 0.0,
+      "cum_pv1": 853.01,
+      "cum_pv2": 483.84,
+      "cum_total": 1336.85
+    },
+    {
+      "hour": "19:00-19:59",
+      "pv1_kwh": 0.0,
+      "pv2_kwh": 0.0,
+      "total_kwh": 0.0,
+      "cum_pv1": 853.01,
+      "cum_pv2": 483.84,
+      "cum_total": 1336.85
+    }
+  ]
+}
