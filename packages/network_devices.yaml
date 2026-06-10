@@ -8,7 +8,6 @@ command_line:
       name: "Network Active Devices"
       command: 'nmap -sn 192.168.1.0/24 2>/dev/null | grep "Nmap scan report" | wc -l'
       scan_interval: 300
-      timeout: 30
       unit_of_measurement: "devices"
 
   - sensor:
@@ -19,7 +18,6 @@ command_line:
         sed 's/Nmap scan report for //' |
         head -20
       scan_interval: 300
-      timeout: 30
 
 # Template sensors to process device information
 template:
