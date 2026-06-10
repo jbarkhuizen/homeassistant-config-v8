@@ -17,7 +17,13 @@ from homeassistant.config_entries import (
     OptionsFlow,
     OptionsFlowWithConfigEntry,
 )
-from homeassistant.const import CONF_API_KEY, CONF_DESCRIPTION, CONF_ID, CONF_NAME
+from homeassistant.const import (
+    CONF_API_KEY,
+    CONF_DESCRIPTION,
+    CONF_ID,
+    CONF_NAME,
+    __version__ as HA_VERSION,
+)
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 
@@ -33,9 +39,33 @@ from .const import (
     CONF_SETUP_API,
     DOMAIN,
     NAME,
+    VERSION,
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _get_sepush_status_code(err: BaseException) -> int | None:
+    """Walk the exception chain and return the first SePushError.status_code found.
+
+    The library wraps SePushError inside ProviderError in two ways:
+      1. ``ProviderError(sepush_error)``  — sepush_error is in .args[0]
+      2. ``ProviderError(msg) from prev`` — prev is in .__cause__
+    This helper walks both paths so callers can surface a specific HTTP status.
+    """
+    seen: set[int] = set()
+    node: BaseException | None = err
+    while node is not None and id(node) not in seen:
+        seen.add(id(node))
+        if isinstance(node, SePushError) and node.status_code is not None:
+            return node.status_code
+        # ProviderError(SePushError(...)) stores the wrapped error in args[0]
+        if node.args and isinstance(node.args[0], BaseException):
+            inner = node.args[0]
+            if isinstance(inner, SePushError) and inner.status_code is not None:
+                return inner.status_code
+        node = node.__cause__ or node.__context__
+    return None
 
 
 @config_entries.HANDLERS.register(DOMAIN)
@@ -91,10 +121,16 @@ class LoadSheddingFlowHandler(ConfigFlow, domain=DOMAIN):
         if self.api_key:
             try:
                 # Validate the token by checking the allowance.
-                sepush = SePush(token=self.api_key)
+                sepush = SePush(
+                    token=self.api_key,
+                    user_agent_context={
+                        "ha_integration_load_shedding": VERSION,
+                        "homeassistant": HA_VERSION,
+                    },
+                )
                 await self.hass.async_add_executor_job(sepush.check_allowance)
             except SePushError as err:
-                status_code = err.__cause__.args[0]
+                status_code = err.status_code
                 if status_code == 400:
                     errors["base"] = "sepush_400"
                 elif status_code == 403:
@@ -168,9 +204,17 @@ class LoadSheddingFlowHandler(ConfigFlow, domain=DOMAIN):
                     get_areas, provider, search_text
                 )
             except ProviderError as err:
-                _LOGGER.debug("Provider error", exc_info=True)
-                _LOGGER.error("Unable to initialise SePush API: %s", err)
-                errors["base"] = "provider_error"
+                _LOGGER.debug("Area search error", exc_info=True)
+                status_code = _get_sepush_status_code(err)
+                if status_code == 403:
+                    errors["base"] = "sepush_403"
+                elif status_code == 429:
+                    errors["base"] = "sepush_429"
+                elif status_code == 500:
+                    errors["base"] = "sepush_500"
+                else:
+                    _LOGGER.error("Unable to search for areas: %s", err)
+                    errors["base"] = "provider_error"
             else:
                 self.areas = {}
                 for area in results:
@@ -306,11 +350,17 @@ class LoadSheddingOptionsFlowHandler(OptionsFlowWithConfigEntry):
         if api_key:
             try:
                 # Validate the token by checking the allowance.
-                sepush = SePush(token=api_key)
+                sepush = SePush(
+                    token=api_key,
+                    user_agent_context={
+                        "ha_integration_load_shedding": VERSION,
+                        "homeassistant": HA_VERSION,
+                    },
+                )
                 esp = await self.hass.async_add_executor_job(sepush.check_allowance)
                 _LOGGER.debug("Validate API Key Response: %s", esp)
             except SePushError as err:
-                status_code = err.__cause__.args[0]
+                status_code = err.status_code
                 if status_code == 400:
                     errors["base"] = "sepush_400"
                 elif status_code == 403:
@@ -397,9 +447,18 @@ class LoadSheddingOptionsFlowHandler(OptionsFlowWithConfigEntry):
                 results = await self.hass.async_add_executor_job(
                     get_areas, provider, search_text
                 )
-            except ProviderError:
-                _LOGGER.debug("Provider error", exc_info=True)
-                errors["base"] = "provider_error"
+            except ProviderError as err:
+                _LOGGER.debug("Area search error", exc_info=True)
+                status_code = _get_sepush_status_code(err)
+                if status_code == 403:
+                    errors["base"] = "sepush_403"
+                elif status_code == 429:
+                    errors["base"] = "sepush_429"
+                elif status_code == 500:
+                    errors["base"] = "sepush_500"
+                else:
+                    _LOGGER.error("Unable to search for areas: %s", err)
+                    errors["base"] = "provider_error"
             else:
                 self.areas = {}
                 for area in results:
@@ -464,11 +523,11 @@ class LoadSheddingOptionsFlowHandler(OptionsFlowWithConfigEntry):
         if user_input is None:
             area_idx = {}
             for idx, area in enumerate(self.options.get(CONF_AREAS, [])):
-                area_idx[idx] = area.get(CONF_NAME)
+                area_idx[str(idx)] = area.get(CONF_NAME)
 
             data_schema = vol.Schema(
                 {
-                    vol.Optional(CONF_AREA_ID): vol.In(area_idx),
+                    vol.Required(CONF_AREA_ID): vol.In(area_idx),
                 }
             )
 
@@ -478,8 +537,9 @@ class LoadSheddingOptionsFlowHandler(OptionsFlowWithConfigEntry):
             )
         else:
             new_areas = []
+            selected_area_idx = str(user_input.get(CONF_AREA_ID))
             for idx, area in enumerate(self.options.get(CONF_AREAS, [])):
-                if idx == user_input.get(CONF_AREA_ID):
+                if str(idx) == selected_area_idx:
                     continue
                 new_areas.append(area)
 

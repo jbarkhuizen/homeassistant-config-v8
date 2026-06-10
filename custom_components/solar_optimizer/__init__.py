@@ -28,6 +28,8 @@ from .const import (
     CONFIG_VERSION,
     CONFIG_MINOR_VERSION,
     SERVICE_RESET_ON_TIME,
+    SERVICE_START_DEVICE,
+    SERVICE_STOP_DEVICE,
     validate_time_format,
     name_to_unique_id,
     CONF_NAME,
@@ -63,6 +65,75 @@ CONFIG_SCHEMA = vol.Schema(
 )
 
 
+async def async_register_frontend(hass: HomeAssistant) -> None:
+    """Enregistre le dossier frontend pour servir la carte et l'ajoute dans Lovelace."""
+    if not hasattr(hass, "http") or hass.http is None:
+        _LOGGER.debug("Le serveur HTTP de Home Assistant n'est pas disponible (environnement de test)")
+        return
+
+    import os
+    current_dir = os.path.dirname(__file__)
+    frontend_path = os.path.join(current_dir, "frontend")
+    _LOGGER.info("Enregistrement du chemin statique pour Solar Optimizer Card : /solar-optimizer-frontend -> %s", frontend_path)
+
+    try:
+        from homeassistant.components.http import StaticPathConfig
+
+        await hass.http.async_register_static_paths([StaticPathConfig("/solar-optimizer-frontend", frontend_path, False)])
+    except ImportError:
+        hass.http.register_static_path(
+            "/solar-optimizer-frontend",
+            frontend_path,
+            cache_headers=False,
+        )
+
+    async def register_lovelace_resource(*_):
+        lovelace_data = hass.data.get("lovelace")
+        if lovelace_data is None:
+            _LOGGER.debug("L'intégration Lovelace n'est pas chargée, impossible d'enregistrer la ressource automatiquement.")
+            return
+
+        resources = None
+        if hasattr(lovelace_data, "resources"):
+            resources = lovelace_data.resources
+        elif isinstance(lovelace_data, dict):
+            resources = lovelace_data.get("resources")
+
+        if resources is None:
+            _LOGGER.debug("Les ressources Lovelace ne sont pas accessibles.")
+            return
+
+        if not resources.loaded:
+            try:
+                await resources.async_load()
+            except Exception as err:
+                _LOGGER.warning("Erreur lors du chargement des ressources Lovelace: %s", err)
+                return
+
+        url = "/solar-optimizer-frontend/solar-optimizer-card.js"
+
+        exists = False
+        try:
+            for entry in resources.async_items():
+                if entry.get("url") == url:
+                    exists = True
+                    break
+        except Exception as err:
+            _LOGGER.warning("Erreur lors de la lecture des ressources Lovelace: %s", err)
+            return
+
+        if not exists:
+            _LOGGER.info("Ajout de la carte Solar Optimizer aux ressources Lovelace : %s", url)
+            try:
+                await resources.async_create_item({"res_type": "module", "url": url})
+            except Exception as err:
+                _LOGGER.warning(
+                    "Impossible d'ajouter automatiquement la ressource Lovelace : %s. " "Si vous êtes en mode Lovelace YAML, vous devez ajouter la ressource manuellement.", err
+                )
+
+    hass.async_create_task(register_lovelace_resource())
+
+
 async def async_setup(
     hass: HomeAssistant, config: ConfigType
 ):  # pylint: disable=unused-argument
@@ -75,6 +146,9 @@ async def async_setup(
     )
 
     hass.data.setdefault(DOMAIN, {})
+
+    # On enregistre la partie frontend (carte Lovelace)
+    await async_register_frontend(hass)
 
     # L'argument config contient votre fichier configuration.yaml
     solar_optimizer_config = config.get(DOMAIN)
@@ -93,6 +167,39 @@ async def async_setup(
         SERVICE_RELOAD,
         _handle_reload,
     )
+
+    async def _handle_start_device(call):
+        """Handle solar_optimizer.start_device service call"""
+        coordinator = SolarOptimizerCoordinator.get_coordinator()
+        if coordinator is None:
+            _LOGGER.error("start_device: coordinator not found")
+            return
+        device_id = call.data.get("device_id")
+        duration = call.data.get("duration")
+        device = coordinator.get_device_by_unique_id(device_id)
+        if device is None:
+            _LOGGER.warning("start_device: device '%s' not found", device_id)
+            return
+        await device.start_forced(duration_hours=float(duration) if duration is not None else None)
+        hass.async_create_task(coordinator.async_refresh())
+
+    hass.services.async_register(DOMAIN, SERVICE_START_DEVICE, _handle_start_device)
+
+    async def _handle_stop_device(call):
+        """Handle solar_optimizer.stop_device service call"""
+        coordinator = SolarOptimizerCoordinator.get_coordinator()
+        if coordinator is None:
+            _LOGGER.error("stop_device: coordinator not found")
+            return
+        device_id = call.data.get("device_id")
+        device = coordinator.get_device_by_unique_id(device_id)
+        if device is None:
+            _LOGGER.warning("stop_device: device '%s' not found", device_id)
+            return
+        await device.stop_forced()
+        hass.async_create_task(coordinator.async_refresh())
+
+    hass.services.async_register(DOMAIN, SERVICE_STOP_DEVICE, _handle_stop_device)
 
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
 
