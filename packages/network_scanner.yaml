@@ -4,16 +4,16 @@
 #  mac_mapping_2: "00:08:9b:c2:e5:13;Johanba-Server Port 1"
 #  mac_mapping_3: "00:08:9b:c2:e5:14;Johanba-Server Port 2"
 
-device_tracker:
+#device_tracker:
   # PING Device Tracker - Backup tracking method
-  - platform: ping
-    hosts:
-      ping_192_168_1_1: 192.168.1.1 # Router/Gateway
-      ping_192_168_1_30: 192.168.1.31 # Home Assistant Server
-      ping_192_168_1_144: 192.168.1.144 # DVR Inside
-      ping_192_168_1_151: 192.168.1.151 # DVR Outside
-    count: 3
-    consider_home: 180
+#  - platform: ping
+#    hosts:
+#      ping_192_168_1_1: 192.168.1.1 # Router/Gateway
+#      ping_192_168_1_30: 192.168.1.31 # Home Assistant Server
+#      ping_192_168_1_144: 192.168.1.144 # DVR Inside
+#      ping_192_168_1_151: 192.168.1.151 # DVR Outside
+#    count: 3
+#    consider_home: 180
 #===============================================================================
 # NOTES:
 # 1. NMAP tracker YAML removed due to Home Assistant Core breaking change

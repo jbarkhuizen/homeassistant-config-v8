@@ -485,5 +485,11 @@ recorder:
 device_tracker:
   - platform: google_maps
     username: "jbarkhuizen@gmail.com"
-
-      # ==========
+    scan_interval: 60
+    max_gps_accuracy: 200
+  - platform: google_maps
+    username: "lapanzaonline@gmail.com"
+    scan_interval: 60
+    max_gps_accuracy: 200
+     
+# ==========
