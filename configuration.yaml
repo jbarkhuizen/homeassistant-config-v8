@@ -369,6 +369,8 @@ logger:
     urllib3.connectionpool: error
     requests.packages.urllib3.connectionpool: error
     aiohttp.access: error
+    bluetooth: error
+    homeassistant.components.bluetooth: error
 
 recorder:
   purge_keep_days: 90

@@ -69,6 +69,10 @@ template:
             'sensor.deyeinvertermaster_battery_soc',
             'sensor.deyeinverterslave_battery_soc',
             'sensor.deyeinvertercombined_battery_soc',
+            'sensor.solarsynkv3_2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_battery_soc',
             'sensor.sm_g996b_battery_level'
           ] %}
           {% set ns = namespace(count=0) %}
@@ -91,10 +95,14 @@ template:
           devices: >
             {% set excluded_entities = [
               'sensor.min_soc_battery',
-              'sensor.deyeinvertermaster_battery_soc',
-              'sensor.deyeinverterslave_battery_soc',
-              'sensor.deyeinvertercombined_battery_soc',
-              'sensor.sm_g996b_battery_level'
+            'sensor.deyeinvertermaster_battery_soc',
+            'sensor.deyeinverterslave_battery_soc',
+            'sensor.deyeinvertercombined_battery_soc',
+            'sensor.solarsynkv3_2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_battery_soc',
+            'sensor.sm_g996b_battery_level'
             ] %}
             {% set ns = namespace(devices=[]) %}
             {% for state in states.sensor
@@ -127,6 +135,10 @@ template:
             'sensor.deyeinvertermaster_battery_soc',
             'sensor.deyeinverterslave_battery_soc',
             'sensor.deyeinvertercombined_battery_soc',
+            'sensor.solarsynkv3_2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_battery_soc',
             'sensor.sm_g996b_battery_level'
           ] %}
           {% set ns = namespace(count=0) %}
@@ -149,10 +161,14 @@ template:
           devices: >
             {% set excluded_entities = [
               'sensor.min_soc_battery',
-              'sensor.deyeinvertermaster_battery_soc',
-              'sensor.deyeinverterslave_battery_soc',
-              'sensor.deyeinvertercombined_battery_soc',
-              'sensor.sm_g996b_battery_level'
+            'sensor.deyeinvertermaster_battery_soc',
+            'sensor.deyeinverterslave_battery_soc',
+            'sensor.deyeinvertercombined_battery_soc',
+            'sensor.solarsynkv3_2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_battery_soc',
+            'sensor.sm_g996b_battery_level'
             ] %}
             {% set ns = namespace(devices=[]) %}
             {% for state in states.sensor
@@ -185,6 +201,10 @@ template:
             'sensor.deyeinvertermaster_battery_soc',
             'sensor.deyeinverterslave_battery_soc',
             'sensor.deyeinvertercombined_battery_soc',
+            'sensor.solarsynkv3_2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_battery_soc',
             'sensor.sm_g996b_battery_level'
           ] %}
           {% set ns = namespace(count=0) %}
@@ -212,6 +232,10 @@ template:
             'sensor.deyeinvertermaster_battery_soc',
             'sensor.deyeinverterslave_battery_soc',
             'sensor.deyeinvertercombined_battery_soc',
+            'sensor.solarsynkv3_2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_battery_soc',
             'sensor.sm_g996b_battery_level'
           ] %}
           {% set ns = namespace(total=0, count=0) %}
@@ -272,6 +296,10 @@ template:
             'sensor.deyeinvertermaster_battery_soc',
             'sensor.deyeinverterslave_battery_soc',
             'sensor.deyeinvertercombined_battery_soc',
+            'sensor.solarsynkv3_2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_battery_soc',
             'sensor.sm_g996b_battery_level'
           ] %}
           {% set ns = namespace(lowest_battery=100, device_name='None') %}
@@ -294,10 +322,14 @@ template:
           battery_level: >
             {% set excluded_entities = [
               'sensor.min_soc_battery',
-              'sensor.deyeinvertermaster_battery_soc',
-              'sensor.deyeinverterslave_battery_soc',
-              'sensor.deyeinvertercombined_battery_soc',
-              'sensor.sm_g996b_battery_level'
+            'sensor.deyeinvertermaster_battery_soc',
+            'sensor.deyeinverterslave_battery_soc',
+            'sensor.deyeinvertercombined_battery_soc',
+            'sensor.solarsynkv3_2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_battery_soc',
+            'sensor.sm_g996b_battery_level'
             ] %}
             {% set ns = namespace(lowest_battery=100) %}
             {% for state in states.sensor
@@ -349,6 +381,10 @@ automation:
             'sensor.deyeinvertermaster_battery_soc',
             'sensor.deyeinverterslave_battery_soc',
             'sensor.deyeinvertercombined_battery_soc',
+            'sensor.solarsynkv3_2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_battery_soc',
             'sensor.sm_g996b_battery_level'
           ] %}
           {% for state in states.sensor
@@ -375,10 +411,14 @@ automation:
           for_each: >
             {% set excluded_entities = [
               'sensor.min_soc_battery',
-              'sensor.deyeinvertermaster_battery_soc',
-              'sensor.deyeinverterslave_battery_soc',
-              'sensor.deyeinvertercombined_battery_soc',
-              'sensor.sm_g996b_battery_level'
+            'sensor.deyeinvertermaster_battery_soc',
+            'sensor.deyeinverterslave_battery_soc',
+            'sensor.deyeinvertercombined_battery_soc',
+            'sensor.solarsynkv3_2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_battery_soc',
+            'sensor.sm_g996b_battery_level'
             ] %}
             {% set ns = namespace(devices=[]) %}
             {% for state in states.sensor
@@ -523,6 +563,10 @@ automation:
             'sensor.deyeinvertermaster_battery_soc',
             'sensor.deyeinverterslave_battery_soc',
             'sensor.deyeinvertercombined_battery_soc',
+            'sensor.solarsynkv3_2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_battery_soc',
             'sensor.sm_g996b_battery_level'
           ] %}
           {% for state in states.sensor
@@ -548,10 +592,14 @@ automation:
           for_each: >
             {% set excluded_entities = [
               'sensor.min_soc_battery',
-              'sensor.deyeinvertermaster_battery_soc',
-              'sensor.deyeinverterslave_battery_soc',
-              'sensor.deyeinvertercombined_battery_soc',
-              'sensor.sm_g996b_battery_level'
+            'sensor.deyeinvertermaster_battery_soc',
+            'sensor.deyeinverterslave_battery_soc',
+            'sensor.deyeinvertercombined_battery_soc',
+            'sensor.solarsynkv3_2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_battery_soc',
+            'sensor.sm_g996b_battery_level'
             ] %}
             {% set ns = namespace(devices=[]) %}
             {% for state in states.sensor
@@ -684,10 +732,14 @@ automation:
           battery_devices: >
             {% set excluded_entities = [
               'sensor.min_soc_battery',
-              'sensor.deyeinvertermaster_battery_soc',
-              'sensor.deyeinverterslave_battery_soc',
-              'sensor.deyeinvertercombined_battery_soc',
-              'sensor.sm_g996b_battery_level'
+            'sensor.deyeinvertermaster_battery_soc',
+            'sensor.deyeinverterslave_battery_soc',
+            'sensor.deyeinvertercombined_battery_soc',
+            'sensor.solarsynkv3_2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_battery_soc',
+            'sensor.sm_g996b_battery_level'
             ] %}
             {% set ns = namespace(devices=[]) %}
             {% for state in states.sensor
@@ -790,10 +842,14 @@ automation:
 
             {% set excluded_entities = [
               'sensor.min_soc_battery',
-              'sensor.deyeinvertermaster_battery_soc',
-              'sensor.deyeinverterslave_battery_soc',
-              'sensor.deyeinvertercombined_battery_soc',
-              'sensor.sm_g996b_battery_level'
+            'sensor.deyeinvertermaster_battery_soc',
+            'sensor.deyeinverterslave_battery_soc',
+            'sensor.deyeinvertercombined_battery_soc',
+            'sensor.solarsynkv3_2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2006184501_battery_soc',
+            'sensor.sunsynk_sn2305148809_battery_soc',
+            'sensor.sm_g996b_battery_level'
             ] %}
             {% set ns = namespace(devices=[]) %}
             {% for state in states.sensor
