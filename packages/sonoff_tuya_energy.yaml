@@ -642,7 +642,8 @@ template:
 
       - name: "Sonoff 1000cd8649 Summary"
         unique_id: sonoff_1000cd8649_summary
-        state: "{{ states('sensor.sonoff_1000cd8649_energy') }}"
+        state: "{{ states('sensor.sonoff_1000cd8649_power') | float(0) }}"
+#        state: "{{ states('sensor.sonoff_1000cd8649_energy') }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -733,7 +734,8 @@ template:
 
       - name: "Boorgat Summary"
         unique_id: boorgat_summary
-        state: "{{ states('sensor.boorgat_energy') }}"
+        state: "{{ states('sensor.boorgat_power_sensor') | float(0) }}"
+#        state: "{{ states('sensor.boorgat_energy') }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -759,7 +761,9 @@ template:
 
       - name: "Geyser External Summary"
         unique_id: geyser_external_summary
-        state: "{{ states('sensor.geyser_external_energy') }}"
+#       Commented line below out and add the second line from Gemini
+#       state: "{{ states('sensor.geyser_external_energy') }}"
+        state: "{{ states('sensor.geyser_external_power') | float(0) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -772,7 +776,9 @@ template:
 
       - name: "Geyser Indoor Summary"
         unique_id: geyser_indoor_summary
-        state: "{{ states('sensor.geyser_indoor_energy') }}"
+        state: "{{ states('sensor.your_actual_indoor_geyser_sensor') | float(0) }}"
+#        Commented the line below out and replace it with the line above from Gemini
+#        state: "{{ states('sensor.geyser_indoor_energy') }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -824,7 +830,9 @@ template:
 
       - name: "Plugs 1 Summary"
         unique_id: plugs_1_summary
-        state: "{{ states('sensor.plugs_1_energy') }}"
+        state: "{{ states('sensor.your_actual_plugs_1_sensor') | float(0) }}"
+#       Commented the line below out and added the line above with Gemini
+#       state: "{{ states('sensor.plugs_1_energy') }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -863,7 +871,9 @@ template:
 
       - name: "Plugs Kas Summary"
         unique_id: plugs_kas_summary
-        state: "{{ states('sensor.plugs_kas_energy') }}"
+        state: "{{ states('sensor.your_actual_kas_plugs_sensor') | float(0) }}"
+#       Commented the line below out and added the line above with Gemini
+#       state: "{{ states('sensor.plugs_kas_energy') }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -876,7 +886,9 @@ template:
 
       - name: "Printers Router Summary"
         unique_id: printers_router_summary
-        state: "{{ states('sensor.printers_router_energy') }}"
+        state: "{{ states('sensor.your_actual_printer_router_sensor') | float(0) }}"
+#       Commented the line below out and added the line above with Gemini
+#       state: "{{ states('sensor.printers_router_energy') }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"

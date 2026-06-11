@@ -49,7 +49,7 @@
     - name: "Prepaid Eskom Units Used Since Recharge"
       unique_id: prepaid_eskom_units_used_since_recharge
       unit_of_measurement: "kWh"
-      state_class: measurement
+      state_class: total_increasing
       device_class: energy
       state: >
         {% set current_total_kwh = (states('sensor.deyeinvertercombined_summary_total_grid_import_buy') | float(0)) * 1000 %}
@@ -58,22 +58,23 @@
         {% set calibration = states('input_number.prepaid_meter_calibration_factor') | float(1) %}
         {{ ([raw_used, 0] | max * calibration) | round(2) }}
       availability: >
-        {{ states('sensor.deyeinvertercombined_summary_total_grid_import_buy') not in ['unknown', 'unavailable', 'none']
-           and states('input_number.prepaid_meter_grid_import_baseline') not in ['unknown', 'unavailable', 'none']
-           and states('input_number.prepaid_meter_calibration_factor') not in ['unknown', 'unavailable', 'none'] }}
+        {{ has_value('sensor.deyeinvertercombined_summary_total_grid_import_buy') 
+           and has_value('input_number.prepaid_meter_grid_import_baseline') 
+           and has_value('input_number.prepaid_meter_calibration_factor') }}
       icon: mdi:transmission-tower-import
 
     - name: "Prepaid Units Left"
       unique_id: prepaid_units_left
       unit_of_measurement: "kWh"
-      state_class: measurement
+      state_class: total_increasing
+      device_class: energy
       state: >
         {% set purchased = states('input_number.prepaid_meter_units') | float(0) %}
         {% set used = states('sensor.prepaid_eskom_units_used_since_recharge') | float(0) %}
         {{ [purchased - used, 0] | max | round(2) }}
       availability: >
-        {{ states('input_number.prepaid_meter_units') not in ['unknown', 'unavailable', 'none']
-           and states('sensor.prepaid_eskom_units_used_since_recharge') not in ['unknown', 'unavailable', 'none'] }}
+        {{ has_value('input_number.prepaid_meter_units') 
+           and has_value('sensor.prepaid_eskom_units_used_since_recharge') }}
       icon: >
         {% set units = states('sensor.prepaid_units_left') | float(0) %}
         {% if units <= 5 %}
@@ -89,34 +90,34 @@
     - name: "Grid Units Used This Hour"
       unique_id: grid_units_used_this_hour
       unit_of_measurement: "kWh"
-      state_class: measurement
+      state_class: total
       device_class: energy
       state: >
         {{ ((states('sensor.grid_units_used_hourly') | float(0)) * 1000) | round(3) }}
       availability: >
-        {{ states('sensor.grid_units_used_hourly') not in ['unknown', 'unavailable', 'none'] }}
+        {{ has_value('sensor.grid_units_used_hourly') }}
       icon: mdi:transmission-tower-import
 
     - name: "Solar Generated This Hour"
       unique_id: solar_generated_this_hour
       unit_of_measurement: "kWh"
-      state_class: measurement
+      state_class: total
       device_class: energy
       state: >
         {{ ((states('sensor.solar_generated_hourly') | float(0)) * 1000) | round(3) }}
       availability: >
-        {{ states('sensor.solar_generated_hourly') not in ['unknown', 'unavailable', 'none'] }}
+        {{ has_value('sensor.solar_generated_hourly') }}
       icon: mdi:solar-power
 
     - name: "Battery Discharged This Hour"
       unique_id: battery_discharged_this_hour
       unit_of_measurement: "kWh"
-      state_class: measurement
+      state_class: total
       device_class: energy
       state: >
         {{ ((states('sensor.battery_discharged_hourly') | float(0)) * 1000) | round(3) }}
       availability: >
-        {{ states('sensor.battery_discharged_hourly') not in ['unknown', 'unavailable', 'none'] }}
+        {{ has_value('sensor.battery_discharged_hourly') }}
       icon: mdi:battery-arrow-down
 
     - name: "Prepaid Units Variance"
@@ -128,8 +129,8 @@
         {% set actual = states('input_number.prepaid_meter_actual_balance') | float(0) %}
         {{ (estimated - actual) | round(2) }}
       availability: >
-        {{ states('sensor.prepaid_units_left') not in ['unknown', 'unavailable', 'none']
-           and states('input_number.prepaid_meter_actual_balance') not in ['unknown', 'unavailable', 'none'] }}
+        {{ has_value('sensor.prepaid_units_left') 
+           and has_value('input_number.prepaid_meter_actual_balance') }}
       icon: >
         {% set variance = states('sensor.prepaid_units_variance') | float(0) | abs %}
         {% if variance <= 1 %}
@@ -177,30 +178,31 @@
           {{ states('input_number.prepaid_meter_calibration_factor') | float(1) | round(3) }}
         {% endif %}
       availability: >
-        {{ states('input_number.prepaid_meter_units') not in ['unknown', 'unavailable', 'none']
-           and states('input_number.prepaid_meter_actual_balance') not in ['unknown', 'unavailable', 'none']
-           and states('sensor.deyeinvertercombined_summary_total_grid_import_buy') not in ['unknown', 'unavailable', 'none']
-           and states('input_number.prepaid_meter_grid_import_baseline') not in ['unknown', 'unavailable', 'none'] }}
+        {{ has_value('input_number.prepaid_meter_units') 
+           and has_value('input_number.prepaid_meter_actual_balance') 
+           and has_value('sensor.deyeinvertercombined_summary_total_grid_import_buy') 
+           and has_value('input_number.prepaid_meter_grid_import_baseline') }}
       icon: mdi:tune-variant
 
     - name: "Prepaid Daily Accuracy Snapshot Display"
       unique_id: prepaid_daily_accuracy_snapshot_display
-      state: >
-        {{ states('input_text.prepaid_daily_accuracy_snapshot') }}
+      state: "{{ states('input_text.prepaid_daily_accuracy_snapshot') }}"
       icon: mdi:clipboard-text-outline
 
     - name: "Sonoff 10023b8a5d Weekly Energy (Sunday Start)"
       unit_of_measurement: "kWh"
+      device_class: energy
       state_class: total
       state: >
-          {% if now().weekday() == 6 %}
-            {{ states('sensor.sonoff_10023b8a5d_energy') | float(0) }}
-          {% else %}
-            {{ states('sensor.sonoff_10023b8a5d_daily') | float(0) + 
-               (now().strftime('%U') | int - 1) * states('sensor.sonoff_10023b8a5d_daily') | float(0) }}
-          {% endif %}
+        {% if now().weekday() == 6 %}
+          {{ states('sensor.sonoff_10023b8a5d_energy') | float(0) }}
+        {% else %}
+          {{ states('sensor.sonoff_10023b8a5d_daily') | float(0) + 
+             (now().strftime('%U') | int(0) - 1) * states('sensor.sonoff_10023b8a5d_daily') | float(0) }}
+        {% endif %}
+
     # -----------------------------------------------------------------------
-    # Inverter Automations
+    # Inverter Automations Tracker
     # -----------------------------------------------------------------------
     - name: "Automation InverterConfig Update Times Last Run"
       unique_id: automation_inverterconfig_update_times_last_run
@@ -245,7 +247,7 @@
       icon: mdi:toggle-switch
 
     # -----------------------------------------------------------------------
-    # Security / Access
+    # Security / Access Trackers
     # -----------------------------------------------------------------------
     - name: "Automation Badlogin Initialize Baseline Last Run"
       unique_id: automation_badlogin_initialize_baseline_last_run
@@ -311,7 +313,7 @@
       icon: mdi:toggle-switch
 
     # -----------------------------------------------------------------------
-    # Recorder / Database
+    # Recorder / Database Trackers
     # -----------------------------------------------------------------------
     - name: "Automation DB Initialize Baseline Last Run"
       unique_id: automation_recorder_initialize_baseline_last_run
@@ -356,7 +358,7 @@
       icon: mdi:toggle-switch
 
     # -----------------------------------------------------------------------
-    # Prepaid Meter
+    # Prepaid Meter Trackers
     # -----------------------------------------------------------------------
     - name: "Automation Prepaid Daily Status Last Run"
       unique_id: automation_prepaid_daily_status_last_run
@@ -485,7 +487,7 @@
       icon: mdi:toggle-switch
 
     # -----------------------------------------------------------------------
-    # System Health / Updates
+    # System Health / Update Trackers
     # -----------------------------------------------------------------------
     - name: "Automation System Morning Email Last Run"
       unique_id: automation_system_morning_test_email_last_run
@@ -511,7 +513,7 @@
     - name: "Automation Daily Update Telegram Last Run"
       unique_id: automation_daily_update_telegram_last_run
       state: >
-        {% set t = state_attr('automation.system_daily_update_status_report_at_89_15_telegram', 'last_triggered') %}
+        {% set t = state_attr('automation.system_daily_update_status_report_at_19_15_telegram', 'last_triggered') %}
         {% if t is not none %}
           {{ t.astimezone(now().tzinfo).strftime('%Y-%m-%d %H:%M:%S') }}
         {% else %}
@@ -522,7 +524,7 @@
     - name: "Automation Daily Update Telegram Status"
       unique_id: automation_daily_update_telegram_status
       state: >
-        {% if is_state('automation.system_daily_update_status_report_at_89_15_telegram', 'on') %}
+        {% if is_state('automation.system_daily_update_status_report_at_19_15_telegram', 'on') %}
           Enabled
         {% else %}
           Disabled
@@ -578,63 +580,60 @@
       unique_id: solar_daily_report_18h00_message
       icon: mdi:solar-power
       availability: >
-        {{ states('sensor.daily_total_solar_production') not in ['unknown', 'unavailable', 'None', '', none]
-           and states('sensor.solar_forecast_total_today') not in ['unknown', 'unavailable', 'None', '', none]
-           and states('sensor.energy_production_today_remaining') not in ['unknown', 'unavailable', 'None', '', none]
-           and states('sensor.solar_forecast_accuracy_so_far') not in ['unknown', 'unavailable', 'None', '', none] }}
-      state: >
-        {% set actual_raw = states('sensor.daily_total_solar_production') %}
-        {% set forecast_raw = states('sensor.solar_forecast_total_today') %}
-        {% set remaining_raw = states('sensor.energy_production_today_remaining') %}
-        {% set accuracy_raw = states('sensor.solar_forecast_accuracy_so_far') %}
-        {% set peak_raw = states('sensor.solar_forecast_peak_time_today') %}
+        {{ has_value('sensor.daily_total_solar_production') 
+           and has_value('sensor.solar_forecast_total_today') 
+           and has_value('sensor.energy_production_today_remaining') 
+           and has_value('sensor.solar_forecast_accuracy_so_far') }}
+      state: "Report Ready"
+      attributes:
+        report_text: >
+          {% set actual_production = states('sensor.daily_total_solar_production') | float(0) %}
+          {% set forecast_value = states('sensor.solar_forecast_total_today') | float(0) %}
+          {% set remaining = states('sensor.energy_production_today_remaining') | float(0) %}
+          {% set accuracy = states('sensor.solar_forecast_accuracy_so_far') | float(0) %}
+          {% set peak_raw = states('sensor.solar_forecast_peak_time_today') %}
+          {% set variance = actual_production - forecast_value %}
 
-        {% set actual_production = actual_raw | float(0) %}
-        {% set forecast_value = forecast_raw | float(0) %}
-        {% set remaining = remaining_raw | float(0) %}
-        {% set accuracy = accuracy_raw | float(0) %}
-        {% set variance = actual_production - forecast_value %}
-
-        {% if peak_raw in ['unknown', 'unavailable', 'None', '', none] %}
-          {% set peak_display = 'N/A' %}
-        {% else %}
-          {% set peak_dt = as_datetime(peak_raw) %}
-          {% if peak_dt %}
-            {% set peak_display = peak_dt.strftime('%H:%M') %}
-          {% else %}
+          {% if not has_value('sensor.solar_forecast_peak_time_today') %}
             {% set peak_display = 'N/A' %}
-          {% endif %}
-        {% endif %}
-
-        Daily Solar Report - {{ now().strftime('%d %B %Y') }}
-
-        ACTUAL PRODUCTION
-        Generated: {{ "%.2f" | format(actual_production) }} kWh
-
-        TODAY'S FORECAST
-        Expected: {{ "%.2f" | format(forecast_value) }} kWh
-        Remaining: {{ "%.2f" | format(remaining) }} kWh
-
-        VARIANCE
-        {% if forecast_value > 0 %}
-          {% set variance_percent = ((variance / forecast_value) * 100) | round(1) %}
-          {% if variance >= 0 %}
-        Performance: +{{ "%.2f" | format(variance) }} kWh ({{ variance_percent }}% above forecast)
           {% else %}
-        Performance: {{ "%.2f" | format(variance) }} kWh ({{ variance_percent | abs }}% below forecast)
+            {% set peak_dt = as_datetime(peak_raw) %}
+            {% if peak_dt %}
+              {% set peak_display = peak_dt.strftime('%H:%M') %}
+            {% else %}
+              {% set peak_display = 'N/A' %}
+            {% endif %}
           {% endif %}
-        {% else %}
-        Performance: {{ "%.2f" | format(variance) }} kWh (forecast unavailable)
-        {% endif %}
 
-        FORECAST ACCURACY
-        So Far: {{ accuracy | round(1) }}%
+          Daily Solar Report - {{ now().strftime('%d %B %Y') }}
 
-        PEAK GENERATION
-        Peak Time: {{ peak_display }} SAST
+          ACTUAL PRODUCTION
+          Generated: {{ "%.2f" | format(actual_production) }} kWh
 
-        Next Update: 18:00 daily
-        Inverters: Deye Master + Slave
+          TODAY'S FORECAST
+          Expected: {{ "%.2f" | format(forecast_value) }} kWh
+          Remaining: {{ "%.2f" | format(remaining) }} kWh
+
+          VARIANCE
+          {% if forecast_value > 0 %}
+            {% set variance_percent = ((variance / forecast_value) * 100) | round(1) %}
+            {% if variance >= 0 %}
+          Performance: +{{ "%.2f" | format(variance) }} kWh ({{ variance_percent }}% above forecast)
+            {% else %}
+          Performance: {{ "%.2f" | format(variance) }} kWh ({{ variance_percent | abs }}% below forecast)
+            {% endif %}
+          {% else %}
+          Performance: {{ "%.2f" | format(variance) }} kWh (forecast unavailable)
+          {% endif %}
+
+          FORECAST ACCURACY
+          So Far: {{ accuracy | round(1) }}%
+
+          PEAK GENERATION
+          Peak Time: {{ peak_display }} SAST
+
+          Next Update: 18:00 daily
+          Inverters: Deye Master + Slave
 
 # ---------------------------------------------------------------------------
 # TEMPLATE ENTITIES - Binary Sensors & Trigger-based Sensors
@@ -643,7 +642,9 @@
     - name: "Network Monitoring Active"
       unique_id: network_monitoring_active
       device_class: connectivity
-      state: "{{ (as_timestamp(now()) - as_timestamp(states.sensor.network_devices_table.last_changed)) < 600 }}"
+      state: >
+        {% set last_ch = states.sensor.network_devices_table.last_changed if states.sensor.network_devices_table is defined else none %}
+        {{ (as_timestamp(now()) - as_timestamp(last_ch)) < 600 if last_ch is not none else false }}
 
 # Trigger-based template sensor: Auto Update Status
 - trigger:
@@ -653,22 +654,22 @@
     - name: "Auto Update Status"
       unique_id: auto_update_status
       icon: >
-        {% set status = trigger.event.data.status %}
+        {% set status = trigger.event.data.status if trigger is defined and trigger.event is defined else 'unknown' %}
         {% if status == 'success' %}mdi:update
         {% elif status == 'partial' %}mdi:update-alert
         {% elif status == 'failure' %}mdi:alert-circle-outline
         {% elif status == 'no_updates' %}mdi:update-off
         {% else %}mdi:progress-clock{% endif %}
-      state: "{{ trigger.event.data.status }}"
+      state: "{{ trigger.event.data.status if trigger is defined and trigger.event is defined else 'unknown' }}"
       attributes:
-        last_run: "{{ trigger.event.data.last_run }}"
-        pre_count: "{{ trigger.event.data.pre_count }}"
-        post_count: "{{ trigger.event.data.post_count }}"
-        attempted_entities: "{{ trigger.event.data.attempted_entities }}"
-        remaining_entities: "{{ trigger.event.data.remaining_entities }}"
-        duration_seconds: "{{ trigger.event.data.duration_seconds }}"
-        restart_required: "{{ trigger.event.data.restart_required }}"
-        status_detail: "{{ trigger.event.data.status_detail }}"
+        last_run: "{{ trigger.event.data.last_run if trigger is defined and trigger.event is defined else 'unknown' }}"
+        pre_count: "{{ trigger.event.data.pre_count if trigger is defined and trigger.event is defined else 0 }}"
+        post_count: "{{ trigger.event.data.post_count if trigger is defined and trigger.event is defined else 0 }}"
+        attempted_entities: "{{ trigger.event.data.attempted_entities if trigger is defined and trigger.event is defined else [] }}"
+        remaining_entities: "{{ trigger.event.data.remaining_entities if trigger is defined and trigger.event is defined else [] }}"
+        duration_seconds: "{{ trigger.event.data.duration_seconds if trigger is defined and trigger.event is defined else 0 }}"
+        restart_required: "{{ trigger.event.data.restart_required if trigger is defined and trigger.event is defined else false }}"
+        status_detail: "{{ trigger.event.data.status_detail if trigger is defined and trigger.event is defined else 'unknown' }}"
 
 # Trigger-based template sensor: Backup Health Status
 - trigger:
@@ -677,7 +678,6 @@
   sensor:
     - name: "Backup Health Status"
       unique_id: backup_health_status
-
       icon: >
         {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
           {% set status = trigger.event.data.status | default('unknown') %}
@@ -688,14 +688,12 @@
         {% elif status == 'warning' %}mdi:progress-alert
         {% elif status == 'failure' %}mdi:alert-circle
         {% else %}mdi:progress-clock{% endif %}
-
       state: >
         {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}
           {{ trigger.event.data.status | default('unknown') }}
         {% else %}
           unknown
         {% endif %}
-
       attributes:
         last_run: >
           {% if trigger is defined and trigger.event is defined and trigger.event.data is defined %}

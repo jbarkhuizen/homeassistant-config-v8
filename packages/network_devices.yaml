@@ -6,18 +6,23 @@
 command_line:
   - sensor:
       name: "Network Active Devices"
-      command: 'nmap -sn 192.168.1.0/24 2>/dev/null | grep "Nmap scan report" | wc -l'
+      command: 'nmap -sn -n -T4 --max-retries 0 192.168.1.0/24 2>/dev/null | grep -c "Nmap scan report"'
+      command_timeout: 30
       scan_interval: 300
       unit_of_measurement: "devices"
 
   - sensor:
       name: "Network Device List"
       command: >
-        nmap -sn 192.168.1.0/24 2>/dev/null |
+        nmap -sn -n -T4 --max-retries 0 192.168.1.0/24 2>/dev/null |
         grep "Nmap scan report" |
         sed 's/Nmap scan report for //' |
         head -20
+      command_timeout: 30
       scan_interval: 300
+      value_template: "List Active"
+      json_attributes:
+        - devices
 
 # Template sensors to process device information
 template:
@@ -28,7 +33,7 @@ template:
         attributes:
           last_scan: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
           devices: >
-            {% set devices = [] %}
+            {% set ns = namespace(devices=[]) %}
 
             {# Add Home Assistant #}
             {% set ha_device = {
@@ -42,7 +47,7 @@ template:
               'services': 'HA, InfluxDB, Grafana',
               'last_seen': now().strftime('%Y-%m-%d %H:%M')
             } %}
-            {% set devices = devices + [ha_device] %}
+            {% set ns.devices = ns.devices + [ha_device] %}
 
             {# Add Router #}
             {% set router_device = {
@@ -56,39 +61,56 @@ template:
               'services': 'HTTP, HTTPS, DHCP, DNS',
               'last_seen': now().strftime('%Y-%m-%d %H:%M')
             } %}
-            {% set devices = devices + [router_device] %}
+            {% set ns.devices = ns.devices + [router_device] %}
 
-            {# [UPDATED] Fixed device_tracker loop - changed from states.device_tracker to states.device_tracker.values() #}
-            {% for state in states.device_tracker.values() %}
-              {% if state.attributes.get('source_type') == 'router' and state.attributes.get('ip') %}
+            {# Process device trackers safely #}
+            {% for entity_id in states.device_tracker | map(attribute='entity_id') %}
+              {% set state = states[entity_id] %}
+              {% if state is defined and state.attributes.get('source_type') == 'router' and state.attributes.get('ip') %}
+                
+                {# Convert the object to string safely without calling methods #}
+                {% if state.last_changed %}
+                  {% set last_seen_str = (state.last_changed | string)[0:16] %}
+                {% else %}
+                  {% set last_seen_str = 'Unknown' %}
+                {% endif %}
+
                 {% set device = {
                   'name': state.attributes.get('friendly_name') or 'Unknown',
                   'ip': state.attributes.get('ip'),
                   'status': 'Online' if state.state == 'home' else 'Away',
-                  'type': 'Mobile' if 'iphone' in state.entity_id.lower() else
-                          'Computer' if 'laptop' in state.entity_id.lower() else
-                          'Smart Device' if 'sonoff' in state.entity_id.lower() or 'tuya' in state.entity_id.lower() else
+                  'type': 'Mobile' if 'iphone' in entity_id.lower() else
+                          'Computer' if 'laptop' in entity_id.lower() else
+                          'Smart Device' if 'sonoff' in entity_id.lower() or 'tuya' in entity_id.lower() else
                           'Unknown Device',
                   'vendor': state.attributes.get('vendor') or 'Unknown',
                   'mac': state.attributes.get('mac') or 'Unknown',
                   'ports': 'Unknown',
                   'services': 'Unknown',
-                  'last_seen': state.last_changed.strftime('%Y-%m-%d %H:%M') if state.last_changed else 'Unknown'
+                  'last_seen': last_seen_str
                 } %}
-                {% set devices = devices + [device] %}
+                {% set ns.devices = ns.devices + [device] %}
               {% endif %}
             {% endfor %}
 
-            {{ devices | sort(attribute='ip') }}
+            {{ ns.devices | sort(attribute='ip') }}
 
       - name: "Network Summary"
         unique_id: network_summary
-        state: "{{ state_attr('sensor.network_devices_table', 'devices') | length }}"
+        state: >
+          {% set devices = state_attr('sensor.network_devices_table', 'devices') %}
+          {{ devices | length if devices is not none else 0 }}
         attributes:
-          total_devices: "{{ state_attr('sensor.network_devices_table', 'devices') | length }}"
+          total_devices: >
+            {% set devices = state_attr('sensor.network_devices_table', 'devices') %}
+            {{ devices | length if devices is not none else 0 }}
           online_devices: >
-            {% set devices = state_attr('sensor.network_devices_table', 'devices') or [] %}
-            {{ devices | selectattr('status', 'equalto', 'Online') | list | length }}
+            {% set devices = state_attr('sensor.network_devices_table', 'devices') %}
+            {% if devices is not none %}
+              {{ devices | selectattr('status', 'equalto', 'Online') | list | length }}
+            {% else %}
+              0
+            {% endif %}
           router_status: "{{ 'Online' if is_state('binary_sensor.nokia_router_online', 'on') else 'Offline' }}"
           internet_status: "{{ 'Connected' if is_state('binary_sensor.internet_connected', 'on') else 'Disconnected' }}"
           last_update: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"

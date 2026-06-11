@@ -20,13 +20,28 @@
 
   action:
     - variables:
+        action:
+    - variables:
         pv1: "{{ states('sensor.deyeinvertermaster_summary_day_pv1') | float(0) | round(2) }}"
         pv2: "{{ states('sensor.deyeinvertermaster_summary_day_pv2') | float(0) | round(2) }}"
         total: "{{ (states('sensor.deyeinvertermaster_summary_day_pv1') | float(0) + states('sensor.deyeinvertermaster_summary_day_pv2') | float(0)) | round(2) }}"
-        target: "{{ states('input_number.solar_generation_target') | float(25) }}"
-        achievement: "{{ ((states('sensor.deyeinvertermaster_summary_day_pv1') | float(0) + states('sensor.deyeinvertermaster_summary_day_pv2') | float(0)) / states('input_number.solar_generation_target') | float(25) * 100) | round(1) }}"
+        target: >
+          {% set raw_target = states('input_number.solar_generation_target') | float(25) %}
+          {{ raw_target if raw_target > 0 else 25 }}
+        achievement: >
+          {% set raw_target = states('input_number.solar_generation_target') | float(25) %}
+          {% set current_total = states('sensor.deyeinvertermaster_summary_day_pv1') | float(0) + states('sensor.deyeinvertermaster_summary_day_pv2') | float(0) %}
+          {{ ((current_total / raw_target) * 100) | round(1) if raw_target > 0 else 0 }}
         battery_charged: "{{ states('sensor.deyeinvertermaster_summary_day_battery_charge') | float(0) | round(2) }}"
         grid_export: "{{ states('sensor.deyeinvertermaster_summary_day_grid_export_sell') | float(0) | round(2) }}"
+#       Commented out the below lines and added the ove one from Gemini        
+#       pv1: "{{ states('sensor.deyeinvertermaster_summary_day_pv1') | float(0) | round(2) }}"
+#       pv2: "{{ states('sensor.deyeinvertermaster_summary_day_pv2') | float(0) | round(2) }}"
+#       total: "{{ (states('sensor.deyeinvertermaster_summary_day_pv1') | float(0) + states('sensor.deyeinvertermaster_summary_day_pv2') | float(0)) | round(2) }}"
+#       target: "{{ states('input_number.solar_generation_target') | float(25) }}"
+#       achievement: "{{ ((states('sensor.deyeinvertermaster_summary_day_pv1') | float(0) + states('sensor.deyeinvertermaster_summary_day_pv2') | float(0)) / states('input_number.solar_generation_target') | float(25) * 100) | round(1) }}"
+#       battery_charged: "{{ states('sensor.deyeinvertermaster_summary_day_battery_charge') | float(0) | round(2) }}"
+#       grid_export: "{{ states('sensor.deyeinvertermaster_summary_day_grid_export_sell') | float(0) | round(2) }}"
 
     # --- Telegram ---
     - service: telegram_bot.send_message

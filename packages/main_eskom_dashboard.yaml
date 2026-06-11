@@ -43,7 +43,7 @@ template:
         unique_id: main_eskom_today_usage
         unit_of_measurement: "kWh"
         device_class: energy
-        state_class: measurement
+        state_class: total_increasing  # <--- FIXED
         icon: mdi:flash
         state: "{{ states('sensor.main_eskom_switch_daily') | float(0) | round(2) }}"
 
@@ -51,7 +51,7 @@ template:
         unique_id: main_eskom_monthly_total
         unit_of_measurement: "kWh"
         device_class: energy
-        state_class: measurement
+        state_class: total_increasing  # <--- FIXED
         icon: mdi:calendar-month
         state: "{{ states('sensor.main_eskom_switch_monthly') | float(0) | round(2) }}"
 
@@ -72,5 +72,4 @@ template:
       - name: "Main Eskom Peak Usage Day Label"
         unique_id: main_eskom_peak_usage_day_label
         icon: mdi:calendar-star
-        state: >
-          Last 45 days
+        state: "Last 45 days"
