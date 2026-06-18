@@ -1,0 +1,150 @@
+{
+  "report_date": "2026-06-13",
+  "created_at": "2026-06-13 05:00:00",
+  "updated_at": "2026-06-13 20:00:00",
+  "baseline": {
+    "pv1_total": 477.605,
+    "pv2_total": 266.675
+  },
+  "last_snapshot": {
+    "pv1_total": 490.552,
+    "pv2_total": 273.176
+  },
+  "rows": [
+    {
+      "hour": "05:00-05:59",
+      "pv1_kwh": 0.0,
+      "pv2_kwh": 0.0,
+      "total_kwh": 0.0,
+      "cum_pv1": 0.0,
+      "cum_pv2": 0.0,
+      "cum_total": 0.0
+    },
+    {
+      "hour": "06:00-06:59",
+      "pv1_kwh": 0.0,
+      "pv2_kwh": 0.0,
+      "total_kwh": 0.0,
+      "cum_pv1": 0.0,
+      "cum_pv2": 0.0,
+      "cum_total": 0.0
+    },
+    {
+      "hour": "07:00-07:59",
+      "pv1_kwh": 0.25,
+      "pv2_kwh": 0.0,
+      "total_kwh": 0.25,
+      "cum_pv1": 0.25,
+      "cum_pv2": 0.0,
+      "cum_total": 0.25
+    },
+    {
+      "hour": "08:00-08:59",
+      "pv1_kwh": 0.52,
+      "pv2_kwh": 0.21,
+      "total_kwh": 0.73,
+      "cum_pv1": 0.77,
+      "cum_pv2": 0.21,
+      "cum_total": 0.98
+    },
+    {
+      "hour": "09:00-09:59",
+      "pv1_kwh": 1.62,
+      "pv2_kwh": 0.85,
+      "total_kwh": 2.47,
+      "cum_pv1": 2.39,
+      "cum_pv2": 1.06,
+      "cum_total": 3.45
+    },
+    {
+      "hour": "10:00-10:59",
+      "pv1_kwh": 2.07,
+      "pv2_kwh": 1.23,
+      "total_kwh": 3.3,
+      "cum_pv1": 4.46,
+      "cum_pv2": 2.29,
+      "cum_total": 6.75
+    },
+    {
+      "hour": "11:00-11:59",
+      "pv1_kwh": 1.64,
+      "pv2_kwh": 1.21,
+      "total_kwh": 2.85,
+      "cum_pv1": 6.1,
+      "cum_pv2": 3.5,
+      "cum_total": 9.6
+    },
+    {
+      "hour": "12:00-12:59",
+      "pv1_kwh": 1.6,
+      "pv2_kwh": 1.13,
+      "total_kwh": 2.73,
+      "cum_pv1": 7.7,
+      "cum_pv2": 4.63,
+      "cum_total": 12.33
+    },
+    {
+      "hour": "13:00-13:59",
+      "pv1_kwh": 2.3,
+      "pv2_kwh": 1.11,
+      "total_kwh": 3.41,
+      "cum_pv1": 10.0,
+      "cum_pv2": 5.74,
+      "cum_total": 15.74
+    },
+    {
+      "hour": "14:00-14:59",
+      "pv1_kwh": 1.95,
+      "pv2_kwh": 0.69,
+      "total_kwh": 2.64,
+      "cum_pv1": 11.95,
+      "cum_pv2": 6.43,
+      "cum_total": 18.38
+    },
+    {
+      "hour": "15:00-15:59",
+      "pv1_kwh": 0.75,
+      "pv2_kwh": 0.05,
+      "total_kwh": 0.8,
+      "cum_pv1": 12.7,
+      "cum_pv2": 6.48,
+      "cum_total": 19.18
+    },
+    {
+      "hour": "16:00-16:59",
+      "pv1_kwh": 0.24,
+      "pv2_kwh": 0.01,
+      "total_kwh": 0.25,
+      "cum_pv1": 12.94,
+      "cum_pv2": 6.49,
+      "cum_total": 19.43
+    },
+    {
+      "hour": "17:00-17:59",
+      "pv1_kwh": 0.0,
+      "pv2_kwh": 0.0,
+      "total_kwh": 0.0,
+      "cum_pv1": 12.94,
+      "cum_pv2": 6.49,
+      "cum_total": 19.43
+    },
+    {
+      "hour": "18:00-18:59",
+      "pv1_kwh": 0.0,
+      "pv2_kwh": 0.0,
+      "total_kwh": 0.0,
+      "cum_pv1": 12.94,
+      "cum_pv2": 6.49,
+      "cum_total": 19.43
+    },
+    {
+      "hour": "19:00-19:59",
+      "pv1_kwh": 0.0,
+      "pv2_kwh": 0.0,
+      "total_kwh": 0.0,
+      "cum_pv1": 12.94,
+      "cum_pv2": 6.49,
+      "cum_total": 19.43
+    }
+  ]
+}
