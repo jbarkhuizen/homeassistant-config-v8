@@ -30,6 +30,8 @@ DEFAULT_RETRIES = 2
 RETRY_BACKOFF_SECONDS = 0.35
 RETRYABLE_STATUSES = {408, 429, 500, 502, 503, 504}
 AUTH_COOKIE_NAMES = ("sysauth", "sysauth_http", "sysauth_https")
+SLOW_REQUEST_LOG_SECONDS = 10.0
+REDACTED_QUERY_PARAMS = {"client", "cfg", "hostname", "mac", "macaddr"}
 
 
 @dataclass(slots=True)
@@ -60,6 +62,21 @@ def _extract_model(html: str) -> str:
     """Extract device model in page"""
     match = re.search(r"<span>HW: ([a-zA-Z0-9 \-\.]+)<\/span>", html)
     return match.group(1) if match else ""
+
+
+def _safe_request_target(url: str) -> str:
+    """Return a log-safe request target without host or client identifiers."""
+    parsed = urllib.parse.urlsplit(url)
+    query_pairs = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
+    safe_query = urllib.parse.urlencode(
+        [
+            (key, "<redacted>" if key.lower() in REDACTED_QUERY_PARAMS else value)
+            for key, value in query_pairs
+        ],
+        doseq=True,
+    )
+    target = parsed.path or url
+    return f"{target}?{safe_query}" if safe_query else target
 
 
 def _find_form_field_name_by_suffix(
@@ -190,6 +207,19 @@ class CudyRouter:
         """Execute an HTTP request with shared retry/backoff/auth-refresh behavior."""
         session = self._get_session()
         last_error: Exception | None = None
+        started_at = time.monotonic()
+        safe_target = _safe_request_target(url)
+
+        def log_if_slow(status: int | str) -> None:
+            elapsed = time.monotonic() - started_at
+            if elapsed >= SLOW_REQUEST_LOG_SECONDS:
+                _LOGGER.warning(
+                    "Slow router request: %s %s finished with %s after %.1fs",
+                    method,
+                    safe_target,
+                    status,
+                    elapsed,
+                )
 
         for attempt in range(retries + 1):
             self._set_session_auth_cookie(session)
@@ -210,11 +240,13 @@ class CudyRouter:
                     continue
                 if not silent:
                     _LOGGER.debug("HTTP %s %s failed: %s", method, url, err)
+                log_if_slow("timeout")
                 return None
             except requests.RequestException as err:
                 last_error = err
                 if not silent:
                     _LOGGER.debug("HTTP %s %s request exception: %s", method, url, err)
+                log_if_slow("error")
                 return None
 
             if response.status_code == 403 and reauth_on_403 and attempt < retries:
@@ -222,16 +254,19 @@ class CudyRouter:
                     continue
                 if not silent:
                     _LOGGER.error("Authentication refresh failed for %s", url)
+                log_if_slow(response.status_code)
                 return response
 
             if response.status_code in RETRYABLE_STATUSES and attempt < retries:
                 time.sleep(RETRY_BACKOFF_SECONDS * (2**attempt))
                 continue
 
+            log_if_slow(response.status_code)
             return response
 
         if not silent and last_error:
             _LOGGER.debug("HTTP %s %s failed after retries: %s", method, url, last_error)
+        log_if_slow("failed")
         return None
 
     def _luci_get(
@@ -1894,5 +1929,69 @@ class CudyRouter:
                 _LOGGER.debug("Get mesh LED state on %s failed: %s", endpoint, e)
                 continue
 
-        # Default to True (LEDs on) if we can't determine state
+        # Default to True (LEDs on) if we can't determine state.
         return True
+
+    def delete_sms(self, cfg: str, iface: str = "4g") -> tuple[int, str]:
+        """Delete an SMS from the router's inbox or outbox by cfg id.
+
+        Args:
+            cfg: message cfg id (e.g. 'cfg10a53f')
+            iface: modem iface, usually '4g'
+
+        Returns:
+            (status_code, response snippet / message)
+        """
+        if not cfg:
+            return 0, "Missing cfg"
+
+        quoted_iface = urllib.parse.quote(iface)
+        delete_path = (
+            "admin/network/gcom/sms/delsms"
+            f"?iface={quoted_iface}&cfg={urllib.parse.quote(cfg)}"
+        )
+
+        token_source = f"admin/network/gcom/sms/smslist?smsbox=rec&iface={quoted_iface}"
+        headers = {
+            "User-Agent": "Mozilla/5.0",
+            "Referer": f"{self.base_url}/cgi-bin/luci/admin/network/gcom/sms",
+        }
+
+        try:
+            resp = self._luci_get(
+                token_source,
+                timeout=DEFAULT_PAGE_TIMEOUT,
+                headers=headers,
+                silent=True,
+            )
+            if not resp:
+                return 0, f"Failed to load SMS list page for token ({token_source})"
+
+            token = _extract_hidden(resp.text, "token")
+            if not token:
+                return 0, "No token on SMS list page"
+
+            post_fields = {
+                "token": token,
+                "timeclock": "0",
+                "cbi.submit": "1",
+            }
+
+            response = self._luci_post(
+                delete_path,
+                timeout=DEFAULT_POST_TIMEOUT,
+                headers={
+                    **headers,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Origin": self.base_url,
+                },
+                data=urllib.parse.urlencode(post_fields),
+                silent=True,
+            )
+            if not response:
+                return 0, "Failed to submit delete SMS request"
+
+            return response.status_code, (response.text or "")[:220]
+        except Exception as err:
+            _LOGGER.error("SMS delete failed: %s", err)
+            return 0, str(err)[:220]
