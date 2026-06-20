@@ -10,6 +10,9 @@ update_and_restart:
     data:
       backup: true
     action: update.install
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.update_restart_pending
   - delay: 00:02:00
   - action: homeassistant.restart
   description: ''

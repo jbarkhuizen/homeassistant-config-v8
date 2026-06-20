@@ -1,0 +1,28 @@
+automation:
+  - id: 'notify_after_update_restart'
+    alias: Notify After Update Restart
+    description: "Sends a completion notification across all channels after HA restarts following a scheduled update."
+    trigger:
+      - platform: homeassistant
+        event: start
+    condition:
+      - condition: state
+        entity_id: input_boolean.update_restart_pending
+        state: "on"
+    action:
+      - delay: "00:00:30"
+      - action: notify.mobile_app_sm_g996b
+        data:
+          title: "Home Assistant Updated"
+          message: "Scheduled update completed and Home Assistant has restarted successfully."
+      - action: notify.email_notification
+        data:
+          title: "Home Assistant Updated"
+          message: "Scheduled update completed and Home Assistant has restarted successfully."
+      - action: telegram_bot.send_message
+        data:
+          message: "✅ Home Assistant Updated — scheduled update completed and restart finished."
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.update_restart_pending
+    mode: single

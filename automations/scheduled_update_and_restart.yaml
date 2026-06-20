@@ -1,0 +1,13 @@
+automation:
+  - id: 'scheduled_update_and_restart'
+    alias: Scheduled Update And Restart
+    description: "Installs pending updates and restarts HA, twice daily."
+    trigger:
+      - platform: time
+        at: "09:00:00"
+      - platform: time
+        at: "16:00:00"
+    condition: []
+    action:
+      - action: script.update_and_restart
+    mode: single
