@@ -1,0 +1,121 @@
+- id: "docs_weekly_update_friday"
+  alias: "Documentation - Weekly Update (Friday 10h00)"
+  description: |
+    Scheduled weekly documentation update task
+    - Exports current entity state
+    - Compares with documented inventory
+    - Identifies changes (new entities, unavailable count, automations, etc.)
+    - Generates summary report
+    - Sends notification with update status
+    - Optionally triggers GitHub commit if changes detected
+  triggers:
+    - trigger: time
+      at: "10:00:00"
+      weekday:
+        - fri
+  
+  actions:
+    # Step 1: Log the update has started
+    - action: system_log.write
+      data:
+        message: "🔵 [DOCS UPDATE] Starting weekly documentation update task..."
+        level: info
+    
+    # Step 2: Execute the pyscript to compare and generate report
+    - action: pyscript.docs_update_check
+      response_variable: update_report
+    
+    # Step 3: Prepare notification message
+    - variables:
+        report_summary: |
+          📋 WEEKLY DOCUMENTATION UPDATE REPORT
+          
+          {{ update_report.summary }}
+          
+          ⏱️ Time: {{ now().strftime('%A, %d %B %Y at %H:%M:%S') }}
+          
+          {% if update_report.changes_detected %}
+          ⚠️ CHANGES DETECTED - Review and commit when ready
+          
+          New Entities: {{ update_report.new_entities_count }}
+          Unavailable Change: {{ update_report.unavailable_delta }}
+          Automation Changes: {{ update_report.automation_changes }}
+          Template Sensor Changes: {{ update_report.template_changes }}
+          
+          Next Step: Review changes and run:
+          git add docs/*.md
+          git commit -m "docs: Weekly update - {{ now().strftime('%Y-%m-%d') }}"
+          git push origin main
+          {% else %}
+          ✅ NO SIGNIFICANT CHANGES - System stable
+          {% endif %}
+    
+    # Step 4: Send email notification
+    - action: notify.email_ha
+      data:
+        title: "📋 Weekly Documentation Update Report ({{ now().strftime('%A, %d %b %Y') }})"
+        message: "{{ report_summary }}"
+    
+    # Step 5: Send Telegram notification
+    - action: telegram_bot.send_message
+      data:
+        chat_id: 6167623299
+        message: |
+          📋 *Weekly Documentation Update*
+          
+          {{ update_report.summary }}
+          
+          Changes Detected: {% if update_report.changes_detected %}⚠️ YES{% else %}✅ NO{% endif %}
+          Timestamp: {{ now().strftime('%H:%M on %A') }}
+    
+    # Step 6: Send mobile push notification
+    - action: notify.mobile_app_sm_g996b
+      data:
+        title: "📋 Docs Update ({{ now().strftime('%a %d %b') }})"
+        message: |
+          {{ update_report.summary_short }}
+          {% if update_report.changes_detected %}
+          → Review changes, commit to GitHub
+          {% else %}
+          → System stable, no changes needed
+          {% endif %}
+        data:
+          channel: Documentation
+          importance: "default"
+          group: "docs-update"
+    
+    # Step 7: Persistent notification for dashboard
+    - action: persistent_notification.create
+      data:
+        notification_id: "weekly_docs_update"
+        title: "📋 Weekly Docs Update ({{ now().strftime('%A %d %b %Y') }})"
+        message: |
+          **Status:** {{ update_report.status }}
+          
+          **Summary:**
+          {{ update_report.summary }}
+          
+          **Changes Detected:** {% if update_report.changes_detected %}⚠️ YES{% else %}✅ NO{% endif %}
+          
+          **Entity Count:** {{ update_report.total_entities_current }}
+          **Unavailable Count:** {{ update_report.unavailable_entities_current }} ({{ update_report.unavailable_percent }}%)
+          
+          **Last Updated:** {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          
+          {% if update_report.changes_detected %}
+          ### Required Actions:
+          1. Review the documentation changes
+          2. SSH into HA or open Studio Code Server
+          3. Run: `git add docs/*.md && git commit -m "docs: Weekly update - {{ now().strftime('%Y-%m-%d') }}" && git push origin main`
+          {% endif %}
+    
+    # Step 8: Log completion
+    - action: system_log.write
+      data:
+        message: |
+          🟢 [DOCS UPDATE] Weekly documentation update task completed
+          Status: {{ update_report.status }}
+          Changes: {% if update_report.changes_detected %}DETECTED - Action Required{% else %}NONE - System Stable{% endif %}
+        level: info
+
+  mode: single
