@@ -121,7 +121,7 @@ utility_meter:
     cycle: daily
 
   master_pv4_fix:
-    unique_id: "1754346329956"
+    unique_id: "1754346329959"
     name: deyeinvertermaster_summary_day_pv4_fix
     source: sensor.deyeinvertermaster_summary_total_pv4_fix
     cycle: daily

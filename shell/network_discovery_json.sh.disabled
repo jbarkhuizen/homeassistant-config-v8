@@ -1,0 +1,35 @@
+#!/bin/bash
+
+nmap -sn 192.168.1.0/24 2>/dev/null | awk '
+BEGIN {
+  count = 0
+  first = 1
+  print "{"
+  print "  \"devices\": ["
+}
+/Nmap scan report for/ {
+  hostname = ""
+  ip = ""
+
+  if ($5 ~ /^\(/) {
+    hostname = $4
+    ip = $5
+    gsub(/[()]/, "", ip)
+  } else {
+    ip = $5
+  }
+
+  if (first == 0) {
+    print ","
+  }
+
+  printf "    {\"ip\":\"%s\",\"hostname\":\"%s\"}", ip, hostname
+  first = 0
+  count++
+}
+END {
+  print ""
+  print "  ],"
+  printf "  \"count\": %d\n", count
+  print "}"
+}'

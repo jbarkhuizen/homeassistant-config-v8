@@ -452,6 +452,9 @@ recorder:
       - updater
       - sun
       - media_player
+    entities:
+      - sensor.sm_g996b_active_notification_count
+      - sensor.home_assistant_updates_summary
 #    entities:
 #      - sensor.date_time
 #      - sensor.time
@@ -482,14 +485,14 @@ recorder:
       - sensor.telegram_*
       - sensor.spotify_*
 
-device_tracker:
-  - platform: google_maps
-    username: "jbarkhuizen@gmail.com"
-    scan_interval: 60
-    max_gps_accuracy: 200
-  - platform: google_maps
-    username: "lapanzaonline@gmail.com"
-    scan_interval: 60
-    max_gps_accuracy: 200
+#device_tracker:
+#  - platform: google_maps
+#    username: "jbarkhuizen@gmail.com"
+#    scan_interval: 60
+#    max_gps_accuracy: 200
+#  - platform: google_maps
+#    username: "lapanzaonline@gmail.com"
+#    scan_interval: 60
+#    max_gps_accuracy: 200
      
 # ==========

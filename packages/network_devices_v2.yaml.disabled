@@ -1,0 +1,26 @@
+# packages/network_devices_v2.yaml
+# Full discovered network devices with JSON output
+# Safer v2 package
+
+command_line:
+  - sensor:
+      name: "Network Active Devices V2"
+      unique_id: network_active_devices_v2
+      command: "/config/shell/network_discovery_json.sh"
+      command_timeout: 60
+      scan_interval: 600
+      value_template: "{{ value_json.count }}"
+      json_attributes:
+        - devices
+      icon: mdi:devices
+
+template:
+  - sensor:
+      - name: "Network Summary V2"
+        unique_id: network_summary_v2
+        state: "{{ states('sensor.network_active_devices_v2') }}"
+        attributes:
+          total_devices: "{{ states('sensor.network_active_devices_v2') }}"
+          router_status: "{{ 'Online' if is_state('binary_sensor.nokia_router_online', 'on') else 'Offline' }}"
+          internet_status: "{{ 'Connected' if is_state('binary_sensor.internet_connected', 'on') else 'Disconnected' }}"
+          last_update: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
