@@ -11,9 +11,9 @@ BEGIN {
   hostname = ""
   ip = ""
 
-  if ($5 ~ /^\(/) {
-    hostname = $4
-    ip = $5
+  if (index($0, "(") > 0) {
+    hostname = $5
+    ip = $6
     gsub(/[()]/, "", ip)
   } else {
     ip = $5

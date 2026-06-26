@@ -113,9 +113,8 @@ async def docs_update_check():
     summary_short = summary_lines[0] if summary_lines else "No data"
     
     # Count actual automations in config
-    automation_files = len(hass.states.get_attributes().get("automation", []))
-    automation_delta = automation_files - documented["automations"]
-    
+        automation_delta = current["automation_entities"] - documented["automations"]
+        
     # Build report
     report = {
         "status": "✅ Complete" if not changes_detected else "⚠️ Changes Detected",

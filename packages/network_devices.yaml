@@ -1,0 +1,158 @@
+# packages/network_devices.yaml
+# Merged network device discovery package.
+# Combines:
+#   - network_discovery_json.sh (real nmap scan -> ip/hostname, bug-fixed)
+#   - static HA server + router entries
+#   - device_tracker enrichment (type/vendor/status from HA's own tracking)
+# Requires binary_sensor.nokia_router_online and binary_sensor.internet_connected
+# to be defined elsewhere - this package only reads them, does not create them.
+
+command_line:
+  - sensor:
+      name: "Network Active Devices"
+      unique_id: network_active_devices
+      command: "/config/shell/network_discovery_json.sh"
+      command_timeout: 60
+      scan_interval: 600
+      value_template: "{{ value_json.count }}"
+      json_attributes:
+        - devices
+      icon: mdi:devices
+
+template:
+  - sensor:
+      - name: "Network Devices Table"
+        unique_id: network_devices_table
+        state: "{{ states('sensor.network_active_devices') }}"
+        attributes:
+          last_scan: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+          devices: >
+            {% set ns = namespace(devices=[], known_ips=[]) %}
+
+            {# Add Home Assistant #}
+            {% set ha_device = {
+              'name': 'Home Assistant Server',
+              'ip': '192.168.1.31',
+              'status': 'Online',
+              'type': 'Server',
+              'vendor': 'Home Assistant',
+              'mac': 'Unknown',
+              'ports': '8123',
+              'services': 'HA, InfluxDB, Grafana',
+              'last_seen': now().strftime('%Y-%m-%d %H:%M')
+            } %}
+            {% set ns.devices = ns.devices + [ha_device] %}
+            {% set ns.known_ips = ns.known_ips + [ha_device.ip] %}
+
+            {# Add Router #}
+            {% set router_device = {
+              'name': 'Nokia Beacon 2 Router',
+              'ip': '192.168.1.1',
+              'status': 'Online' if is_state('binary_sensor.nokia_router_online', 'on') else 'Offline',
+              'type': 'Router',
+              'vendor': 'Nokia',
+              'mac': 'Unknown',
+              'ports': '80, 443',
+              'services': 'HTTP, HTTPS, DHCP, DNS',
+              'last_seen': now().strftime('%Y-%m-%d %H:%M')
+            } %}
+            {% set ns.devices = ns.devices + [router_device] %}
+            {% set ns.known_ips = ns.known_ips + [router_device.ip] %}
+
+            {# Process device trackers - these carry real type/vendor/status data #}
+            {% for entity_id in states.device_tracker | map(attribute='entity_id') %}
+              {% set s = states[entity_id] %}
+              {% if s is defined and s.attributes.get('source_type') == 'router' and s.attributes.get('ip') %}
+                {% if s.last_changed %}
+                  {% set last_seen_str = (s.last_changed | string)[0:16] %}
+                {% else %}
+                  {% set last_seen_str = 'Unknown' %}
+                {% endif %}
+
+                {% set device = {
+                  'name': s.attributes.get('friendly_name') or 'Unknown',
+                  'ip': s.attributes.get('ip'),
+                  'status': 'Online' if s.state == 'home' else 'Away',
+                  'type': 'Mobile' if 'iphone' in entity_id.lower() else
+                          'Computer' if 'laptop' in entity_id.lower() else
+                          'Smart Device' if 'sonoff' in entity_id.lower() or 'tuya' in entity_id.lower() else
+                          'Unknown Device',
+                  'vendor': s.attributes.get('vendor') or 'Unknown',
+                  'mac': s.attributes.get('mac') or 'Unknown',
+                  'ports': 'Unknown',
+                  'services': 'Unknown',
+                  'last_seen': last_seen_str
+                } %}
+                {% set ns.devices = ns.devices + [device] %}
+                {% set ns.known_ips = ns.known_ips + [device.ip] %}
+              {% endif %}
+            {% endfor %}
+
+            {# Fill in with raw nmap results not already covered above #}
+            {% set nmap_devices = state_attr('sensor.network_active_devices', 'devices') %}
+            {% if nmap_devices is not none %}
+              {% for d in nmap_devices %}
+                {% if d.ip and d.ip not in ns.known_ips %}
+                  {% set nmap_device = {
+                    'name': d.hostname if d.hostname else d.ip,
+                    'ip': d.ip,
+                    'status': 'Online',
+                    'type': 'Unknown Device',
+                    'vendor': 'Unknown',
+                    'mac': 'Unknown',
+                    'ports': 'Unknown',
+                    'services': 'Unknown',
+                    'last_seen': now().strftime('%Y-%m-%d %H:%M')
+                  } %}
+                  {% set ns.devices = ns.devices + [nmap_device] %}
+                  {% set ns.known_ips = ns.known_ips + [d.ip] %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+
+            {{ ns.devices | sort(attribute='ip') }}
+
+      - name: "Network Device List Dashboard"
+        unique_id: network_device_list_dashboard
+        state: >
+          {% set devices = state_attr('sensor.network_devices_table', 'devices') %}
+          {{ (devices | length) if devices is not none else 0 }} devices
+        attributes:
+          devices_multiline: >
+            {% set devices = state_attr('sensor.network_devices_table', 'devices') %}
+            {% if devices is not none and devices | length > 0 %}
+              {{ devices | map(attribute='ip') | join('\n') }}
+            {% else %}
+              No devices found
+            {% endif %}
+          devices_csv: >
+            {% set devices = state_attr('sensor.network_devices_table', 'devices') %}
+            {% if devices is not none and devices | length > 0 %}
+              {{ devices | map(attribute='ip') | join(', ') }}
+            {% else %}
+              No devices found
+            {% endif %}
+          device_count: >
+            {% set devices = state_attr('sensor.network_devices_table', 'devices') %}
+            {{ (devices | length) if devices is not none else 0 }}
+          last_scan: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+      - name: "Network Summary"
+        unique_id: network_summary
+        state: >
+          {% set devices = state_attr('sensor.network_devices_table', 'devices') %}
+          {{ (devices | length) if devices is not none else 0 }}
+        attributes:
+          total_devices: >
+            {% set devices = state_attr('sensor.network_devices_table', 'devices') %}
+            {{ (devices | length) if devices is not none else 0 }}
+          online_devices: >
+            {% set devices = state_attr('sensor.network_devices_table', 'devices') %}
+            {% if devices is not none %}
+              {{ devices | selectattr('status', 'equalto', 'Online') | list | length }}
+            {% else %}
+              0
+            {% endif %}
+          router_status: "{{ 'Online' if is_state('binary_sensor.nokia_router_online', 'on') else 'Offline' }}"
+          internet_status: "{{ 'Connected' if is_state('binary_sensor.internet_connected', 'on') else 'Disconnected' }}"
+          last_update: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"

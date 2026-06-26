@@ -629,7 +629,7 @@ template:
   - sensor:
       - name: "Sonoff 10023b8a5d Summary"
         unique_id: sonoff_10023b8a5d_summary
-        state: "{{ states('sensor.sonoff_10023b8a5d_energy') }}"
+        state: "{{ states('sensor.sonoff_10023b8a5d_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -642,8 +642,7 @@ template:
 
       - name: "Sonoff 1000cd8649 Summary"
         unique_id: sonoff_1000cd8649_summary
-        state: "{{ states('sensor.sonoff_1000cd8649_power') | float(0) }}"
-#        state: "{{ states('sensor.sonoff_1000cd8649_energy') }}"
+        state: "{{ states('sensor.sonoff_1000cd8649_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -656,7 +655,7 @@ template:
 
       - name: "Sonoff 1000cd8209 Summary"
         unique_id: sonoff_1000cd8209_summary
-        state: "{{ states('sensor.sonoff_1000cd8209_energy') }}"
+        state: "{{ states('sensor.sonoff_1000cd8209_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -669,7 +668,7 @@ template:
 
       - name: "Sonoff 1000cd865e Summary"
         unique_id: sonoff_1000cd865e_summary
-        state: "{{ states('sensor.sonoff_1000cd865e_energy') }}"
+        state: "{{ states('sensor.sonoff_1000cd865e_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -682,7 +681,7 @@ template:
 
       - name: "Sonoff 10009ce3f9 Summary"
         unique_id: sonoff_10009ce3f9_summary
-        state: "{{ states('sensor.sonoff_10009ce3f9_energy') }}"
+        state: "{{ states('sensor.sonoff_10009ce3f9_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -695,7 +694,7 @@ template:
 
       - name: "Sonoff 10023b8a40 Summary"
         unique_id: sonoff_10023b8a40_summary
-        state: "{{ states('sensor.sonoff_10023b8a40_energy') }}"
+        state: "{{ states('sensor.sonoff_10023b8a40_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -708,7 +707,7 @@ template:
 
       - name: "Sonoff 1000cd8453 Summary"
         unique_id: sonoff_1000cd8453_summary
-        state: "{{ states('sensor.sonoff_1000cd8453_energy') }}"
+        state: "{{ states('sensor.sonoff_1000cd8453_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -721,7 +720,7 @@ template:
 
       - name: "3D Printers Summary"
         unique_id: d_printers_summary
-        state: "{{ states('sensor.3d_printers_energy') }}"
+        state: "{{ states('sensor.3d_printers_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -734,8 +733,7 @@ template:
 
       - name: "Boorgat Summary"
         unique_id: boorgat_summary
-        state: "{{ states('sensor.boorgat_power_sensor') | float(0) }}"
-#        state: "{{ states('sensor.boorgat_energy') }}"
+        state: "{{ states('sensor.boorgat_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -748,7 +746,7 @@ template:
 
       - name: "DB Switch Pool Outbuilding Summary"
         unique_id: db_switch_pool_outbuilding_summary
-        state: "{{ states('sensor.db_switch_pool_outbuilding_energy') }}"
+        state: "{{ states('sensor.db_switch_pool_outbuilding_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -761,9 +759,7 @@ template:
 
       - name: "Geyser External Summary"
         unique_id: geyser_external_summary
-#       Commented line below out and add the second line from Gemini
-#       state: "{{ states('sensor.geyser_external_energy') }}"
-        state: "{{ states('sensor.geyser_external_power') | float(0) }}"
+        state: "{{ states('sensor.geyser_external_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -776,9 +772,7 @@ template:
 
       - name: "Geyser Indoor Summary"
         unique_id: geyser_indoor_summary
-        state: "{{ states('sensor.your_actual_indoor_geyser_sensor') | float(0) }}"
-#        Commented the line below out and replace it with the line above from Gemini
-#        state: "{{ states('sensor.geyser_indoor_energy') }}"
+        state: "{{ states('sensor.geyser_indoor_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -791,7 +785,7 @@ template:
 
       - name: "Laundry Summary"
         unique_id: laundry_summary
-        state: "{{ states('sensor.laundry_energy') }}"
+        state: "{{ states('sensor.laundry_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -804,7 +798,7 @@ template:
 
       - name: "Main Eskom Switch Summary"
         unique_id: main_eskom_switch_summary
-        state: "{{ states('sensor.main_eskom_switch_energy') }}"
+        state: "{{ states('sensor.main_eskom_switch_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -817,7 +811,7 @@ template:
 
       - name: "Main PC Setup Summary"
         unique_id: main_pc_setup_summary
-        state: "{{ states('sensor.main_pc_setup_energy') }}"
+        state: "{{ states('sensor.main_pc_setup_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -830,9 +824,7 @@ template:
 
       - name: "Plugs 1 Summary"
         unique_id: plugs_1_summary
-        state: "{{ states('sensor.your_actual_plugs_1_sensor') | float(0) }}"
-#       Commented the line below out and added the line above with Gemini
-#       state: "{{ states('sensor.plugs_1_energy') }}"
+        state: "{{ states('sensor.plugs_1_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -845,7 +837,7 @@ template:
 
       - name: "Plugs 2 Summary"
         unique_id: plugs_2_summary
-        state: "{{ states('sensor.plugs_2_energy') }}"
+        state: "{{ states('sensor.plugs_2_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -858,7 +850,7 @@ template:
 
       - name: "Plugs 3 Summary"
         unique_id: plugs_3_summary
-        state: "{{ states('sensor.plugs_3_energy') }}"
+        state: "{{ states('sensor.plugs_3_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -871,9 +863,7 @@ template:
 
       - name: "Plugs Kas Summary"
         unique_id: plugs_kas_summary
-        state: "{{ states('sensor.your_actual_kas_plugs_sensor') | float(0) }}"
-#       Commented the line below out and added the line above with Gemini
-#       state: "{{ states('sensor.plugs_kas_energy') }}"
+        state: "{{ states('sensor.plugs_kas_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -886,9 +876,7 @@ template:
 
       - name: "Printers Router Summary"
         unique_id: printers_router_summary
-        state: "{{ states('sensor.your_actual_printer_router_sensor') | float(0) }}"
-#       Commented the line below out and added the line above with Gemini
-#       state: "{{ states('sensor.printers_router_energy') }}"
+        state: "{{ states('sensor.printers_router_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -901,7 +889,7 @@ template:
 
       - name: "Top Floor Summary"
         unique_id: top_floor_summary
-        state: "{{ states('sensor.top_floor_energy') }}"
+        state: "{{ states('sensor.top_floor_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
@@ -914,7 +902,7 @@ template:
 
       - name: "Woonstel Summary"
         unique_id: woonstel_summary
-        state: "{{ states('sensor.woonstel_energy') }}"
+        state: "{{ states('sensor.woonstel_energy') | float(0) | round(3) }}"
         unit_of_measurement: "kWh"
         attributes:
           measure_type: "kWh"
