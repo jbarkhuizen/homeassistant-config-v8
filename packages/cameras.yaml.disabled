@@ -1,0 +1,31 @@
+#camera:
+#- platform: generic
+#  name: Test Camera
+#  still_image_url: http://192.168.1.128/webcapture.jpg?user=admin&password=Linandi00&command=snap&channel=1
+#  stream_source: rtsp://admin:Linandi00@192.168.1.128:554/user=admin&password=Linandi00&channel=1&stream=0.sdp?
+  
+camera:
+  - platform: ffmpeg
+    name: "ICSee PTZ Camera 1"
+    input: "rtsp://admin:Linandi00@192.168.1.128:554/stream1"
+    extra_arguments: "-rtsp_transport tcp"  
+  - platform: ffmpeg
+    name: "ICSee PTZ Camera 2"
+    input: "rtsp://admin:Linandi00@192.168.1.170:554/stream1"
+    extra_arguments: "-rtsp_transport tcp"  
+  - platform: ffmpeg
+    name: "ICSee PTZ Camera 3"
+    input: "rtsp://admin:Linandi00@192.168.1.110:554/stream1"
+    extra_arguments: "-rtsp_transport tcp"  
+  - platform: generic
+    name: "ICSee PTZ Camera 1"
+    still_image_url: "http://192.168.1.128:8080/snapshot.jpg"
+    stream_source: "http://192.168.1.128:8080/stream"
+  - platform: generic
+    name: "ICSee PTZ Camera 1"
+    still_image_url: "http://192.168.1.170:8080/snapshot.jpg"
+    stream_source: "http://192.168.1.170:8080/stream"
+  - platform: generic
+    name: "ICSee PTZ Camera 1"
+    still_image_url: "http://192.168.1.110:8080/snapshot.jpg"
+    stream_source: "http://192.168.1.110:8080/stream"
