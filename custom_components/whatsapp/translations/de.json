@@ -12,6 +12,7 @@
       "scan": {
         "title": "QR-Code scannen",
         "data": {
+          "request_new_qr": "Neuen QR-Code anfordern",
           "use_phone_pairing": "Stattdessen mit Telefonnummer koppeln"
         },
         "description": "Bitte scanne den untenstehenden QR-Code mit deiner WhatsApp-Mobil-App (Verknüpfte Geräte).\n\n![QR Code]({qr_image})\n\n**Bitte klicke nach erfolgreichem Scannen auf Absenden.**"
@@ -37,6 +38,25 @@
       "discovery_confirm": {
         "title": "Entdeckung bestätigen",
         "description": "Möchtest du die **WhatsApp Homeassistant App (ehem. Add-on)** unter `{host}` einrichten?"
+      },
+      "account_warning": {
+        "title": "Wichtiger Sicherheitshinweis",
+        "description": "⚠️ **Sperrung des WhatsApp-Kontos verhindern**\n\nDein WhatsApp-Konto scheint brandneu oder inaktiv zu sein (keine Chats oder Nachrichten gefunden).\n\n**WICHTIG:** Meta geht sehr streng gegen neue Konten und Verknüpfungen vor. Wenn du ein neues Konto sofort für automatisierte Nachrichten verwendest, wird es höchstwahrscheinlich gesperrt.\n\n**Empfehlung:** Nutze dieses Konto einige Tage lang nicht in der Integration. Schreibe zuerst einige normale Nachrichten in Gruppen oder Direktchats über deine mobile WhatsApp-App, um eine positive Reputation aufzubauen.\n\nWeitere Details findest du im [GitHub Issue #59]({issue_url}) sowie in der [Fehlerbehebungs-Dokumentation]({docs_url})."
+      },
+      "account_warning_fallback": {
+        "title": "Sicherheitshinweis",
+        "description": "⚠️ **Sperrung des WhatsApp-Kontos verhindern**\n\nDie Integration konnte das Alter oder den Nachrichtenverlauf deines WhatsApp-Kontos nicht überprüfen (Chat-Liste nicht bereit oder alte Addon-Version).\n\n**HINWEIS:** Wenn es sich um ein brandneues WhatsApp-Konto handelt, verwende es bitte einige Tage lang nicht in der Integration, um eine Sperrung zu vermeiden. Sende zuerst ein paar normale Nachrichten über deine mobile App. Wenn du ein etabliertes Konto verwendest, kannst du diesen Hinweis ignorieren.\n\nWeitere Details findest du im [GitHub Issue #59]({issue_url}) sowie in der [Fehlerbehebungs-Dokumentation]({docs_url})."
+      },
+      "passkey_warning": {
+        "title": "WhatsApp Passkey benötigt",
+        "data": {
+          "continue_with_passkey": "Option 2 versuchen: Passkey auf dem Handy freigeben (experimentell)"
+        },
+        "description": "## 🔑 WhatsApp Passkey erkannt\n\nWhatsApp erfordert nach dem Scannen des QR-Codes eine **Passkey-Verifizierung**. Dies ist eine [bekannte Einschränkung]({baileys_issue_url}) der Baileys-Bibliothek, auf der dieses Addon basiert – der Passkey-Handshake ist noch nicht vollständig implementiert.\n\n---\n\n### ✅ Option 1 — Empfohlene Lösung\n\n1. Öffne **WhatsApp** auf deinem Telefon\n2. Gehe zu **Einstellungen → Konto → Passkeys**\n3. Tippe auf **Alle Passkeys entfernen**\n4. Klicke unten auf **Absenden** (ohne das Kontrollkästchen unten zu aktivieren) — du wirst durch die nächsten Schritte geführt\n\n---\n\n### 🧪 Option 2 — Passkey auf dem Telefon freigeben (Experimentell)\n\nEin Community-Fork ([Qiua/Baileys]({qiua_fork_url}) / [PR #2676]({baileys_pr_url})) arbeitet an nativer Passkey-Unterstützung. Aktiviere das Kontrollkästchen unten, um diesen Weg zu versuchen — du wirst angewiesen, die Passkey-Aufforderung auf deinem Telefon freizugeben.\n\n> ⚠️ Dies ist **noch nicht stabil**. Die Verbindung kann ein Timeout erleiden oder geräuschlos fehlschlagen."
+      },
+      "passkey_waiting": {
+        "title": "Warten auf Passkey-Freigabe",
+        "description": "## 🔑 Passkey auf dem Telefon freigeben\n\nWhatsApp hat eine Passkey-Anforderung an dein Telefon gesendet. Bitte führe die folgenden Schritte aus:\n\n1. Öffne **WhatsApp** auf deinem Telefon\n2. Suche nach einer **Passkey-Aufforderung** oder Benachrichtigung\n3. Tippe auf **Freigeben** / verwende Biometrie oder PIN\n4. Warte — dieser Bildschirm wird automatisch fortfahren, sobald die Verbindung bestätigt wurde\n\n> Die Integration fragt das Verbindungsergebnis ab. Dies kann bis zu **2 Minuten** dauern.\n> Falls nichts passiert, klicke auf **Absenden**, um den aktuellen Status zu prüfen."
       }
     },
     "error": {
@@ -45,15 +65,20 @@
       "connection_error": "Nicht mit WhatsApp verbunden. Bitte scanne zuerst den QR-Code.",
       "addon_install_error": "Installation des WhatsApp-Addons fehlgeschlagen. Bitte prüfe die Supervisor-Logs.",
       "rate_limit": "Zu viele Anfragen. Bitte warte 15 Minuten und versuche es erneut.",
+      "qr_timeout": "Die Generierung des QR-Codes dauerte zu lange oder schlug fehl. Bitte überprüfe die Addon-Protokolle, stelle sicher, dass es online ist, und klicke auf Absenden, um es erneut zu versuchen.",
+      "passkey_timeout": "Die Passkey-Freigabe wurde nicht innerhalb von 2 Minuten empfangen. Öffne WhatsApp auf deinem Telefon, suche nach einer Passkey-Aufforderung und klicke auf Absenden, um es erneut zu versuchen.",
       "unknown": "Unerwarteter Fehler"
     },
     "abort": {
       "already_configured": "Gerät ist bereits konfiguriert",
-      "single_instance_allowed": "Es ist nur eine einzige Instanz dieser Integration erlaubt.",
+      "already_in_progress": "Konfigurationsablauf für dieses Gerät ist bereits aktiv",
+      "unique_id_conflict": "Diese WhatsApp-Nummer ist bereits konfiguriert. Entferne zuerst den vorhandenen Eintrag.",
+      "connection_error": "Verbindung zum WhatsApp-Addon fehlgeschlagen. Bitte überprüfe die URL und stelle sicher, dass das Addon läuft.",
       "missing_dependency": "Fehlende Abhängigkeit für die QR-Code-Generierung.",
-      "invalid_auth": "Ungültige Authentifizierung",
-      "connection_error": "Verbindungsfehler",
-      "unknown": "Unerwarteter Fehler"
+      "invalid_auth": "Ungültiger API-Schlüssel. Bitte überprüfe den Token in der Addon-Benutzeroberfläche.",
+      "unknown": "Ein unerwarteter Fehler ist aufgetreten.",
+      "not_loaded": "Nicht geladen.",
+      "passkey_remove_required": "Einrichtung pausiert. Bitte entferne alle Passkeys in WhatsApp (Einstellungen → Konto → Passkeys → Alle löschen) und starte die Einrichtung erneut."
     }
   },
   "options": {
@@ -84,39 +109,35 @@
       "name": "Nachricht senden",
       "description": "Sendet eine Textnachricht an eine WhatsApp-Nummer.",
       "fields": {
-        "account": {
-          "name": "Konto",
-          "description": "Die WhatsApp-Konto-ID (nur erforderlich bei mehreren Konten)."
-        },
         "message": {
           "name": "Nachricht",
           "description": "Der zu sendende Text."
         },
         "target": {
           "name": "Zielnummer",
-          "description": "Die Telefonnummer, an die gesendet werden soll."
+          "description": "Die Telefonnummer oder Gruppen-ID, an die gesendet werden soll."
+        },
+        "account": {
+          "name": "Konto",
+          "description": "Das zu verwendende WhatsApp-Konto (Service-Instanz)."
         },
         "quote": {
-          "name": "Nachrichten-ID zitieren",
-          "description": "Die ID einer Nachricht, die zitiert oder auf die geantwortet werden soll."
+          "name": "Zitierte Nachricht-ID",
+          "description": "Die ID einer Nachricht, auf die geantwortet/zitiert werden soll."
         },
         "expiration": {
           "name": "Ablaufzeit (Sekunden)",
-          "description": "Dauer, nach der die Nachricht verschwindet."
+          "description": "Dauer, nach der die Nachricht wieder verschwindet."
         }
       }
     },
     "send_document": {
       "name": "Dokument senden",
-      "description": "Sendet ein Dokument (PDF, Zip, Doc, etc.) an eine WhatsApp-Nummer.",
+      "description": "Sendet ein Dokument (PDF, Zip, Doc usw.) an eine WhatsApp-Nummer.",
       "fields": {
-        "account": {
-          "name": "Konto",
-          "description": "Die WhatsApp-Konto-ID (nur erforderlich bei mehreren Konten)."
-        },
         "target": {
           "name": "Zielnummer",
-          "description": "Die Telefonnummer oder Gruppen-ID, an die gesendet werden soll."
+          "description": "Die Telefonnummer oder Gruppen-ID."
         },
         "url": {
           "name": "URL",
@@ -124,11 +145,11 @@
         },
         "file_name": {
           "name": "Dateiname",
-          "description": "Optionaler Ersatz für den Dateinamen."
+          "description": "Optionaler Dateiname."
         },
         "message": {
           "name": "Bildunterschrift",
-          "description": "Optionale Bildunterschrift für das Dokument."
+          "description": "Optionaler Text zum Dokument."
         }
       }
     },
@@ -136,13 +157,9 @@
       "name": "Video senden",
       "description": "Sendet eine Videodatei an eine WhatsApp-Nummer.",
       "fields": {
-        "account": {
-          "name": "Konto",
-          "description": "Die WhatsApp-Konto-ID (nur erforderlich bei mehreren Konten)."
-        },
         "target": {
           "name": "Zielnummer",
-          "description": "Die Telefonnummer oder Gruppen-ID, an die gesendet werden soll."
+          "description": "Die Telefonnummer oder Gruppen-ID."
         },
         "url": {
           "name": "URL",
@@ -150,7 +167,7 @@
         },
         "message": {
           "name": "Bildunterschrift",
-          "description": "Optionale Bildunterschrift für das Video."
+          "description": "Optionaler Text zum Video."
         }
       }
     },
@@ -158,13 +175,9 @@
       "name": "Audio senden",
       "description": "Sendet eine Audiodatei oder Sprachnachricht.",
       "fields": {
-        "account": {
-          "name": "Konto",
-          "description": "Die WhatsApp-Konto-ID (nur erforderlich bei mehreren Konten)."
-        },
         "target": {
           "name": "Zielnummer",
-          "description": "Die Telefonnummer oder Gruppen-ID, an die gesendet werden soll."
+          "description": "Die Telefonnummer oder Gruppen-ID."
         },
         "url": {
           "name": "URL",
@@ -172,25 +185,25 @@
         },
         "ptt": {
           "name": "Sprachnachricht (PTT)",
-          "description": "Als Sprachnachricht (Wellenform) anstatt als Audio (Datei) senden."
+          "description": "Als Sprachnachricht anstelle einer Audiodatei senden."
+        },
+        "account": {
+          "name": "Konto",
+          "description": "Das zu verwendende WhatsApp-Konto."
         }
       }
     },
     "revoke_message": {
-      "name": "Nachricht löschen",
+      "name": "Nachricht zurückrufen",
       "description": "Löscht eine gesendete Nachricht für alle.",
       "fields": {
-        "account": {
-          "name": "Konto",
-          "description": "Die WhatsApp-Konto-ID (nur erforderlich bei mehreren Konten)."
-        },
         "target": {
           "name": "Zielnummer",
           "description": "Die Telefonnummer oder Gruppen-ID, an die die Nachricht gesendet wurde."
         },
         "message_id": {
-          "name": "Nachrichten-ID",
-          "description": "Die ID der zu löschenden Nachricht."
+          "name": "Nachricht-ID",
+          "description": "Die ID der zurückzurufenden Nachricht."
         }
       }
     },
@@ -198,21 +211,17 @@
       "name": "Nachricht bearbeiten",
       "description": "Bearbeitet den Text einer gesendeten Nachricht.",
       "fields": {
-        "account": {
-          "name": "Konto",
-          "description": "Die WhatsApp-Konto-ID (nur erforderlich bei mehreren Konten)."
-        },
         "target": {
           "name": "Zielnummer",
           "description": "Die Telefonnummer oder Gruppen-ID, an die die Nachricht gesendet wurde."
         },
         "message_id": {
-          "name": "Nachrichten-ID",
+          "name": "Nachricht-ID",
           "description": "Die ID der zu bearbeitenden Nachricht."
         },
         "message": {
           "name": "Neuer Text",
-          "description": "Der neue Textinhalt für die Nachricht."
+          "description": "Der neue Textinhalt der Nachricht."
         }
       }
     },
@@ -220,10 +229,6 @@
       "name": "Listen-Nachricht senden",
       "description": "Sendet eine interaktive Liste (Aktionsmenü).",
       "fields": {
-        "account": {
-          "name": "Konto",
-          "description": "Die WhatsApp-Konto-ID (nur erforderlich bei mehreren Konten)."
-        },
         "target": {
           "name": "Zielnummer",
           "description": "Die Telefonnummer oder Gruppen-ID."
@@ -233,7 +238,7 @@
           "description": "Der Titel des Menüs."
         },
         "text": {
-          "name": "Text",
+          "name": "Haupttext",
           "description": "Der Haupttext."
         },
         "button_text": {
@@ -242,18 +247,14 @@
         },
         "sections": {
           "name": "Sektionen (JSON)",
-          "description": "Die Sektionen und Zeilen (JSON-Liste)."
+          "description": "Die Sektionen und Zeilen als JSON-Liste."
         }
       }
     },
     "send_contact": {
       "name": "Kontakt senden",
-      "description": "Sendet eine Kontaktkarte (VCard).",
+      "description": "Sendet eine Visitenkarte (VCard).",
       "fields": {
-        "account": {
-          "name": "Konto",
-          "description": "Die WhatsApp-Konto-ID (nur erforderlich bei mehreren Konten)."
-        },
         "target": {
           "name": "Zielnummer",
           "description": "Die Telefonnummer oder Gruppen-ID."
@@ -270,56 +271,44 @@
     },
     "configure_webhook": {
       "name": "Webhook konfigurieren",
-      "description": "Legt die Webhook-URL fest, an die das Addon Ereignisse sendet.",
+      "description": "Richtet die Webhook-URL ein, an die das Addon Ereignisse sendet.",
       "fields": {
-        "account": {
-          "name": "Konto",
-          "description": "Die WhatsApp-Konto-ID (nur erforderlich bei mehreren Konten)."
-        },
         "url": {
           "name": "Webhook-URL",
-          "description": "Die URL, an die Ereignisse gesendet werden sollen."
+          "description": "Die URL für den Webhook."
         },
         "enabled": {
           "name": "Aktiviert",
-          "description": "Webhook aktivieren oder deaktivieren."
+          "description": "Aktiviert oder deaktiviert den Webhook."
         },
         "token": {
           "name": "Token",
-          "description": "Optionales Sicherheitstoken."
+          "description": "Optionaler Sicherheits-Token."
         }
       }
     },
     "send_reaction": {
       "name": "Reaktion senden",
-      "description": "Reagiert mit einem Emoji auf eine Nachricht.",
+      "description": "Reagiert auf eine Nachricht mit einem Emoji.",
       "fields": {
-        "account": {
-          "name": "Konto",
-          "description": "Die WhatsApp-Konto-ID (nur erforderlich bei mehreren Konten)."
-        },
         "reaction": {
           "name": "Reaktion",
-          "description": "Das Emoji, mit dem reagiert werden soll."
+          "description": "Das Emoji für die Reaktion."
         },
         "target": {
           "name": "Zielnummer",
           "description": "Die Telefonnummer des Chats."
         },
         "message_id": {
-          "name": "Nachrichten-ID",
+          "name": "Nachricht-ID",
           "description": "Die ID der Nachricht, auf die reagiert werden soll."
         }
       }
     },
     "update_presence": {
       "name": "Status aktualisieren",
-      "description": "Aktualisiert deinen Status (z. B. schreibt...).",
+      "description": "Aktualisiert deinen Anwesenheitsstatus (z. B. schreibt...).",
       "fields": {
-        "account": {
-          "name": "Konto",
-          "description": "Die WhatsApp-Konto-ID (nur erforderlich bei mehreren Konten)."
-        },
         "presence": {
           "name": "Status",
           "description": "Einer von: available, unavailable, composing, recording, paused."
@@ -334,10 +323,6 @@
       "name": "Buttons senden",
       "description": "Sendet eine Nachricht mit interaktiven Buttons.",
       "fields": {
-        "account": {
-          "name": "Konto",
-          "description": "Die WhatsApp-Konto-ID (nur erforderlich bei mehreren Konten)."
-        },
         "target": {
           "name": "Zielnummer",
           "description": "Der Chat, an den gesendet werden soll."
@@ -348,7 +333,7 @@
         },
         "buttons": {
           "name": "Buttons",
-          "description": "Liste von Buttons als Objekte: [id: 1, displayText: Ja]."
+          "description": "Liste von Buttons, definiert als Objekte mit id und displayText."
         },
         "footer": {
           "name": "Fußzeile",
@@ -409,6 +394,10 @@
     "connection_error_baileys": {
       "title": "WhatsApp-Verbindung unterbrochen",
       "description": "Das WhatsApp-Addon hat Verbindungsprobleme (wahrscheinlich ein bekannter Baileys-Bibliotheks-Bug). Das Addon versucht automatisch eine Wiederverbindung. Es ist keine Aktion erforderlich — dieses Problem löst sich von selbst, sobald die Verbindung wiederhergestellt ist."
+    },
+    "passkey_required": {
+      "title": "WhatsApp Passkey benötigt — Aktion erforderlich",
+      "description": "WhatsApp erfordert nach dem QR-Scan eine **Passkey-Verifizierung**. Dies ist eine [bekannte Einschränkung]({baileys_issue_url}) der Baileys-Bibliothek. Die Sitzung kann nicht abgeschlossen werden, bis dies behoben ist.\n\n**Lösung:** Öffne WhatsApp auf deinem Telefon → **Einstellungen → Konto → Passkeys → Alle Passkeys löschen**. Starte dann die Sitzung über das Addon-Dashboard neu oder wiederhole die Einrichtung der Integration."
     }
   }
 }

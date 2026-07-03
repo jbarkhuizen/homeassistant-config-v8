@@ -374,6 +374,14 @@ class HaEnergyOptimizer extends HTMLElement {
   --bento-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
+:host(.bento-dark) {
+  --bento-bg: var(--primary-background-color, #1a1a2e);
+  --bento-card: var(--card-background-color, #16213e);
+  --bento-text: var(--primary-text-color, #e2e8f0);
+  --bento-text-secondary: var(--secondary-text-color, #94a3b8);
+  --bento-text-muted: var(--disabled-text-color, #64748b);
+  --bento-border: var(--divider-color, #334155);
+}
 
 /* Card */
 .card, .ha-card, ha-card, .main-card, .exporter-card, .security-card, .reports-card, .storage-card, .chore-card, .cry-card, .backup-card, .network-card, .sentence-card, .energy-card, .panel-card {
@@ -1134,17 +1142,18 @@ canvas {
     }
 
     return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js';
-      script.async = true;
-      script.onload = () => {
-        this._chartJsLoaded = true;
-        resolve(window.Chart);
+      // Privacy/offline: prefer the locally-vendored Chart.js; fall back to the CDN only if it is absent.
+      const LOCAL = '/local/community/ha-tools/vendor/chart.umd.min.js';
+      const CDN = 'https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js';
+      const load = (src, onFail) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.onload = () => { this._chartJsLoaded = true; resolve(window.Chart); };
+        script.onerror = onFail;
+        document.head.appendChild(script);
       };
-      script.onerror = () => {
-        reject(new Error('Failed to load Chart.js'));
-      };
-      document.head.appendChild(script);
+      load(LOCAL, () => load(CDN, () => reject(new Error('Failed to load Chart.js'))));
     });
   }
 
@@ -1954,14 +1963,18 @@ if (!window.customCards.some(c => c.type === 'ha-energy-optimizer')) { window.cu
         this._chartJsReady = true;
         return;
       }
-      const script = document.createElement('script');
-      script.src = '/local/community/ha-tools/vendor/chart.umd.min.js';
-      script.onload = () => {
-        this._chartJsReady = true;
-        if (this._data) this._renderCharts();
+      const ok = () => { this._chartJsReady = true; if (this._data) this._renderCharts(); };
+      const add = (src, onFail) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = ok;
+        script.onerror = onFail;
+        document.head.appendChild(script);
       };
-      script.onerror = () => console.warn('[ha-energy-insights] Chart.js failed to load');
-      document.head.appendChild(script);
+      // Privacy/offline: local vendor first, CDN fallback only if absent.
+      add('/local/community/ha-tools/vendor/chart.umd.min.js',
+        () => add('https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js',
+          () => console.warn('[ha-energy-insights] Chart.js failed to load')));
     }
 
     async _fetchData() {

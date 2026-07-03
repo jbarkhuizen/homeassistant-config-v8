@@ -87,8 +87,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         # Auto-discovery attempt: Scan candidates
         suggested_url = f"http://localhost:{DEFAULT_PORT}"
 
-        if self.discovery_info and self.discovery_info.get("host"):
-            suggested_url = str(self.discovery_info["host"])
+        if self.discovery_info and (
+            self.discovery_info.get("host") or self.discovery_info.get(CONF_URL)
+        ):
+            suggested_url = str(
+                self.discovery_info.get("host") or self.discovery_info.get(CONF_URL)
+            )
         else:
             candidates = [
                 "localhost",
@@ -118,25 +122,25 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                 if found_host:
                     suggested_url = f"http://{found_host}:{DEFAULT_PORT}"
 
-            if user_input is None:
-                return self.async_show_form(
-                    step_id="user",
-                    data_schema=vol.Schema(
-                        {
-                            vol.Required("host", default=suggested_url): vol.All(
-                                str, vol.Length(min=1)
-                            ),
-                            vol.Required(
-                                CONF_API_KEY,
-                                default=self.discovery_info.get(CONF_API_KEY) or "",
-                            ): vol.All(str, vol.Length(min=1)),
-                        }
-                    ),
-                    description_placeholders={
-                        "setup_url": "https://faserf.github.io/ha-whatsapp/"
-                    },
-                    errors=errors,
-                )
+        if user_input is None:
+            return self.async_show_form(
+                step_id="user",
+                data_schema=vol.Schema(
+                    {
+                        vol.Required("host", default=suggested_url): vol.All(
+                            str, vol.Length(min=1)
+                        ),
+                        vol.Required(
+                            CONF_API_KEY,
+                            default=self.discovery_info.get(CONF_API_KEY) or "",
+                        ): vol.All(str, vol.Length(min=1)),
+                    }
+                ),
+                description_placeholders={
+                    "setup_url": "https://faserf.github.io/ha-whatsapp/"
+                },
+                errors=errors,
+            )
 
         # If we reach here, user_input must be set
         assert user_input is not None
@@ -223,18 +227,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                 my_number = stats.get("my_number")
                 if my_number:
                     await self.async_set_unique_id(my_number)
-                    self._abort_if_unique_id_configured()
-
-                await self.client.close()
-                return self.async_create_entry(
-                    title=f"WhatsApp ({my_number})" if my_number else "WhatsApp",
-                    data={
-                        "session_id": self.session_id,
-                        CONF_URL: self.discovery_info[CONF_URL],
-                        CONF_API_KEY: self.discovery_info[CONF_API_KEY],
-                        "system_id": self.discovery_info.get("system_id"),
-                    },
-                )
+                return await self.async_create_flow_entry(my_number)
         except AbortFlow:
             raise
         except Exception as e:
@@ -263,6 +256,17 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             if user_input.get("use_phone_pairing"):
                 return await self.async_step_phone_pairing()
 
+            if user_input.get("request_new_qr"):
+                # Force restart the session on the addon side to get a fresh QR code
+                try:
+                    await self.client.delete_session()
+                    await self.client.start_session()
+                except Exception as e:
+                    _LOGGER.error("Failed to regenerate session for new QR: %s", e)
+                self.qr_code = None
+                await asyncio.sleep(5)
+                return await self.async_step_scan()
+
             # User clicked "Submit" (meaning they scanned it)
             try:
                 connected = await self.client.connect()
@@ -271,42 +275,59 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                     my_number = stats.get("my_number")
                     if my_number:
                         await self.async_set_unique_id(my_number)
-                        self._abort_if_unique_id_configured()
+                    return await self.async_create_flow_entry(my_number)
 
-                    await self.client.close()
-                    return self.async_create_entry(
-                        title=f"WhatsApp ({my_number})" if my_number else "WhatsApp",
-                        data={
-                            "session_id": self.session_id,
-                            CONF_URL: self.discovery_info[CONF_URL],
-                            CONF_API_KEY: self.discovery_info[CONF_API_KEY],
-                            "system_id": self.discovery_info.get("system_id"),
-                        },
-                    )
+            except Exception:
+                pass
 
+            # Check if the addon detected a passkey ceremony before concluding error
+            try:
+                dashboard = await self.client.get_dashboard()
+                if dashboard.get("passkeyDetected"):
+                    return await self.async_step_passkey_warning()
             except Exception:
                 pass
 
             # If verification failed (not connected), show error and let user retry
             self.qr_code = None
+            for _i in range(5):
+                try:
+                    self.qr_code = await self.client.get_qr_code()
+                    if self.qr_code:
+                        break
+                except Exception:
+                    pass
+                await asyncio.sleep(1)
+
+            transparent_placeholder = (
+                "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAAL"
+                "AAAAAABAAEAAAIBRAA7"
+            )
+
+            errors = {}
+            if not self.qr_code:
+                errors["base"] = "qr_timeout"
+            else:
+                errors["base"] = "connection_error"
+
             return self.async_show_form(
                 step_id="scan",
                 data_schema=vol.Schema(
                     {
+                        vol.Optional("request_new_qr", default=False): bool,
                         vol.Optional("use_phone_pairing", default=False): bool,
                     }
                 ),
                 description_placeholders={
-                    "qr_image": self.qr_code
-                    or "https://via.placeholder.com/300x300.png?text=Waiting+for+QR+Code...",
+                    "qr_image": self.qr_code or transparent_placeholder,
                 },
-                errors={"base": "connection_error"},
+                errors=errors,
             )
 
         # Get QR Code (Base64 data URI)
         if not self.qr_code:
             # Retry fetching multiple times
-            for _i in range(5):  # Try for ~5 seconds
+            for _i in range(15):  # Try for ~15 seconds
                 try:
                     self.qr_code = await self.client.get_qr_code()
                     if self.qr_code:
@@ -319,40 +340,112 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                         my_number = stats.get("my_number")
                         if my_number:
                             await self.async_set_unique_id(my_number)
-                            self._abort_if_unique_id_configured()
-
-                        await self.client.close()
-                        return self.async_create_entry(
-                            title=(
-                                f"WhatsApp ({my_number})" if my_number else "WhatsApp"
-                            ),
-                            data={
-                                "session_id": self.session_id,
-                                CONF_URL: self.discovery_info[CONF_URL],
-                                CONF_API_KEY: self.discovery_info[CONF_API_KEY],
-                                "system_id": self.discovery_info.get("system_id"),
-                            },
-                        )
+                        return await self.async_create_flow_entry(my_number)
                 except Exception:
                     pass
                 await asyncio.sleep(1)
 
+        transparent_placeholder = (
+            "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAAL"
+            "AAAAAABAAEAAAIBRAA7"
+        )
+
+        errors = {}
         if not self.qr_code:
-            # If still no QR code, show a "Waiting" placeholder or instructions
-            # to retry.
-            pass
+            errors["base"] = "qr_timeout"
 
         return self.async_show_form(
             step_id="scan",
             data_schema=vol.Schema(
                 {
+                    vol.Optional("request_new_qr", default=False): bool,
                     vol.Optional("use_phone_pairing", default=False): bool,
                 }
             ),  # No input needed, just "Submit" after scan
             description_placeholders={
-                "qr_image": self.qr_code
-                or "https://via.placeholder.com/300x300.png?text=Waiting+for+QR+Code...",
+                "qr_image": self.qr_code or transparent_placeholder,
             },
+            errors=errors,
+        )
+
+    async def async_step_passkey_warning(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Show passkey warning and let the user choose how to proceed.
+
+        Option 1 (default): Instruct user to disable passkey on phone, then retry.
+        Option 2 (checkbox): Attempt the experimental passkey ceremony
+        — go to waiting step.
+        """
+        if user_input is not None:
+            if user_input.get("continue_with_passkey"):
+                # User chose Option 2: go to the waiting/approval screen
+                return await self.async_step_passkey_waiting()
+            # User acknowledged Option 1 — abort with instructions
+            return self.async_abort(reason="passkey_remove_required")
+
+        return self.async_show_form(
+            step_id="passkey_warning",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional("continue_with_passkey", default=False): bool,
+                }
+            ),
+            description_placeholders={
+                "baileys_issue_url": "https://github.com/WhiskeySockets/Baileys/issues/2672",
+                "qiua_fork_url": "https://github.com/Qiua/Baileys/commit/210740666c5e24a88e53dab7f19329bb336e1525",
+                "baileys_pr_url": "https://github.com/WhiskeySockets/Baileys/pull/2676",
+            },
+        )
+
+    async def async_step_passkey_waiting(
+        self, _user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Waiting screen while the passkey ceremony completes on the phone.
+
+        Polls /passkey/status every 3 seconds for up to 120 seconds.
+        If connected → finishes setup.
+        If still waiting → shows the form again with a status message.
+        If timed out or still not connected after form submit → lets the user
+        go back to passkey_warning or abort.
+        """
+        if not self.client:
+            return self.async_abort(reason="unknown")
+
+        errors: dict[str, str] = {}
+
+        # Poll the addon a few times before deciding the answer
+        for _i in range(40):  # up to ~120 seconds (40 × 3s)
+            try:
+                status = await self.client.get_passkey_status()
+                if status.get("isConnected"):
+                    # Passkey ceremony succeeded — complete the setup
+                    _LOGGER.info("Passkey ceremony completed — WhatsApp connected")
+                    stats = await self.client.get_stats()
+                    my_number = stats.get("my_number")
+                    if my_number:
+                        await self.async_set_unique_id(my_number)
+                    return await self.async_create_flow_entry(my_number)
+                if not status.get("passkeyWaiting") and not status.get(
+                    "passkeyDetected"
+                ):
+                    # Ceremony no longer active (e.g. timed out on addon side)
+                    errors["base"] = "passkey_timeout"
+                    break
+            except Exception as e:
+                _LOGGER.debug("Passkey status poll error: %s", e)
+
+            await asyncio.sleep(3)
+
+        if not errors:
+            # Ran through all retries without connecting
+            errors["base"] = "passkey_timeout"
+
+        # Show the waiting form again (with error) so user can retry or abort
+        return self.async_show_form(
+            step_id="passkey_waiting",
+            data_schema=vol.Schema({}),
+            errors=errors,
         )
 
     async def async_step_phone_pairing(
@@ -395,18 +488,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                     my_number = stats.get("my_number")
                     if my_number:
                         await self.async_set_unique_id(my_number)
-                        self._abort_if_unique_id_configured()
-
-                    await self.client.close()
-                    return self.async_create_entry(
-                        title=f"WhatsApp ({my_number})" if my_number else "WhatsApp",
-                        data={
-                            "session_id": self.session_id,
-                            CONF_URL: self.discovery_info[CONF_URL],
-                            CONF_API_KEY: self.discovery_info[CONF_API_KEY],
-                            "system_id": self.discovery_info.get("system_id"),
-                        },
-                    )
+                    return await self.async_create_flow_entry(my_number)
             except Exception:
                 pass
             errors["base"] = "connection_error"
@@ -477,6 +559,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                         break
 
             self.discovery_info["host"] = f"http://{host}:{port}"
+            self.discovery_info[CONF_URL] = f"http://{host}:{port}"
 
             # Also check for api_key in options
             if addon_info.options and (api_key := addon_info.options.get(CONF_API_KEY)):
@@ -581,13 +664,135 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Confirm discovery."""
+        url = self.discovery_info.get(CONF_URL) or self.discovery_info.get("host") or ""
         if user_input is not None:
-            return await self.async_step_user()
+            return await self.async_step_user(
+                {
+                    "host": url,
+                    CONF_API_KEY: self.discovery_info.get(CONF_API_KEY) or "",
+                }
+            )
 
         return self.async_show_form(
             step_id="discovery_confirm",
-            description_placeholders={"host": self.discovery_info[CONF_URL]},
+            description_placeholders={"host": url},
             data_schema=vol.Schema({}),
+        )
+
+    async def async_create_flow_entry(self, my_number: str | None) -> ConfigFlowResult:
+        """Create the config entry, performing safety check first."""
+        self._abort_if_unique_id_configured()
+
+        show_warning = False
+        show_fallback = False
+
+        if not self.client:
+            return self.async_abort(reason="unknown")
+
+        # Poll get_chats up to 15 times (~15s) to detect if history sync populates chats
+        for _i in range(15):
+            try:
+                chats = await self.client.get_chats()
+                total_chats = int(chats.get("total_chats") or 0)
+                initial_chats_received = bool(
+                    chats.get("initial_chats_received") or False
+                )
+                _LOGGER.debug(
+                    "Safety warning check: total_chats = %s, initial_received = %s",
+                    total_chats,
+                    initial_chats_received,
+                )
+                if initial_chats_received:
+                    if total_chats > 2:
+                        break
+                    show_warning = True
+                    break
+            except Exception as e:
+                _LOGGER.debug("Failed to retrieve chat history count: %s", e)
+                show_fallback = True
+                break
+            await asyncio.sleep(1)
+        else:
+            # Timeout reached. Fall back to current chat count check.
+            try:
+                chats = await self.client.get_chats()
+                total_chats = int(chats.get("total_chats") or 0)
+                if total_chats <= 2:
+                    show_warning = True
+            except Exception:
+                show_fallback = True
+
+        if self.client:
+            await self.client.close()
+
+        if show_warning or show_fallback:
+            self.context["my_number"] = my_number  # type: ignore[typeddict-unknown-key]
+            wtype = "fallback" if show_fallback else "new_account"
+            self.context["warning_type"] = wtype  # type: ignore[typeddict-unknown-key]
+            if show_fallback:
+                return await self.async_step_account_warning_fallback()
+            return await self.async_step_account_warning()
+
+        url = self.discovery_info.get(CONF_URL) or self.discovery_info.get("host") or ""
+        return self.async_create_entry(
+            title=f"WhatsApp ({my_number})" if my_number else "WhatsApp",
+            data={
+                "session_id": self.session_id,
+                CONF_URL: url,
+                CONF_API_KEY: self.discovery_info[CONF_API_KEY],
+                "system_id": self.discovery_info.get("system_id"),
+            },
+        )
+
+    async def async_step_account_warning(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Show warning for new account."""
+        return await self._show_safety_warning("new_account", user_input)
+
+    async def async_step_account_warning_fallback(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Show warning fallback."""
+        return await self._show_safety_warning("fallback", user_input)
+
+    async def _show_safety_warning(
+        self, warning_type: str, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Display safety warnings before completing setup."""
+        if user_input is not None:
+            my_number = self.context.get("my_number")
+            url = (
+                self.discovery_info.get(CONF_URL)
+                or self.discovery_info.get("host")
+                or ""
+            )
+            return self.async_create_entry(
+                title=f"WhatsApp ({my_number})" if my_number else "WhatsApp",
+                data={
+                    "session_id": self.session_id,
+                    CONF_URL: url,
+                    CONF_API_KEY: self.discovery_info[CONF_API_KEY],
+                    "system_id": self.discovery_info.get("system_id"),
+                },
+            )
+
+        self.context["warning_type"] = warning_type  # type: ignore[typeddict-unknown-key]
+        step_id = (
+            "account_warning_fallback"
+            if warning_type == "fallback"
+            else "account_warning"
+        )
+        return self.async_show_form(
+            step_id=step_id,
+            data_schema=vol.Schema({}),
+            description_placeholders={
+                "issue_url": "https://github.com/FaserF/ha-whatsapp/issues/59",
+                "docs_url": (
+                    "https://faserf.github.io/ha-whatsapp/troubleshooting.html"
+                    "#6-whatsapp-account-suspended--banned"
+                ),
+            },
         )
 
 
