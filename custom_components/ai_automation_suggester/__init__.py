@@ -63,6 +63,8 @@ GENERATE_SUGGESTIONS_SCHEMA = vol.Schema(
         vol.Optional("entity_limit", default=200): vol.All(vol.Coerce(int), vol.Range(min=1, max=2000)),
         vol.Optional("automation_read_yaml", default=False): bool,
         vol.Optional("automation_limit", default=100): vol.All(vol.Coerce(int), vol.Range(min=0, max=1000)),
+        vol.Optional("script_read_yaml", default=False): bool,
+        vol.Optional("script_limit", default=100): vol.All(vol.Coerce(int), vol.Range(min=0, max=1000)),
     }
 )
 
@@ -106,6 +108,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
                 entity_limit=call.data.get("entity_limit", 200),
                 automation_read_yaml=call.data.get("automation_read_yaml", False),
                 automation_limit=call.data.get("automation_limit", 100),
+                script_read_yaml=call.data.get("script_read_yaml", False),
+                script_limit=call.data.get("script_limit", 100),
             )
 
         except KeyError:
@@ -197,6 +201,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return False
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Reload config entry."""
-    await async_unload_entry(hass, entry)
-    await async_setup_entry(hass, entry)
+    """Reload config entry.
+
+    Delegates to ``hass.config_entries.async_reload`` so the core reload path
+    runs ``entry.async_on_unload`` callbacks (which detach the update listener
+    registered in :func:`async_setup_entry`). Calling ``async_unload_entry``
+    directly bypassed those callbacks, so every options save appended another
+    listener and eventually locked up the event loop (issue #175).
+    """
+    await hass.config_entries.async_reload(entry.entry_id)

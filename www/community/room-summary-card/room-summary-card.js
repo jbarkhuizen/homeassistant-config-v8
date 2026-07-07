@@ -1678,7 +1678,7 @@ Object.defineProperty(module.exports, "__esModule", {
 
 
 parcelRegister("6c3D1", function(module, exports) {
-module.exports = import("./problem-dialog.9c6a0e39.js").then(()=>parcelRequire('gIkwD'));
+module.exports = import("./problem-dialog.eb55e12e.js").then(()=>parcelRequire('gIkwD'));
 
 });
 
@@ -1836,6 +1836,469 @@ const $a6dfaa78520799c6$export$c18c768bbe3223b7 = (hass, entity, content)=>(0, $
 
 });
 
+parcelRegister("g28NR", function(module, exports) {
+"use strict";
+Object.defineProperty(module.exports, "__esModule", {
+    value: true
+});
+module.exports.HassConfigMixin = void 0;
+/**
+ * Provides non-decorated `hass` and `config` fields.
+ *
+ * These are intentionally NOT `@property()` to avoid Lit reactive property
+ * plumbing/attribute semantics.
+ */ const $bac3a96534ef5b24$var$HassConfigMixin = (superClass)=>{
+    class HassConfigClass extends superClass {
+    }
+    return HassConfigClass;
+};
+module.exports.HassConfigMixin = $bac3a96534ef5b24$var$HassConfigMixin;
+
+});
+
+parcelRegister("jc0SV", function(module, exports) {
+
+var $kJycS = parcelRequire("kJycS");
+
+var $1izJ2 = parcelRequire("1izJ2");
+"use strict";
+var $df8fd303fc05ef66$var$__decorate = undefined && undefined.__decorate || function(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(module.exports, "__esModule", {
+    value: true
+});
+module.exports.SubscribeEntityStateMixin = void 0;
+parcelRequire("jcMWt");
+var $lYE5o = parcelRequire("lYE5o");
+
+var $fAhtX = parcelRequire("fAhtX");
+/**
+ * Mixin that subscribes to entity state changes via subscribe_entities.
+ * Only notifies on meaningful changes (state/attributes), not context/last_updated.
+ *
+ * Set `entities` to the list of entity_ids to watch; read `states[entityId]`
+ * for the current state of each (undefined when not yet received). For the
+ * common single-entity case, set `entity` and read `state` instead — e.g.
+ * `<foo-element entity="light.bedroom">`.
+ *
+ * The underlying manager consolidates every entity into a single
+ * subscribe_entities call per connection, so subscribing to N entities here is
+ * cheap — it just registers N listeners.
+ */ const $df8fd303fc05ef66$var$SubscribeEntityStateMixin = (superClass)=>{
+    class SubscribeEntityStateClass extends superClass {
+        /**
+         * Convenience accessor for the single-entity case. Derived from the
+         * reactive `states` map, so it updates and re-renders automatically.
+         */ get state() {
+            return this.entity ? this.states[this.entity] : undefined;
+        }
+        /**
+         * Setup the entity subscriptions.
+         */ connectedCallback() {
+            super.connectedCallback();
+            this._setupEntitySubscriptions();
+        }
+        /**
+         * Teardown all entity subscriptions.
+         */ disconnectedCallback() {
+            this._teardownEntitySubscriptions();
+            super.disconnectedCallback();
+        }
+        /**
+         * Unsubscribe from everything and reset state. Used on disconnect and when
+         * there is nothing valid to subscribe to.
+         */ _teardownEntitySubscriptions() {
+            for (const unsubscribe of this._unsubscribes.values())unsubscribe();
+            this._unsubscribes.clear();
+            this.states = {};
+        }
+        /**
+         * Reconcile active subscriptions against the desired `entities` list:
+         * unsubscribe from entities that were dropped, subscribe to new ones, and
+         * leave already-subscribed entities untouched (no churn).
+         */ _setupEntitySubscriptions() {
+            const hass = this.hass;
+            var _this_entities;
+            // Combine the single-entity convenience with the array, de-duping so a
+            // repeated id doesn't subscribe twice.
+            const desired = new Set([
+                ...this.entity ? [
+                    this.entity
+                ] : [],
+                ...(_this_entities = this.entities) !== null && _this_entities !== void 0 ? _this_entities : []
+            ]);
+            // Nothing to subscribe to — tear everything down.
+            if (!hass || desired.size === 0) {
+                this._teardownEntitySubscriptions();
+                return;
+            }
+            // Remove subscriptions no longer desired, dropping their state keys.
+            for (const [entityId, unsubscribe] of this._unsubscribes)if (!desired.has(entityId)) {
+                unsubscribe();
+                this._unsubscribes.delete(entityId);
+                // Reassign without the removed key so Lit picks up the change.
+                const next = (0, $kJycS._)({}, this.states);
+                delete next[entityId];
+                this.states = next;
+            }
+            // Add subscriptions for newly desired entities.
+            const manager = (0, $fAhtX.getEntitySubscriptionManager)(hass);
+            for (const entityId of desired){
+                if (this._unsubscribes.has(entityId)) continue;
+                const unsubscribe = manager.subscribe(entityId, (state)=>this._onState(entityId, state));
+                this._unsubscribes.set(entityId, unsubscribe);
+            }
+        }
+        /**
+         * Handle a state update for a single entity. Reassign `states` with a new
+         * object reference so Lit detects the change and re-renders.
+         */ _onState(entityId, state) {
+            this.states = (0, $1izJ2._)((0, $kJycS._)({}, this.states), {
+                [entityId]: state
+            });
+        }
+        constructor(){
+            super(...arguments);
+            /**
+             * Active subscriptions, keyed by entity_id. The keys of this map are the
+             * set of entities we are currently subscribed to.
+             */ this._unsubscribes = new Map();
+            /**
+             * The current state of each subscribed entity, keyed by entity_id.
+             * Reactive: reassigned (never mutated in place) so Lit re-renders.
+             */ this.states = {};
+        }
+    }
+    $df8fd303fc05ef66$var$__decorate([
+        (0, $lYE5o.state)()
+    ], SubscribeEntityStateClass.prototype, "states", void 0);
+    return SubscribeEntityStateClass;
+};
+module.exports.SubscribeEntityStateMixin = $df8fd303fc05ef66$var$SubscribeEntityStateMixin;
+
+});
+parcelRegister("fAhtX", function(module, exports) {
+"use strict";
+Object.defineProperty(module.exports, "__esModule", {
+    value: true
+});
+module.exports.StatesEventHandler = module.exports.ResubscribeScheduler = module.exports.getEntitySubscriptionManager = module.exports.EntitySubscriptionManager = void 0;
+
+var $cMOUV = parcelRequire("cMOUV");
+Object.defineProperty(module.exports, "EntitySubscriptionManager", {
+    enumerable: true,
+    get: function() {
+        return $cMOUV.EntitySubscriptionManager;
+    }
+});
+Object.defineProperty(module.exports, "getEntitySubscriptionManager", {
+    enumerable: true,
+    get: function() {
+        return $cMOUV.getEntitySubscriptionManager;
+    }
+});
+
+var $gmnsX = parcelRequire("gmnsX");
+Object.defineProperty(module.exports, "ResubscribeScheduler", {
+    enumerable: true,
+    get: function() {
+        return $gmnsX.ResubscribeScheduler;
+    }
+});
+
+var $l8KlY = parcelRequire("l8KlY");
+Object.defineProperty(module.exports, "StatesEventHandler", {
+    enumerable: true,
+    get: function() {
+        return $l8KlY.StatesEventHandler;
+    }
+});
+
+});
+parcelRegister("cMOUV", function(module, exports) {
+"use strict";
+/**
+ * Per-connection singleton that consolidates entity subscriptions.
+ * Multiple elements across cards share one subscribe_entities call.
+ *
+ * @see https://developers.home-assistant.io/docs/api/websocket#subscribe_entities
+ */ Object.defineProperty(module.exports, "__esModule", {
+    value: true
+});
+module.exports.EntitySubscriptionManager = void 0;
+module.exports.getEntitySubscriptionManager = $94f176d58d02dce8$var$getEntitySubscriptionManager;
+
+var $hKCRN = parcelRequire("hKCRN");
+
+var $gmnsX = parcelRequire("gmnsX");
+
+var $l8KlY = parcelRequire("l8KlY");
+const $94f176d58d02dce8$var$managers = new Map();
+function $94f176d58d02dce8$var$getEntitySubscriptionManager(hass) {
+    const conn = hass.connection;
+    let manager = $94f176d58d02dce8$var$managers.get(conn);
+    if (!manager) {
+        manager = new $94f176d58d02dce8$var$EntitySubscriptionManager(hass);
+        $94f176d58d02dce8$var$managers.set(conn, manager);
+    }
+    return manager;
+}
+/** One manager per connection; tracks listeners per entity and maintains a single subscribe_entities call. */ class $94f176d58d02dce8$var$EntitySubscriptionManager {
+    /** Subscribe to entity; returns unsubscribe fn. Batches resubscribe when entity set changes. */ subscribe(entityId, onChange) {
+        let set = this._listeners.get(entityId);
+        if (!set) {
+            set = new Set();
+            this._listeners.set(entityId, set);
+        }
+        set.add(onChange);
+        const entityWasNew = set.size === 1;
+        if (entityWasNew) this._scheduleResubscribe();
+        this._deliverInitialState(entityId, onChange);
+        return ()=>{
+            const s = this._listeners.get(entityId);
+            if (!s) return;
+            s.delete(onChange);
+            if (s.size === 0) {
+                this._listeners.delete(entityId);
+                this._state.delete(entityId);
+                this._scheduleResubscribe();
+            }
+        };
+    }
+    _scheduleResubscribe() {
+        this._scheduler.schedule(()=>this._resubscribe());
+    }
+    _resubscribe() {
+        if (this._unsubscribe) {
+            this._unsubscribe();
+            this._unsubscribe = undefined;
+        }
+        const entityIds = [
+            ...this._listeners.keys()
+        ];
+        if (entityIds.length === 0) return;
+        const connection = this._hass.connection;
+        if (!(connection === null || connection === void 0 ? void 0 : connection.subscribeMessage)) return;
+        const version = ++this._resubscribeVersion;
+        connection.subscribeMessage((ev)=>this._handleEvent(ev), {
+            type: 'subscribe_entities',
+            entity_ids: entityIds
+        }).then((unsub)=>{
+            if (version !== this._resubscribeVersion) {
+                unsub();
+                return;
+            }
+            this._unsubscribe = unsub;
+        });
+    }
+    _handleEvent(ev) {
+        this._eventHandler.handle(ev);
+    }
+    /**
+     * Push current known state to a listener immediately. Required when multiple
+     * elements subscribe to the same entity: only the first subscription
+     * triggers subscribe_entities, so later listeners would otherwise stay empty
+     * until the next websocket change. Falls back to the `hass.states` snapshot
+     * so even the first listener gets a value without waiting for the debounced
+     * resubscribe round-trip.
+     */ _deliverInitialState(entityId, onChange) {
+        let state = this._state.get(entityId);
+        if (!state) {
+            state = (0, $hKCRN.getState)(this._hass, entityId);
+            if (state) this._state.set(entityId, state);
+        }
+        onChange(state);
+    }
+    constructor(hass){
+        this._listeners = new Map();
+        this._state = new Map();
+        this._scheduler = new $gmnsX.ResubscribeScheduler();
+        this._resubscribeVersion = 0;
+        this._hass = hass;
+        this._eventHandler = new $l8KlY.StatesEventHandler(this._listeners, this._state, this._hass);
+    }
+}
+module.exports.EntitySubscriptionManager = $94f176d58d02dce8$var$EntitySubscriptionManager;
+
+});
+parcelRegister("hKCRN", function(module, exports) {
+"use strict";
+Object.defineProperty(module.exports, "__esModule", {
+    value: true
+});
+module.exports.getState = void 0;
+/**
+ * Retrieves the state of an entity from `hass.states`.
+ */ const $cec4e1aa10b6ed35$var$getState = (hass, entityId)=>{
+    if (!entityId) return undefined;
+    const state = hass.states[entityId];
+    if (!state) return undefined;
+    return {
+        entity_id: state.entity_id,
+        state: state.state,
+        attributes: state.attributes,
+        last_changed: state.last_changed,
+        last_updated: state.last_updated
+    };
+};
+module.exports.getState = $cec4e1aa10b6ed35$var$getState;
+
+});
+
+parcelRegister("gmnsX", function(module, exports) {
+"use strict";
+/**
+ * Debounces resubscribe to batch rapid entity add/remove during dashboard load.
+ */ Object.defineProperty(module.exports, "__esModule", {
+    value: true
+});
+module.exports.ResubscribeScheduler = void 0;
+const $be90e74af7706a71$var$RESUBSCRIBE_DEBOUNCE_MS = 50;
+/** Debounces a callback; call schedule() to run fn after a short delay, reset on each call. */ class $be90e74af7706a71$var$ResubscribeScheduler {
+    /** Run fn after debounce delay; resets timer if called again before firing. */ schedule(fn) {
+        if (this._timer) clearTimeout(this._timer);
+        this._timer = setTimeout(()=>{
+            this._timer = undefined;
+            fn();
+        }, $be90e74af7706a71$var$RESUBSCRIBE_DEBOUNCE_MS);
+    }
+    /** Cancel any pending scheduled run. */ cancel() {
+        if (this._timer) {
+            clearTimeout(this._timer);
+            this._timer = undefined;
+        }
+    }
+}
+module.exports.ResubscribeScheduler = $be90e74af7706a71$var$ResubscribeScheduler;
+
+});
+
+parcelRegister("l8KlY", function(module, exports) {
+"use strict";
+/**
+ * Handles subscribe_entities WebSocket events (add, remove, change).
+ */ Object.defineProperty(module.exports, "__esModule", {
+    value: true
+});
+module.exports.StatesEventHandler = void 0;
+
+var $hKCRN = parcelRequire("hKCRN");
+
+var $16Z9S = parcelRequire("16Z9S");
+/** Processes ev.a (add), ev.r (remove), ev.c (change) from subscribe_entities; updates state map and notifies listeners. */ class $f63e4d233b51a6c9$var$StatesEventHandler {
+    /** Process one WebSocket event; only notifies entities we're subscribed to. */ handle(ev) {
+        if (ev.a) this._handleAdd(ev.a);
+        if (ev.r) this._handleRemove(ev.r);
+        if (ev.c) this._handleChange(ev.c);
+    }
+    _handleAdd(added) {
+        for (const [entityId, comp] of Object.entries(added)){
+            if (!this._listeners.has(entityId)) continue;
+            const state = (0, $16Z9S.compressedToEntityState)(entityId, comp);
+            this._state.set(entityId, state);
+            this._notify(entityId, state);
+        }
+    }
+    _handleRemove(removed) {
+        for (const entityId of removed){
+            if (!this._listeners.has(entityId)) continue;
+            this._state.delete(entityId);
+            this._notify(entityId, undefined);
+        }
+    }
+    _handleChange(changes) {
+        for (const [entityId, diff] of Object.entries(changes)){
+            if (!this._listeners.has(entityId)) continue;
+            if (!(0, $16Z9S.isMeaningfulChange)(diff)) continue;
+            var _this__state_get;
+            const base = (_this__state_get = this._state.get(entityId)) !== null && _this__state_get !== void 0 ? _this__state_get : (0, $hKCRN.getState)(this._hass, entityId);
+            if (!base) continue;
+            const state = (0, $16Z9S.applyDiff)(base, entityId, diff);
+            this._state.set(entityId, state);
+            this._notify(entityId, state);
+        }
+    }
+    _notify(entityId, state) {
+        const set = this._listeners.get(entityId);
+        if (!set) return;
+        for (const fn of set)fn(state);
+    }
+    constructor(_listeners, _state, _hass){
+        this._listeners = _listeners;
+        this._state = _state;
+        this._hass = _hass;
+    }
+}
+module.exports.StatesEventHandler = $f63e4d233b51a6c9$var$StatesEventHandler;
+
+});
+parcelRegister("16Z9S", function(module, exports) {
+
+var $kJycS = parcelRequire("kJycS");
+"use strict";
+/**
+ * Shared helpers for processing subscribe_entities state diff format.
+ * Used by entity-subscription-manager.
+ *
+ * @see https://developers.home-assistant.io/docs/api/websocket#subscribe_entities
+ */ Object.defineProperty(module.exports, "__esModule", {
+    value: true
+});
+module.exports.compressedToEntityState = $0cf5cac5f0fe3383$var$compressedToEntityState;
+module.exports.isMeaningfulChange = $0cf5cac5f0fe3383$var$isMeaningfulChange;
+module.exports.applyDiff = $0cf5cac5f0fe3383$var$applyDiff;
+const $0cf5cac5f0fe3383$var$COMPRESSED_STATE = 's';
+const $0cf5cac5f0fe3383$var$COMPRESSED_ATTRIBUTES = 'a';
+function $0cf5cac5f0fe3383$var$compressedToEntityState(entityId, comp) {
+    const last_changed = new Date(comp.lc * 1000).toISOString();
+    var _comp_a;
+    return {
+        entity_id: entityId,
+        state: comp.s,
+        attributes: (_comp_a = comp.a) !== null && _comp_a !== void 0 ? _comp_a : {},
+        last_changed: last_changed,
+        last_updated: comp.lu ? new Date(comp.lu * 1000).toISOString() : last_changed
+    };
+}
+function $0cf5cac5f0fe3383$var$isMeaningfulChange(diff) {
+    var _remove_a;
+    const add = diff['+'];
+    const remove = diff['-'];
+    return (add === null || add === void 0 ? void 0 : add[$0cf5cac5f0fe3383$var$COMPRESSED_STATE]) !== undefined || (add === null || add === void 0 ? void 0 : add[$0cf5cac5f0fe3383$var$COMPRESSED_ATTRIBUTES]) !== undefined || (remove === null || remove === void 0 ? void 0 : (_remove_a = remove.a) === null || _remove_a === void 0 ? void 0 : _remove_a.length) !== undefined && remove.a.length > 0;
+}
+function $0cf5cac5f0fe3383$var$applyDiff(current, entityId, diff) {
+    const add = diff['+'];
+    const remove = diff['-'];
+    let state = current.state;
+    let last_changed = current.last_changed;
+    let last_updated = current.last_updated;
+    const attributes = (0, $kJycS._)({}, current.attributes);
+    if (add) {
+        if (add.s !== undefined) state = add.s;
+        if (add.a) Object.assign(attributes, add.a);
+        if (add.lc) last_changed = new Date(add.lc * 1000).toISOString();
+        if (add.lu) last_updated = new Date(add.lu * 1000).toISOString();
+    }
+    if (remove === null || remove === void 0 ? void 0 : remove.a) for (const key of remove.a)delete attributes[key];
+    return {
+        entity_id: entityId,
+        state: state,
+        attributes: attributes,
+        last_changed: last_changed,
+        last_updated: last_updated
+    };
+}
+
+});
+
+
+
+
+
 parcelRegister("dTmXl", function(module, exports) {
 
 $parcel$export(module.exports, "d", function () { return $86dc711946e77b66$export$4368d992c4eafac0; });
@@ -1850,23 +2313,30 @@ const $86dc711946e77b66$export$4368d992c4eafac0 = (config, component, category, 
 
 });
 
-parcelRegister("1LdRn", function(module, exports) {
-
-$parcel$export(module.exports, "HassUpdateMixin", function () { return $4aaac1c384d75a93$export$19efda5681568302; });
-const $4aaac1c384d75a93$export$19efda5681568302 = (superClass)=>{
+parcelRegister("htQni", function(module, exports) {
+"use strict";
+Object.defineProperty(module.exports, "__esModule", {
+    value: true
+});
+module.exports.HassUpdateMixin = void 0;
+/**
+ * Mixin that keeps `hass` in sync with a scoped `hass-update` event.
+ *
+ * Stacks on `HassConfigMixin`, so the superclass already provides the `hass`
+ * and `config` fields; this mixin just reassigns `hass` whenever a
+ * `hass-update` event is fired on its scope. Use it on children whose parent
+ * skips full Lit updates, so they can react to `hass` changes themselves.
+ *
+ * The listener is attached to the element's own root node (the parent card's
+ * shadow tree) rather than `globalThis`, so each card's events stay isolated
+ * from sibling cards on the same dashboard. The owning card should dispatch
+ * `hass-update` on its own `shadowRoot`. A `_host` escape hatch handles
+ * portalled descendants (e.g. dialogs HA's dialog manager moves out of the
+ * tree).
+ *
+ * @param superClass - The base class to mixin
+ */ const $cb9dc5a371e35fc4$var$HassUpdateMixin = (superClass)=>{
     class HassUpdateClass extends superClass {
-        get hass() {
-            return this.__hassValue;
-        }
-        set hass(value) {
-            this.__hassValue = value;
-        }
-        get config() {
-            return this.__configValue;
-        }
-        set config(value) {
-            this.__configValue = value;
-        }
         connectedCallback() {
             super.connectedCallback();
             this._bindHassUpdateListener();
@@ -1876,14 +2346,14 @@ const $4aaac1c384d75a93$export$19efda5681568302 = (superClass)=>{
             this._unbindHassUpdateListener();
         }
         /**
-     * Attaches the listener to the closest scope: an explicit `_host`'s
-     * shadow root if set (for portalled descendants), otherwise the
-     * component's own root node (the parent shadow tree). Each card has a
-     * distinct shadow root, so this naturally isolates events per card.
-     *
-     * Exposed so portalled descendants can re-bind after `_host` is supplied,
-     * since their `connectedCallback` runs before the property is set.
-     */ _bindHassUpdateListener() {
+         * Attaches the listener to the closest scope: an explicit `_host`'s
+         * shadow root if set (for portalled descendants), otherwise the
+         * component's own root node (the parent shadow tree). Each card has a
+         * distinct shadow root, so this naturally isolates events per card.
+         *
+         * Exposed so portalled descendants can re-bind after `_host` is supplied,
+         * since their `connectedCallback` runs before the property is set.
+         */ _bindHassUpdateListener() {
             if (this._listenerTarget) return;
             const target = this._resolveListenerTarget();
             if (target) {
@@ -1909,414 +2379,16 @@ const $4aaac1c384d75a93$export$19efda5681568302 = (superClass)=>{
             const { detail: { hass: hass } } = event;
             this.hass = hass;
         }
-        constructor(...args){
-            super(...args), this._boundHassUpdateHandler = this._handleHassUpdate.bind(this);
+        constructor(){
+            super(...arguments);
+            this._boundHassUpdateHandler = this._handleHassUpdate.bind(this);
         }
     }
     return HassUpdateClass;
 };
+module.exports.HassUpdateMixin = $cb9dc5a371e35fc4$var$HassUpdateMixin;
 
 });
-
-parcelRegister("wgzUt", function(module, exports) {
-
-$parcel$export(module.exports, "SubscribeEntityStateMixin", function () { return $776fb9ea2d5ddf20$export$961c110c9b2142da; });
-
-var $2QgUB = parcelRequire("2QgUB");
-parcelRequire("3NUqv");
-var $knRyT = parcelRequire("knRyT");
-
-var $dTmXl = parcelRequire("dTmXl");
-parcelRequire("jcMWt");
-var $lYE5o = parcelRequire("lYE5o");
-const $776fb9ea2d5ddf20$export$961c110c9b2142da = (superClass)=>{
-    class SubscribeEntityStateClass extends superClass {
-        /**
-     * Setup the entity subscription.
-     */ connectedCallback() {
-            super.connectedCallback();
-            this._setupEntitySubscription();
-        }
-        /**
-     * Teardown the entity subscription.
-     */ disconnectedCallback() {
-            this._teardownEntitySubscription();
-            super.disconnectedCallback();
-        }
-        /**
-     * Teardown the entity subscription.
-     */ _teardownEntitySubscription() {
-            if (!this._unsubscribe) return;
-            (0, $dTmXl.d)(this.config, 'subscribe-entity-state-mixin', 'unsubscribe');
-            this._unsubscribe();
-            this._unsubscribe = undefined;
-            this._subscribedEntityId = undefined;
-        }
-        /**
-     * Setup the entity subscription.
-     */ _setupEntitySubscription() {
-            const id = this.entity;
-            const hass = this.hass;
-            const config = this.config;
-            (0, $dTmXl.d)(config, 'subscribe-entity-state-mixin', 'setupEntitySubscription', id);
-            if (!id || !hass) {
-                (0, $dTmXl.d)(config, 'subscribe-entity-state-mixin', 'setupEntitySubscription', 'missing id or hass');
-                this._teardownEntitySubscription();
-                this.state = undefined;
-                return;
-            }
-            if (this._subscribedEntityId === id) {
-                (0, $dTmXl.d)(config, 'subscribe-entity-state-mixin', 'setupEntitySubscription', "already subscribed.. \uD83D\uDE15");
-                return;
-            }
-            this._teardownEntitySubscription();
-            this._subscribedEntityId = id;
-            const manager = (0, $knRyT.getEntitySubscriptionManager)(hass, config);
-            this._unsubscribe = manager.subscribe(id, (state)=>{
-                this.state = state;
-            }, config);
-        }
-    }
-    (0, $2QgUB.__decorate)([
-        (0, $lYE5o.state)()
-    ], SubscribeEntityStateClass.prototype, "state", void 0);
-    return SubscribeEntityStateClass;
-};
-
-});
-parcelRegister("3NUqv", function(module, exports) {
-
-$parcel$export(module.exports, "getEntitySubscriptionManager", function () { return (parcelRequire("knRyT")).getEntitySubscriptionManager; });
-
-var $knRyT = parcelRequire("knRyT");
-
-var $ahi97 = parcelRequire("ahi97");
-
-var $3xhFF = parcelRequire("3xhFF");
-
-});
-parcelRegister("knRyT", function(module, exports) {
-
-$parcel$export(module.exports, "getEntitySubscriptionManager", function () { return $56a4fb7ab615f3dd$export$f1d189590eee6c91; });
-/**
- * Per-connection singleton that consolidates entity subscriptions.
- * Multiple badges across cards share one subscribe_entities call.
- *
- * @see https://developers.home-assistant.io/docs/api/websocket#subscribe_entities
- */ 
-var $7AhDs = parcelRequire("7AhDs");
-
-var $dTmXl = parcelRequire("dTmXl");
-
-var $ahi97 = parcelRequire("ahi97");
-
-var $3xhFF = parcelRequire("3xhFF");
-const $56a4fb7ab615f3dd$var$managers = new Map();
-function $56a4fb7ab615f3dd$export$f1d189590eee6c91(hass, config) {
-    const conn = hass.connection;
-    let manager = $56a4fb7ab615f3dd$var$managers.get(conn);
-    if (!manager) {
-        (0, $dTmXl.d)(config, 'entity-subscription-manager', 'initial creation');
-        manager = new $56a4fb7ab615f3dd$export$76a51d3d85415e4c(hass);
-        $56a4fb7ab615f3dd$var$managers.set(conn, manager);
-    }
-    return manager;
-}
-class $56a4fb7ab615f3dd$export$76a51d3d85415e4c {
-    /** Subscribe to entity; returns unsubscribe fn. Batches resubscribe when entity set changes. */ subscribe(entityId, onChange, config) {
-        let set = this._listeners.get(entityId);
-        if (!set) {
-            set = new Set();
-            this._listeners.set(entityId, set);
-        }
-        set.add(onChange);
-        const entityWasNew = set.size === 1;
-        if (entityWasNew) this._scheduleResubscribe(config);
-        (0, $dTmXl.d)(config, 'entity-subscription-manager', 'subscribe', entityId, 'listeners', set.size);
-        this._deliverInitialState(entityId, onChange);
-        return ()=>{
-            const s = this._listeners.get(entityId);
-            if (!s) return;
-            s.delete(onChange);
-            if (s.size === 0) {
-                this._listeners.delete(entityId);
-                this._state.delete(entityId);
-                this._scheduleResubscribe(config);
-            }
-        };
-    }
-    _scheduleResubscribe(config) {
-        this._scheduler.schedule(()=>this._resubscribe(config));
-    }
-    _resubscribe(config) {
-        if (this._unsubscribe) {
-            this._unsubscribe();
-            this._unsubscribe = undefined;
-        }
-        const entityIds = [
-            ...this._listeners.keys()
-        ];
-        if (entityIds.length === 0) return;
-        (0, $dTmXl.d)(config, 'entity-subscription-manager', 'subscribe_entities', entityIds, "\nThis shouldn't happen alot.. \uD83E\uDD14");
-        const version = ++this._resubscribeVersion;
-        this._hass.connection.subscribeMessage((ev)=>this._handleEvent(ev, config), {
-            type: 'subscribe_entities',
-            entity_ids: entityIds
-        }).then((unsub)=>{
-            if (version !== this._resubscribeVersion) {
-                (0, $dTmXl.d)(config, 'entity-subscription-manager', 'resubscribe', 'stale', version, this._resubscribeVersion);
-                unsub();
-                return;
-            }
-            (0, $dTmXl.d)(config, 'entity-subscription-manager', 'resubscribe', 'active');
-            this._unsubscribe = unsub;
-        });
-    }
-    _handleEvent(ev, config) {
-        this._eventHandler.handle(ev, config);
-    }
-    /**
-   * Push current known state to a listener immediately. Required when multiple
-   * components subscribe to the same entity: only the first subscription
-   * triggers subscribe_entities; later listeners would otherwise stay empty
-   * until the next websocket change.
-   */ _deliverInitialState(entityId, onChange) {
-        let state = this._state.get(entityId);
-        if (!state) {
-            state = (0, $7AhDs.getState)(this._hass.states, entityId);
-            if (state) this._state.set(entityId, state);
-        }
-        onChange(state);
-    }
-    constructor(hass){
-        this._listeners = new Map();
-        this._state = new Map();
-        this._scheduler = new (0, $ahi97.ResubscribeScheduler)();
-        this._resubscribeVersion = 0;
-        this._hass = hass;
-        this._eventHandler = new (0, $3xhFF.StatesEventHandler)(this._listeners, this._state, this._hass);
-    }
-}
-
-});
-parcelRegister("7AhDs", function(module, exports) {
-
-$parcel$export(module.exports, "getState", function () { return $6d9b59681496f671$export$50fdfeece43146fd; });
-
-var $h7W3o = parcelRequire("h7W3o");
-
-var $l3TbZ = parcelRequire("l3TbZ");
-const $6d9b59681496f671$export$50fdfeece43146fd = (0, $l3TbZ.default)((states, entityId, fakeState = false)=>{
-    if (!entityId) return undefined;
-    var _states_entityId;
-    const state = (_states_entityId = states[entityId]) !== null && _states_entityId !== void 0 ? _states_entityId : fakeState ? {
-        entity_id: entityId,
-        state: 'off',
-        attributes: {
-            friendly_name: ''
-        },
-        last_changed: '',
-        last_updated: ''
-    } : undefined;
-    if (!state) return undefined;
-    const domain = (0, $h7W3o.computeDomain)(state.entity_id);
-    return {
-        state: state.state,
-        attributes: state.attributes,
-        entity_id: state.entity_id,
-        last_changed: state.last_changed,
-        last_updated: state.last_updated,
-        domain: domain
-    };
-});
-
-});
-parcelRegister("l3TbZ", function(module, exports) {
-
-$parcel$export(module.exports, "default", function () { return $f554b0d97be25fc9$export$2e2bcd8739ae039; });
-var $f554b0d97be25fc9$var$safeIsNaN = Number.isNaN || function ponyfill(value) {
-    return typeof value === 'number' && value !== value;
-};
-function $f554b0d97be25fc9$var$isEqual(first, second) {
-    if (first === second) return true;
-    if ($f554b0d97be25fc9$var$safeIsNaN(first) && $f554b0d97be25fc9$var$safeIsNaN(second)) return true;
-    return false;
-}
-function $f554b0d97be25fc9$var$areInputsEqual(newInputs, lastInputs) {
-    if (newInputs.length !== lastInputs.length) return false;
-    for(var i = 0; i < newInputs.length; i++){
-        if (!$f554b0d97be25fc9$var$isEqual(newInputs[i], lastInputs[i])) return false;
-    }
-    return true;
-}
-function $f554b0d97be25fc9$export$2e2bcd8739ae039(resultFn, isEqual) {
-    if (isEqual === void 0) isEqual = $f554b0d97be25fc9$var$areInputsEqual;
-    var cache = null;
-    function memoized() {
-        var newArgs = [];
-        for(var _i = 0; _i < arguments.length; _i++)newArgs[_i] = arguments[_i];
-        if (cache && cache.lastThis === this && isEqual(newArgs, cache.lastArgs)) return cache.lastResult;
-        var lastResult = resultFn.apply(this, newArgs);
-        cache = {
-            lastResult: lastResult,
-            lastArgs: newArgs,
-            lastThis: this
-        };
-        return lastResult;
-    }
-    memoized.clear = function clear() {
-        cache = null;
-    };
-    return memoized;
-}
-
-});
-
-
-parcelRegister("ahi97", function(module, exports) {
-
-$parcel$export(module.exports, "ResubscribeScheduler", function () { return $c735bfb9187791c0$export$746d7d6f368b83b1; });
-/**
- * Debounces resubscribe to batch rapid entity add/remove during dashboard load.
- */ const $c735bfb9187791c0$var$RESUBSCRIBE_DEBOUNCE_MS = 50;
-class $c735bfb9187791c0$export$746d7d6f368b83b1 {
-    /** Run fn after debounce delay; resets timer if called again before firing. */ schedule(fn) {
-        if (this._timer) clearTimeout(this._timer);
-        this._timer = setTimeout(()=>{
-            this._timer = undefined;
-            fn();
-        }, $c735bfb9187791c0$var$RESUBSCRIBE_DEBOUNCE_MS);
-    }
-    /** Cancel any pending scheduled run. */ cancel() {
-        if (this._timer) {
-            clearTimeout(this._timer);
-            this._timer = undefined;
-        }
-    }
-}
-
-});
-
-parcelRegister("3xhFF", function(module, exports) {
-
-$parcel$export(module.exports, "StatesEventHandler", function () { return $a65c367d6d102e05$export$fa096be87fabe7d3; });
-/**
- * Handles subscribe_entities WebSocket events (add, remove, change).
- */ 
-var $7AhDs = parcelRequire("7AhDs");
-
-var $dTmXl = parcelRequire("dTmXl");
-
-var $2WuTi = parcelRequire("2WuTi");
-class $a65c367d6d102e05$export$fa096be87fabe7d3 {
-    /** Process one WebSocket event; only notifies entities we're subscribed to. */ handle(ev, config) {
-        (0, $dTmXl.d)(config, 'entity-subscription-manager', 'handleEvent', 'ev', ev);
-        if (ev.a) this._handleAdd(ev.a);
-        if (ev.r) this._handleRemove(ev.r);
-        if (ev.c) this._handleChange(ev.c, config);
-    }
-    _handleAdd(added) {
-        for (const [entityId, comp] of Object.entries(added)){
-            if (!this._listeners.has(entityId)) continue;
-            const state = (0, $2WuTi.compressedToEntityState)(entityId, comp);
-            this._state.set(entityId, state);
-            this._notify(entityId, state);
-        }
-    }
-    _handleRemove(removed) {
-        for (const entityId of removed){
-            if (!this._listeners.has(entityId)) continue;
-            this._state.delete(entityId);
-            this._notify(entityId, undefined);
-        }
-    }
-    _handleChange(changes, config) {
-        (0, $dTmXl.d)(config, 'entity-subscription-manager', 'handleEvent', 'change', Object.keys(changes));
-        for (const [entityId, diff] of Object.entries(changes)){
-            if (!this._listeners.has(entityId)) continue;
-            if (!(0, $2WuTi.isMeaningfulChange)(diff)) continue;
-            var _this__state_get;
-            const base = (_this__state_get = this._state.get(entityId)) !== null && _this__state_get !== void 0 ? _this__state_get : (0, $7AhDs.getState)(this._hass.states, entityId);
-            if (!base) continue;
-            const state = (0, $2WuTi.applyDiff)(base, entityId, diff);
-            this._state.set(entityId, state);
-            this._notify(entityId, state);
-        }
-    }
-    _notify(entityId, state) {
-        const set = this._listeners.get(entityId);
-        if (!set) return;
-        for (const fn of set)fn(state);
-    }
-    constructor(_listeners, _state, _hass){
-        this._listeners = _listeners;
-        this._state = _state;
-        this._hass = _hass;
-    }
-}
-
-});
-parcelRegister("2WuTi", function(module, exports) {
-
-$parcel$export(module.exports, "compressedToEntityState", function () { return $f6cab4e006e6bc92$export$1e451bf8ffd1807c; });
-$parcel$export(module.exports, "isMeaningfulChange", function () { return $f6cab4e006e6bc92$export$212c94ae4aa31760; });
-$parcel$export(module.exports, "applyDiff", function () { return $f6cab4e006e6bc92$export$ef16b89ca36598f4; });
-/**
- * Shared helpers for processing subscribe_entities state diff format.
- * Used by entity-subscription-manager.
- *
- * @see https://developers.home-assistant.io/docs/api/websocket#subscribe_entities
- */ 
-var $kJycS = parcelRequire("kJycS");
-
-var $h7W3o = parcelRequire("h7W3o");
-const $f6cab4e006e6bc92$var$COMPRESSED_STATE = 's';
-const $f6cab4e006e6bc92$var$COMPRESSED_ATTRIBUTES = 'a';
-function $f6cab4e006e6bc92$export$1e451bf8ffd1807c(entityId, comp) {
-    const last_changed = new Date(comp.lc * 1000).toISOString();
-    var _comp_a;
-    return {
-        entity_id: entityId,
-        state: comp.s,
-        attributes: (_comp_a = comp.a) !== null && _comp_a !== void 0 ? _comp_a : {},
-        domain: (0, $h7W3o.computeDomain)(entityId),
-        last_changed: last_changed,
-        last_updated: comp.lu ? new Date(comp.lu * 1000).toISOString() : last_changed
-    };
-}
-function $f6cab4e006e6bc92$export$212c94ae4aa31760(diff) {
-    var _remove_a;
-    const add = diff['+'];
-    const remove = diff['-'];
-    return (add === null || add === void 0 ? void 0 : add[$f6cab4e006e6bc92$var$COMPRESSED_STATE]) !== undefined || (add === null || add === void 0 ? void 0 : add[$f6cab4e006e6bc92$var$COMPRESSED_ATTRIBUTES]) !== undefined || (remove === null || remove === void 0 ? void 0 : (_remove_a = remove.a) === null || _remove_a === void 0 ? void 0 : _remove_a.length) !== undefined && remove.a.length > 0;
-}
-function $f6cab4e006e6bc92$export$ef16b89ca36598f4(current, entityId, diff) {
-    const add = diff['+'];
-    const remove = diff['-'];
-    let state = current.state;
-    const attributes = (0, $kJycS._)({}, current.attributes);
-    if (add) {
-        if (add.s !== undefined) state = add.s;
-        if (add.lc) current.last_updated = current.last_changed = new Date(add.lc * 1000).toISOString();
-        else if (add.lu) current.last_updated = new Date(add.lu * 1000).toISOString();
-        if (add.a) Object.assign(attributes, add.a);
-    }
-    if (remove === null || remove === void 0 ? void 0 : remove.a) for (const key of remove.a)delete attributes[key];
-    return {
-        entity_id: entityId,
-        state: state,
-        attributes: attributes,
-        domain: (0, $h7W3o.computeDomain)(entityId),
-        last_changed: current.last_changed,
-        last_updated: current.last_updated
-    };
-}
-
-});
-
-
-
-
 
 parcelRegister("cfP8R", function(module, exports) {
 
@@ -2944,7 +3016,7 @@ var $gp9lG = parcelRequire("gp9lG");
  * @description Defines RGB color variables for use in Home Assistant themes and components
  */ parcelRequire("fPVm8");
 var $2SS2a = parcelRequire("2SS2a");
-let $caf1696fa639ec30$var$_ = (t)=>t, $caf1696fa639ec30$var$t, $caf1696fa639ec30$var$t1, $caf1696fa639ec30$var$t2, $caf1696fa639ec30$var$t3, $caf1696fa639ec30$var$t4;
+let $caf1696fa639ec30$var$_ = (t)=>t, $caf1696fa639ec30$var$t, $caf1696fa639ec30$var$t1, $caf1696fa639ec30$var$t2, $caf1696fa639ec30$var$t3, $caf1696fa639ec30$var$t4, $caf1696fa639ec30$var$t5;
 const $caf1696fa639ec30$export$33537d9e76cd536a = [
     'primary',
     'accent',
@@ -2988,15 +3060,21 @@ const $caf1696fa639ec30$export$dec94ffc2d530e03 = (0, $2SS2a.css)($caf1696fa639e
 `));
 const $caf1696fa639ec30$export$7ec899f7a316957e = (0, $2SS2a.css)($caf1696fa639ec30$var$t1 || ($caf1696fa639ec30$var$t1 = $caf1696fa639ec30$var$_`
   /* Glass effect - uses standard HA card variables set by the theme */
-  --theme-box-shadow-frosted: var(--ha-card-box-shadow);
-  --theme-border-color-frosted: var(--ha-card-border-color);
-  --theme-border-width-frosted: var(--ha-card-border-width);
-  --theme-border-radius-frosted: var(--ha-card-border-radius);
+  --theme-box-shadow-frosted: var(
+    --ha-card-box-shadow,
+    0 12px 20px rgba(0, 0, 0, 0.15)
+  );
+  --theme-border-color-frosted: var(
+    --ha-card-border-color,
+    rgba(255, 255, 255, 0.3)
+  );
+  --theme-border-width-frosted: var(--ha-card-border-width, 0.5px);
+  --theme-border-radius-frosted: var(--ha-card-border-radius, 18px);
 
   /* Frosted Glass sets backdrop-filter via card-mod, but we can pick it up if available */
   --theme-backdrop-filter-frosted: var(
     --ha-card-backdrop-filter,
-    var(--app-header-backdrop-filter, none)
+    var(--app-header-backdrop-filter, blur(8px) saturate(1.2))
   );
 
   /* Tint + sheen (these are used as var() knobs in Frosted Glass' card-mod styles) */
@@ -3012,7 +3090,29 @@ const $caf1696fa639ec30$export$7ec899f7a316957e = (0, $2SS2a.css)($caf1696fa639e
     0 0 2px 0 rgba(0, 0, 0, 0.1)
   );
 `));
-const $caf1696fa639ec30$export$4aa0a1b480cdb1b6 = (0, $2SS2a.css)($caf1696fa639ec30$var$t2 || ($caf1696fa639ec30$var$t2 = $caf1696fa639ec30$var$_`
+const $caf1696fa639ec30$export$9462d50bf972df13 = (0, $2SS2a.css)($caf1696fa639ec30$var$t2 || ($caf1696fa639ec30$var$t2 = $caf1696fa639ec30$var$_`
+  --theme-box-shadow-frosted: var(
+    --ha-card-box-shadow,
+    0 12px 20px rgba(0, 0, 0, 0.28)
+  );
+  --theme-border-color-frosted: var(
+    --ha-card-border-color,
+    rgba(234, 235, 238, 0.1)
+  );
+  --theme-backdrop-filter-frosted: var(
+    --ha-card-backdrop-filter,
+    var(--app-header-backdrop-filter, blur(10px) saturate(1.2))
+  );
+  --theme-glass-tint-frosted: var(--ha-card-glass-tint, rgba(28, 29, 33, 0.18));
+  --theme-glass-inset-shadow-frosted: var(
+    --ha-card-glass-inset-shadow,
+    3px 3px 0.5px -3.5px rgba(255, 255, 255, 0.15) inset,
+    -2px -2px 0.5px -2px rgba(255, 255, 255, 0.1) inset,
+    0 0 8px 1px rgba(255, 255, 255, 0.06) inset,
+    0 0 2px 0 rgba(0, 0, 0, 0.18)
+  );
+`));
+const $caf1696fa639ec30$export$4aa0a1b480cdb1b6 = (0, $2SS2a.css)($caf1696fa639ec30$var$t3 || ($caf1696fa639ec30$var$t3 = $caf1696fa639ec30$var$_`
   --theme-background-color-card: var(
     --ha-card-background,
     var(--card-background-color, white)
@@ -3029,14 +3129,14 @@ const $caf1696fa639ec30$export$4aa0a1b480cdb1b6 = (0, $2SS2a.css)($caf1696fa639e
   --opacity-icon-active: 1;
   --opacity-icon-inactive: 0.2;
 `));
-const $caf1696fa639ec30$export$38d2ecc76f0c2959 = (0, $2SS2a.css)($caf1696fa639ec30$var$t3 || ($caf1696fa639ec30$var$t3 = $caf1696fa639ec30$var$_`
+const $caf1696fa639ec30$export$38d2ecc76f0c2959 = (0, $2SS2a.css)($caf1696fa639ec30$var$t4 || ($caf1696fa639ec30$var$t4 = $caf1696fa639ec30$var$_`
   --opacity-background-active: 0.1;
   --opacity-background-inactive: 1;
 
   --opacity-icon-fill-active: 0.2;
   --opacity-icon-fill-inactive: 0.2;
 `));
-const $caf1696fa639ec30$export$eae85ad18a22ab6c = (0, $2SS2a.css)($caf1696fa639ec30$var$t4 || ($caf1696fa639ec30$var$t4 = $caf1696fa639ec30$var$_`
+const $caf1696fa639ec30$export$eae85ad18a22ab6c = (0, $2SS2a.css)($caf1696fa639ec30$var$t5 || ($caf1696fa639ec30$var$t5 = $caf1696fa639ec30$var$_`
   --opacity-background-active: 0.1;
   --opacity-background-inactive: 1;
 
@@ -3162,8 +3262,43 @@ $1e40c00d469c9d00$exports.hasFeature = void 0;
 $1e40c00d469c9d00$exports.hasFeature = $1e40c00d469c9d00$var$hasFeature;
 
 
+var $f554b0d97be25fc9$var$safeIsNaN = Number.isNaN || function ponyfill(value) {
+    return typeof value === 'number' && value !== value;
+};
+function $f554b0d97be25fc9$var$isEqual(first, second) {
+    if (first === second) return true;
+    if ($f554b0d97be25fc9$var$safeIsNaN(first) && $f554b0d97be25fc9$var$safeIsNaN(second)) return true;
+    return false;
+}
+function $f554b0d97be25fc9$var$areInputsEqual(newInputs, lastInputs) {
+    if (newInputs.length !== lastInputs.length) return false;
+    for(var i = 0; i < newInputs.length; i++){
+        if (!$f554b0d97be25fc9$var$isEqual(newInputs[i], lastInputs[i])) return false;
+    }
+    return true;
+}
+function $f554b0d97be25fc9$export$2e2bcd8739ae039(resultFn, isEqual) {
+    if (isEqual === void 0) isEqual = $f554b0d97be25fc9$var$areInputsEqual;
+    var cache = null;
+    function memoized() {
+        var newArgs = [];
+        for(var _i = 0; _i < arguments.length; _i++)newArgs[_i] = arguments[_i];
+        if (cache && cache.lastThis === this && isEqual(newArgs, cache.lastArgs)) return cache.lastResult;
+        var lastResult = resultFn.apply(this, newArgs);
+        cache = {
+            lastResult: lastResult,
+            lastArgs: newArgs,
+            lastThis: this
+        };
+        return lastResult;
+    }
+    memoized.clear = function clear() {
+        cache = null;
+    };
+    return memoized;
+}
 
-var $l3TbZ = parcelRequire("l3TbZ");
+
 /**
  * Gets sensor value - from specific entity in individual sensors, or averaged sensor
  */ const $b45c3666c29a512e$var$getSensorValue = (sensorData, deviceClass, entityId)=>{
@@ -3241,7 +3376,7 @@ var $l3TbZ = parcelRequire("l3TbZ");
             return value > threshold; // Default to 'gt' for backward compatibility
     }
 };
-const $b45c3666c29a512e$export$c1ca802e67721a4 = (0, $l3TbZ.default)((config, sensorData)=>{
+const $b45c3666c29a512e$export$c1ca802e67721a4 = (0, $f554b0d97be25fc9$export$2e2bcd8739ae039)((config, sensorData)=>{
     if ((0, $1e40c00d469c9d00$exports.hasFeature)(config, 'skip_climate_styles')) return {
         hot: false,
         humid: false,
@@ -3261,15 +3396,40 @@ const $b45c3666c29a512e$export$c1ca802e67721a4 = (0, $l3TbZ.default)((config, se
 
 
 
-var $l3TbZ = parcelRequire("l3TbZ");
-const $7806862517a8ec93$export$520c40045967cb15 = (0, $l3TbZ.default)((areas, areaId)=>areas[areaId]);
+const $7806862517a8ec93$export$520c40045967cb15 = (0, $f554b0d97be25fc9$export$2e2bcd8739ae039)((areas, areaId)=>areas[areaId]);
 
 
 
 var $gp9lG = parcelRequire("gp9lG");
 
 
-var $7AhDs = parcelRequire("7AhDs");
+var $h7W3o = parcelRequire("h7W3o");
+
+const $6d9b59681496f671$export$50fdfeece43146fd = (0, $f554b0d97be25fc9$export$2e2bcd8739ae039)((states, entityId, fakeState = false)=>{
+    if (!entityId) return undefined;
+    var _states_entityId;
+    const state = (_states_entityId = states[entityId]) !== null && _states_entityId !== void 0 ? _states_entityId : fakeState ? {
+        entity_id: entityId,
+        state: 'off',
+        attributes: {
+            friendly_name: ''
+        },
+        last_changed: '',
+        last_updated: ''
+    } : undefined;
+    if (!state) return undefined;
+    const domain = (0, $h7W3o.computeDomain)(state.entity_id);
+    return {
+        state: state.state,
+        attributes: state.attributes,
+        entity_id: state.entity_id,
+        last_changed: state.last_changed,
+        last_updated: state.last_updated,
+        domain: domain
+    };
+});
+
+
 var $81599554b7bc9057$exports = {};
 "use strict";
 /**
@@ -3313,7 +3473,7 @@ const $7359f6b91fb77fd2$export$9dd734c640ccb658 = async (hass, config)=>{
     // Check entity picture first
     if ((_config_background1 = config.background) === null || _config_background1 === void 0 ? void 0 : _config_background1.image_entity) {
         var _entityState_attributes;
-        const entityState = (0, $7AhDs.getState)(hass.states, config.background.image_entity);
+        const entityState = (0, $6d9b59681496f671$export$50fdfeece43146fd)(hass.states, config.background.image_entity);
         const entityPicture = entityState === null || entityState === void 0 ? void 0 : (_entityState_attributes = entityState.attributes) === null || _entityState_attributes === void 0 ? void 0 : _entityState_attributes.entity_picture;
         if (typeof entityPicture === 'string') return entityPicture;
     }
@@ -3370,7 +3530,6 @@ const $7a9953f15579a0c2$export$f3dc7c019524f0e9 = (element, hass)=>{
 var $kJycS = parcelRequire("kJycS");
 
 
-var $7AhDs = parcelRequire("7AhDs");
 
 /**
  * Checks if a string is a URL (starts with http:// or https://)
@@ -3409,12 +3568,12 @@ const $d9cd925d0860ec58$export$25fedbc2fd674160 = (hass, config)=>{
             config: (0, $kJycS._)({
                 entity_id: config.entity
             }, actionConfig),
-            state: (0, $7AhDs.getState)(hass.states, config.entity)
+            state: (0, $6d9b59681496f671$export$50fdfeece43146fd)(hass.states, config.entity)
         };
         else // Object format
         return {
             config: (0, $kJycS._)({}, actionConfig, config.entity),
-            state: (0, $7AhDs.getState)(hass.states, config.entity.entity_id)
+            state: (0, $6d9b59681496f671$export$50fdfeece43146fd)(hass.states, config.entity.entity_id)
         };
     }
     // Default room light configuration
@@ -3423,19 +3582,17 @@ const $d9cd925d0860ec58$export$25fedbc2fd674160 = (hass, config)=>{
             entity_id: roomEntityId,
             icon: (_getArea = (0, $7806862517a8ec93$export$520c40045967cb15)(hass.areas, config.area)) === null || _getArea === void 0 ? void 0 : _getArea.icon
         }, actionConfig),
-        state: (0, $7AhDs.getState)(hass.states, roomEntityId, true)
+        state: (0, $6d9b59681496f671$export$50fdfeece43146fd)(hass.states, roomEntityId, true)
     };
 };
 
 
 
 
-var $l3TbZ = parcelRequire("l3TbZ");
-const $62a596c6a9bc2e04$export$30c823bc834d6ab4 = (0, $l3TbZ.default)((devices, deviceId)=>devices[deviceId]);
+const $62a596c6a9bc2e04$export$30c823bc834d6ab4 = (0, $f554b0d97be25fc9$export$2e2bcd8739ae039)((devices, deviceId)=>devices[deviceId]);
 
 
 
-var $7AhDs = parcelRequire("7AhDs");
 
 var $ec08780371c7cdf9$exports = {};
 "use strict";
@@ -3609,7 +3766,7 @@ const $e186e7c110487ed3$export$d4cef0abb1b35d6f = (hass, config)=>{
         // If it's not a config sensor, not in the area, and not a configured light, skip it
         // If it's a config sensor or configured light, always include it since the user has explicitly included it
         if (!shouldProcessEntity(isConfigSensor, isInArea, isConfiguredLight, isThresholdEntity)) return;
-        const state = (0, $7AhDs.getState)(hass.states, entity.entity_id);
+        const state = (0, $6d9b59681496f671$export$50fdfeece43146fd)(hass.states, entity.entity_id);
         if (!state) return;
         // Collect light entities for multi-light background feature
         if (multiLightEnabled) {
@@ -3706,33 +3863,19 @@ const $c4ab0a640e168730$export$df764ae7d62abece = (hass, config, element)=>{
 
 
 
+var $g28NR = parcelRequire("g28NR");
+
+var $jc0SV = parcelRequire("jc0SV");
+
 var $2QgUB = parcelRequire("2QgUB");
 
 
-var $l3TbZ = parcelRequire("l3TbZ");
-const $370eb512b0573832$export$fcf7c33d7fd02301 = (0, $l3TbZ.default)((entities, entityId)=>entities[entityId]);
+const $370eb512b0573832$export$fcf7c33d7fd02301 = (0, $f554b0d97be25fc9$export$2e2bcd8739ae039)((entities, entityId)=>entities[entityId]);
 
 
 
-var $bac3a96534ef5b24$exports = {};
-"use strict";
-Object.defineProperty($bac3a96534ef5b24$exports, "__esModule", {
-    value: true
-});
-$bac3a96534ef5b24$exports.HassConfigMixin = void 0;
-/**
- * Provides non-decorated `hass` and `config` fields.
- *
- * These are intentionally NOT `@property()` to avoid Lit reactive property
- * plumbing/attribute semantics.
- */ const $bac3a96534ef5b24$var$HassConfigMixin = (superClass)=>{
-    class HassConfigClass extends superClass {
-    }
-    return HassConfigClass;
-};
-$bac3a96534ef5b24$exports.HassConfigMixin = $bac3a96534ef5b24$var$HassConfigMixin;
 
-
+var $g28NR = parcelRequire("g28NR");
 parcelRequire("fPVm8");
 var $ci0wX = parcelRequire("ci0wX");
 
@@ -3774,9 +3917,8 @@ var $lnb0z = parcelRequire("lnb0z");
 
 
 
-var $l3TbZ = parcelRequire("l3TbZ");
 let $6f5f72559a4d178c$var$_ = (t)=>t, $6f5f72559a4d178c$var$t;
-const $6f5f72559a4d178c$export$3703ea65b0ac4726 = (0, $l3TbZ.default)((styles)=>{
+const $6f5f72559a4d178c$export$3703ea65b0ac4726 = (0, $f554b0d97be25fc9$export$2e2bcd8739ae039)((styles)=>{
     if (!styles || Object.keys(styles).length === 0) return 0, $ci0wX.nothing;
     // Separate keyframes from regular styles
     const keyframesEntries = [];
@@ -3796,7 +3938,7 @@ const $6f5f72559a4d178c$export$3703ea65b0ac4726 = (0, $l3TbZ.default)((styles)=>
       </style>
     `), keyframesString, cssString);
 });
-const $6f5f72559a4d178c$export$94e56d1d743c1f9b = (0, $l3TbZ.default)((styles)=>{
+const $6f5f72559a4d178c$export$94e56d1d743c1f9b = (0, $f554b0d97be25fc9$export$2e2bcd8739ae039)((styles)=>{
     if (!styles || Object.keys(styles).length === 0) return 0, $ci0wX.nothing;
     return (0, $709101fc184637c4$export$1e5b4ce2fa884e6a)(styles);
 });
@@ -3832,7 +3974,7 @@ const $e595363dd98d321d$export$9dd6ff9ea0189349 = (0, $2SS2a.css)($e595363dd98d3
 
 
 let $2146d91279a85b43$var$_ = (t)=>t, $2146d91279a85b43$var$t;
-class $2146d91279a85b43$export$fad092f8692706c7 extends (0, $bac3a96534ef5b24$exports.HassConfigMixin)((0, $2r9I1.LitElement)) {
+class $2146d91279a85b43$export$fad092f8692706c7 extends (0, $g28NR.HassConfigMixin)((0, $2r9I1.LitElement)) {
     /**
    * Returns the component's styles
    */ static get styles() {
@@ -4334,10 +4476,6 @@ const $52a5e6cbabf7b8e2$export$a80b3bd66acc52ff = (element, hass, roomInformatio
  * @version See package.json
  */ 
 var $2QgUB = parcelRequire("2QgUB");
-
-var $1LdRn = parcelRequire("1LdRn");
-
-var $wgzUt = parcelRequire("wgzUt");
 const $d3a1c41917263588$export$bfd42fd87279097a = async (hass, entityId, brightness)=>{
     if (!entityId) return;
     // Ensure brightness is within valid range
@@ -4357,6 +4495,8 @@ const $d3a1c41917263588$export$bfd42fd87279097a = async (hass, entityId, brightn
 };
 
 
+
+var $h7W3o = parcelRequire("h7W3o");
 var $035fd41573d923e4$exports = {};
 "use strict";
 /**
@@ -4399,6 +4539,12 @@ $715b9f06f948c475$exports.setMediaPlayerVolume = void 0;
 $715b9f06f948c475$exports.setMediaPlayerVolume = $715b9f06f948c475$var$setMediaPlayerVolume;
 
 
+
+var $g28NR = parcelRequire("g28NR");
+
+var $htQni = parcelRequire("htQni");
+
+var $jc0SV = parcelRequire("jc0SV");
 
 var $dTmXl = parcelRequire("dTmXl");
 var $ee3d06fe83a6a770$exports = {};
@@ -4499,7 +4645,7 @@ const $a106693bf2929cda$export$9dd6ff9ea0189349 = (0, $2SS2a.css)($a106693bf2929
 
 
 let $9d1851378e34030f$var$_ = (t)=>t, $9d1851378e34030f$var$t;
-class $9d1851378e34030f$export$226f91755c79436a extends (0, $wgzUt.SubscribeEntityStateMixin)((0, $1LdRn.HassUpdateMixin)((0, $2r9I1.LitElement))) {
+class $9d1851378e34030f$export$226f91755c79436a extends (0, $jc0SV.SubscribeEntityStateMixin)((0, $htQni.HassUpdateMixin)((0, $g28NR.HassConfigMixin)((0, $2r9I1.LitElement)))) {
     /**
    * Returns the component's styles
    */ static get styles() {
@@ -4518,6 +4664,7 @@ class $9d1851378e34030f$export$226f91755c79436a extends (0, $wgzUt.SubscribeEnti
         (0, $dTmXl.d)(this.config, 'horizontal-slider', 'render');
         const s = this.state;
         if (!s) return 0, $ci0wX.nothing;
+        const domain = (0, $h7W3o.computeDomain)(s.entity_id);
         const rawValue = s ? Number(s.state) : Number.NaN;
         let value = 0;
         var _s_attributes_min;
@@ -4526,10 +4673,10 @@ class $9d1851378e34030f$export$226f91755c79436a extends (0, $wgzUt.SubscribeEnti
         let max = Number((_s_attributes_max = s === null || s === void 0 ? void 0 : s.attributes.max) !== null && _s_attributes_max !== void 0 ? _s_attributes_max : 100);
         var _s_attributes_step;
         let step = Number((_s_attributes_step = s === null || s === void 0 ? void 0 : s.attributes.step) !== null && _s_attributes_step !== void 0 ? _s_attributes_step : 1);
-        if (s.domain === 'media_player') {
+        if (domain === 'media_player') {
             const vol = s.attributes.volume_level;
             value = vol == null ? 0 : Math.max(0, Math.min(100, Math.round(Number(vol) * 100)));
-        } else if (s.domain === 'light') {
+        } else if (domain === 'light') {
             var _s_attributes_brightness;
             // Slider operates on raw brightness (0–255); attributes.brightness
             // is null when the light is off.
@@ -4559,11 +4706,12 @@ class $9d1851378e34030f$export$226f91755c79436a extends (0, $wgzUt.SubscribeEnti
             const state = this.state;
             if (!hass || !state) return;
             const target = ev.target;
-            if (state.domain === 'media_player') {
+            const domain = (0, $h7W3o.computeDomain)(state.entity_id);
+            if (domain === 'media_player') {
                 (0, $715b9f06f948c475$exports.setMediaPlayerVolume)(hass, state.entity_id, Number(target.value) / 100);
                 return;
             }
-            if (state.domain === 'light') {
+            if (domain === 'light') {
                 (0, $d3a1c41917263588$export$bfd42fd87279097a)(hass, state.entity_id, Number(target.value));
                 return;
             }
@@ -4957,6 +5105,7 @@ let $4fafc8f75bfc202b$var$_ = (t)=>t, $4fafc8f75bfc202b$var$t, $4fafc8f75bfc202b
 
   :host([dark]) {
     ${0}
+    ${0}
   }
 
   :host {
@@ -4968,22 +5117,35 @@ let $4fafc8f75bfc202b$var$_ = (t)=>t, $4fafc8f75bfc202b$var$t, $4fafc8f75bfc202b
     --background-opacity-icon: var(--opacity-icon-fill-inactive);
     --background-image: none;
   }
-`), (0, $caf1696fa639ec30$export$dec94ffc2d530e03), (0, $caf1696fa639ec30$export$7ec899f7a316957e), (0, $caf1696fa639ec30$export$4aa0a1b480cdb1b6), (0, $caf1696fa639ec30$export$38d2ecc76f0c2959), (0, $caf1696fa639ec30$export$eae85ad18a22ab6c));
+`), (0, $caf1696fa639ec30$export$dec94ffc2d530e03), (0, $caf1696fa639ec30$export$7ec899f7a316957e), (0, $caf1696fa639ec30$export$4aa0a1b480cdb1b6), (0, $caf1696fa639ec30$export$38d2ecc76f0c2959), (0, $caf1696fa639ec30$export$9462d50bf972df13), (0, $caf1696fa639ec30$export$eae85ad18a22ab6c));
 /**
  * Base theme and color definitions
  */ const $4fafc8f75bfc202b$var$haCardThemeStyles = (0, $2SS2a.css)($4fafc8f75bfc202b$var$t1 || ($4fafc8f75bfc202b$var$t1 = $4fafc8f75bfc202b$var$_`
+  /* hot owns the top + left edges, humid owns the bottom + right edges.
+     Each state writes only the sides it owns, so when both are set the
+     border splits diagonally with no rule fighting another over the same
+     side -- no !important or source-order tricks needed. A single active
+     state still paints all four sides via the catch-all rules below. */
   :host([hot]) ha-card {
-    border-left: 3px solid var(--threshold-hot-color, var(--error-color)) !important;
-    border-top: 3px solid var(--threshold-hot-color, var(--error-color)) !important;
+    border-top: 3px solid var(--threshold-hot-color, var(--error-color));
+    border-left: 3px solid var(--threshold-hot-color, var(--error-color));
     border-right: 3px solid var(--threshold-hot-color, var(--error-color));
     border-bottom: 3px solid var(--threshold-hot-color, var(--error-color));
   }
 
   :host([humid]) ha-card {
-    border-left: 3px solid var(--threshold-humid-color, var(--info-color));
     border-top: 3px solid var(--threshold-humid-color, var(--info-color));
-    border-right: 3px solid var(--threshold-humid-color, var(--info-color)) !important;
-    border-bottom: 3px solid var(--threshold-humid-color, var(--info-color)) !important;
+    border-left: 3px solid var(--threshold-humid-color, var(--info-color));
+    border-right: 3px solid var(--threshold-humid-color, var(--info-color));
+    border-bottom: 3px solid var(--threshold-humid-color, var(--info-color));
+  }
+
+  /* Both active: hot keeps top/left, humid keeps bottom/right. */
+  :host([hot][humid]) ha-card {
+    border-top-color: var(--threshold-hot-color, var(--error-color));
+    border-left-color: var(--threshold-hot-color, var(--error-color));
+    border-right-color: var(--threshold-humid-color, var(--info-color));
+    border-bottom-color: var(--threshold-humid-color, var(--info-color));
   }
 
   :host([image]) ha-card {
@@ -5268,10 +5430,8 @@ const $4fafc8f75bfc202b$export$9dd6ff9ea0189349 = (0, $2SS2a.css)($4fafc8f75bfc2
 
 var $dTmXl = parcelRequire("dTmXl");
 
-
-var $wgzUt = parcelRequire("wgzUt");
 let $01f4c5d41a54ca3c$var$_ = (t)=>t, $01f4c5d41a54ca3c$var$t, $01f4c5d41a54ca3c$var$t1, $01f4c5d41a54ca3c$var$t2, $01f4c5d41a54ca3c$var$t3;
-class $01f4c5d41a54ca3c$export$90a7a1e0555e0bc9 extends (0, $wgzUt.SubscribeEntityStateMixin)((0, $2r9I1.LitElement)) {
+class $01f4c5d41a54ca3c$export$90a7a1e0555e0bc9 extends (0, $jc0SV.SubscribeEntityStateMixin)((0, $g28NR.HassConfigMixin)((0, $2r9I1.LitElement))) {
     /**
    * Returns the component's styles
    */ static get styles() {
@@ -5518,10 +5678,6 @@ class $01f4c5d41a54ca3c$export$90a7a1e0555e0bc9 extends (0, $wgzUt.SubscribeEnti
 
 var $2QgUB = parcelRequire("2QgUB");
 
-var $1LdRn = parcelRequire("1LdRn");
-
-var $wgzUt = parcelRequire("wgzUt");
-
 const $1c79672e60888038$export$7d2846cf165df04b = (state, badge)=>{
     if (!badge.states || !state) return undefined;
     for (const stateConfig of badge.states){
@@ -5536,6 +5692,12 @@ const $1c79672e60888038$export$7d2846cf165df04b = (state, badge)=>{
 };
 
 
+
+var $g28NR = parcelRequire("g28NR");
+
+var $htQni = parcelRequire("htQni");
+
+var $jc0SV = parcelRequire("jc0SV");
 var $5abff3d3a915abb3$exports = {};
 "use strict";
 let $5abff3d3a915abb3$var$_ = (t)=>t, $5abff3d3a915abb3$var$t;
@@ -5878,6 +6040,7 @@ $e1a1e2291c993cc1$exports.isTemplateString = $e1a1e2291c993cc1$var$isTemplateStr
 
 
 
+var $g28NR = parcelRequire("g28NR");
 
 var $dTmXl = parcelRequire("dTmXl");
 parcelRequire("fPVm8");
@@ -5887,7 +6050,7 @@ var $2r9I1 = parcelRequire("2r9I1");
 parcelRequire("jcMWt");
 var $yv2EM = parcelRequire("yv2EM");
 let $4851f26bdeb7e50a$var$_ = (t)=>t, $4851f26bdeb7e50a$var$t, $4851f26bdeb7e50a$var$t1, $4851f26bdeb7e50a$var$t2;
-class $4851f26bdeb7e50a$export$27ddacf6292c3059 extends (0, $bac3a96534ef5b24$exports.HassConfigMixin)((0, $2r9I1.LitElement)) {
+class $4851f26bdeb7e50a$export$27ddacf6292c3059 extends (0, $g28NR.HassConfigMixin)((0, $2r9I1.LitElement)) {
     disconnectedCallback() {
         this._labelTemplateConn.disconnect();
         super.disconnectedCallback();
@@ -5961,7 +6124,7 @@ const $aeaea6f5f5e584ed$export$9dd6ff9ea0189349 = (0, $2SS2a.css)($aeaea6f5f5e58
 
 
 let $7191b93f31a09a17$var$_ = (t)=>t, $7191b93f31a09a17$var$t, $7191b93f31a09a17$var$t1, $7191b93f31a09a17$var$t2;
-class $7191b93f31a09a17$export$37acb3580601e69a extends (0, $wgzUt.SubscribeEntityStateMixin)((0, $1LdRn.HassUpdateMixin)((0, $2r9I1.LitElement))) {
+class $7191b93f31a09a17$export$37acb3580601e69a extends (0, $jc0SV.SubscribeEntityStateMixin)((0, $htQni.HassUpdateMixin)((0, $g28NR.HassConfigMixin)((0, $2r9I1.LitElement)))) {
     /**
    * Returns the component's styles
    */ static get styles() {
@@ -5979,9 +6142,9 @@ class $7191b93f31a09a17$export$37acb3580601e69a extends (0, $wgzUt.SubscribeEnti
         this._badge = badge;
     }
     /**
-   * Only update if we have a state
+   * Only update if we have a state.
    */ shouldUpdate(changedProperties) {
-        return changedProperties.has('state');
+        return changedProperties.has('states');
     }
     /**
    * Render the badge
@@ -6109,7 +6272,6 @@ var $lYE5o = parcelRequire("lYE5o");
 parcelRequire("aAO52");
 var $bvVEG = parcelRequire("bvVEG");
 
-var $l3TbZ = parcelRequire("l3TbZ");
 let $68ce0c44dd114f11$var$_ = (t)=>t, $68ce0c44dd114f11$var$t, $68ce0c44dd114f11$var$t1, $68ce0c44dd114f11$var$t2, $68ce0c44dd114f11$var$t3;
 class $68ce0c44dd114f11$export$806f47322f907427 extends (0, $2r9I1.LitElement) {
     _getKey(item, index) {
@@ -6362,7 +6524,7 @@ class $68ce0c44dd114f11$export$806f47322f907427 extends (0, $2r9I1.LitElement) {
     `), this.label || defaultLabel, this.hass.localize('ui.panel.lovelace.editor.card.config.optional'), renderItems(), this._addItem, addButtonLabel);
     }
     constructor(...args){
-        super(...args), this.mode = 'states', this.isSensor = false, this.isMainEntity = false, this._expandedStates = new Set(), this._getStateSchema = (0, $l3TbZ.default)((entity_id, hass, isSensor, isMainEntity)=>{
+        super(...args), this.mode = 'states', this.isSensor = false, this.isMainEntity = false, this._expandedStates = new Set(), this._getStateSchema = (0, $f554b0d97be25fc9$export$2e2bcd8739ae039)((entity_id, hass, isSensor, isMainEntity)=>{
             const schema = [
                 {
                     name: 'state',
@@ -6443,7 +6605,7 @@ class $68ce0c44dd114f11$export$806f47322f907427 extends (0, $2r9I1.LitElement) {
                 }
             });
             return schema;
-        }), this._getThresholdSchema = (0, $l3TbZ.default)((entity_id, hass, isSensor, isMainEntity)=>{
+        }), this._getThresholdSchema = (0, $f554b0d97be25fc9$export$2e2bcd8739ae039)((entity_id, hass, isSensor, isMainEntity)=>{
             const schema = [
                 {
                     name: 'threshold',
@@ -6718,8 +6880,7 @@ function $3499cf776de5cef0$export$1b2909c9365ec6ff(badges, index) {
 
 var $cfP8R = parcelRequire("cfP8R");
 
-var $l3TbZ = parcelRequire("l3TbZ");
-const $e9b7a98281a80f12$export$7154f02cb7867cee = (0, $l3TbZ.default)((hass)=>{
+const $e9b7a98281a80f12$export$7154f02cb7867cee = (0, $f554b0d97be25fc9$export$2e2bcd8739ae039)((hass)=>{
     return [
         {
             name: 'entity_id',
@@ -7336,7 +7497,6 @@ parcelRequire("jcMWt");
 var $aaQtJ = parcelRequire("aaQtJ");
 var $lYE5o = parcelRequire("lYE5o");
 
-var $l3TbZ = parcelRequire("l3TbZ");
 
 
 let $43564874ab3ed043$var$_ = (t)=>t, $43564874ab3ed043$var$t, $43564874ab3ed043$var$t1, $43564874ab3ed043$var$t2, $43564874ab3ed043$var$t3, $43564874ab3ed043$var$t4;
@@ -7493,7 +7653,7 @@ class $43564874ab3ed043$export$5062b3ea8745e421 extends (0, $2r9I1.LitElement) {
         });
     }
     constructor(...args){
-        super(...args), this.type = 'entity', this.isMainEntity = false, this._entitiesSchema = (0, $l3TbZ.default)((hass)=>{
+        super(...args), this.type = 'entity', this.isMainEntity = false, this._entitiesSchema = (0, $f554b0d97be25fc9$export$2e2bcd8739ae039)((hass)=>{
             return [
                 {
                     name: 'entity_id',
@@ -7746,7 +7906,7 @@ class $43564874ab3ed043$export$5062b3ea8745e421 extends (0, $2r9I1.LitElement) {
                     }
                 ]
             }
-        ], this._lightsSchema = (0, $l3TbZ.default)((hass)=>{
+        ], this._lightsSchema = (0, $f554b0d97be25fc9$export$2e2bcd8739ae039)((hass)=>{
             return [
                 {
                     name: 'entity_id',
@@ -7967,7 +8127,6 @@ var $lYE5o = parcelRequire("lYE5o");
 parcelRequire("aAO52");
 var $bvVEG = parcelRequire("bvVEG");
 
-var $l3TbZ = parcelRequire("l3TbZ");
 let $460e8ac2e6479550$var$_ = (t)=>t, $460e8ac2e6479550$var$t, $460e8ac2e6479550$var$t1, $460e8ac2e6479550$var$t2;
 class $460e8ac2e6479550$export$b79a6ddbd7dc2198 extends (0, $2r9I1.LitElement) {
     _getKey(item, index) {
@@ -8101,7 +8260,7 @@ class $460e8ac2e6479550$export$b79a6ddbd7dc2198 extends (0, $2r9I1.LitElement) {
         }), this._addThreshold, addButtonLabel);
     }
     constructor(...args){
-        super(...args), this.thresholdType = 'temperature', this._expandedThresholds = new Set(), this._getThresholdSchema = (0, $l3TbZ.default)((hass, thresholdType, availableEntities)=>{
+        super(...args), this.thresholdType = 'temperature', this._expandedThresholds = new Set(), this._getThresholdSchema = (0, $f554b0d97be25fc9$export$2e2bcd8739ae039)((hass, thresholdType, availableEntities)=>{
             const isTemperature = thresholdType === 'temperature';
             const entityFilter = isTemperature ? {
                 device_class: 'temperature'
@@ -8261,11 +8420,8 @@ $460e8ac2e6479550$export$b79a6ddbd7dc2198.styles = (0, $2SS2a.css)($460e8ac2e647
 var $2QgUB = parcelRequire("2QgUB");
 
 
-var $1LdRn = parcelRequire("1LdRn");
-
 var $kJycS = parcelRequire("kJycS");
 
-var $7AhDs = parcelRequire("7AhDs");
 
 const $ec7fd3dcfcac1ba4$export$a2d3d3a06f345f20 = (hass, config)=>{
     // Define base entities for the area
@@ -8294,7 +8450,7 @@ const $ec7fd3dcfcac1ba4$export$a2d3d3a06f345f20 = (hass, config)=>{
         // — they're represented by the bottom bar and shouldn't also occupy
         // an icon slot.
         if ((_entity_slider = entity.slider) === null || _entity_slider === void 0 ? void 0 : _entity_slider.hide_icon) return undefined;
-        const state = (0, $7AhDs.getState)(hass.states, entity.entity_id);
+        const state = (0, $6d9b59681496f671$export$50fdfeece43146fd)(hass.states, entity.entity_id);
         const isBaseEntity = baseEntities.includes(entity.entity_id);
         // If state is not found:
         // - For base entities: always return undefined (don't apply sticky entities)
@@ -8327,6 +8483,10 @@ const $ec7fd3dcfcac1ba4$export$a2d3d3a06f345f20 = (hass, config)=>{
 };
 
 
+
+var $g28NR = parcelRequire("g28NR");
+
+var $htQni = parcelRequire("htQni");
 
 
 var $dTmXl = parcelRequire("dTmXl");
@@ -8388,7 +8548,7 @@ const $97576b6c0b409321$export$9dd6ff9ea0189349 = (0, $2SS2a.css)($97576b6c0b409
 
 
 let $b96a40707b142c90$var$_ = (t)=>t, $b96a40707b142c90$var$t;
-class $b96a40707b142c90$export$b15c5e7ddecda86e extends (0, $1LdRn.HassUpdateMixin)((0, $2r9I1.LitElement)) {
+class $b96a40707b142c90$export$b15c5e7ddecda86e extends (0, $htQni.HassUpdateMixin)((0, $g28NR.HassConfigMixin)((0, $2r9I1.LitElement))) {
     /**
    * Returns the component's styles
    */ static get styles() {
@@ -8431,11 +8591,13 @@ var $1izJ2 = parcelRequire("1izJ2");
 var $2QgUB = parcelRequire("2QgUB");
 
 
-var $1LdRn = parcelRequire("1LdRn");
-
 
 
 var $gp9lG = parcelRequire("gp9lG");
+
+var $g28NR = parcelRequire("g28NR");
+
+var $htQni = parcelRequire("htQni");
 
 
 
@@ -8850,7 +9012,7 @@ const $b2acc8a8a7db7b5b$export$9dd6ff9ea0189349 = (0, $2SS2a.css)($b2acc8a8a7db7
 
 
 let $21a9ea85b7e2278b$var$_ = (t)=>t, $21a9ea85b7e2278b$var$t;
-class $21a9ea85b7e2278b$export$ec4599f0917a20c8 extends (0, $1LdRn.HassUpdateMixin)((0, $2r9I1.LitElement)) {
+class $21a9ea85b7e2278b$export$ec4599f0917a20c8 extends (0, $htQni.HassUpdateMixin)((0, $g28NR.HassConfigMixin)((0, $2r9I1.LitElement))) {
     /**
    * Returns the component's styles
    */ static get styles() {
@@ -9016,10 +9178,7 @@ var $kJycS = parcelRequire("kJycS");
 
 var $2QgUB = parcelRequire("2QgUB");
 
-var $1LdRn = parcelRequire("1LdRn");
-
-var $l3TbZ = parcelRequire("l3TbZ");
-const $b02f37b9ae80224f$export$47f3d980c4d9b226 = (0, $l3TbZ.default)((entity, feature)=>{
+const $b02f37b9ae80224f$export$47f3d980c4d9b226 = (0, $f554b0d97be25fc9$export$2e2bcd8739ae039)((entity, feature)=>{
     var _entity_config_features;
     return !entity || ((_entity_config_features = entity.config.features) === null || _entity_config_features === void 0 ? void 0 : _entity_config_features.includes(feature)) || false;
 });
@@ -9028,6 +9187,10 @@ const $b02f37b9ae80224f$export$47f3d980c4d9b226 = (0, $l3TbZ.default)((entity, f
 
 
 
+
+var $g28NR = parcelRequire("g28NR");
+
+var $htQni = parcelRequire("htQni");
 
 var $kJycS = parcelRequire("kJycS");
 
@@ -9277,6 +9440,7 @@ var $lYE5o = parcelRequire("lYE5o");
 var $2QgUB = parcelRequire("2QgUB");
 
 
+var $g28NR = parcelRequire("g28NR");
 
 
 var $dTmXl = parcelRequire("dTmXl");
@@ -9288,7 +9452,7 @@ parcelRequire("jcMWt");
 var $yv2EM = parcelRequire("yv2EM");
 var $aaQtJ = parcelRequire("aaQtJ");
 let $1bb40fdc00566efe$var$_ = (t)=>t, $1bb40fdc00566efe$var$t;
-class $1bb40fdc00566efe$export$ac61db8e407dba59 extends (0, $bac3a96534ef5b24$exports.HassConfigMixin)((0, $2r9I1.LitElement)) {
+class $1bb40fdc00566efe$export$ac61db8e407dba59 extends (0, $g28NR.HassConfigMixin)((0, $2r9I1.LitElement)) {
     /**
    * Returns the component's styles
    */ static get styles() {
@@ -9459,7 +9623,7 @@ const $3221e0e6382742ce$export$9dd6ff9ea0189349 = (0, $2SS2a.css)($3221e0e638274
 
 
 let $21884f49b48db948$var$_ = (t)=>t, $21884f49b48db948$var$t, $21884f49b48db948$var$t1, $21884f49b48db948$var$t2;
-class $21884f49b48db948$export$8063c4212d705050 extends (0, $1LdRn.HassUpdateMixin)((0, $2r9I1.LitElement)) {
+class $21884f49b48db948$export$8063c4212d705050 extends (0, $htQni.HassUpdateMixin)((0, $g28NR.HassConfigMixin)((0, $2r9I1.LitElement))) {
     /**
    * Returns the component's styles
    */ static get styles() {
@@ -9612,8 +9776,6 @@ var $1izJ2 = parcelRequire("1izJ2");
 
 var $2QgUB = parcelRequire("2QgUB");
 
-var $1LdRn = parcelRequire("1LdRn");
-
 var $30f636dbed1da0d8$exports = {};
 'use strict';
 
@@ -9704,6 +9866,10 @@ $00ea4c3dd58344cb$exports.FALLBACK_DOMAIN_ICONS = {
 };
 
 
+
+var $g28NR = parcelRequire("g28NR");
+
+var $htQni = parcelRequire("htQni");
 
 
 
@@ -9899,6 +10065,7 @@ const $23d9b52a9a7ecac4$export$6b5316c1eb8ef7e7 = (averagedSensor)=>`${$23d9b52a
 
 
 
+var $g28NR = parcelRequire("g28NR");
 
 
 var $dTmXl = parcelRequire("dTmXl");
@@ -9910,7 +10077,7 @@ parcelRequire("jcMWt");
 var $yv2EM = parcelRequire("yv2EM");
 var $aaQtJ = parcelRequire("aaQtJ");
 let $3b95f56107a2cba7$var$_ = (t)=>t, $3b95f56107a2cba7$var$t;
-class $3b95f56107a2cba7$export$ef860f80ba8a1734 extends (0, $bac3a96534ef5b24$exports.HassConfigMixin)((0, $2r9I1.LitElement)) {
+class $3b95f56107a2cba7$export$ef860f80ba8a1734 extends (0, $g28NR.HassConfigMixin)((0, $2r9I1.LitElement)) {
     disconnectedCallback() {
         this._labelTemplateConn.disconnect();
         super.disconnectedCallback();
@@ -10033,7 +10200,7 @@ const $a2c19dc37818e84b$export$9dd6ff9ea0189349 = (0, $2SS2a.css)($a2c19dc37818e
 
 
 let $0a8df7eca34388c3$var$_ = (t)=>t, $0a8df7eca34388c3$var$t, $0a8df7eca34388c3$var$t1, $0a8df7eca34388c3$var$t2, $0a8df7eca34388c3$var$t3, $0a8df7eca34388c3$var$t4, $0a8df7eca34388c3$var$t5, $0a8df7eca34388c3$var$t6;
-class $0a8df7eca34388c3$export$265e5e10b1eff6c6 extends (0, $1LdRn.HassUpdateMixin)((0, $2r9I1.LitElement)) {
+class $0a8df7eca34388c3$export$265e5e10b1eff6c6 extends (0, $htQni.HassUpdateMixin)((0, $g28NR.HassConfigMixin)((0, $2r9I1.LitElement))) {
     /**
    * Returns the component's styles
    */ static get styles() {
@@ -10197,22 +10364,13 @@ const $9ba75f3d2f9df1e6$export$2590a8944915c591 = [
     'area-statistics',
     'problem-dialog',
     'problem-entity-list',
-    'problem-entity-row',
-    'subscribe-entity-state-mixin',
-    'entity-subscription-manager'
+    'problem-entity-row'
 ];
 const $9ba75f3d2f9df1e6$export$8eaae07eebefd324 = [
     'render',
     'set hass',
     'config',
-    'sensors',
-    'unsubscribe',
-    'setupEntitySubscription',
-    'initial creation',
-    'subscribe',
-    'subscribe_entities',
-    'resubscribe',
-    'handleEvent'
+    'sensors'
 ];
 const $9ba75f3d2f9df1e6$export$aec4292bc15b41f9 = [
     {
@@ -10228,26 +10386,6 @@ const $9ba75f3d2f9df1e6$export$aec4292bc15b41f9 = [
         debug: {
             categories: [
                 'render'
-            ]
-        }
-    },
-    {
-        id: 'subscriptions',
-        label: 'Subscriptions',
-        description: 'Entity subscription manager and mixin',
-        debug: {
-            scope: [
-                'entity-subscription-manager',
-                'subscribe-entity-state-mixin'
-            ],
-            categories: [
-                'subscribe',
-                'subscribe_entities',
-                'resubscribe',
-                'handleEvent',
-                'initial creation',
-                'setupEntitySubscription',
-                'unsubscribe'
             ]
         }
     },
@@ -12637,8 +12775,21 @@ const $e8d2a89e60068f3e$export$eef4717271055433 = (hass, entityId)=>{
 };
 
 
+var $1e8946f92a148373$exports = {};
+"use strict";
+/**
+ * https://github.com/home-assistant/frontend/blob/dev/src/data/lovelace_custom_cards.ts
+ */ Object.defineProperty($1e8946f92a148373$exports, "__esModule", {
+    value: true
+});
+$1e8946f92a148373$exports.customCards = void 0;
+const $1e8946f92a148373$var$customCardsWindow = globalThis;
+if (!('customCards' in $1e8946f92a148373$var$customCardsWindow)) $1e8946f92a148373$var$customCardsWindow.customCards = [];
+$1e8946f92a148373$exports.customCards = $1e8946f92a148373$var$customCardsWindow.customCards;
+
+
 var $649c526c16197344$exports = {};
-$649c526c16197344$exports = JSON.parse("{\"name\":\"room-summary-card\",\"version\":\"1.0.0\",\"author\":{\"name\":\"Patrick Masters\",\"url\":\"https://curiouscat.consulting/projects/ha-room-summary-card?utm_source=github-room-summary-card&utm_medium=package-metadata&utm_campaign=oss-presence&utm_content=author-url\"},\"license\":\"ISC\",\"prettier\":\"@homeassistant-extras/config/prettier\",\"description\":\"Custom card Home Assistant which can show a summary of room entities.\",\"homepage\":\"https://homeassistant-extras.github.io/room-summary-card/\",\"repository\":{\"type\":\"git\",\"url\":\"https://github.com/homeassistant-extras/room-summary-card.git\"},\"bugs\":{\"url\":\"https://github.com/homeassistant-extras/room-summary-card/issues\"},\"source\":\"src/index.ts\",\"module\":\"dist/room-summary-card.js\",\"targets\":{\"module\":{\"includeNodeModules\":true}},\"@parcel/resolver-default\":{\"packageExports\":true},\"scripts\":{\"watch\":\"parcel watch\",\"build\":\"parcel build\",\"lint\":\"eslint .\",\"lint:fix\":\"eslint . --fix\",\"format\":\"prettier --write .\",\"pass\":\"yarn format && yarn typecheck && yarn lint && yarn test\",\"typecheck\":\"tsc --noEmit && tsc -p tsconfig.test.json --noEmit\",\"test\":\"TS_NODE_PROJECT='./tsconfig.test.json' mocha\",\"test:coverage\":\"nyc yarn test\",\"test:watch\":\"TS_NODE_PROJECT='./tsconfig.test.json' mocha --watch\",\"test:e2e\":\"playwright test\",\"test:e2e:auth\":\"source .env && npx playwright codegen --save-storage=$PLAYWRIGHT_HA_STORAGE_STATE $PLAYWRIGHT_HA_ORIGIN\",\"update\":\"npx npm-check-updates -u && yarn install\"},\"devDependencies\":{\"@eslint/js\":\"^10.0.1\",\"@homeassistant-extras/config\":\"^0.3.1\",\"@istanbuljs/nyc-config-typescript\":\"^1.0.2\",\"@open-wc/testing\":\"^4.0.0\",\"@parcel/transformer-inline-string\":\"^2.16.4\",\"@playwright/test\":\"^1.60.0\",\"@testing-library/dom\":\"^10.4.1\",\"@trivago/prettier-plugin-sort-imports\":\"^6.0.2\",\"@types/chai\":\"^5.2.3\",\"@types/jsdom\":\"^28.0.3\",\"@types/mocha\":\"^10.0.10\",\"@types/node\":\"^25.9.3\",\"@types/sinon\":\"^21.0.1\",\"chai\":\"^6.2.2\",\"eslint\":\"^10.5.0\",\"eslint-plugin-lit\":\"^2.3.1\",\"eslint-plugin-wc\":\"^3.1.0\",\"globals\":\"^17.6.0\",\"jsdom\":\"^29.1.1\",\"mocha\":\"^11.7.6\",\"nyc\":\"^18.0.0\",\"parcel\":\"^2.16.4\",\"prettier\":\"3.8.4\",\"prettier-plugin-organize-imports\":\"^4.3.0\",\"sinon\":\"^22.0.0\",\"ts-node\":\"^10.9.2\",\"tsconfig-paths\":\"^4.2.0\",\"typescript\":\"^6.0.3\",\"typescript-eslint\":\"^8.61.0\"},\"dependencies\":{\"@homeassistant-extras/hass\":\"^0.5.0\",\"@lit/task\":\"^1.0.3\",\"async-memoize-one\":\"^1.2.1\",\"fast-deep-equal\":\"^3.1.3\",\"lit\":\"^3.3.3\",\"memoize-one\":\"^6.0.0\"}}");
+$649c526c16197344$exports = JSON.parse("{\"name\":\"room-summary-card\",\"version\":\"1.1.0\",\"author\":{\"name\":\"Patrick Masters\",\"url\":\"https://curiouscat.consulting/projects/ha-room-summary-card?utm_source=github-room-summary-card&utm_medium=package-metadata&utm_campaign=oss-presence&utm_content=author-url\"},\"license\":\"ISC\",\"prettier\":\"@homeassistant-extras/config/prettier\",\"description\":\"Custom card Home Assistant which can show a summary of room entities.\",\"homepage\":\"https://homeassistant-extras.github.io/room-summary-card/\",\"repository\":{\"type\":\"git\",\"url\":\"https://github.com/homeassistant-extras/room-summary-card.git\"},\"bugs\":{\"url\":\"https://github.com/homeassistant-extras/room-summary-card/issues\"},\"source\":\"src/index.ts\",\"module\":\"dist/room-summary-card.js\",\"targets\":{\"module\":{\"includeNodeModules\":true}},\"@parcel/resolver-default\":{\"packageExports\":true},\"scripts\":{\"watch\":\"parcel watch\",\"build\":\"parcel build\",\"lint\":\"eslint .\",\"lint:fix\":\"eslint . --fix\",\"format\":\"prettier --write .\",\"pass\":\"yarn format && yarn typecheck && yarn lint && yarn test\",\"typecheck\":\"tsc --noEmit && tsc -p tsconfig.test.json --noEmit\",\"test\":\"TS_NODE_PROJECT='./tsconfig.test.json' mocha\",\"test:coverage\":\"nyc yarn test\",\"test:watch\":\"TS_NODE_PROJECT='./tsconfig.test.json' mocha --watch\",\"test:e2e\":\"playwright test\",\"test:e2e:auth\":\"source .env && npx playwright codegen --save-storage=$PLAYWRIGHT_HA_STORAGE_STATE $PLAYWRIGHT_HA_ORIGIN\",\"update\":\"npx npm-check-updates -u && yarn install\"},\"devDependencies\":{\"@eslint/js\":\"^10.0.1\",\"@homeassistant-extras/config\":\"^0.3.1\",\"@istanbuljs/nyc-config-typescript\":\"^1.0.2\",\"@open-wc/testing\":\"^4.0.0\",\"@parcel/transformer-inline-string\":\"^2.16.4\",\"@playwright/test\":\"^1.61.1\",\"@testing-library/dom\":\"^10.4.1\",\"@trivago/prettier-plugin-sort-imports\":\"^6.0.2\",\"@types/chai\":\"^5.2.3\",\"@types/jsdom\":\"^28.0.3\",\"@types/mocha\":\"^10.0.10\",\"@types/node\":\"^26.0.1\",\"@types/sinon\":\"^21.0.1\",\"chai\":\"^6.2.2\",\"eslint\":\"^10.6.0\",\"eslint-plugin-lit\":\"^2.3.1\",\"eslint-plugin-wc\":\"^3.1.0\",\"globals\":\"^17.7.0\",\"jsdom\":\"^29.1.1\",\"mocha\":\"^11.7.6\",\"nyc\":\"^18.0.0\",\"parcel\":\"^2.16.4\",\"prettier\":\"3.9.1\",\"prettier-plugin-organize-imports\":\"^4.3.0\",\"sinon\":\"^22.0.0\",\"ts-node\":\"^10.9.2\",\"tsconfig-paths\":\"^4.2.0\",\"typescript\":\"^6.0.3\",\"typescript-eslint\":\"^8.62.0\"},\"dependencies\":{\"@homeassistant-extras/hass\":\"^0.6.0\",\"@lit/task\":\"^1.0.3\",\"async-memoize-one\":\"^1.2.1\",\"fast-deep-equal\":\"^3.1.3\",\"lit\":\"^3.3.3\",\"memoize-one\":\"^6.0.0\"}}");
 
 
 // Register the custom element with the browser
@@ -12655,10 +12806,8 @@ customElements.define('room-summary-states-row-editor', (0, $68ce0c44dd114f11$ex
 customElements.define('room-summary-thresholds-row-editor', (0, $460e8ac2e6479550$export$b79a6ddbd7dc2198));
 customElements.define('room-summary-badge-row-editor', (0, $f0a2b09abb3b359a$export$fe6c0dc6457f5df9));
 customElements.define('room-summary-sub-element-editor', (0, $ffd7d578a1e62621$export$ddca213b44fe1587));
-// Ensure the customCards array exists on the window object
-globalThis.customCards = globalThis.customCards || [];
 // Register the card with Home Assistant's custom card registry
-globalThis.customCards.push({
+(0, $1e8946f92a148373$exports.customCards) === null || (0, $1e8946f92a148373$exports.customCards) === void 0 ? void 0 : (0, $1e8946f92a148373$exports.customCards).push({
     // Unique identifier for the card type
     type: 'room-summary-card',
     // Display name in the UI

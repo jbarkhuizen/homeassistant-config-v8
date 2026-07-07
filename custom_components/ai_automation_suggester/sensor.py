@@ -44,6 +44,7 @@ from .const import (
     CONF_MISTRAL_MODEL,
     CONF_PERPLEXITY_MODEL,
     CONF_OPENROUTER_MODEL,
+    CONF_REQUESTY_MODEL,
     CONF_OPENAI_AZURE_DEPLOYMENT_ID,
     CONF_GENERIC_OPENAI_MODEL,
     DEFAULT_MODELS,
@@ -70,6 +71,7 @@ PROVIDER_TO_MODEL_KEY_MAP: dict[str, str] = {
     "Mistral AI": CONF_MISTRAL_MODEL,
     "Perplexity AI": CONF_PERPLEXITY_MODEL,
     "OpenRouter": CONF_OPENROUTER_MODEL,
+    "Requesty": CONF_REQUESTY_MODEL,
     "OpenAI Azure": CONF_OPENAI_AZURE_DEPLOYMENT_ID,
     "Generic OpenAI": CONF_GENERIC_OPENAI_MODEL,
 }
@@ -229,6 +231,15 @@ class AIBaseSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
 class AISuggestionsSensor(AIBaseSensor):
     """Shows the availability of new AI suggestions."""
     _attr_should_poll = False
+
+    # Large payloads (full suggestion text, raw YAML block, entity list) can
+    # easily exceed the recorder's 16 KiB per-attribute limit, which spammed
+    # warnings and disabled attribute persistence for this sensor (issue #172).
+    # These fields are still exposed on the live state and via the HTTP API/
+    # store, they just aren't written to the history database.
+    _unrecorded_attributes = frozenset(
+        {"suggestions", "yaml_block", "description", "entities_processed", "suggestion"}
+    )
 
     def __init__(
         self,
