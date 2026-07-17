@@ -38,7 +38,7 @@ from .const import (
     CONST_PENDING,
     TIME_STR_FORMAT,
 )
-from .globals import PROGRAMS, QUEUEDPROGRAMS, REMAINING_ZONES, RUNNING_ZONES
+from .globals import PROGRAMS, QUEUEDPROGRAMS
 from .pump import PumpClass
 
 _LOGGER = logging.getLogger(__name__)
@@ -79,11 +79,16 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self._unsub_start = None
         self._unsub_monitor = None
         self._unsub_pause = None
+        self._unsub_delay = None
         self._unsub_pause_water = None
         self._start_time = dt_util.as_local(dt_util.now())
 
         self._pumps = []
         self._run_zones = []  # list of zones to run
+        # per-program queues: module level globals corrupted each other
+        # when two programs ran concurrently (interlock disabled)
+        self._remaining_zones: list = []
+        self._running_zones: list = []
         self._running_zone: ZoneData | None = (
             None  # []  # list of currently running zones
         )
@@ -339,6 +344,10 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if self._unsub_pause_water:
             self._unsub_pause_water()
             self._unsub_pause_water = None
+        if self._unsub_delay:
+            self._unsub_delay()
+            self._unsub_delay = None
+
 
     def get_next_interval(self):
         """Next time an update should occur."""
@@ -422,14 +431,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                     if sunrise:
                         adjusted_sunrise = dt_util.as_local(sunrise + d)
 
-                    # 5. Extract the time component without seconds/micros
-                    target_time = adjusted_sunrise.replace(
-                        second=0, microsecond=0
-                    ).time()
+                        # 5. Extract the time component without seconds/micros
+                        target_time = adjusted_sunrise.replace(
+                            second=0, microsecond=0
+                        ).time()
 
-                    self.hass.async_create_task(
-                        self._program.start_time.async_set_value(target_time)
-                    )
+                        self.hass.async_create_task(
+                            self._program.start_time.async_set_value(target_time)
+                        )
                 except ValueError:
                     # Handle case where offset state isn't a valid number
                     pass
@@ -618,6 +627,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             self._hass, tuple(monitor3), self.pause_program
         )
 
+        if self._program.rain_delay:
+            monitor4 = []
+            await monitor_append(self._program.rain_delay.entity_id, "rain_delay", monitor4)
+            self._unsub_delay = async_track_state_change_event(
+                self._hass, tuple(monitor4), self.delay_program
+            )
+
+
     async def define_program_attributes(self):
         """Build attributes in run order."""
 
@@ -690,7 +707,7 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         elif self._run_zones.count(zone) == 0:
             # program is running add the zone to the list to run
             self._run_zones.append(zone)
-            REMAINING_ZONES.append(zone)
+            self._remaining_zones.append(zone)
             if checkzone:
                 kwargs = {}
                 kwargs["action"] = "prepare_to_run"
@@ -758,6 +775,16 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         return self._program.pause
 
     @property
+    def remaining_zones(self) -> list:
+        """Zones queued to run for this program."""
+        return self._remaining_zones
+
+    @property
+    def running_zones(self) -> list:
+        """Zones currently running for this program."""
+        return self._running_zones
+
+    @property
     def repeats_value(self):
         """Get the value of program repeats."""
         value = 1
@@ -771,6 +798,14 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         value = None
         if self._program.start_time is not None:
             value = self._program.start_time.state
+        return value
+
+    @property
+    def delay_time_value(self) -> int:
+        """Delay time entity value."""
+        value = None
+        if self._program.delay_time is not None:
+            value = self._program.delay_time.state
         return value
 
     @property
@@ -907,9 +942,19 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         if self._state is False:
             await self._program.pause.async_turn_off()
 
+    async def delay_program(
+        self,
+        event: Event[EventStateChangedData],
+    ):
+        """Delay status changes."""
+        self.hass.async_create_task(
+            self._program.delay_time.set_value()
+        )
+
+
     async def zone_pending(self, zone) -> bool:
         """Determine if a another instance of the zone is pending."""
-        if REMAINING_ZONES.count(zone) >= 1:
+        if self._remaining_zones.count(zone) >= 1:
             return True
         return False
 
@@ -920,25 +965,30 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
             # break out if program terminated
             self._program_remaining = 0
             await self.remaining_time_set()
-            return RUNNING_ZONES
+            return self._running_zones
 
         if self._paused:
             await asyncio.sleep(1)
-            return RUNNING_ZONES
+            return self._running_zones
 
         await self.calculate_program_remaining(
-            RUNNING_ZONES, REMAINING_ZONES,0,False
+            self._running_zones, self._remaining_zones, 0, False
         )
         await asyncio.sleep(1)
 
-        if len(RUNNING_ZONES) < self.degree_of_parallel and len(REMAINING_ZONES) > 0:
-            await self.zone_turn_on(REMAINING_ZONES[0], len(REMAINING_ZONES) == 1)
-            RUNNING_ZONES.append(REMAINING_ZONES[0])
-            del REMAINING_ZONES[0]
-            return RUNNING_ZONES
+        if (
+            len(self._running_zones) < self.degree_of_parallel
+            and len(self._remaining_zones) > 0
+        ):
+            await self.zone_turn_on(
+                self._remaining_zones[0], len(self._remaining_zones) == 1
+            )
+            self._running_zones.append(self._remaining_zones[0])
+            del self._remaining_zones[0]
+            return self._running_zones
 
-        rzones = RUNNING_ZONES
-        for running_zone in rzones:
+        # iterate over a copy: zones are appended/removed while looping
+        for running_zone in list(self._running_zones):
             # add another zone as required
             if self._state is False:
                 # break out if program terminated
@@ -947,36 +997,43 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
                 self.inter_zone_delay <= 0
                 and running_zone.remaining_time.numeric_value
                 <= abs(self.inter_zone_delay)
-                and len(RUNNING_ZONES) == self.degree_of_parallel
+                and len(self._running_zones) == self.degree_of_parallel
             ):
                 # start the next zone if there is one
-                if len(REMAINING_ZONES) > 0:
-                    await self.zone_turn_on(REMAINING_ZONES[0], len(REMAINING_ZONES) == 1)
-                    RUNNING_ZONES.append(REMAINING_ZONES[0])
-                    del REMAINING_ZONES[0]
+                if len(self._remaining_zones) > 0:
+                    await self.zone_turn_on(
+                        self._remaining_zones[0], len(self._remaining_zones) == 1
+                    )
+                    self._running_zones.append(self._remaining_zones[0])
+                    del self._remaining_zones[0]
 
             if (
                 self.inter_zone_delay > 0
                 and running_zone.remaining_time.numeric_value <= 1
-                and len(REMAINING_ZONES) > 0
+                and len(self._remaining_zones) > 0
             ):
                 # there is a +'ve IZD and there is a zone to follow
-                if len(REMAINING_ZONES) > 0:
-                    # Delay before next zone
-                    for izd in range(int(self.inter_zone_delay), 0, -1):
-                        await asyncio.sleep(1)
-                        await self.calculate_program_remaining(
-                                RUNNING_ZONES, REMAINING_ZONES, izd, False
-                            )
-                        if self.state == CONST_OFF:
-                            break
-                # Interzone delay is complete
-                if len(RUNNING_ZONES) < self.degree_of_parallel:
-                    await self.zone_turn_on(REMAINING_ZONES[0], len(REMAINING_ZONES) == 1)
-                    RUNNING_ZONES.append(REMAINING_ZONES[0])
-                    del REMAINING_ZONES[0]
+                # Delay before next zone
+                for izd in range(int(self.inter_zone_delay), 0, -1):
+                    await asyncio.sleep(1)
+                    await self.calculate_program_remaining(
+                        self._running_zones, self._remaining_zones, izd, False
+                    )
+                    if self.state == CONST_OFF:
+                        break
+                # Interzone delay is complete; a zone may have been removed
+                # manually during the delay, guard against IndexError
+                if (
+                    len(self._running_zones) < self.degree_of_parallel
+                    and len(self._remaining_zones) > 0
+                ):
+                    await self.zone_turn_on(
+                        self._remaining_zones[0], len(self._remaining_zones) == 1
+                    )
+                    self._running_zones.append(self._remaining_zones[0])
+                    del self._remaining_zones[0]
 
-        return RUNNING_ZONES
+        return self._running_zones
 
     async def zone_turn_on(self, zone, last=False):
         """Turn on the irrigation zone."""
@@ -1040,9 +1097,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         # Monitor and start the zone with lead/lag time
         for zone in self._run_zones:
             if zone.status.state in (CONST_PENDING, CONST_ON):
-                REMAINING_ZONES.append(zone)
+                self._remaining_zones.append(zone)
 
-        RUNNING_ZONES.clear()
+        self._running_zones.clear()
         await self.run_monitor_zones()
 
         while self._program_remaining > 0:
@@ -1082,10 +1139,9 @@ class IrrigationProgram(SwitchEntity, RestoreEntity):
         self.async_schedule_update_ha_state()
 
         # check the queue remove this program
-        for n, x in enumerate(QUEUEDPROGRAMS):
-            if x.name == self._name:
-                QUEUEDPROGRAMS.pop(n)
+        # (rebuild rather than pop while enumerating)
+        QUEUEDPROGRAMS[:] = [p for p in QUEUEDPROGRAMS if p.name != self._name]
         # unpause the next program in the queue
         if len(QUEUEDPROGRAMS) > 0:
             await QUEUEDPROGRAMS[0].pause_switch.async_turn_off()
-        REMAINING_ZONES.clear()
+        self._remaining_zones.clear()

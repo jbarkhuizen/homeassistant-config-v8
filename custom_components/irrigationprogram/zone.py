@@ -64,7 +64,7 @@ from .const import (
     RAINBIRD_TURN_ON,
     TIME_STR_FORMAT,
 )
-from .globals import REMAINING_ZONES, RUNNING_ZONES, ZONES
+from .globals import ZONES
 
 VALID_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
@@ -906,7 +906,8 @@ class Zone(SwitchEntity, RestoreEntity):
         if self._programdata.rain_delay:
             if self._programdata.rain_delay.state == CONST_ON and self._programdata.rain_delay_days.state:
                 delay = int(self._programdata.rain_delay_days.state)
-                delay_until = dt_util.as_local(self._programdata.rain_delay.last_updated) + timedelta(days=delay)
+                # delay_until = dt_util.as_local(self._programdata.rain_delay.last_updated) + timedelta(days=delay)
+                delay_until = dt_util.parse_datetime(self._programdata.delay_time.state) + timedelta(days=delay)
 
         if self.frequency is None:
             frq = 1
@@ -1176,7 +1177,10 @@ class Zone(SwitchEntity, RestoreEntity):
         self._remaining_time = 0
         await self.remaining_time_set()
         await asyncio.sleep(0.1)
-        if self._zonedata in REMAINING_ZONES and manual is False:
+        if (
+            self._zonedata in self._programdata.switch.remaining_zones
+            and manual is False
+        ):
             #set the remaining time to to allow it to restart when program loops
             #supports repeating the program
             await self.prepare_to_run(scheduled=True)
@@ -1191,11 +1195,13 @@ class Zone(SwitchEntity, RestoreEntity):
 
         if manual is True:
             #remove all future instances of this zone
-            while self._zonedata in REMAINING_ZONES:
-                REMAINING_ZONES.remove(self._zonedata)
+            remaining = self._programdata.switch.remaining_zones
+            while self._zonedata in remaining:
+                remaining.remove(self._zonedata)
 
-        if self._zonedata in RUNNING_ZONES:
-            RUNNING_ZONES.remove(self._zonedata)
+        running = self._programdata.switch.running_zones
+        if self._zonedata in running:
+            running.remove(self._zonedata)
 
         self.async_schedule_update_ha_state()
 
@@ -1290,10 +1296,13 @@ class Zone(SwitchEntity, RestoreEntity):
             self._zone_manual_start = True
             await self._programdata.switch.entity_toggle_zone(self._zonedata)
 
-    async def async_turn_on_from_program(self, last=False, last_ran=dt_util.as_local(dt_util.now())):
+    async def async_turn_on_from_program(self, last=False, last_ran=None):
         """Start the zone watering cycle."""
         # last indicates this is the last zone to be run
-        # last_ran is the start time of the program
+        # last_ran is the start time of the program; default to the current
+        # local time when the caller does not supply one
+        if last_ran is None:
+            last_ran = dt_util.as_local(dt_util.now())
         self._state = self._status_sensor = self._status = CONST_ON
         await self.status_sensor_set()
         self.async_schedule_update_ha_state()
@@ -1385,7 +1394,6 @@ class Zone(SwitchEntity, RestoreEntity):
 
     async def time(self, water_adjust_value:float, seconds_run:int, reps:int, last=False):
         """Track watering time based on time."""
-        warning_issued = False
         if self._scheduled:
             if await self.get_status() not in (
                 CONST_ON,
@@ -1405,6 +1413,7 @@ class Zone(SwitchEntity, RestoreEntity):
         if last and self._pump:
             end_time += timedelta(seconds=3)
 
+        warning_issued = False
         while dt_util.now() < end_time:
             # if pump turn off when 3 seconds remaining
             time_difference = (end_time - dt_util.now()).total_seconds()
@@ -1431,7 +1440,6 @@ class Zone(SwitchEntity, RestoreEntity):
                 return 0
 
             # Check to see if the zone has been stopped, this is abnormal
-            warning_issued = False
             for _ in range(self._latency):
                 if self._status == CONST_PAUSED:
                     break
@@ -1457,25 +1465,26 @@ class Zone(SwitchEntity, RestoreEntity):
                     continue
                 break
             else:
-                if not warning_issued:
-                    async_dismiss(self.hass, "irrigation_latency")
-                    async_create(
-                        self.hass,
-                        message=f"{self.name} returned an unexpected state, {status} for {self._latency} seconds.",
-                        title="Irrigation Controller",
-                        notification_id="irrigation_latency",
-                    )
-                warning_issued = True
-                event_data = {
-                    "action": "error",
-                    "error": "Returned an unexpected state",
-                    "device_id": self.entity_id,
-                    "scheduled": self._scheduled,
-                    "program": self.name,
-                    "state": status,
-                }
-                self.hass.bus.async_fire("irrigation_event", event_data)
                 if not self._continue_on_unexpected_state:
+
+                    if not warning_issued:
+                        async_dismiss(self.hass, "irrigation_latency")
+                        async_create(
+                            self.hass,
+                            message=f"{self.name} returned an unexpected state, {status} for {self._latency} seconds.",
+                            title="Irrigation Controller",
+                            notification_id="irrigation_latency",
+                        )
+                    warning_issued = True
+                    event_data = {
+                        "action": "error",
+                        "error": "Returned an unexpected state",
+                        "device_id": self.entity_id,
+                        "scheduled": self._scheduled,
+                        "program": self.name,
+                        "state": status,
+                    }
+                    self.hass.bus.async_fire("irrigation_event", event_data)
                     # if the zone is not on, but the state is not what we expect, terminate the zone
                     await self.async_turn_off_zone_natural()
 
@@ -1554,25 +1563,26 @@ class Zone(SwitchEntity, RestoreEntity):
                     continue
                 break
             else:
-                if not warning_issued:
-                    async_dismiss(self.hass, "irrigation_latency")
-                    async_create(
-                        self.hass,
-                        message=f"{self.name} returned an unexpected state, {status} for {self._latency} seconds.",
-                        title="Irrigation Controller",
-                        notification_id="irrigation_latency",
-                    )
-                warning_issued = True
-                event_data = {
-                    "action": "error",
-                    "error": "Returned an unexpected state",
-                    "device_id": self.entity_id,
-                    "scheduled": self._scheduled,
-                    "program": self.name,
-                    "state": status,
-                }
-                self.hass.bus.async_fire("irrigation_event", event_data)
                 if not self._continue_on_unexpected_state:
+                    if not warning_issued:
+                        async_dismiss(self.hass, "irrigation_latency")
+                        async_create(
+                            self.hass,
+                            message=f"{self.name} returned an unexpected state, {status} for {self._latency} seconds.",
+                            title="Irrigation Controller",
+                            notification_id="irrigation_latency",
+                        )
+                    warning_issued = True
+                    event_data = {
+                        "action": "error",
+                        "error": "Returned an unexpected state",
+                        "device_id": self.entity_id,
+                        "scheduled": self._scheduled,
+                        "program": self.name,
+                        "state": status,
+                    }
+                    self.hass.bus.async_fire("irrigation_event", event_data)
+
                     # if the zone is not on, but the state is not what we expect, terminate the zone
                     await self.async_turn_off_zone_natural()
 

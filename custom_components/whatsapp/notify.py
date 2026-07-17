@@ -131,11 +131,10 @@ class WhatsAppNotificationEntity(
         self._attr_unique_id = f"{entry.entry_id}_notify"
         self._attr_device_info = coordinator.client.get_device_info()
 
-    @property  # type: ignore[misc]
-    def state(self) -> str:
-        """Return the state of the entity."""
-        connected = bool(self.coordinator.data.get("connected", False))
-        return "online" if connected else "offline"
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return bool(self.coordinator.data.get("connected", False))
 
     async def async_send_message(  # type: ignore[override]
         self,
@@ -187,6 +186,9 @@ class WhatsAppNotificationEntity(
                 f"Failed to send WhatsApp message to {len(errors)} recipient(s): "
                 f"{', '.join(r for r, _ in errors)}"
             )
+
+        if hasattr(self, "_async_record_notification"):
+            self._async_record_notification()
 
 
 async def async_send_whatsapp_message(

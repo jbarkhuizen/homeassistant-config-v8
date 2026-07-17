@@ -54,6 +54,7 @@ class CoordinatorType(StrEnum):
     GEAR = "gear"
     BLOOD_PRESSURE = "blood_pressure"
     MENSTRUAL = "menstrual"
+    NUTRITION = "nutrition"
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -757,7 +758,7 @@ ACTIVITY_TRACKING_SENSORS: tuple[GarminConnectSensorEntityDescription, ...] = (
         translation_key="last_activities",
         coordinator_type=CoordinatorType.ACTIVITY,
         state_class=SensorStateClass.TOTAL,
-        value_fn=lambda data: len(data.get("lastActivities") or []),
+        value_fn=lambda data: _count_recent_activities(data),
         attributes_fn=lambda data: {
             "last_activities": sorted(
                 data.get("lastActivities") or [],
@@ -1207,6 +1208,23 @@ def _parse_iso(value: str) -> datetime.datetime | None:
         return None
 
 
+def _count_recent_activities(data: dict[str, Any]) -> int:
+    """Count activities started within the last 7 days.
+
+    The library returns the 10 most recent activities regardless of age;
+    the sensor state keeps its "activities this week" meaning.
+    """
+    cutoff = datetime.datetime.now(datetime.UTC) - timedelta(days=7)
+    return len(
+        [
+            a
+            for a in (data.get("lastActivities") or [])
+            if isinstance(a.get("startTime"), datetime.datetime)
+            and a["startTime"] >= cutoff
+        ]
+    )
+
+
 # ── GEAR coordinator sensors ──────────────────────────────────────────────────
 # Data from ha_garmin.fetch_gear_data() — dynamic gear sensors
 
@@ -1227,6 +1245,34 @@ GEAR_SENSORS: tuple[GarminConnectSensorEntityDescription, ...] = (
             None,
         ),
         attributes_fn=lambda data: {"next_alarms": data.get("nextAlarm")},
+    ),
+    GarminConnectSensorEntityDescription(
+        key="solarIntensity",
+        translation_key="solar_intensity",
+        coordinator_type=CoordinatorType.GEAR,
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: next(
+            (
+                d.get("solarUtilization")
+                for d in (data.get("solarIntensity") or [])
+                if d.get("solarUtilization") is not None
+            ),
+            None,
+        ),
+        attributes_fn=lambda data: {"devices": data.get("solarIntensity")},
+    ),
+    GarminConnectSensorEntityDescription(
+        key="devices",
+        translation_key="devices",
+        coordinator_type=CoordinatorType.GEAR,
+        value_fn=lambda data: (
+            len(data["devices"]) if isinstance(data.get("devices"), list) else None
+        ),
+        attributes_fn=lambda data: {
+            "devices": data.get("devices"),
+            "last_used_device": data.get("lastUsedDevice"),
+        },
     ),
 )
 
@@ -1307,12 +1353,6 @@ BLOOD_PRESSURE_SENSORS: tuple[GarminConnectSensorEntityDescription, ...] = (
             }.items()
             if v is not None
         },
-    ),
-    GarminConnectSensorEntityDescription(
-        key="bpMeasurementTime",
-        translation_key="bp_measurement_time",
-        coordinator_type=CoordinatorType.BLOOD_PRESSURE,
-        preserve_value=True,
     ),
 )
 
@@ -1526,6 +1566,114 @@ MENSTRUAL_CYCLE_SENSORS: tuple[GarminConnectSensorEntityDescription, ...] = (
 )
 
 
+# ── NUTRITION coordinator sensors ────────────────────────────────────────────
+# Keys match ha_garmin.fetch_nutrition_data() output. Requires Connect+ with
+# nutrition logging set up; disabled by default like menstrual sensors.
+
+NUTRITION_SENSORS: tuple[GarminConnectSensorEntityDescription, ...] = (
+    GarminConnectSensorEntityDescription(
+        key="nutritionConsumedCalories",
+        translation_key="nutrition_consumed_calories",
+        coordinator_type=CoordinatorType.NUTRITION,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement=UnitOfEnergy.KILO_CALORIE,
+        suggested_display_precision=0,
+        entity_registry_enabled_default=False,
+        attributes_fn=lambda data: (
+            {"meals": data["nutritionMeals"]} if data.get("nutritionMeals") else {}
+        ),
+    ),
+    GarminConnectSensorEntityDescription(
+        key="nutritionConsumedProtein",
+        translation_key="nutrition_consumed_protein",
+        coordinator_type=CoordinatorType.NUTRITION,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement=UnitOfMass.GRAMS,
+        suggested_display_precision=1,
+        entity_registry_enabled_default=False,
+    ),
+    GarminConnectSensorEntityDescription(
+        key="nutritionConsumedFat",
+        translation_key="nutrition_consumed_fat",
+        coordinator_type=CoordinatorType.NUTRITION,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement=UnitOfMass.GRAMS,
+        suggested_display_precision=1,
+        entity_registry_enabled_default=False,
+    ),
+    GarminConnectSensorEntityDescription(
+        key="nutritionConsumedCarbs",
+        translation_key="nutrition_consumed_carbs",
+        coordinator_type=CoordinatorType.NUTRITION,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement=UnitOfMass.GRAMS,
+        suggested_display_precision=1,
+        entity_registry_enabled_default=False,
+    ),
+    GarminConnectSensorEntityDescription(
+        key="nutritionCalorieGoal",
+        translation_key="nutrition_calorie_goal",
+        coordinator_type=CoordinatorType.NUTRITION,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement=UnitOfEnergy.KILO_CALORIE,
+        suggested_display_precision=0,
+        entity_registry_enabled_default=False,
+    ),
+    GarminConnectSensorEntityDescription(
+        key="nutritionProteinGoal",
+        translation_key="nutrition_protein_goal",
+        coordinator_type=CoordinatorType.NUTRITION,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement=UnitOfMass.GRAMS,
+        suggested_display_precision=0,
+        entity_registry_enabled_default=False,
+    ),
+    GarminConnectSensorEntityDescription(
+        key="nutritionFatGoal",
+        translation_key="nutrition_fat_goal",
+        coordinator_type=CoordinatorType.NUTRITION,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement=UnitOfMass.GRAMS,
+        suggested_display_precision=0,
+        entity_registry_enabled_default=False,
+    ),
+    GarminConnectSensorEntityDescription(
+        key="nutritionCarbsGoal",
+        translation_key="nutrition_carbs_goal",
+        coordinator_type=CoordinatorType.NUTRITION,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement=UnitOfMass.GRAMS,
+        suggested_display_precision=0,
+        entity_registry_enabled_default=False,
+    ),
+    GarminConnectSensorEntityDescription(
+        key="nutritionRemainingCalories",
+        translation_key="nutrition_remaining_calories",
+        coordinator_type=CoordinatorType.NUTRITION,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement=UnitOfEnergy.KILO_CALORIE,
+        suggested_display_precision=0,
+        entity_registry_enabled_default=False,
+    ),
+    GarminConnectSensorEntityDescription(
+        key="nutritionLoggedEntries",
+        translation_key="nutrition_logged_entries",
+        coordinator_type=CoordinatorType.NUTRITION,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement="entries",
+        suggested_display_precision=0,
+        entity_registry_enabled_default=False,
+    ),
+    GarminConnectSensorEntityDescription(
+        key="nutritionLastLoggedTime",
+        translation_key="nutrition_last_logged",
+        coordinator_type=CoordinatorType.NUTRITION,
+        device_class=SensorDeviceClass.TIMESTAMP,
+        entity_registry_enabled_default=False,
+    ),
+)
+
+
 # ── Map coordinator type → (descriptions, coordinator instance attr) ──────────
 
 _COORDINATOR_SENSOR_MAP: tuple[
@@ -1539,6 +1687,7 @@ _COORDINATOR_SENSOR_MAP: tuple[
     (CoordinatorType.GEAR, GEAR_SENSORS),
     (CoordinatorType.BLOOD_PRESSURE, BLOOD_PRESSURE_SENSORS),
     (CoordinatorType.MENSTRUAL, MENSTRUAL_CYCLE_SENSORS),
+    (CoordinatorType.NUTRITION, NUTRITION_SENSORS),
 )
 
 _COORDINATOR_ATTR: dict[CoordinatorType, str] = {
@@ -1550,6 +1699,7 @@ _COORDINATOR_ATTR: dict[CoordinatorType, str] = {
     CoordinatorType.GEAR: "gear",
     CoordinatorType.BLOOD_PRESSURE: "blood_pressure",
     CoordinatorType.MENSTRUAL: "menstrual",
+    CoordinatorType.NUTRITION: "nutrition",
 }
 
 

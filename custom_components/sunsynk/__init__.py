@@ -1,6 +1,8 @@
 """Sunsynk / Deye Solar Inverter integration for Home Assistant."""
 from __future__ import annotations
 
+import inspect
+import json
 import logging
 import re
 from pathlib import Path
@@ -13,6 +15,7 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant, ServiceCall
 
 from .api.auth import SunsynkAuth
+from .calibration import PerformanceRatioCalibrator
 from .const import (
     CONF_API_SERVER,
     CONF_CHEAP_CHARGE_CURRENT,
@@ -65,6 +68,78 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 _CARD_JS = "sunsynk-power-flow-card.js"
 _CARD_URL = f"/sunsynk/{_CARD_JS}"
+_MANIFEST_VERSION = "0"
+try:
+    with (Path(__file__).parent / "manifest.json").open(
+        encoding="utf-8"
+    ) as manifest_file:
+        _MANIFEST_VERSION = json.load(manifest_file).get("version", _MANIFEST_VERSION)
+except Exception:  # noqa: BLE001
+    pass
+_CARD_RESOURCE_URL = f"{_CARD_URL}?v={_MANIFEST_VERSION}"
+
+
+async def _maybe_await(value: Any) -> Any:
+    """Await a value only when Home Assistant exposes it as a coroutine."""
+    if inspect.isawaitable(value):
+        return await value
+    return value
+
+
+async def _async_register_lovelace_resource(hass: HomeAssistant) -> None:
+    """Register the bundled card as a Lovelace module resource."""
+    lovelace = hass.data.get("lovelace")
+    resources = getattr(lovelace, "resources", None)
+    if resources is None:
+        _LOGGER.debug(
+            "Sunsynk: Lovelace resources unavailable; relying on frontend module load"
+        )
+        return
+
+    try:
+        if (
+            hasattr(resources, "async_load")
+            and getattr(resources, "loaded", True) is False
+        ):
+            await resources.async_load()
+
+        items = await _maybe_await(resources.async_items()) or []
+        existing = [
+            item
+            for item in items
+            if str(item.get("url", "")).split("?", 1)[0] == _CARD_URL
+        ]
+
+        if existing:
+            item = existing[0]
+            updates: dict[str, str] = {}
+            if item.get("url") != _CARD_RESOURCE_URL:
+                updates["url"] = _CARD_RESOURCE_URL
+            if item.get("type") != "module":
+                updates["res_type"] = "module"
+            if updates and item.get("id") and hasattr(resources, "async_update_item"):
+                await resources.async_update_item(item["id"], updates)
+                _LOGGER.debug("Sunsynk Power Flow Card Lovelace resource updated")
+            return
+
+        if hasattr(resources, "async_create_item"):
+            await resources.async_create_item(
+                {
+                    "res_type": "module",
+                    "url": _CARD_RESOURCE_URL,
+                }
+            )
+            _LOGGER.debug("Sunsynk Power Flow Card Lovelace resource registered")
+        else:
+            _LOGGER.debug(
+                "Sunsynk: Lovelace resources are read-only; add %s manually",
+                _CARD_RESOURCE_URL,
+            )
+    except Exception as err:  # noqa: BLE001
+        _LOGGER.warning(
+            "Could not register Sunsynk Power Flow Card Lovelace resource: %s",
+            err,
+        )
 
 
 def _find_coordinator(hass: HomeAssistant, serial: str) -> SunsynkCoordinator | None:
@@ -95,11 +170,13 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     # Register as extra frontend module so HA loads it automatically
     try:
         from homeassistant.components.frontend import add_extra_js_url
-        add_extra_js_url(hass, _CARD_URL)
+        add_extra_js_url(hass, _CARD_RESOURCE_URL)
     except Exception:  # noqa: BLE001
         pass
 
-    _LOGGER.debug("Sunsynk Power Flow Card registered at %s", _CARD_URL)
+    await _async_register_lovelace_resource(hass)
+
+    _LOGGER.debug("Sunsynk Power Flow Card registered at %s", _CARD_RESOURCE_URL)
 
     async def _handle_force_charge(call: ServiceCall) -> None:
         serial: str = call.data["serial"]
@@ -173,12 +250,34 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             CONF_PERFORMANCE_RATIO,
             entry.data.get(CONF_PERFORMANCE_RATIO, DEFAULT_PERFORMANCE_RATIO),
         )
+
+        def _actual_pv_energy_today() -> float | None:
+            """Sum today's actual PV generation (kWh) across inverters on this entry."""
+            data = coordinator.data
+            if not data:
+                return None
+            total = 0.0
+            found = False
+            for serial_data in data.values():
+                value = serial_data.get("pv", {}).get("etoday")
+                try:
+                    total += float(value)
+                    found = True
+                except (TypeError, ValueError):
+                    continue
+            return total if found else None
+
+        calibrator = PerformanceRatioCalibrator(hass, entry.entry_id, float(pr))
+        await calibrator.async_load()
+
         forecast_coordinator = SolarForecastCoordinator(
             hass,
             latitude=float(lat),
             longitude=float(lon),
             panel_kwp=float(kwp),
             performance_ratio=float(pr),
+            calibrator=calibrator,
+            actual_energy_fn=_actual_pv_energy_today,
         )
         try:
             await forecast_coordinator.async_config_entry_first_refresh()

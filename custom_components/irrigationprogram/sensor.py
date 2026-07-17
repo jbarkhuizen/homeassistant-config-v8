@@ -1,6 +1,6 @@
 """Platform for recording current irrigation zone status."""
 
-from datetime import datetime, time
+from datetime import UTC, datetime, time
 import logging
 from zoneinfo import ZoneInfo
 
@@ -56,6 +56,10 @@ async def async_setup_entry(
     sensors.append(sensor)
     config_entry.runtime_data.program.default_run_time = sensor
 
+    sensor = DelayTime(hass, pname, unique_id)
+    sensors.append(sensor)
+    config_entry.runtime_data.program.delay_time = sensor
+
     zones = data.zone_data
     for i, zone in enumerate(zones):
         zname = zone.name
@@ -105,10 +109,9 @@ class ZoneStatus(SensorEntity):
         #get the value from the program/zone
         zonename = self._pname+'.'+self._zname
         x = ZONES.get(zonename)
-         # Get the property object from the class
-        if x:
-            value = x.status_sensor_value
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.status_sensor_value)
 
     async def set_value(self, status=CONST_OFF):
         """Set the runtime state value."""
@@ -254,10 +257,9 @@ class ZoneRemainingTime(SensorEntity):
         #get the value from the program/zone
         zonename = self._pname+'.'+self._zname
         x = ZONES.get(zonename)
-         # Get the property object from the class
-        if x:
-            value = x.remaining_time_value
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.remaining_time_value)
 
     async def set_value(self, value):
         """Set the remaining time state value."""
@@ -308,10 +310,9 @@ class ZoneDefaultRunTime(SensorEntity):
         #get the value from the program/zone
         zonename = self._pname+'.'+self._zname
         x = ZONES.get(zonename)
-         # Get the property object from the class
-        if x:
-            value = x.default_run_time
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.default_run_time)
 
     async def set_value(self, value):
         """Set the remaining time state value."""
@@ -361,10 +362,9 @@ class RemainingTime(SensorEntity):
         """Triggered on update freq."""
         #get the value from the program/zone
         x = PROGRAMS.get(self._pname)
-         # Get the property object from the class
-        if x:
-            value = x.remaining_time_value
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.remaining_time_value)
 
     async def set_value(self, value):
         """Set the runtime state value."""
@@ -414,10 +414,9 @@ class DefaultRunTime(SensorEntity):
         """Triggered on update freq."""
         #get the value from the program/zone
         x = PROGRAMS.get(self._pname)
-         # Get the property object from the class
-        if x:
-            value = x.default_run_time_value
-        await self.set_value(value)
+        if x is None:
+            return
+        await self.set_value(x.default_run_time_value)
 
     async def set_value(self, value):
         """Set the runtime state value."""
@@ -445,3 +444,53 @@ class DefaultRunTime(SensorEntity):
     def numeric_value(self):
         """Return the state."""
         return self._state.hour * 3600 + self._state.minute * 60 + self._state.second
+
+
+class DelayTime(RestoreSensor):
+    """Next zone run date time class defn."""
+
+    _attr_has_entity_name = True
+    _attr_should_poll = False
+    _attr_translation_key = "delay_time"
+    _attr_attribution = "Irrigation Controller"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+
+    def __init__(self, hass: HomeAssistant, pname, unique_id) -> None:
+        """Init."""
+        self._state = None
+        self._uuid = slugify(f"{unique_id}_delay_time")
+        self._localtimezone = ZoneInfo(hass.config.time_zone)
+        self._attr_attribution = f"Irrigation Controller: {pname}"
+        self._pname = pname
+
+    async def async_added_to_hass(self):
+        """HA has started."""
+        last_state = await self.async_get_last_sensor_data()
+        if last_state:
+            self._state = last_state.native_value
+
+    async def async_update(self):
+        """Triggered on update freq."""
+        #get the value from the program/zone
+        x = PROGRAMS.get(self._pname)
+         # Get the property object from the class
+        if x and type(x.delay_time_value) is datetime:
+            self._state = x.delay_time_value
+        self.async_schedule_update_ha_state()
+
+
+
+    async def set_value(self):
+        """Set the runtime state value."""
+        self._state = datetime.now(UTC)
+        self.async_schedule_update_ha_state()
+
+    @property
+    def unique_id(self):
+        """Return a unique_id for this entity."""
+        return self._uuid
+
+    @property
+    def native_value(self):
+        """Return the state."""
+        return self._state
