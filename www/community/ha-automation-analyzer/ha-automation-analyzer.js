@@ -1,4 +1,4 @@
-/* HA Tools split — ha-automation-analyzer v4.1.10 (2026-07-12) — single-tool standalone repo */
+/* HA Tools split — ha-automation-analyzer v4.1.14 (2026-07-12) — single-tool standalone repo */
 (function() {
 'use strict';
 
@@ -172,10 +172,10 @@ if (typeof window !== 'undefined' && !window.HAToolsBentoCSS) {
   background: var(--bento-bg-2) !important;
   border-radius: var(--bento-radius-pill) !important;
   margin-bottom: 20px !important;
-  overflow-x: auto !important; overflow-y: hidden !important;
+  overflow: visible !important;
   -webkit-overflow-scrolling: touch !important;
-  flex-wrap: nowrap !important; border-bottom: 0 !important;
-  width: fit-content; max-width: 100%;
+  flex-wrap: wrap !important; border-bottom: 0 !important;
+  width: 100%; max-width: 100%; box-sizing: border-box;
 }
 .tab, .tab-btn, .tab-button, .dtab {
   padding: 8px 16px !important;
@@ -186,7 +186,7 @@ if (typeof window !== 'undefined' && !window.HAToolsBentoCSS) {
   border-radius: var(--bento-radius-pill) !important;
   margin-bottom: 0 !important;
   transition: all var(--bento-trans) !important;
-  white-space: nowrap !important; flex: none !important;
+  white-space: nowrap !important; flex: 1 1 auto !important; text-align: center !important; min-height: 40px !important;
   letter-spacing: -0.005em !important;
 }
 .tab:hover, .tab-btn:hover, .tab-button:hover, .dtab:hover {
@@ -250,13 +250,14 @@ if (typeof window !== 'undefined' && !window.HAToolsBentoCSS) {
 /* ── Section headers ─────────────────────────── */
 .section-header, .section-title {
   display: flex; align-items: center; justify-content: space-between;
+  position: relative; padding-left: 12px;
   font-size: 12px; font-weight: 700; color: var(--bento-text-secondary);
   text-transform: uppercase; letter-spacing: 0.08em;
   margin: 16px 0 10px;
 }
 .section-header::before, .section-title::before {
   content: ""; width: 4px; height: 4px; border-radius: 50%; background: var(--bento-primary);
-  margin-right: 8px; flex-shrink: 0;
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%); flex-shrink: 0;
 }
 
 /* ── Loading / Empty / Info ──────────────────── */
@@ -611,9 +612,7 @@ if (typeof window !== 'undefined' && !window.__haToolsSplitDonateInjector) {
     var node = el.shadowRoot && el.shadowRoot.querySelector('.intro-banner[data-intro="' + tag + '"]');
     if (node) node.remove();
   }
-  function injectAll() {
-    SPLIT_TAGS.forEach(function(tag){
-      deepFindAll(tag).forEach(function(el){
+  function injectInto(tag, el) {
         // panel_custom auto-init: HA assigns hass/panel/narrow but does not always call setConfig.
         if (typeof el.setConfig === 'function' && !el.config && !el._config) {
           try { el.setConfig({ type: 'custom:' + tag, title: tag }); } catch(e) {}
@@ -663,7 +662,23 @@ if (typeof window !== 'undefined' && !window.__haToolsSplitDonateInjector) {
           _donateTmp.innerHTML = DONATE_HTML;
           while (_donateTmp.firstChild) el.shadowRoot.appendChild(_donateTmp.firstChild);
         } catch(e) {}
-      });
+    // Anti-flicker: watch this card's own shadowRoot so a re-render (innerHTML wipe)
+    // re-injects the footer synchronously in the same microtask, before paint.
+    if (el.shadowRoot && !el.__haToolsReinjectObs) {
+      try {
+        el.__haToolsReinjectObs = new MutationObserver(function(){
+          if (el.__haToolsReinjecting) return;
+          el.__haToolsReinjecting = true;
+          try { injectInto(tag, el); } catch(e) {}
+          el.__haToolsReinjecting = false;
+        });
+        el.__haToolsReinjectObs.observe(el.shadowRoot, { childList: true });
+      } catch(e) {}
+    }
+  }
+  function injectAll() {
+    SPLIT_TAGS.forEach(function(tag){
+      deepFindAll(tag).forEach(function(el){ injectInto(tag, el); });
     });
   }
   // Run immediately, then aggressive MutationObserver for late mounts + view switches.
@@ -1614,11 +1629,23 @@ class HAAutomationAnalyzer extends HTMLElement {
       await this._hass.callService("automation", enable ? "turn_on" : "turn_off", {
         entity_id: entityId
       });
+      this._toast((enable ? "Enabled " : "Disabled ") + entityId.replace(/^automation\./, ""));
       // Refresh data after toggle
       setTimeout(() => this._loadAndRender(), 1000);
     } catch (e) {
       console.error("Failed to toggle automation:", e);
+      this._toast("Could not change automation: " + ((e && e.message) || "unknown error"), true);
     }
+  }
+
+  _toast(message, isError) {
+    try {
+      this.dispatchEvent(new CustomEvent("hass-notification", {
+        detail: { message: (isError ? "⚠️ " : "") + message },
+        bubbles: true,
+        composed: true,
+      }));
+    } catch (e) {}
   }
 
   async _fetchTimeline(entityId) {

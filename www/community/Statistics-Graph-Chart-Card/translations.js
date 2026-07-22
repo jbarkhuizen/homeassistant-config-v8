@@ -1,4 +1,4 @@
-export const T_VERSION = "3.26";
+export const T_VERSION = "v3.30";
 
 export const LANG_NAMES = Object.freeze({
   en: "English", cs: "Čeština", da: "Dansk", de: "Deutsch", es: "Español",
@@ -11,6 +11,26 @@ export const I18N = Object.freeze({
   tr: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Bu karşılaştırma kart yüklendiğinde gizli başlar - lejanttaki girdisine tıklayarak gösterebilirsiniz. Not: lejantta ANA seriye tıklamak tüm karşılaştırma grubunu birlikte açıp kapatır.",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "Takvim dönemleri",
+    "Rolling windows (ending now)": "Kayan pencereler (şimdi biten)",
+    "Area on duplicate names": "Yinelenen adlarda alan",
+    "Hide Name": "İsmi Gizle",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "Etkin",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "Kapatınca kart bu entity hiç tanımlanmamış gibi davranır: hiçbir şey çekilmez ve çizilmez, kart genelindeki mantık onu hesaba katmaz. Bazı örneklerinde sensör olmayan ortak kart şablonları (örn. Streamline) için kullanışlıdır. Satır düzenleme için burada kalır ve istediğiniz an yeniden etkinleştirilebilir.",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "Nokta Boyutu",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "Veri noktası dairelerinin piksel cinsinden yarıçapı. Otomatik boyut için boş bırakın (Çizgi Kalınlığı ile ölçeklenir). Scatter ve radar modlarındaki nokta boyutunu da belirler.",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "Genişletilmiş Pencere",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "Seçili dönemin N katını render eder ve en yeni kısma kaydırılmış açılır: ekran tam seçtiğiniz dönemi gösterir - kaydırmasız haliyle aynı ölçek ve aynı bucket'lar - ve fazladan geçmişe doğru kaydırabilirsiniz. Date picker'ı takip eder: Hafta görünümünde 2 ile mevcut haftanın arkasında bir hafta daha kaydırılabilir olur. 1 veya boş = kapalı. Aktifken Visible Window'u geçersiz kılar.",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "Geçici sıfırları yok say",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "Bazı entegrasyonlar cihaz kapalıyken ya da yeniden başlarken düz 0 bildirir, sonra önceki toplama geri döner - her iniş sayaç sıfırlaması sayılır ve geri dönen değer yeniden tüketim olarak eklenir. Etkinleştirildiğinde sıfır okumaları tamamen atlanır; uzun dönem istatistiklerinde değişim, kirlenmiş toplamlar yerine state kolonundan yeniden hesaplanır. Gerçekten sıfırlanıp sıfırdan saymaya devam eden sayaçlar yine doğru çalışır.",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "Bu hayalet çizginin altındaki alanı renginin soluk bir tonuyla doldurur. Üst üste binen dönemler okunaklı kalsın diye varsayılan olarak kapalıdır.",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "Hayaletin ortalama değerinde - karşılaştırılan dönemin ortalamasında - hayalet renginde kesikli yatay bir çizgi çizer. Dönem ortalamalarını bir bakışta karşılaştırmak için kullanışlıdır.",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "Özel Ölçek Kuralları",
     "Up to (hours)": "En çok (saat)",
@@ -749,6 +769,26 @@ export const I18N = Object.freeze({
   de: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Dieser Vergleich startet beim Laden der Karte ausgeblendet - einblenden per Klick auf seinen Legendeneintrag. Hinweis: Ein Klick auf die HAUPTserie in der Legende schaltet die ganze Vergleichsgruppe gemeinsam um.",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "Kalenderzeiträume",
+    "Rolling windows (ending now)": "Gleitende Zeitfenster (enden jetzt)",
+    "Area on duplicate names": "Bereich bei doppelten Namen",
+    "Hide Name": "Name ausblenden",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "Aktiviert",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "Deaktivieren, damit sich die Karte verhält, als wäre diese Entität nie konfiguriert worden: nichts wird abgerufen oder gezeichnet, und keine kartenweite Logik berücksichtigt sie. Praktisch für gemeinsame Kartenvorlagen (z. B. Streamline), bei denen manchen Instanzen ein Sensor fehlt. Die Zeile bleibt hier editierbar und kann jederzeit reaktiviert werden.",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "Punktgröße",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "Radius der Datenpunktkreise in Pixeln. Leer lassen für automatische Größe basierend auf der Linienbreite. Bestimmt auch die Punktgröße im Scatter- und Radar-Modus.",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "Erweitertes Fenster",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "Rendert das N-fache des gewählten Zeitraums und öffnet zum neuesten Teil gescrollt: Der Bildschirm zeigt genau den gewählten Zeitraum - gleiche Skala und gleiche Buckets wie ohne Scrollen - und Sie können in die zusätzliche Historie zurückscrollen. Folgt dem Date Picker: In der Wochenansicht mit 2 ist hinter der aktuellen Woche eine weitere Woche scrollbar. 1 oder leer = aus. Übersteuert bei Aktivierung das Sichtbare Fenster.",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "Transiente Nullwerte ignorieren",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "Manche Integrationen melden eine glatte 0, während das Gerät aus ist oder neu startet, und springen dann auf den vorherigen Zählerstand zurück - jeder Einbruch gilt dann als Zählerreset und der wiederhergestellte Wert wird erneut als Verbrauch gezählt. Aktivieren, um Null-Messwerte vollständig zu überspringen; bei Langzeitstatistiken wird die Änderung aus der State-Spalte neu berechnet und umgeht die verfälschten Summen. Zähler, die wirklich auf null zurückspringen und von dort weiterzählen, funktionieren weiterhin.",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "Füllt die Fläche unter der Linie dieses Geists mit einer abgeschwächten Version seiner Farbe. Standardmäßig aus, damit überlappende Zeiträume lesbar bleiben.",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "Zeichnet eine gestrichelte horizontale Linie beim Durchschnittswert dieses Geists - dem Mittelwert des verglichenen Zeitraums - in der Geisterfarbe. Praktisch, um Periodendurchschnitte auf einen Blick zu vergleichen.",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "Eigene Skalierungsregeln",
     "Up to (hours)": "Bis zu (Stunden)",
@@ -1487,6 +1527,26 @@ export const I18N = Object.freeze({
   cs: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Toto porovnání je při načtení karty skryté - zobrazíte jej kliknutím na jeho položku v legendě. Pozn.: kliknutí na HLAVNÍ řadu v legendě přepíná celou skupinu porovnání najednou.",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "Kalendářní období",
+    "Rolling windows (ending now)": "Klouzavá okna (končící nyní)",
+    "Area on duplicate names": "Oblast u duplicitních názvů",
+    "Hide Name": "Skrýt název",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "Povoleno",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "Po vypnutí se karta chová, jako by tato entita nikdy nebyla nakonfigurována: nic se nenačítá ani nekreslí a žádná logika karty ji nebere v úvahu. Užitečné pro sdílené šablony karet (např. Streamline), kde některým instancím senzor chybí. Řádek zde zůstává k úpravám a lze jej kdykoli znovu povolit.",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "Velikost bodů",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "Poloměr kruhů datových bodů v pixelech. Ponechte prázdné pro automatickou velikost podle šířky čáry. Určuje také velikost bodů v režimech scatter a radar.",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "Rozšířené okno",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "Vykreslí N-násobek zvoleného období a otevře se posunuté na nejnovější část: obrazovka ukazuje přesně zvolené období - stejné měřítko i stejné intervaly jako bez posouvání - a navíc lze rolovat zpět do historie. Řídí se výběrem data: v týdenním zobrazení s hodnotou 2 je za aktuálním týdnem rolovatelný jeden týden navíc. 1 nebo prázdné = vypnuto. Při aktivaci má přednost před Viditelným oknem.",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "Ignorovat přechodné nuly",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "Některé integrace hlásí doslovnou 0, když je zařízení vypnuté nebo se restartuje, a pak skočí zpět na předchozí součet - každý propad se pak počítá jako reset měřiče a obnovená hodnota se znovu započítá jako spotřeba. Po zapnutí se nulová čtení zcela přeskočí; u dlouhodobých statistik se změna přepočítá ze sloupce state a obejde znečištěné součty. Měřiče, které se skutečně vynulují a počítají dál od nuly, fungují i nadále.",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "Vyplní plochu pod čárou tohoto ducha zesvětlenou verzí jeho barvy. Ve výchozím stavu vypnuto, aby překrývající se období zůstala čitelná.",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "Nakreslí přerušovanou vodorovnou čáru na průměrné hodnotě tohoto ducha - průměru porovnávaného období - v barvě ducha. Šikovné pro porovnání průměrů období na první pohled.",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "Vlastní pravidla škálování",
     "Up to (hours)": "Až do (hodin)",
@@ -2250,6 +2310,26 @@ export const I18N = Object.freeze({
   da: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Denne sammenligning starter skjult, når kortet indlæses - vis den ved at klikke på dens post i signaturforklaringen. Bemærk: et klik på HOVEDserien i signaturforklaringen slår hele sammenligningsgruppen til/fra samlet.",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "Kalenderperioder",
+    "Rolling windows (ending now)": "Rullende vinduer (slutter nu)",
+    "Area on duplicate names": "Område ved dublerede navne",
+    "Hide Name": "Skjul navn",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "Aktiveret",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "Deaktivér for at få kortet til at opføre sig, som om denne enhed aldrig var konfigureret: intet hentes eller tegnes, og ingen kortdækkende logik tager højde for den. Praktisk til delte kortskabeloner (f.eks. Streamline), hvor nogle instanser mangler en sensor. Rækken bliver her til redigering og kan altid genaktiveres.",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "Punktstørrelse",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "Radius af datapunktcirklerne i pixels. Lad stå tomt for automatisk størrelse baseret på linjebredden. Bestemmer også punktstørrelsen i scatter- og radartilstand.",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "Udvidet vindue",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "Renderer N gange den valgte periode og åbner rullet til den nyeste del: skærmen viser præcis den valgte periode - samme skala og samme intervaller som uden rulning - og du kan rulle tilbage gennem den ekstra historik. Følger datovælgeren: i ugevisning med 2 kan der rulles én ekstra uge bag den aktuelle. 1 eller tom = fra. Tilsidesætter Synligt vindue, når aktiv.",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "Ignorér forbigående nuller",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "Nogle integrationer rapporterer et rent 0, mens enheden er slukket eller genstarter, og hopper derefter tilbage til den tidligere total - hvert dyk tælles så som en målernulstilling, og den gendannede værdi tælles igen som forbrug. Aktivér for helt at springe nul-aflæsninger over; med langtidsstatistik genberegnes ændringen fra state-kolonnen uden om de forurenede summer. Målere, der reelt nulstilles og tæller videre fra nul, virker stadig.",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "Udfylder området under denne spøgelseslinje med en nedtonet version af dens farve. Slået fra som standard, så overlappende perioder forbliver læsbare.",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "Tegner en stiplet vandret linje ved dette spøgelses gennemsnitsværdi - gennemsnittet af den sammenlignede periode - i spøgelsesfarven. Praktisk til at sammenligne periodegennemsnit med et blik.",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "Egne skaleringsregler",
     "Up to (hours)": "Op til (timer)",
@@ -3013,6 +3093,26 @@ export const I18N = Object.freeze({
   es: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Esta comparación empieza oculta al cargar la tarjeta - revélala haciendo clic en su entrada de la leyenda. Nota: hacer clic en la serie PRINCIPAL de la leyenda alterna todo el grupo de comparación a la vez.",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "Periodos de calendario",
+    "Rolling windows (ending now)": "Ventanas móviles (terminan ahora)",
+    "Area on duplicate names": "Área en nombres duplicados",
+    "Hide Name": "Ocultar nombre",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "Habilitado",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "Desactívelo para que la tarjeta se comporte como si esta entidad nunca se hubiera configurado: no se obtiene ni se dibuja nada, y ninguna lógica de la tarjeta la tiene en cuenta. Útil para plantillas de tarjetas compartidas (p. ej. Streamline) donde algunas instancias no tienen un sensor. La fila permanece aquí para editarla y puede reactivarse en cualquier momento.",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "Tamaño de punto",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "Radio de los círculos de puntos de datos en píxeles. Déjelo vacío para un tamaño automático según el grosor de línea. También define el tamaño de los puntos en los modos scatter y radar.",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "Ventana extendida",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "Renderiza N veces el periodo seleccionado y se abre desplazado a la parte más reciente: la pantalla muestra exactamente el periodo elegido - misma escala y mismos intervalos que sin desplazamiento - y puedes desplazarte hacia atrás por el historial extra. Sigue al selector de fechas: en la vista semanal con 2, hay una semana adicional desplazable detrás de la actual. 1 o vacío = desactivado. Anula la Ventana visible mientras está activo.",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "Ignorar ceros transitorios",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "Algunas integraciones informan un 0 literal mientras el dispositivo está apagado o reiniciándose, y luego saltan de vuelta al total anterior - cada caída se cuenta entonces como un reinicio del contador y el valor restaurado se vuelve a contar como consumo. Actívalo para omitir por completo las lecturas en cero; con estadísticas a largo plazo el cambio se recalcula desde la columna state, evitando las sumas contaminadas. Los contadores que realmente se reinician a cero y siguen contando desde ahí siguen funcionando.",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "Rellena el área bajo la línea de este fantasma con una versión atenuada de su color. Desactivado por defecto para que los periodos superpuestos sigan siendo legibles.",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "Dibuja una línea horizontal discontinua en el valor medio de este fantasma - la media del periodo comparado - en el color del fantasma. Útil para comparar medias de periodos de un vistazo.",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "Reglas de escala personalizadas",
     "Up to (hours)": "Hasta (horas)",
@@ -3776,6 +3876,26 @@ export const I18N = Object.freeze({
   fi: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Tämä vertailu on piilotettu kortin latautuessa - näytä se napsauttamalla sen selitemerkintää. Huom: PÄÄsarjan napsautus selitteessä vaihtaa koko vertailuryhmän tilan yhdessä.",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "Kalenterijaksot",
+    "Rolling windows (ending now)": "Liukuvat ikkunat (päättyvät nyt)",
+    "Area on duplicate names": "Alue päällekkäisissä nimissä",
+    "Hide Name": "Piilota nimi",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "Käytössä",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "Poista käytöstä, jolloin kortti toimii kuin tätä entiteettiä ei olisi koskaan määritetty: mitään ei haeta eikä piirretä, eikä kortin laajuinen logiikka huomioi sitä. Kätevä jaetuissa korttipohjissa (esim. Streamline), joissa joistakin instansseista puuttuu anturi. Rivi säilyy muokattavana ja sen voi ottaa käyttöön milloin tahansa.",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "Pisteen koko",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "Datapisteympyröiden säde pikseleinä. Jätä tyhjäksi automaattista kokoa varten (perustuu viivan leveyteen). Määrittää myös pisteiden koon scatter- ja tutkatiloissa.",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "Laajennettu ikkuna",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "Renderöi valitun jakson N-kertaisena ja avautuu vieritettynä uusimpaan osaan: näyttö näyttää täsmälleen valitsemasi jakson - sama mittakaava ja samat jaksovälit kuin ilman vieritystä - ja voit vierittää taaksepäin lisähistoriaan. Seuraa päivämäärävalitsinta: viikkonäkymässä arvolla 2 nykyisen viikon takana on vieritettävissä yksi lisäviikko. 1 tai tyhjä = pois. Ohittaa Näkyvän ikkunan ollessaan käytössä.",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "Ohita hetkelliset nollat",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "Jotkin integraatiot ilmoittavat pelkän nollan laitteen ollessa sammuksissa tai käynnistymässä ja palaavat sitten aiempaan kokonaislukemaan - jokainen pudotus tulkitaan mittarin nollaukseksi ja palautunut arvo lasketaan uudelleen kulutukseksi. Kytke päälle ohittaaksesi nollalukemat kokonaan; pitkän aikavälin tilastoissa muutos lasketaan uudelleen state-sarakkeesta ohittaen saastuneet summat. Aidosti nollautuvat ja nollasta jatkavat mittarit toimivat edelleen.",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "Täyttää tämän haamuviivan alapuolisen alueen sen värin haalistetulla versiolla. Oletuksena pois päältä, jotta päällekkäiset jaksot pysyvät luettavina.",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "Piirtää katkoviivan vaakasuoraan tämän haamun keskiarvon kohdalle - vertailujakson keskiarvon - haamun värillä. Kätevä jaksojen keskiarvojen vertailuun yhdellä silmäyksellä.",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "Omat skaalaussäännöt",
     "Up to (hours)": "Enintään (tuntia)",
@@ -4539,6 +4659,26 @@ export const I18N = Object.freeze({
   fr: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Cette comparaison démarre masquée au chargement de la carte - révélez-la en cliquant sur son entrée de légende. Remarque : cliquer sur la série PRINCIPALE dans la légende bascule tout le groupe de comparaison ensemble.",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "Périodes calendaires",
+    "Rolling windows (ending now)": "Fenêtres glissantes (jusqu'à maintenant)",
+    "Area on duplicate names": "Zone pour les noms en double",
+    "Hide Name": "Masquer le nom",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "Activé",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "Désactivez pour que la carte se comporte comme si cette entité n'avait jamais été configurée : rien n'est récupéré ni dessiné, et aucune logique de la carte n'en tient compte. Pratique pour les modèles de cartes partagés (ex. Streamline) où certaines instances n'ont pas de capteur. La ligne reste ici pour l'édition et peut être réactivée à tout moment.",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "Taille des points",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "Rayon des cercles de points de données en pixels. Laissez vide pour une taille automatique basée sur l'épaisseur de ligne. Définit aussi la taille des points dans les modes scatter et radar.",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "Fenêtre étendue",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "Rend N fois la période sélectionnée et s'ouvre défilé sur la partie la plus récente : l'écran montre exactement la période choisie - même échelle et mêmes intervalles que sans défilement - et vous pouvez remonter dans l'historique supplémentaire. Suit le sélecteur de dates : en vue Semaine avec 2, une semaine supplémentaire est accessible derrière la semaine courante. 1 ou vide = désactivé. Prime sur la Fenêtre visible lorsqu'actif.",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "Ignorer les zéros transitoires",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "Certaines intégrations rapportent un 0 littéral quand l'appareil est éteint ou redémarre, puis reviennent au total précédent - chaque creux est alors compté comme une remise à zéro du compteur et la valeur restaurée est recomptée comme consommation. Activez pour ignorer complètement les lectures à zéro ; avec les statistiques à long terme, la variation est recalculée depuis la colonne state, en contournant les sommes polluées. Les compteurs qui se remettent réellement à zéro et repartent de zéro fonctionnent toujours.",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "Remplit la zone sous la ligne de ce fantôme avec une version atténuée de sa couleur. Désactivé par défaut pour que les périodes superposées restent lisibles.",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "Trace une ligne horizontale en pointillés à la valeur moyenne de ce fantôme - la moyenne de la période comparée - dans la couleur du fantôme. Pratique pour comparer les moyennes des périodes d'un coup d'œil.",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "Règles d'échelle personnalisées",
     "Up to (hours)": "Jusqu'à (heures)",
@@ -5302,6 +5442,26 @@ export const I18N = Object.freeze({
   it: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Questo confronto parte nascosto al caricamento della card - rivelalo cliccando la sua voce in legenda. Nota: cliccare la serie PRINCIPALE nella legenda commuta insieme l'intero gruppo di confronto.",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "Periodi di calendario",
+    "Rolling windows (ending now)": "Finestre mobili (fino ad ora)",
+    "Area on duplicate names": "Area sui nomi duplicati",
+    "Hide Name": "Nascondi nome",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "Abilitato",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "Disattivare per far sì che la scheda si comporti come se questa entità non fosse mai stata configurata: nulla viene recuperato o disegnato e nessuna logica della scheda la considera. Utile per modelli di schede condivisi (es. Streamline) in cui ad alcune istanze manca un sensore. La riga resta qui per la modifica e può essere riattivata in qualsiasi momento.",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "Dimensione punti",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "Raggio dei cerchi dei punti dati in pixel. Lasciare vuoto per la dimensione automatica basata sullo spessore della linea. Definisce anche la dimensione dei punti nelle modalità scatter e radar.",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "Finestra estesa",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "Renderizza N volte il periodo selezionato e si apre scorrendo alla parte più recente: lo schermo mostra esattamente il periodo scelto - stessa scala e stessi intervalli di senza scorrimento - e puoi scorrere indietro nella cronologia extra. Segue il selettore di date: nella vista Settimana con 2, dietro la settimana corrente è scorribile una settimana in più. 1 o vuoto = disattivato. Ha priorità sulla Finestra visibile quando attivo.",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "Ignora zeri transitori",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "Alcune integrazioni riportano uno 0 letterale mentre il dispositivo è spento o si sta riavviando, per poi tornare al totale precedente - ogni calo viene quindi contato come azzeramento del contatore e il valore ripristinato viene ricontato come consumo. Attiva per saltare del tutto le letture a zero; con le statistiche a lungo termine la variazione viene ricalcolata dalla colonna state, aggirando le somme inquinate. I contatori che si azzerano davvero e continuano a contare da zero funzionano comunque.",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "Riempie l'area sotto la linea di questo fantasma con una versione attenuata del suo colore. Disattivato per impostazione predefinita così i periodi sovrapposti restano leggibili.",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "Disegna una linea orizzontale tratteggiata al valore medio di questo fantasma - la media del periodo confrontato - nel colore del fantasma. Comodo per confrontare le medie dei periodi a colpo d'occhio.",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "Regole di scala personalizzate",
     "Up to (hours)": "Fino a (ore)",
@@ -6065,6 +6225,26 @@ export const I18N = Object.freeze({
   nl: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Deze vergelijking start verborgen wanneer de kaart laadt - toon hem door op zijn legenda-item te klikken. Let op: klikken op de HOOFDreeks in de legenda schakelt de hele vergelijkingsgroep samen.",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "Kalenderperioden",
+    "Rolling windows (ending now)": "Voortschrijdende vensters (eindigen nu)",
+    "Area on duplicate names": "Gebied bij dubbele namen",
+    "Hide Name": "Naam verbergen",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "Ingeschakeld",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "Schakel uit om de kaart te laten doen alsof deze entiteit nooit is geconfigureerd: er wordt niets opgehaald of getekend en geen kaartbrede logica houdt er rekening mee. Handig voor gedeelde kaartsjablonen (bijv. Streamline) waar sommige instanties een sensor missen. De rij blijft hier bewerkbaar en kan altijd weer worden ingeschakeld.",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "Puntgrootte",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "Straal van de datapuntcirkels in pixels. Laat leeg voor automatische grootte op basis van de lijndikte. Bepaalt ook de puntgrootte in scatter- en radarmodus.",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "Uitgebreid venster",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "Rendert N keer de geselecteerde periode en opent gescrold naar het nieuwste deel: het scherm toont precies de gekozen periode - zelfde schaal en zelfde buckets als zonder scrollen - en je kunt terugscrollen door de extra geschiedenis. Volgt de datumkiezer: in de weekweergave met 2 is er één extra week scrollbaar achter de huidige. 1 of leeg = uit. Heeft voorrang op Zichtbaar venster wanneer actief.",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "Tijdelijke nullen negeren",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "Sommige integraties melden een letterlijke 0 terwijl het apparaat uit staat of herstart, en springen daarna terug naar het vorige totaal - elke dip telt dan als een meterreset en de herstelde waarde wordt opnieuw als verbruik geteld. Schakel in om nulmetingen volledig over te slaan; bij langetermijnstatistieken wordt de verandering herberekend uit de state-kolom, buiten de vervuilde sommen om. Meters die echt naar nul resetten en vanaf daar doortellen blijven gewoon werken.",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "Vult het gebied onder de lijn van deze geest met een vervaagde versie van zijn kleur. Standaard uit, zodat overlappende perioden leesbaar blijven.",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "Tekent een gestippelde horizontale lijn op de gemiddelde waarde van deze geest - het gemiddelde van de vergeleken periode - in de geestkleur. Handig om periodegemiddelden in één oogopslag te vergelijken.",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "Eigen schaalregels",
     "Up to (hours)": "Tot (uren)",
@@ -6828,6 +7008,26 @@ export const I18N = Object.freeze({
   nb: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Denne sammenligningen starter skjult når kortet lastes - vis den ved å klikke på oppføringen i tegnforklaringen. Merk: å klikke på HOVEDserien i tegnforklaringen veksler hele sammenligningsgruppen samlet.",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "Kalenderperioder",
+    "Rolling windows (ending now)": "Rullerende vinduer (slutter nå)",
+    "Area on duplicate names": "Område ved dupliserte navn",
+    "Hide Name": "Skjul navn",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "Aktivert",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "Deaktiver for at kortet skal oppføre seg som om denne entiteten aldri ble konfigurert: ingenting hentes eller tegnes, og ingen kortomfattende logikk tar hensyn til den. Praktisk for delte kortmaler (f.eks. Streamline) der noen instanser mangler en sensor. Raden blir værende her for redigering og kan når som helst aktiveres igjen.",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "Punktstørrelse",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "Radius for datapunktsirklene i piksler. La stå tom for automatisk størrelse basert på linjebredden. Bestemmer også punktstørrelsen i scatter- og radarmodus.",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "Utvidet vindu",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "Rendrer N ganger den valgte perioden og åpner rullet til den nyeste delen: skjermen viser nøyaktig perioden du valgte - samme skala og samme intervaller som uten rulling - og du kan rulle bakover i den ekstra historikken. Følger datovelgeren: i ukevisning med 2 kan én ekstra uke rulles bak den gjeldende. 1 eller tom = av. Overstyrer Synlig vindu når aktiv.",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "Ignorer forbigående nuller",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "Noen integrasjoner rapporterer en ren 0 mens enheten er av eller starter på nytt, og hopper deretter tilbake til forrige total - hvert fall telles da som en tellernullstilling, og den gjenopprettede verdien telles på nytt som forbruk. Aktiver for å hoppe helt over null-avlesninger; med langtidsstatistikk beregnes endringen på nytt fra state-kolonnen, utenom de forurensede summene. Tellere som faktisk nullstilles og teller videre fra null, fungerer fortsatt.",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "Fyller området under denne spøkelseslinjen med en nedtonet versjon av fargen dens. Av som standard slik at overlappende perioder forblir lesbare.",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "Tegner en stiplet horisontal linje ved dette spøkelsets gjennomsnittsverdi - gjennomsnittet av den sammenlignede perioden - i spøkelsesfargen. Praktisk for å sammenligne periodegjennomsnitt på et blikk.",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "Egne skaleringsregler",
     "Up to (hours)": "Opptil (timer)",
@@ -7591,6 +7791,26 @@ export const I18N = Object.freeze({
   pl: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "To porównanie startuje ukryte przy ładowaniu karty - pokaż je, klikając jego wpis w legendzie. Uwaga: kliknięcie GŁÓWNEJ serii w legendzie przełącza całą grupę porównań razem.",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "Okresy kalendarzowe",
+    "Rolling windows (ending now)": "Okna ruchome (kończące się teraz)",
+    "Area on duplicate names": "Obszar przy zduplikowanych nazwach",
+    "Hide Name": "Ukryj nazwę",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "Włączone",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "Wyłącz, aby karta zachowywała się tak, jakby ta encja nigdy nie została skonfigurowana: nic nie jest pobierane ani rysowane, a żadna logika karty jej nie uwzględnia. Przydatne we współdzielonych szablonach kart (np. Streamline), gdzie niektórym instancjom brakuje czujnika. Wiersz pozostaje tu do edycji i można go w każdej chwili ponownie włączyć.",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "Rozmiar punktów",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "Promień okręgów punktów danych w pikselach. Pozostaw puste dla automatycznego rozmiaru na podstawie szerokości linii. Określa również rozmiar punktów w trybach scatter i radar.",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "Rozszerzone okno",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "Renderuje N-krotność wybranego okresu i otwiera się przewinięte do najnowszej części: ekran pokazuje dokładnie wybrany okres - ta sama skala i te same przedziały co bez przewijania - a dodatkową historię można przewijać wstecz. Podąża za wyborem daty: w widoku tygodnia z wartością 2 za bieżącym tygodniem można przewinąć jeszcze jeden. 1 lub puste = wyłączone. Gdy aktywne, ma pierwszeństwo przed Widocznym oknem.",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "Ignoruj przejściowe zera",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "Niektóre integracje zgłaszają dosłowne 0, gdy urządzenie jest wyłączone lub restartuje się, a potem wracają do poprzedniej sumy - każdy spadek liczony jest wtedy jako zerowanie licznika, a przywrócona wartość ponownie jako zużycie. Włącz, aby całkowicie pomijać odczyty zerowe; przy statystykach długoterminowych zmiana jest przeliczana z kolumny state, z pominięciem zanieczyszczonych sum. Liczniki, które naprawdę zerują się i liczą dalej od zera, nadal działają.",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "Wypełnia obszar pod linią tego ducha przygaszoną wersją jego koloru. Domyślnie wyłączone, aby nakładające się okresy pozostały czytelne.",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "Rysuje przerywaną poziomą linię na średniej wartości tego ducha - średniej porównywanego okresu - w kolorze ducha. Przydatne do porównywania średnich okresów na pierwszy rzut oka.",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "Własne reguły skalowania",
     "Up to (hours)": "Do (godzin)",
@@ -8354,6 +8574,26 @@ export const I18N = Object.freeze({
   pt: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Esta comparação começa oculta quando o cartão carrega - revele-a clicando na sua entrada da legenda. Nota: clicar na série PRINCIPAL na legenda alterna todo o grupo de comparação em conjunto.",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "Períodos de calendário",
+    "Rolling windows (ending now)": "Janelas móveis (terminam agora)",
+    "Area on duplicate names": "Área em nomes duplicados",
+    "Hide Name": "Ocultar nome",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "Ativado",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "Desative para que o cartão se comporte como se esta entidade nunca tivesse sido configurada: nada é obtido nem desenhado, e nenhuma lógica do cartão a considera. Útil para modelos de cartões partilhados (ex. Streamline) em que algumas instâncias não têm um sensor. A linha permanece aqui para edição e pode ser reativada a qualquer momento.",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "Tamanho do ponto",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "Raio dos círculos dos pontos de dados em pixels. Deixe vazio para tamanho automático com base na espessura da linha. Também define o tamanho dos pontos nos modos scatter e radar.",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "Janela estendida",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "Renderiza N vezes o período selecionado e abre deslocado para a parte mais recente: o ecrã mostra exatamente o período escolhido - mesma escala e mesmos intervalos que sem deslocamento - e pode recuar pelo histórico extra. Segue o seletor de datas: na vista de Semana com 2, há uma semana extra deslocável atrás da atual. 1 ou vazio = desligado. Sobrepõe-se à Janela visível enquanto ativo.",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "Ignorar zeros transitórios",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "Algumas integrações reportam um 0 literal enquanto o dispositivo está desligado ou a reiniciar, voltando depois ao total anterior - cada queda é então contada como reinício do contador e o valor restaurado é contado novamente como consumo. Ative para ignorar por completo as leituras a zero; com estatísticas de longo prazo a variação é recalculada a partir da coluna state, contornando as somas contaminadas. Contadores que realmente voltam a zero e continuam a contar a partir daí continuam a funcionar.",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "Preenche a área abaixo da linha deste fantasma com uma versão esmaecida da sua cor. Desligado por predefinição para que períodos sobrepostos continuem legíveis.",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "Desenha uma linha horizontal tracejada no valor médio deste fantasma - a média do período comparado - na cor do fantasma. Útil para comparar médias de períodos num relance.",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "Regras de escala personalizadas",
     "Up to (hours)": "Até (horas)",
@@ -9117,6 +9357,26 @@ export const I18N = Object.freeze({
   ru: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Это сравнение при загрузке карточки скрыто - раскройте его щелчком по его записи в легенде. Примечание: щелчок по ОСНОВНОЙ серии в легенде переключает всю группу сравнения вместе.",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "Календарные периоды",
+    "Rolling windows (ending now)": "Скользящие окна (до сейчас)",
+    "Area on duplicate names": "Зона при одинаковых именах",
+    "Hide Name": "Скрыть имя",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "Включено",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "Отключите, чтобы карточка вела себя так, будто эта сущность никогда не была настроена: ничего не загружается и не рисуется, и никакая логика карточки её не учитывает. Удобно для общих шаблонов карточек (напр. Streamline), где у некоторых экземпляров нет датчика. Строка остаётся здесь для редактирования и может быть включена в любой момент.",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "Размер точек",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "Радиус кружков точек данных в пикселях. Оставьте пустым для автоматического размера на основе толщины линии. Также задаёт размер точек в режимах scatter и radar.",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "Расширенное окно",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "Отрисовывает выбранный период в N-кратном размере и открывается прокрученным к самой свежей части: на экране ровно выбранный период - тот же масштаб и те же интервалы, что и без прокрутки - а дополнительную историю можно листать назад. Следует за выбором даты: в недельном виде со значением 2 за текущей неделей доступна ещё одна. 1 или пусто = выключено. При активации имеет приоритет над Видимым окном.",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "Игнорировать временные нули",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "Некоторые интеграции сообщают буквальный 0, пока устройство выключено или перезапускается, а затем возвращаются к прежнему итогу - каждый провал засчитывается как сброс счётчика, и восстановленное значение снова учитывается как потребление. Включите, чтобы полностью пропускать нулевые показания; для долгосрочной статистики изменение пересчитывается по колонке state, минуя испорченные суммы. Счётчики, которые действительно сбрасываются в ноль и продолжают счёт с нуля, работают по-прежнему.",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "Заливает область под линией этого призрака приглушённой версией его цвета. По умолчанию выключено, чтобы перекрывающиеся периоды оставались читаемыми.",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "Рисует пунктирную горизонтальную линию на среднем значении этого призрака - среднем сравниваемого периода - цветом призрака. Удобно для сравнения средних значений периодов с первого взгляда.",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "Свои правила масштабирования",
     "Up to (hours)": "До (часов)",
@@ -9880,6 +10140,26 @@ export const I18N = Object.freeze({
   sv: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Denna jämförelse startar dold när kortet läses in - visa den genom att klicka på dess post i teckenförklaringen. Obs: att klicka på HUVUDserien i teckenförklaringen växlar hela jämförelsegruppen tillsammans.",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "Kalenderperioder",
+    "Rolling windows (ending now)": "Rullande fönster (slutar nu)",
+    "Area on duplicate names": "Område vid dubbletter",
+    "Hide Name": "Dölj namn",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "Aktiverad",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "Inaktivera för att kortet ska bete sig som om denna entitet aldrig konfigurerats: inget hämtas eller ritas, och ingen kortövergripande logik tar hänsyn till den. Praktiskt för delade kortmallar (t.ex. Streamline) där vissa instanser saknar en sensor. Raden stannar kvar här för redigering och kan när som helst aktiveras igen.",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "Punktstorlek",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "Radie för datapunktcirklarna i pixlar. Lämna tomt för automatisk storlek baserat på linjebredden. Bestämmer även punktstorleken i scatter- och radarläge.",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "Utökat fönster",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "Renderar N gånger den valda perioden och öppnas rullad till den senaste delen: skärmen visar exakt den period du valt - samma skala och samma intervall som utan rullning - och du kan rulla bakåt genom den extra historiken. Följer datumväljaren: i veckovyn med 2 kan en extra vecka rullas bakom den aktuella. 1 eller tomt = av. Åsidosätter Synligt fönster när det är aktivt.",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "Ignorera tillfälliga nollor",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "Vissa integrationer rapporterar en ren nolla medan enheten är avstängd eller startar om, och hoppar sedan tillbaka till föregående totalsumma - varje dipp räknas då som en mätarnollställning och det återställda värdet räknas igen som förbrukning. Aktivera för att hoppa över nollavläsningar helt; med långtidsstatistik räknas förändringen om från state-kolumnen, förbi de förorenade summorna. Mätare som verkligen nollställs och fortsätter räkna från noll fungerar fortfarande.",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "Fyller området under denna spöklinje med en nedtonad version av dess färg. Av som standard så att överlappande perioder förblir läsbara.",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "Ritar en streckad horisontell linje vid detta spökes medelvärde - genomsnittet för den jämförda perioden - i spökfärgen. Praktiskt för att jämföra periodmedelvärden med en blick.",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "Egna skalningsregler",
     "Up to (hours)": "Upp till (timmar)",
@@ -10643,6 +10923,26 @@ export const I18N = Object.freeze({
   zh: Object.freeze({
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "此对比在卡片加载时默认隐藏 - 点击其图例条目即可显示。注意：点击图例中的主序列会同时切换整个对比组。",
+    // --- added in 3.30 round 2 (date picker mode groups)
+    "Calendar periods": "日历周期",
+    "Rolling windows (ending now)": "滚动窗口（截至当前）",
+    "Area on duplicate names": "重名时附加区域",
+    "Hide Name": "隐藏名称",
+    // --- added in 3.30 round 1 (entity enabled)
+    "Enabled": "启用",
+    "Disable to make the card behave as if this entity was never configured: nothing is fetched or drawn, and no card-wide logic considers it. Handy for shared card templates (e.g. Streamline) where some instances lack a sensor. The row stays here for editing and can be re-enabled anytime.": "关闭后，卡片将表现得如同从未配置过该实体：不获取、不绘制任何内容，卡片级逻辑也不会考虑它。适用于共享卡片模板（如 Streamline）中某些实例缺少传感器的情况。该行保留在此处以供编辑，可随时重新启用。",
+    // --- added in 3.29 round 2 (point size)
+    "Point Size": "数据点大小",
+    "Radius of the data point circles in pixels. Leave empty for automatic sizing based on Line Width. Also sets the dot size in scatter and radar modes.": "数据点圆圈的半径（像素）。留空则根据线宽自动调整。同时决定散点图和雷达图模式中的点大小。",
+    // --- added in 3.29 round 1 (extended window multiplier)
+    "Extended Window": "扩展窗口",
+    "Renders N times the selected period and opens scrolled to the newest part: the screen shows exactly the period you picked - same scale and buckets as without scrolling - and you can scroll back through the extra history. Follows the date picker: on a Week view with 2, one extra week is scrollable behind the current one. 1 or empty = off. Overrides Visible Window while active.": "以所选时段的 N 倍进行渲染，并在打开时滚动到最新部分：屏幕上正好显示你选择的时段 - 与不滚动时相同的刻度和分桶 - 并且可以向后滚动查看额外的历史。跟随日期选择器：周视图下设为 2 时，当前周后面还可再滚动一周。1 或留空 = 关闭。启用时优先于可见窗口。",
+    // --- added in 3.27 round 2 (change_ignore_zero)
+    "Ignore transient zeros": "忽略瞬时零值",
+    "Some integrations report a literal 0 while the device is off or restarting, then jump back to the previous total - each dip is then counted as a meter reset and the restored value re-counted as new consumption. Enable to skip zero readings entirely; with long-term statistics the change is recomputed from the state column, bypassing the polluted sums. Counters that genuinely reset to zero and keep counting from there still work.": "某些集成在设备关闭或重启时会上报字面量 0，随后又跳回之前的累计值 - 每次下探都会被当作电表重置，恢复的数值被再次计为新消耗。启用后将完全跳过零读数；对于长期统计，变化量将从 state 列重新计算，绕过被污染的累计值。真正归零并从零继续计数的计数器仍可正常工作。",
+    // --- added in 3.27 round 1 (compare fill + average toggles)
+    "Fills the area below this ghost's line with a faded version of its color. Off by default so overlapping periods stay readable.": "用其颜色的淡化版本填充此对比幽灵线下方的区域。默认关闭，以保持重叠时段的可读性。",
+    "Draws a dashed horizontal line at this ghost's average value - the mean of the compared period - in the ghost color. Handy for comparing period averages at a glance.": "在此幽灵的平均值处绘制虚线水平线 - 即所对比时段的平均值 - 使用幽灵颜色。便于一眼比较各时段的平均值。",
     // --- added in 3.26 round 2 (scale rules)
     "Custom Scale Rules": "自定义缩放规则",
     "Up to (hours)": "最多（小时）",
