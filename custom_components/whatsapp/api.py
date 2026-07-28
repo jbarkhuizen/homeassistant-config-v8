@@ -411,6 +411,25 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
                 _LOGGER.error("Failed to request pairing code: %s", e)
                 raise HomeAssistantError(f"Failed to request pairing code: {e}") from e
 
+    async def get_status(self) -> dict[str, Any]:
+        """Fetch connection status from /status endpoint."""
+        url = f"{self.host}/status"
+        params = {"session_id": self.session_id}
+        headers = {"X-Auth-Token": self.api_key} if self.api_key else {}
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.get(
+                    url,
+                    headers=headers,
+                    params=params,
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status == 200:
+                        return cast(dict[str, Any], await resp.json())
+            except Exception as e:
+                _LOGGER.debug("Failed to fetch status: %s", e)
+        return {}
+
     async def connect(self) -> bool:
         """Check connection and validate Auth (Consolidated with get_stats)."""
         # We now rely on get_stats to update connectivity info
@@ -480,7 +499,19 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
                         data: dict[str, Any] = await resp.json()
                         self.stats.update(data)
                         # Also update connectivity bit
-                        self._connected = bool(data.get("connected", False))
+                        if "connected" in data:
+                            self._connected = bool(data.get("connected", False))
+                        else:
+                            # Fallback check to /status if connected field missing
+                            try:
+                                status_res = await self.get_status()
+                                self._connected = bool(
+                                    status_res.get("connected", False)
+                                )
+                            except Exception:
+                                self._connected = bool(
+                                    self.stats.get("connected", False)
+                                )
                         self._disconnect_reason = data.get("disconnect_reason")
                         return self.stats
             except WhatsAppAuthError:
@@ -1319,6 +1350,99 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
 
         return ""
 
+    async def send_event(
+        self,
+        number: str,
+        name: str,
+        description: str | None = None,
+        date: str | None = None,
+        location: str | dict[str, Any] | None = None,
+        join_link: str | None = None,
+        is_canceled: bool | None = False,
+        expiration: int | None = None,
+    ) -> str:
+        """Send an event (with retry)."""
+        if not self.is_allowed(number):
+            raise HomeAssistantError(f"Target {number} is not in the whitelist.")
+        target_jid = self.ensure_jid(number)
+        if not target_jid:
+            raise HomeAssistantError(f"Could not parse valid JID from target: {number}")
+        return cast(
+            str,
+            await self._send_with_retry(
+                self._send_event_internal,
+                target_jid,
+                name,
+                description,
+                date,
+                location,
+                join_link,
+                is_canceled,
+                expiration,
+            ),
+        )
+
+    async def _send_event_internal(
+        self,
+        number: str,
+        name: str,
+        description: str | None = None,
+        date: str | None = None,
+        location: str | dict[str, Any] | None = None,
+        join_link: str | None = None,
+        is_canceled: bool | None = False,
+        expiration: int | None = None,
+    ) -> str:
+        """Internal send event logic."""
+        url = f"{self.host}/send_event"
+        payload: dict[str, Any] = {
+            "number": number,
+            "name": name,
+        }
+        if description is not None:
+            payload["description"] = description
+        if date is not None:
+            payload["date"] = date
+        if location is not None:
+            payload["location"] = location
+        if join_link is not None:
+            payload["joinLink"] = join_link
+        if is_canceled is not None:
+            payload["isCanceled"] = is_canceled
+        if expiration is not None:
+            payload["expiration"] = expiration
+        headers = {"X-Auth-Token": self.api_key} if self.api_key else {}
+
+        async with (
+            aiohttp.ClientSession() as session,
+            session.post(
+                url,
+                json=payload,
+                headers=headers,
+                params={"session_id": self.session_id},
+                timeout=aiohttp.ClientTimeout(total=30),
+            ) as resp,
+        ):
+            if resp.status == 401:
+                raise WhatsAppAuthError("Invalid API Key")
+            if resp.status != 200:
+                text = await resp.text()
+                error_msg = self._extract_error(text)
+                self.stats["failed"] += 1
+                self.stats["last_failed_message"] = f"Event: {name}"
+                self.stats["last_failed_target"] = number
+                self.stats["last_error_reason"] = error_msg
+                raise HomeAssistantError(f"Failed to send event: {error_msg}")
+
+            result = await resp.json()
+            msg_id = str(result.get("id", ""))
+            self.stats["sent"] += 1
+            self.stats["last_sent_message"] = f"Event: {name}"
+            self.stats["last_sent_target"] = number
+            return msg_id
+
+        return ""
+
     async def send_reaction(
         self,
         number: str,
@@ -1740,3 +1864,51 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
                 text_content = await resp.text()
                 error_msg = self._extract_error(text_content)
                 raise HomeAssistantError(f"Failed to mark message as read: {error_msg}")
+
+    async def get_contacts(self) -> list[dict[str, Any]]:
+        """Fetch all contacts from the paired phone stored in the addon cache."""
+        url = f"{self.host}/contacts"
+        headers = {"X-Auth-Token": self.api_key} if self.api_key else {}
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.get(
+                    url,
+                    headers=headers,
+                    params={"session_id": self.session_id},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status == 401:
+                        raise HomeAssistantError("Invalid API Key")
+                    if resp.status == 200:
+                        data = await resp.json()
+                        return list(data)
+                    raise HomeAssistantError(f"Addon error {resp.status}")
+            except HomeAssistantError:
+                raise
+            except Exception as e:
+                _LOGGER.error("Error fetching contacts from addon: %s", e)
+                return []
+
+    async def check_number(self, number: str) -> dict[str, Any]:
+        """Check if phone number exists on WhatsApp & paired phone contacts."""
+        url = f"{self.host}/contacts/check"
+        payload = {"number": number}
+        headers = {"X-Auth-Token": self.api_key} if self.api_key else {}
+        async with (
+            aiohttp.ClientSession() as session,
+            session.post(
+                url,
+                json=payload,
+                headers=headers,
+                params={"session_id": self.session_id},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as resp,
+        ):
+            if resp.status == 401:
+                raise HomeAssistantError("Invalid API Key")
+            if resp.status == 200:
+                result: dict[str, Any] = await resp.json()
+                return result
+            text_content = await resp.text()
+            error_msg = self._extract_error(text_content)
+            raise HomeAssistantError(f"Failed to check number: {error_msg}")
