@@ -1,4 +1,4 @@
-export const T_VERSION = "3.31";
+export const T_VERSION = "3.33";
 
 export const LANG_NAMES = Object.freeze({
   en: "English", cs: "Čeština", da: "Dansk", de: "Deutsch", es: "Español",
@@ -9,12 +9,20 @@ export const LANG_NAMES = Object.freeze({
 export const I18N = Object.freeze({
   en: Object.freeze({}),
   tr: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "Canlı",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "Entity'nin şu anki durumu; grafikte gösterilen dönemden bağımsızdır. Diğer değerlerin hepsi gösterilen aralığı anlatır.",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Bu karşılaştırma kart yüklendiğinde gizli başlar - lejanttaki girdisine tıklayarak gösterebilirsiniz. Not: lejantta ANA seriye tıklamak tüm karşılaştırma grubunu birlikte açıp kapatır.",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "Takvim dönemleri",
     "Rolling windows (ending now)": "Kayan pencereler (şimdi biten)",
     "Area names": "Alan adları",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "Öznitelik adları",
+    "Attribute names only": "Yalnızca öznitelik adları",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "Çizilen özniteliği her entity'nin adına ekler - durum satırı, lejant, ipuçları, istatistikler, dışa aktarımlar ve bu liste. Olmadan, aynı entity'nin iki özniteliği iki özdeş etiket üretir. Entity'nin kendi durumunu çizen satırlar ve Özel Ad verdikleriniz etkilenmez.",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "Entity adı + öznitelik yerine YALNIZCA öznitelik adını gösterir. Alan adları ile birlikte 'Hedef sıcaklık · Salon' gibi etiketler verir. Bu ve Öznitelik adları birbirinin alternatifidir - birini açmak diğerini kapatır.",
     "Hide Name": "İsmi Gizle",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "Etkin",
@@ -423,6 +431,7 @@ export const I18N = Object.freeze({
     "Box Plot": "Kutu Grafiği",
     "Break on Gaps": "Boşluklarda Kes",
     "Brush Zooming": "Fırça Yakınlaştırma",
+    "Drill Down": "Detaya İnme",
     "Calendar": "Takvim",
     "Card": "Kart",
     "Card Border": "Kart Kenarlığı",
@@ -553,6 +562,8 @@ export const I18N = Object.freeze({
     "Off": "Kapalı",
     "Offset": "Kaydırma",
     "Opacity": "Opaklık",
+    "Fill Opacity": "Dolgu Opaklığı",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "Çizginin altındaki dolgunun gücü: 0 (görünmez) ile 1 (tam dolu) arası. Varsayılan 0.4 için boş bırakın. Gradient açıkken bu üstteki opaklıktır, aşağı doğru sekizde birine solar; Gradient kapalıyken düz dolgu bunun yarısını kullanır.",
     "Overlay": "Katman",
     "Overlays are hidden in sparkline mode": "Katmanlar sparkline modunda gizlidir",
     "Padding": "İç Boşluk",
@@ -770,12 +781,20 @@ export const I18N = Object.freeze({
     "Custom": "Özel",
   }),
   de: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "Live",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "Der aktuelle Zustand der Entität, unabhängig vom im Diagramm angezeigten Zeitraum. Alle anderen Werte beschreiben den dargestellten Bereich.",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Dieser Vergleich startet beim Laden der Karte ausgeblendet - einblenden per Klick auf seinen Legendeneintrag. Hinweis: Ein Klick auf die HAUPTserie in der Legende schaltet die ganze Vergleichsgruppe gemeinsam um.",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "Kalenderzeiträume",
     "Rolling windows (ending now)": "Gleitende Zeitfenster (enden jetzt)",
     "Area names": "Bereichsnamen",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "Attributnamen",
+    "Attribute names only": "Nur Attributnamen",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "Hängt das dargestellte Attribut an den Namen jeder Entität an - in Statuszeile, Legende, Tooltips, Statistiken, Exporten und dieser Liste. Ohne dies erzeugen zwei Attribute derselben Entität zwei identische Bezeichnungen. Zeilen, die den Zustand der Entität selbst darstellen, bleiben unberührt, ebenso Entitäten mit eigenem Namen.",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "Zeigt NUR den Attributnamen statt Entitätsname plus Attribut. Zusammen mit Bereichsnamen ergibt das Bezeichnungen wie 'Zieltemperatur · Wohnzimmer'. Dies und Attributnamen sind Alternativen - eines einzuschalten schaltet das andere aus.",
     "Hide Name": "Name ausblenden",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "Aktiviert",
@@ -1184,6 +1203,7 @@ export const I18N = Object.freeze({
     "Box Plot": "Boxplot",
     "Break on Gaps": "Bei Lücken unterbrechen",
     "Brush Zooming": "Brush-Zoom",
+    "Drill Down": "Detailansicht",
     "Calendar": "Kalender",
     "Card": "Karte",
     "Card Border": "Kartenrahmen",
@@ -1314,6 +1334,8 @@ export const I18N = Object.freeze({
     "Off": "Aus",
     "Offset": "Versatz",
     "Opacity": "Deckkraft",
+    "Fill Opacity": "Füll-Deckkraft",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "Wie kräftig die Füllung unter der Linie ist, von 0 (unsichtbar) bis 1 (deckend). Leer lassen für den Standardwert 0,4. Mit Farbverlauf ist dies die Deckkraft oben, die nach unten auf ein Achtel davon ausblendet; ohne Farbverlauf nutzt die flache Füllung die Hälfte davon.",
     "Overlay": "Overlay",
     "Overlays are hidden in sparkline mode": "Overlays sind im Sparkline-Modus ausgeblendet",
     "Padding": "Innenabstand",
@@ -1531,12 +1553,20 @@ export const I18N = Object.freeze({
     "Custom": "Benutzerdef.",
   }),
   cs: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "Živě",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "Aktuální stav entity právě teď, nezávisle na období zobrazeném v grafu. Všechny ostatní hodnoty popisují zobrazený rozsah.",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Toto porovnání je při načtení karty skryté - zobrazíte jej kliknutím na jeho položku v legendě. Pozn.: kliknutí na HLAVNÍ řadu v legendě přepíná celou skupinu porovnání najednou.",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "Kalendářní období",
     "Rolling windows (ending now)": "Klouzavá okna (končící nyní)",
     "Area names": "Názvy oblastí",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "Názvy atributů",
+    "Attribute names only": "Pouze názvy atributů",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "Připojí vykreslovaný atribut k názvu každé entity - ve stavovém řádku, legendě, popiscích, statistikách, exportech i v tomto seznamu. Bez toho dva atributy téže entity vytvoří dva shodné popisky. Řádky vykreslující samotný stav entity zůstanou nedotčeny, stejně jako entity s vlastním názvem.",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "Zobrazí POUZE název atributu místo názvu entity s atributem. Spolu s Názvy oblastí dává popisky jako 'Cílová teplota · Obývák'. Toto a Názvy atributů jsou alternativy - zapnutím jednoho se druhé vypne.",
     "Hide Name": "Skrýt název",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "Povoleno",
@@ -1970,6 +2000,7 @@ export const I18N = Object.freeze({
     "Box Plot": "Krabicový graf",
     "Break on Gaps": "Přerušit na mezerách",
     "Brush Zooming": "Přiblížení výběrem",
+    "Drill Down": "Podrobný rozpad",
     "Calendar": "Kalendář",
     "Card": "Karta",
     "Card Border": "Ohraničení karty",
@@ -2100,6 +2131,8 @@ export const I18N = Object.freeze({
     "Off": "Vyp.",
     "Offset": "Posun",
     "Opacity": "Průhlednost",
+    "Fill Opacity": "Průhlednost výplně",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "Jak silná je výplň pod čarou, od 0 (neviditelná) do 1 (plná). Ponechte prázdné pro výchozí 0,4. Se zapnutým přechodem je to krytí nahoře, které dolů slábne na osminu; s vypnutým přechodem používá plochá výplň polovinu této hodnoty.",
     "Overlay": "Překryv",
     "Overlays are hidden in sparkline mode": "Překryvy jsou v režimu sparkline skryté",
     "Padding": "Vnitřní okraj",
@@ -2317,12 +2350,20 @@ export const I18N = Object.freeze({
     "Custom": "Vlastní",
   }),
   da: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "Live",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "Enhedens aktuelle tilstand lige nu, uafhængigt af den periode der vises i grafen. Alle de andre værdier beskriver det viste interval.",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Denne sammenligning starter skjult, når kortet indlæses - vis den ved at klikke på dens post i signaturforklaringen. Bemærk: et klik på HOVEDserien i signaturforklaringen slår hele sammenligningsgruppen til/fra samlet.",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "Kalenderperioder",
     "Rolling windows (ending now)": "Rullende vinduer (slutter nu)",
     "Area names": "Områdenavne",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "Attributnavne",
+    "Attribute names only": "Kun attributnavne",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "Tilføjer den viste attribut til hver enheds navn - i statusrækken, signaturforklaringen, værktøjstips, statistik, eksport og denne liste. Uden dette giver to attributter fra samme enhed to identiske etiketter. Rækker der viser enhedens egen tilstand berøres ikke, og heller ikke enheder med et brugerdefineret navn.",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "Vis KUN attributnavnet i stedet for enhedsnavn plus attribut. Sammen med Områdenavne giver det etiketter som 'Måltemperatur · Stue'. Denne og Attributnavne er alternativer - slår du den ene til, slås den anden fra.",
     "Hide Name": "Skjul navn",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "Aktiveret",
@@ -2756,6 +2797,7 @@ export const I18N = Object.freeze({
     "Box Plot": "Boksplot",
     "Break on Gaps": "Afbryd ved huller",
     "Brush Zooming": "Markeringszoom",
+    "Drill Down": "Detaljevisning",
     "Calendar": "Kalender",
     "Card": "Kort",
     "Card Border": "Kortramme",
@@ -2886,6 +2928,8 @@ export const I18N = Object.freeze({
     "Off": "Fra",
     "Offset": "Forskydning",
     "Opacity": "Gennemsigtighed",
+    "Fill Opacity": "Udfyldningsopacitet",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "Hvor kraftig udfyldningen under linjen er, fra 0 (usynlig) til 1 (helt dækkende). Lad feltet stå tomt for standardværdien 0,4. Med gradient er dette dækkraften i toppen, der falmer til en ottendedel nederst; uden gradient bruger den flade udfyldning halvdelen.",
     "Overlay": "Overlejring",
     "Overlays are hidden in sparkline mode": "Overlejringer er skjult i sparkline-tilstand",
     "Padding": "Indre margen",
@@ -3103,12 +3147,20 @@ export const I18N = Object.freeze({
     "Custom": "Tilpasset",
   }),
   es: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "En vivo",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "El estado actual de la entidad en este momento, independientemente del período mostrado en el gráfico. Todos los demás valores describen el rango mostrado.",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Esta comparación empieza oculta al cargar la tarjeta - revélala haciendo clic en su entrada de la leyenda. Nota: hacer clic en la serie PRINCIPAL de la leyenda alterna todo el grupo de comparación a la vez.",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "Periodos de calendario",
     "Rolling windows (ending now)": "Ventanas móviles (terminan ahora)",
     "Area names": "Nombres de área",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "Nombres de atributo",
+    "Attribute names only": "Solo nombres de atributo",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "Añade el atributo representado al nombre de cada entidad: en la fila de estado, la leyenda, las descripciones emergentes, las estadísticas, las exportaciones y esta lista. Sin esto, dos atributos de la misma entidad producen dos etiquetas idénticas. Las filas que representan el estado de la entidad no se ven afectadas, ni las entidades con un nombre personalizado.",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "Muestra SOLO el nombre del atributo en lugar del nombre de la entidad más el atributo. Junto con Nombres de área da etiquetas como 'Temperatura objetivo · Salón'. Esta opción y Nombres de atributo son alternativas: activar una desactiva la otra.",
     "Hide Name": "Ocultar nombre",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "Habilitado",
@@ -3542,6 +3594,7 @@ export const I18N = Object.freeze({
     "Box Plot": "Diagrama de caja",
     "Break on Gaps": "Cortar en huecos",
     "Brush Zooming": "Zoom por selección",
+    "Drill Down": "Desglose",
     "Calendar": "Calendario",
     "Card": "Tarjeta",
     "Card Border": "Borde de la tarjeta",
@@ -3672,6 +3725,8 @@ export const I18N = Object.freeze({
     "Off": "Apagado",
     "Offset": "Desplazamiento",
     "Opacity": "Opacidad",
+    "Fill Opacity": "Opacidad del relleno",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "Qué tan intenso es el relleno bajo la línea, de 0 (invisible) a 1 (sólido). Déjalo vacío para el valor predeterminado 0,4. Con degradado es la opacidad en la parte superior, que se desvanece hasta un octavo abajo; sin degradado el relleno plano usa la mitad.",
     "Overlay": "Superposición",
     "Overlays are hidden in sparkline mode": "Las superposiciones están ocultas en modo sparkline",
     "Padding": "Relleno interior",
@@ -3889,12 +3944,20 @@ export const I18N = Object.freeze({
     "Custom": "Personalizado",
   }),
   fi: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "Live",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "Entiteetin tämänhetkinen tila, riippumatta kaaviossa näytettävästä jaksosta. Kaikki muut arvot kuvaavat näytettyä aikaväliä.",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Tämä vertailu on piilotettu kortin latautuessa - näytä se napsauttamalla sen selitemerkintää. Huom: PÄÄsarjan napsautus selitteessä vaihtaa koko vertailuryhmän tilan yhdessä.",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "Kalenterijaksot",
     "Rolling windows (ending now)": "Liukuvat ikkunat (päättyvät nyt)",
     "Area names": "Alueiden nimet",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "Attribuuttien nimet",
+    "Attribute names only": "Vain attribuuttien nimet",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "Lisää piirretyn attribuutin kunkin entiteetin nimeen - tilariviin, selitteeseen, työkaluvihjeisiin, tilastoihin, vienteihin ja tähän luetteloon. Ilman tätä saman entiteetin kaksi attribuuttia tuottavat kaksi samanlaista nimeä. Rivit, jotka piirtävät entiteetin oman tilan, eivät muutu, eivätkä mukautetun nimen saaneet entiteetit.",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "Näyttää VAIN attribuutin nimen entiteetin nimen ja attribuutin sijaan. Yhdessä Alueiden nimien kanssa tuloksena on nimiä kuten 'Tavoitelämpötila · Olohuone'. Tämä ja Attribuuttien nimet ovat vaihtoehtoja - toisen käyttöönotto poistaa toisen käytöstä.",
     "Hide Name": "Piilota nimi",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "Käytössä",
@@ -4328,6 +4391,7 @@ export const I18N = Object.freeze({
     "Box Plot": "Laatikkokuvio",
     "Break on Gaps": "Katkaise aukkojen kohdalla",
     "Brush Zooming": "Valintazoomaus",
+    "Drill Down": "Porautuminen",
     "Calendar": "Kalenteri",
     "Card": "Kortti",
     "Card Border": "Kortin reunus",
@@ -4458,6 +4522,8 @@ export const I18N = Object.freeze({
     "Off": "Pois",
     "Offset": "Siirtymä",
     "Opacity": "Läpinäkyvyys",
+    "Fill Opacity": "Täytön läpinäkyvyys",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "Kuinka vahva viivan alapuolinen täyttö on, väliltä 0 (näkymätön) ja 1 (täysin peittävä). Jätä tyhjäksi oletusarvolle 0,4. Liukuvärin kanssa tämä on peittävyys ylhäällä, joka häipyy alas kahdeksasosaan; ilman liukuväriä tasainen täyttö käyttää tästä puolet.",
     "Overlay": "Päällys",
     "Overlays are hidden in sparkline mode": "Päällykset on piilotettu sparkline-tilassa",
     "Padding": "Sisäreunus",
@@ -4675,12 +4741,20 @@ export const I18N = Object.freeze({
     "Custom": "Mukautettu",
   }),
   fr: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "En direct",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "L'état actuel de l'entité en ce moment, indépendamment de la période affichée sur le graphique. Toutes les autres valeurs décrivent la plage affichée.",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Cette comparaison démarre masquée au chargement de la carte - révélez-la en cliquant sur son entrée de légende. Remarque : cliquer sur la série PRINCIPALE dans la légende bascule tout le groupe de comparaison ensemble.",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "Périodes calendaires",
     "Rolling windows (ending now)": "Fenêtres glissantes (jusqu'à maintenant)",
     "Area names": "Noms de zone",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "Noms d'attribut",
+    "Attribute names only": "Noms d'attribut uniquement",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "Ajoute l'attribut tracé au nom de chaque entité - dans la ligne d'état, la légende, les info-bulles, les statistiques, les exports et cette liste. Sans cela, deux attributs d'une même entité produisent deux libellés identiques. Les lignes qui tracent l'état de l'entité ne sont pas modifiées, ni les entités auxquelles vous avez donné un nom personnalisé.",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "Affiche UNIQUEMENT le nom de l'attribut au lieu du nom de l'entité suivi de l'attribut. Combiné aux Noms de zone, cela donne des libellés comme 'Température cible · Salon'. Cette option et Noms d'attribut sont des alternatives - activer l'une désactive l'autre.",
     "Hide Name": "Masquer le nom",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "Activé",
@@ -5114,6 +5188,7 @@ export const I18N = Object.freeze({
     "Box Plot": "Boîte à moustaches",
     "Break on Gaps": "Couper aux trous",
     "Brush Zooming": "Zoom par sélection",
+    "Drill Down": "Exploration",
     "Calendar": "Calendrier",
     "Card": "Carte",
     "Card Border": "Bordure de la carte",
@@ -5244,6 +5319,8 @@ export const I18N = Object.freeze({
     "Off": "Désactivé",
     "Offset": "Décalage",
     "Opacity": "Opacité",
+    "Fill Opacity": "Opacité du remplissage",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "Intensité du remplissage sous la courbe, de 0 (invisible) à 1 (opaque). Laissez vide pour la valeur par défaut 0,4. Avec le dégradé, c'est l'opacité en haut, qui s'estompe jusqu'au huitième en bas ; sans dégradé, le remplissage uni en utilise la moitié.",
     "Overlay": "Superposition",
     "Overlays are hidden in sparkline mode": "Les superpositions sont masquées en mode sparkline",
     "Padding": "Marge intérieure",
@@ -5461,12 +5538,20 @@ export const I18N = Object.freeze({
     "Custom": "Personnalisé",
   }),
   it: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "Live",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "Lo stato attuale dell'entità in questo momento, indipendentemente dal periodo mostrato nel grafico. Tutti gli altri valori descrivono l'intervallo visualizzato.",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Questo confronto parte nascosto al caricamento della card - rivelalo cliccando la sua voce in legenda. Nota: cliccare la serie PRINCIPALE nella legenda commuta insieme l'intero gruppo di confronto.",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "Periodi di calendario",
     "Rolling windows (ending now)": "Finestre mobili (fino ad ora)",
     "Area names": "Nomi area",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "Nomi attributo",
+    "Attribute names only": "Solo nomi attributo",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "Aggiunge l'attributo tracciato al nome di ogni entità - nella riga di stato, nella legenda, nei suggerimenti, nelle statistiche, nelle esportazioni e in questo elenco. Senza, due attributi della stessa entità producono due etichette identiche. Le righe che tracciano lo stato dell'entità non vengono toccate, né le entità con un nome personalizzato.",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "Mostra SOLO il nome dell'attributo invece del nome dell'entità più l'attributo. Insieme a Nomi area produce etichette come 'Temperatura target · Soggiorno'. Questa opzione e Nomi attributo sono alternative: attivandone una si disattiva l'altra.",
     "Hide Name": "Nascondi nome",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "Abilitato",
@@ -5900,6 +5985,7 @@ export const I18N = Object.freeze({
     "Box Plot": "Box plot",
     "Break on Gaps": "Interrompi sui vuoti",
     "Brush Zooming": "Zoom a selezione",
+    "Drill Down": "Approfondimento",
     "Calendar": "Calendario",
     "Card": "Card",
     "Card Border": "Bordo card",
@@ -6030,6 +6116,8 @@ export const I18N = Object.freeze({
     "Off": "Spento",
     "Offset": "Scostamento",
     "Opacity": "Opacità",
+    "Fill Opacity": "Opacità riempimento",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "Quanto è intenso il riempimento sotto la linea, da 0 (invisibile) a 1 (pieno). Lascia vuoto per il valore predefinito 0,4. Con il gradiente è l'opacità in alto, che sfuma fino a un ottavo in basso; senza gradiente il riempimento piatto ne usa la metà.",
     "Overlay": "Overlay",
     "Overlays are hidden in sparkline mode": "Gli overlay sono nascosti in modalità sparkline",
     "Padding": "Spaziatura interna",
@@ -6247,12 +6335,20 @@ export const I18N = Object.freeze({
     "Custom": "Personalizzato",
   }),
   nl: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "Live",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "De huidige status van de entiteit op dit moment, onafhankelijk van de periode die in de grafiek wordt getoond. Alle andere waarden beschrijven het weergegeven bereik.",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Deze vergelijking start verborgen wanneer de kaart laadt - toon hem door op zijn legenda-item te klikken. Let op: klikken op de HOOFDreeks in de legenda schakelt de hele vergelijkingsgroep samen.",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "Kalenderperioden",
     "Rolling windows (ending now)": "Voortschrijdende vensters (eindigen nu)",
     "Area names": "Gebiedsnamen",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "Attribuutnamen",
+    "Attribute names only": "Alleen attribuutnamen",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "Voegt het weergegeven attribuut toe aan de naam van elke entiteit - in de statusregel, legenda, tooltips, statistieken, exports en deze lijst. Zonder dit leveren twee attributen van dezelfde entiteit twee identieke labels op. Rijen die de status van de entiteit zelf tonen blijven ongewijzigd, net als entiteiten met een eigen naam.",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "Toont ALLEEN de attribuutnaam in plaats van de entiteitsnaam plus het attribuut. Samen met Gebiedsnamen geeft dit labels als 'Doeltemperatuur · Woonkamer'. Deze en Attribuutnamen zijn alternatieven - de een inschakelen schakelt de ander uit.",
     "Hide Name": "Naam verbergen",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "Ingeschakeld",
@@ -6686,6 +6782,7 @@ export const I18N = Object.freeze({
     "Box Plot": "Boxplot",
     "Break on Gaps": "Onderbreken bij gaten",
     "Brush Zooming": "Selectiezoom",
+    "Drill Down": "Inzoomen op periode",
     "Calendar": "Kalender",
     "Card": "Kaart",
     "Card Border": "Kaartrand",
@@ -6816,6 +6913,8 @@ export const I18N = Object.freeze({
     "Off": "Uit",
     "Offset": "Verschuiving",
     "Opacity": "Dekking",
+    "Fill Opacity": "Vuldekking",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "Hoe sterk de vulling onder de lijn is, van 0 (onzichtbaar) tot 1 (dekkend). Laat leeg voor de standaardwaarde 0,4. Met gradiënt is dit de dekking bovenaan, die naar onderen vervaagt tot een achtste; zonder gradiënt gebruikt de vlakke vulling de helft.",
     "Overlay": "Overlay",
     "Overlays are hidden in sparkline mode": "Overlays zijn verborgen in sparkline-modus",
     "Padding": "Binnenmarge",
@@ -7033,12 +7132,20 @@ export const I18N = Object.freeze({
     "Custom": "Aangepast",
   }),
   nb: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "Live",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "Enhetens nåværende tilstand akkurat nå, uavhengig av perioden som vises i grafen. Alle de andre verdiene beskriver det viste området.",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Denne sammenligningen starter skjult når kortet lastes - vis den ved å klikke på oppføringen i tegnforklaringen. Merk: å klikke på HOVEDserien i tegnforklaringen veksler hele sammenligningsgruppen samlet.",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "Kalenderperioder",
     "Rolling windows (ending now)": "Rullerende vinduer (slutter nå)",
     "Area names": "Områdenavn",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "Attributtnavn",
+    "Attribute names only": "Bare attributtnavn",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "Legger det viste attributtet til navnet på hver enhet - i statusraden, forklaringen, verktøytips, statistikk, eksporter og denne listen. Uten dette gir to attributter fra samme enhet to identiske etiketter. Rader som viser enhetens egen tilstand berøres ikke, og heller ikke enheter du har gitt et eget navn.",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "Viser BARE attributtnavnet i stedet for enhetsnavn pluss attributt. Sammen med Områdenavn gir det etiketter som 'Måltemperatur · Stue'. Dette og Attributtnavn er alternativer - slår du på det ene, slås det andre av.",
     "Hide Name": "Skjul navn",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "Aktivert",
@@ -7472,6 +7579,7 @@ export const I18N = Object.freeze({
     "Box Plot": "Boksplott",
     "Break on Gaps": "Bryt ved hull",
     "Brush Zooming": "Markeringszoom",
+    "Drill Down": "Detaljvisning",
     "Calendar": "Kalender",
     "Card": "Kort",
     "Card Border": "Kortramme",
@@ -7602,6 +7710,8 @@ export const I18N = Object.freeze({
     "Off": "Av",
     "Offset": "Forskyvning",
     "Opacity": "Gjennomsiktighet",
+    "Fill Opacity": "Fyllgjennomsiktighet",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "Hvor kraftig fyllet under linjen er, fra 0 (usynlig) til 1 (dekkende). La feltet stå tomt for standardverdien 0,4. Med gradient er dette dekkevnen øverst, som toner ned til en åttedel nederst; uten gradient bruker det flate fyllet halvparten.",
     "Overlay": "Overlegg",
     "Overlays are hidden in sparkline mode": "Overlegg er skjult i sparkline-modus",
     "Padding": "Indre marg",
@@ -7819,12 +7929,20 @@ export const I18N = Object.freeze({
     "Custom": "Egendefinert",
   }),
   pl: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "Na żywo",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "Bieżący stan encji w tej chwili, niezależnie od okresu pokazanego na wykresie. Wszystkie pozostałe wartości opisują wyświetlany zakres.",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "To porównanie startuje ukryte przy ładowaniu karty - pokaż je, klikając jego wpis w legendzie. Uwaga: kliknięcie GŁÓWNEJ serii w legendzie przełącza całą grupę porównań razem.",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "Okresy kalendarzowe",
     "Rolling windows (ending now)": "Okna ruchome (kończące się teraz)",
     "Area names": "Nazwy obszarów",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "Nazwy atrybutów",
+    "Attribute names only": "Tylko nazwy atrybutów",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "Dodaje rysowany atrybut do nazwy każdej encji - w wierszu stanu, legendzie, podpowiedziach, statystykach, eksportach i na tej liście. Bez tego dwa atrybuty tej samej encji dają dwie identyczne etykiety. Wiersze rysujące sam stan encji pozostają bez zmian, podobnie jak encje z własną nazwą.",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "Pokazuje TYLKO nazwę atrybutu zamiast nazwy encji z atrybutem. Razem z Nazwami obszarów daje etykiety typu 'Temperatura zadana · Salon'. Ta opcja i Nazwy atrybutów są alternatywami - włączenie jednej wyłącza drugą.",
     "Hide Name": "Ukryj nazwę",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "Włączone",
@@ -8258,6 +8376,7 @@ export const I18N = Object.freeze({
     "Box Plot": "Wykres pudełkowy",
     "Break on Gaps": "Przerywaj na lukach",
     "Brush Zooming": "Przybliżanie zaznaczeniem",
+    "Drill Down": "Szczegóły okresu",
     "Calendar": "Kalendarz",
     "Card": "Karta",
     "Card Border": "Obramowanie karty",
@@ -8388,6 +8507,8 @@ export const I18N = Object.freeze({
     "Off": "Wył.",
     "Offset": "Przesunięcie",
     "Opacity": "Przezroczystość",
+    "Fill Opacity": "Przezroczystość wypełnienia",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "Jak mocne jest wypełnienie pod linią, od 0 (niewidoczne) do 1 (pełne). Pozostaw puste, aby użyć domyślnej wartości 0,4. Przy gradiencie jest to krycie u góry, zanikające do jednej ósmej na dole; bez gradientu płaskie wypełnienie używa połowy tej wartości.",
     "Overlay": "Nakładka",
     "Overlays are hidden in sparkline mode": "Nakładki są ukryte w trybie sparkline",
     "Padding": "Margines wewnętrzny",
@@ -8605,12 +8726,20 @@ export const I18N = Object.freeze({
     "Custom": "Własny",
   }),
   pt: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "Ao vivo",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "O estado atual da entidade neste momento, independentemente do período mostrado no gráfico. Todos os outros valores descrevem o intervalo apresentado.",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Esta comparação começa oculta quando o cartão carrega - revele-a clicando na sua entrada da legenda. Nota: clicar na série PRINCIPAL na legenda alterna todo o grupo de comparação em conjunto.",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "Períodos de calendário",
     "Rolling windows (ending now)": "Janelas móveis (terminam agora)",
     "Area names": "Nomes de área",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "Nomes de atributo",
+    "Attribute names only": "Apenas nomes de atributo",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "Acrescenta o atributo representado ao nome de cada entidade - na linha de estado, legenda, dicas, estatísticas, exportações e nesta lista. Sem isto, dois atributos da mesma entidade produzem duas etiquetas idênticas. As linhas que representam o estado da própria entidade não são alteradas, nem as entidades com nome personalizado.",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "Mostra APENAS o nome do atributo em vez do nome da entidade mais o atributo. Combinado com Nomes de área dá etiquetas como 'Temperatura alvo · Sala'. Esta opção e Nomes de atributo são alternativas - ativar uma desativa a outra.",
     "Hide Name": "Ocultar nome",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "Ativado",
@@ -9044,6 +9173,7 @@ export const I18N = Object.freeze({
     "Box Plot": "Diagrama de caixa",
     "Break on Gaps": "Interromper em lacunas",
     "Brush Zooming": "Zoom por seleção",
+    "Drill Down": "Detalhamento",
     "Calendar": "Calendário",
     "Card": "Cartão",
     "Card Border": "Borda do cartão",
@@ -9174,6 +9304,8 @@ export const I18N = Object.freeze({
     "Off": "Desligado",
     "Offset": "Deslocamento",
     "Opacity": "Opacidade",
+    "Fill Opacity": "Opacidade do preenchimento",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "Qual a intensidade do preenchimento abaixo da linha, de 0 (invisível) a 1 (sólido). Deixe vazio para o padrão 0,4. Com gradiente esta é a opacidade no topo, esbatendo até um oitavo na base; sem gradiente o preenchimento liso usa metade.",
     "Overlay": "Sobreposição",
     "Overlays are hidden in sparkline mode": "As sobreposições ficam ocultas no modo sparkline",
     "Padding": "Espaçamento interno",
@@ -9391,12 +9523,20 @@ export const I18N = Object.freeze({
     "Custom": "Personalizado",
   }),
   ru: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "Сейчас",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "Текущее состояние объекта прямо сейчас, независимо от периода, показанного на графике. Все остальные значения описывают отображаемый диапазон.",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Это сравнение при загрузке карточки скрыто - раскройте его щелчком по его записи в легенде. Примечание: щелчок по ОСНОВНОЙ серии в легенде переключает всю группу сравнения вместе.",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "Календарные периоды",
     "Rolling windows (ending now)": "Скользящие окна (до сейчас)",
     "Area names": "Названия зон",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "Названия атрибутов",
+    "Attribute names only": "Только названия атрибутов",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "Добавляет отображаемый атрибут к имени каждого объекта - в строке состояния, легенде, подсказках, статистике, экспорте и в этом списке. Без этого два атрибута одного объекта дают две одинаковые подписи. Строки, отображающие само состояние объекта, не меняются, как и объекты с заданным вами именем.",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "Показывает ТОЛЬКО название атрибута вместо имени объекта с атрибутом. Вместе с «Названия зон» даёт подписи вида «Целевая температура · Гостиная». Этот параметр и «Названия атрибутов» — альтернативы: включение одного выключает другой.",
     "Hide Name": "Скрыть имя",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "Включено",
@@ -9830,6 +9970,7 @@ export const I18N = Object.freeze({
     "Box Plot": "Ящик с усами",
     "Break on Gaps": "Разрывать на пропусках",
     "Brush Zooming": "Масштаб выделением",
+    "Drill Down": "Детализация",
     "Calendar": "Календарь",
     "Card": "Карточка",
     "Card Border": "Рамка карточки",
@@ -9960,6 +10101,8 @@ export const I18N = Object.freeze({
     "Off": "Выкл",
     "Offset": "Смещение",
     "Opacity": "Прозрачность",
+    "Fill Opacity": "Прозрачность заливки",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "Насколько плотная заливка под линией: от 0 (невидимая) до 1 (сплошная). Оставьте пустым для значения по умолчанию 0,4. С градиентом это непрозрачность вверху, затухающая до одной восьмой внизу; без градиента сплошная заливка использует половину.",
     "Overlay": "Оверлей",
     "Overlays are hidden in sparkline mode": "Оверлеи скрыты в режиме спарклайна",
     "Padding": "Внутренний отступ",
@@ -10177,12 +10320,20 @@ export const I18N = Object.freeze({
     "Custom": "Свой",
   }),
   sv: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "Live",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "Enhetens nuvarande tillstånd just nu, oberoende av perioden som visas i diagrammet. Alla andra värden beskriver det visade intervallet.",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "Denna jämförelse startar dold när kortet läses in - visa den genom att klicka på dess post i teckenförklaringen. Obs: att klicka på HUVUDserien i teckenförklaringen växlar hela jämförelsegruppen tillsammans.",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "Kalenderperioder",
     "Rolling windows (ending now)": "Rullande fönster (slutar nu)",
     "Area names": "Områdesnamn",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "Attributnamn",
+    "Attribute names only": "Endast attributnamn",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "Lägger till det ritade attributet i varje enhets namn - i statusraden, förklaringen, verktygstips, statistik, exporter och den här listan. Utan detta ger två attribut från samma enhet två identiska etiketter. Rader som visar enhetens eget tillstånd påverkas inte, inte heller enheter du gett ett eget namn.",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "Visar ENDAST attributnamnet i stället för enhetsnamn plus attribut. Tillsammans med Områdesnamn ger det etiketter som 'Måltemperatur · Vardagsrum'. Detta och Attributnamn är alternativ - slår du på det ena stängs det andra av.",
     "Hide Name": "Dölj namn",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "Aktiverad",
@@ -10616,6 +10767,7 @@ export const I18N = Object.freeze({
     "Box Plot": "Lådagram",
     "Break on Gaps": "Bryt vid luckor",
     "Brush Zooming": "Markeringszoom",
+    "Drill Down": "Detaljvy",
     "Calendar": "Kalender",
     "Card": "Kort",
     "Card Border": "Kortram",
@@ -10746,6 +10898,8 @@ export const I18N = Object.freeze({
     "Off": "Av",
     "Offset": "Förskjutning",
     "Opacity": "Opacitet",
+    "Fill Opacity": "Fyllnadsopacitet",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "Hur kraftig fyllningen under linjen är, från 0 (osynlig) till 1 (heltäckande). Lämna tomt för standardvärdet 0,4. Med gradient är detta opaciteten upptill, som tonar ned till en åttondel nertill; utan gradient använder den platta fyllningen hälften.",
     "Overlay": "Överlägg",
     "Overlays are hidden in sparkline mode": "Överlägg är dolda i sparkline-läge",
     "Padding": "Inre marginal",
@@ -10963,12 +11117,20 @@ export const I18N = Object.freeze({
     "Custom": "Anpassad",
   }),
   zh: Object.freeze({
+    // --- added in 3.32 round 1 (live legend stat)
+    "Live": "实时",
+    "The entity's current state right now, independent of the period shown on the chart. The other values all describe the displayed range.": "实体此刻的当前状态，与图表所显示的时间段无关。其他数值描述的都是所显示的范围。",
     // --- added in 3.26 round 3 (compare hide on load)
     "This comparison starts hidden when the card loads - reveal it by clicking its legend entry. Note: clicking the MAIN series in the legend toggles the whole comparison group together.": "此对比在卡片加载时默认隐藏 - 点击其图例条目即可显示。注意：点击图例中的主序列会同时切换整个对比组。",
     // --- added in 3.30 round 2 (date picker mode groups)
     "Calendar periods": "日历周期",
     "Rolling windows (ending now)": "滚动窗口（截至当前）",
     "Area names": "区域名称",
+    // --- added in 3.32 round 2 (attribute names in labels, #327)
+    "Attribute names": "属性名称",
+    "Attribute names only": "仅属性名称",
+    "Append the plotted attribute to each entity's name - in the state row, legend, tooltips, stats, exports and this list. Without it, two attributes of the same entity produce two identical labels. Rows that plot the entity state itself are untouched, as are entities you gave a Custom Name.": "将所绘制的属性附加到每个实体的名称后 — 状态行、图例、提示框、统计、导出以及本列表中均生效。若不启用，同一实体的两个属性会产生两个完全相同的标签。绘制实体自身状态的行不受影响，您自定义了名称的实体也不受影响。",
+    "Show ONLY the attribute name instead of the entity name plus the attribute. Combined with Area names this gives labels like 'Target temperature · Lounge'. This and Attribute names are alternatives - switching one on turns the other off.": "仅显示属性名称，而不是实体名称加属性。与区域名称同时启用时可得到「目标温度 · 客厅」这样的标签。本项与属性名称互为替代 — 开启其一会关闭另一项。",
     "Hide Name": "隐藏名称",
     // --- added in 3.30 round 1 (entity enabled)
     "Enabled": "启用",
@@ -11402,6 +11564,7 @@ export const I18N = Object.freeze({
     "Box Plot": "箱线图",
     "Break on Gaps": "数据缺口断开",
     "Brush Zooming": "框选缩放",
+    "Drill Down": "下钻查看",
     "Calendar": "日历",
     "Card": "卡片",
     "Card Border": "卡片边框",
@@ -11532,6 +11695,8 @@ export const I18N = Object.freeze({
     "Off": "关",
     "Offset": "偏移",
     "Opacity": "不透明度",
+    "Fill Opacity": "填充不透明度",
+    "How strong the fill under the line is, from 0 (invisible) to 1 (solid). Leave empty for the default 0.4. With Gradient on this is the opacity at the top, fading down to an eighth of it at the bottom; with Gradient off the flat fill uses half of it.": "折线下方填充的强度，从 0（不可见）到 1（完全不透明）。留空则使用默认值 0.4。启用渐变时，这是顶部的不透明度，向下渐隐至其八分之一；关闭渐变时，纯色填充使用其一半。",
     "Overlay": "叠加层",
     "Overlays are hidden in sparkline mode": "迷你图模式下叠加层已隐藏",
     "Padding": "内边距",
