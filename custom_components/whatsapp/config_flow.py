@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import socket
+import re
 import uuid
 from typing import Any
 
@@ -14,6 +14,7 @@ from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import AbortFlow
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import selector
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
 from .api import WhatsAppApiClient
@@ -109,10 +110,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             if user_input is None:
                 for candidate in candidates:
                     try:
-                        sock = socket.create_connection(
-                            (candidate, DEFAULT_PORT), timeout=0.3
+                        _, writer = await asyncio.wait_for(
+                            asyncio.open_connection(candidate, DEFAULT_PORT),
+                            timeout=0.3,
                         )
-                        sock.close()
+                        writer.close()
+                        await writer.wait_closed()
                         found_host = candidate
                         _LOGGER.debug("Found reachable host: %s", candidate)
                         break
@@ -123,6 +126,22 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                     suggested_url = f"http://{found_host}:{DEFAULT_PORT}"
 
         if user_input is None:
+            # If CONF_API_KEY is missing from discovery_info,
+            # attempt to read token from local disk
+            if not self.discovery_info.get(CONF_API_KEY):
+                try:
+                    import os
+
+                    data_dir = "/data" if os.name != "nt" else os.path.abspath("data")
+                    token_file = os.path.join(data_dir, ".api_token")
+                    if os.path.exists(token_file):
+                        with open(token_file, encoding="utf-8") as f:
+                            tok = f.read().strip()
+                            if tok:
+                                self.discovery_info[CONF_API_KEY] = tok
+                except Exception:
+                    pass
+
             return self.async_show_form(
                 step_id="user",
                 data_schema=vol.Schema(
@@ -133,7 +152,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                         vol.Required(
                             CONF_API_KEY,
                             default=self.discovery_info.get(CONF_API_KEY) or "",
-                        ): vol.All(str, vol.Length(min=1)),
+                        ): selector.TextSelector(
+                            selector.TextSelectorConfig(
+                                type=selector.TextSelectorType.PASSWORD
+                            )
+                        ),
                     }
                 ),
                 description_placeholders={
@@ -144,12 +167,37 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
         # If we reach here, user_input must be set
         assert user_input is not None
+        clean_api_key = str(user_input[CONF_API_KEY]).strip()
+        if not re.match(r"^[a-zA-Z0-9_\-]{8,128}$", clean_api_key):
+            errors["base"] = "invalid_api_key_format"
+            return self.async_show_form(
+                step_id="user",
+                data_schema=vol.Schema(
+                    {
+                        vol.Required("host", default=user_input.get("host")): vol.All(
+                            str, vol.Length(min=1)
+                        ),
+                        vol.Required(
+                            CONF_API_KEY, default=user_input.get(CONF_API_KEY)
+                        ): selector.TextSelector(
+                            selector.TextSelectorConfig(
+                                type=selector.TextSelectorType.PASSWORD
+                            )
+                        ),
+                    }
+                ),
+                description_placeholders={
+                    "setup_url": "https://faserf.github.io/ha-whatsapp/"
+                },
+                errors=errors,
+            )
+
         self.discovery_info[CONF_URL] = user_input["host"]
-        self.discovery_info[CONF_API_KEY] = user_input[CONF_API_KEY]
+        self.discovery_info[CONF_API_KEY] = clean_api_key
 
         self.client = WhatsAppApiClient(
             host=str(user_input["host"]),
-            api_key=str(user_input[CONF_API_KEY]),
+            api_key=clean_api_key,
             session_id=self.session_id,
         )
 
@@ -158,15 +206,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             await self.client.connect()
             # connect() now raises Exception if not 200 OK or invalid auth
         except HomeAssistantError as e:
-            from .api import WhatsAppRateLimitError
+            from .api import WhatsAppAuthError, WhatsAppRateLimitError
 
             error_msg = str(e)
             _LOGGER.error("Config Flow Validation Error: %s", error_msg)
 
-            if isinstance(e, WhatsAppRateLimitError):
-                errors["base"] = "rate_limit"
-            elif "Invalid API Key" in error_msg:
+            if isinstance(e, WhatsAppAuthError) or "Invalid API Key" in error_msg:
                 errors["base"] = "invalid_auth"
+            elif isinstance(e, WhatsAppRateLimitError):
+                errors["base"] = "rate_limit"
             else:
                 errors["base"] = "cannot_connect"
 
@@ -183,7 +231,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                     }
                 ),
                 description_placeholders={
-                    "addon_url": "https://github.com/FaserF/hassio-addons/tree/master/whatsapp"
+                    "setup_url": "https://faserf.github.io/ha-whatsapp/"
                 },
                 errors=errors,
             )
@@ -203,12 +251,70 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                     }
                 ),
                 description_placeholders={
-                    "addon_url": "https://github.com/FaserF/hassio-addons/tree/master/whatsapp"
+                    "setup_url": "https://faserf.github.io/ha-whatsapp/"
                 },
                 errors=errors,
             )
 
         return await self.async_step_scan()
+
+    async def async_step_already_connected(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Present choice when an existing active WhatsApp session is detected."""
+        if not self.client:
+            return self.async_abort(reason="unknown")
+
+        try:
+            stats = await self.client.get_stats()
+            my_number = stats.get("my_number") or "Unknown"
+        except Exception:
+            my_number = "Unknown"
+
+        if user_input is not None:
+            action = user_input.get("action")
+            if action == "reconnect_new":
+                _LOGGER.info(
+                    "User requested logout of existing session to pair a new phone"
+                )
+                try:
+                    await self.client.delete_session()
+                except Exception as e:
+                    _LOGGER.warning("Logout failed during reconnect choice: %s", e)
+                self.qr_code = None
+                return await self.async_step_scan()
+            _LOGGER.info(
+                "User confirmed using existing WhatsApp session (%s)", my_number
+            )
+            if my_number and my_number != "Unknown":
+                await self.async_set_unique_id(my_number)
+            return await self.async_create_flow_entry(my_number)
+
+        return self.async_show_form(
+            step_id="already_connected",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        "action", default="use_existing"
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=[
+                                selector.SelectOptionDict(
+                                    value="use_existing",
+                                    label=f"Use active session ({my_number})",
+                                ),
+                                selector.SelectOptionDict(
+                                    value="reconnect_new",
+                                    label="Log out & pair a new phone (Scan QR)",
+                                ),
+                            ],
+                            mode=selector.SelectSelectorMode.LIST,
+                        )
+                    )
+                }
+            ),
+            description_placeholders={"phone_number": my_number},
+        )
 
     async def async_step_scan(
         self, user_input: dict[str, Any] | None = None
@@ -222,12 +328,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             is_connected = await self.client.connect()
             _LOGGER.debug("Connect check result: %s", is_connected)
             if is_connected:
-                _LOGGER.info("Already connected to WhatsApp, skipping QR scan")
-                stats = await self.client.get_stats()
-                my_number = stats.get("my_number")
-                if my_number:
-                    await self.async_set_unique_id(my_number)
-                return await self.async_create_flow_entry(my_number)
+                _LOGGER.info("Already connected to WhatsApp, presenting choice step")
+                return await self.async_step_already_connected()
         except AbortFlow:
             raise
         except Exception as e:
@@ -239,8 +341,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             if not self.qr_code:
                 # Trigger session start on addon side (Lazy Init)
                 await self.client.start_session()
-                await asyncio.sleep(2)
-                self.qr_code = await self.client.get_qr_code()
+                for _ in range(10):
+                    self.qr_code = await self.client.get_qr_code()
+                    if self.qr_code:
+                        break
+                    await asyncio.sleep(1)
         except ImportError:
             return self.async_abort(reason="missing_dependency")
         except HomeAssistantError as e:
@@ -268,17 +373,43 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                 return await self.async_step_scan()
 
             # User clicked "Submit" (meaning they scanned it)
+            # Poll connection status for up to 30 seconds.
+            # WhatsApp performs a rapid stream restart (515) right after QR scan,
+            # and initial key/message sync may take up to 20-30 seconds.
+            for _attempt in range(30):
+                try:
+                    if await self.client.connect():
+                        _LOGGER.info("Connected to WhatsApp after QR scan submission")
+                        stats = await self.client.get_stats()
+                        my_number = stats.get("my_number")
+                        if my_number:
+                            await self.async_set_unique_id(my_number)
+                        else:
+                            await self.async_set_unique_id(self.session_id)
+                        return await self.async_create_flow_entry(my_number)
+                except AbortFlow:
+                    raise
+                except Exception as poll_err:
+                    _LOGGER.debug(
+                        "Polling connection status after scan submission: %s", poll_err
+                    )
+                await asyncio.sleep(1)
+
+            # Final safety check: query stats directly if connect() was transient
             try:
-                connected = await self.client.connect()
-                if connected:
-                    stats = await self.client.get_stats()
+                stats = await self.client.get_stats()
+                if stats.get("connected") or stats.get("my_number"):
+                    _LOGGER.info("Stats confirm connection after QR scan submission")
                     my_number = stats.get("my_number")
                     if my_number:
                         await self.async_set_unique_id(my_number)
+                    else:
+                        await self.async_set_unique_id(self.session_id)
                     return await self.async_create_flow_entry(my_number)
-
-            except Exception:
-                pass
+            except AbortFlow:
+                raise
+            except Exception as stats_err:
+                _LOGGER.debug("Final stats safety check failed: %s", stats_err)
 
             # Check if the addon detected a passkey ceremony before concluding error
             try:
@@ -351,7 +482,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         )
 
         errors = {}
-        if not self.qr_code:
+        if user_input is not None and not self.qr_code:
             errors["base"] = "qr_timeout"
 
         return self.async_show_form(
@@ -454,10 +585,24 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         """Handle phone pairing."""
         errors: dict[str, str] = {}
         if user_input is not None:
-            phone_number = user_input.get("phone_number", "")
+            raw_phone = user_input.get("phone_number", "").strip()
+            # Clean all non-digit characters
+            digits = "".join(filter(str.isdigit, raw_phone))
+            # Handle European national trunk zero e.g. 490151... -> 49151...
+            import re
+
+            clean_phone = re.sub(
+                r"^(49|43|41|33|44|31|32|34|39|48)0(\d{8,})$", r"\1\2", digits
+            )
+            # Handle local German/EU zero prefix e.g. 0151... -> 49151...
+            if clean_phone.startswith("0") and not clean_phone.startswith("00"):
+                clean_phone = f"49{clean_phone[1:]}"
+            elif clean_phone.startswith("00"):
+                clean_phone = clean_phone[2:]
+
             try:
                 assert self.client is not None
-                code = await self.client.request_pairing_code(phone_number)
+                code = await self.client.request_pairing_code(clean_phone)
                 self.pairing_code = code
                 return await self.async_step_show_pairing_code()
             except Exception as e:
@@ -561,9 +706,22 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             self.discovery_info["host"] = f"http://{host}:{port}"
             self.discovery_info[CONF_URL] = f"http://{host}:{port}"
 
-            # Also check for api_key in options
+            # Also check for api_key in options or read from /data/.api_token
             if addon_info.options and (api_key := addon_info.options.get(CONF_API_KEY)):
                 self.discovery_info[CONF_API_KEY] = api_key
+            else:
+                try:
+                    import os
+
+                    data_dir = "/data" if os.name != "nt" else os.path.abspath("data")
+                    token_file = os.path.join(data_dir, ".api_token")
+                    if os.path.exists(token_file):
+                        with open(token_file, encoding="utf-8") as f:
+                            tok = f.read().strip()
+                            if tok:
+                                self.discovery_info[CONF_API_KEY] = tok
+                except Exception:
+                    pass
 
             _LOGGER.debug("Pre-filled addon info: %s", self.discovery_info)
         except Exception as e:
@@ -665,11 +823,29 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
     ) -> ConfigFlowResult:
         """Confirm discovery."""
         url = self.discovery_info.get(CONF_URL) or self.discovery_info.get("host") or ""
+
+        # Always attempt to resolve API key from discovery_info or local token file
+        api_key = self.discovery_info.get(CONF_API_KEY) or ""
+        if not api_key:
+            try:
+                import os
+
+                data_dir = "/data" if os.name != "nt" else os.path.abspath("data")
+                token_file = os.path.join(data_dir, ".api_token")
+                if os.path.exists(token_file):
+                    with open(token_file, encoding="utf-8") as f:
+                        tok = f.read().strip()
+                        if tok:
+                            api_key = tok
+                            self.discovery_info[CONF_API_KEY] = tok
+            except Exception:
+                pass
+
         if user_input is not None:
             return await self.async_step_user(
                 {
                     "host": url,
-                    CONF_API_KEY: self.discovery_info.get(CONF_API_KEY) or "",
+                    CONF_API_KEY: api_key,
                 }
             )
 
@@ -702,9 +878,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                     total_chats,
                     initial_chats_received,
                 )
-                if initial_chats_received:
-                    if total_chats > 2:
-                        break
+                if total_chats > 0:
+                    show_warning = False
+                    show_fallback = False
+                    break
+
+                if initial_chats_received and total_chats == 0:
                     show_warning = True
                     break
             except Exception as e:
@@ -717,8 +896,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             try:
                 chats = await self.client.get_chats()
                 total_chats = int(chats.get("total_chats") or 0)
-                if total_chats <= 2:
+                if total_chats == 0:
                     show_warning = True
+                else:
+                    show_fallback = False
             except Exception:
                 show_fallback = True
 
@@ -733,13 +914,20 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                 return await self.async_step_account_warning_fallback()
             return await self.async_step_account_warning()
 
-        url = self.discovery_info.get(CONF_URL) or self.discovery_info.get("host") or ""
+        url = (
+            self.discovery_info.get(CONF_URL)
+            or self.discovery_info.get("host")
+            or (self.client.host if self.client else "http://localhost:8066")
+        )
+        api_key = self.discovery_info.get(CONF_API_KEY) or (
+            self.client.api_key if self.client else ""
+        )
         return self.async_create_entry(
             title=f"WhatsApp ({my_number})" if my_number else "WhatsApp",
             data={
                 "session_id": self.session_id,
                 CONF_URL: url,
-                CONF_API_KEY: self.discovery_info[CONF_API_KEY],
+                CONF_API_KEY: api_key,
                 "system_id": self.discovery_info.get("system_id"),
             },
         )
@@ -810,7 +998,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):  # type: ignore[misc]
                 vol.Required(
                     CONF_API_KEY,
                     default=self._config_entry.data.get(CONF_API_KEY),
-                ): str,
+                ): selector.TextSelector(
+                    selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
+                ),
                 vol.Optional(
                     "debug_payloads",
                     default=self._config_entry.options.get("debug_payloads", False),
@@ -853,10 +1043,19 @@ class OptionsFlowHandler(config_entries.OptionsFlow):  # type: ignore[misc]
 
         if user_input is not None:
             # Handle API Key Update
-            new_key = user_input.get(CONF_API_KEY)
+            raw_key = user_input.get(CONF_API_KEY)
+            new_key = raw_key.strip() if isinstance(raw_key, str) else raw_key
             current_key = self._config_entry.data.get(CONF_API_KEY)
 
             if new_key and new_key != current_key:
+                if not re.match(r"^[a-zA-Z0-9_\-]{8,128}$", new_key):
+                    errors["base"] = "invalid_api_key_format"
+                    return self.async_show_form(
+                        step_id="init",
+                        data_schema=self._get_schema(),
+                        errors=errors,
+                    )
+
                 # Validate new key
                 host = self._config_entry.data.get(CONF_URL, "")
                 test_client = WhatsAppApiClient(host=host, api_key=new_key)

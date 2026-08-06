@@ -57,11 +57,19 @@
       "passkey_waiting": {
         "title": "Warten auf Passkey-Freigabe",
         "description": "## 🔑 Passkey auf dem Telefon freigeben\n\nWhatsApp hat eine Passkey-Anforderung an dein Telefon gesendet. Bitte führe die folgenden Schritte aus:\n\n1. Öffne **WhatsApp** auf deinem Telefon\n2. Suche nach einer **Passkey-Aufforderung** oder Benachrichtigung\n3. Tippe auf **Freigeben** / verwende Biometrie oder PIN\n4. Warte — dieser Bildschirm wird automatisch fortfahren, sobald die Verbindung bestätigt wurde\n\n> Die Integration fragt das Verbindungsergebnis ab. Dies kann bis zu **2 Minuten** dauern.\n> Falls nichts passiert, klicke auf **Absenden**, um den aktuellen Status zu prüfen."
+      },
+      "already_connected": {
+        "title": "Bestehende Sitzung gefunden",
+        "data": {
+          "action": "Wie möchtest du fortfahren?"
+        },
+        "description": "Eine aktive WhatsApp-Sitzung für **{phone_number}** wurde gefunden.\n\nDu kannst diese bestehende Sitzung verwenden oder dich abmelden, um ein anderes Telefon zu koppeln."
       }
     },
     "error": {
       "cannot_connect": "Verbindung zum WhatsApp-Addon fehlgeschlagen. Bitte stelle sicher, dass das [WhatsApp Addon]({addon_url}) installiert ist und läuft.",
       "invalid_auth": "Ungültige Authentifizierung",
+      "invalid_api_key_format": "Der API-Token muss 8 bis 128 alfanumerische Zeichen lang sein (a-z, A-Z, 0-9, _, -).",
       "connection_error": "Nicht mit WhatsApp verbunden. Bitte scanne zuerst den QR-Code.",
       "addon_install_error": "Installation des WhatsApp-Addons fehlgeschlagen. Bitte prüfe die Supervisor-Logs.",
       "rate_limit": "Zu viele Anfragen. Bitte warte 15 Minuten und versuche es erneut.",
@@ -101,7 +109,8 @@
     },
     "error": {
       "reset_failed": "Sitzung konnte nicht zurückgesetzt werden. Prüfe die Logs.",
-      "invalid_auth": "Ungültige Authentifizierung"
+      "invalid_auth": "Ungültige Authentifizierung",
+      "invalid_api_key_format": "Der API-Token muss 8 bis 128 alfanumerische Zeichen lang sein (a-z, A-Z, 0-9, _, -)."
     }
   },
   "services": {

@@ -22,14 +22,14 @@ from typing import Any
 import aiohttp
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
 
-from .api import WhatsAppApiClient
+from .api import WhatsAppApiClient, WhatsAppAuthError
 from .const import CONF_POLLING_INTERVAL, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -65,6 +65,7 @@ class WhatsAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):  # t
         """
         self.client = client
         self.entry = entry
+        self._connected: bool = False
 
         polling_interval = entry.options.get(CONF_POLLING_INTERVAL, 30)
         super().__init__(
@@ -127,7 +128,10 @@ class WhatsAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):  # t
                 # Double-check via client's status if get_stats returned connected=False
                 try:
                     status_info = await self.client.get_status()
-                    if status_info.get("connected") is True:
+                    if (
+                        isinstance(status_info, dict)
+                        and status_info.get("connected") is True
+                    ):
                         connected = True
                         stats["connected"] = True
                 except Exception as status_err:
@@ -138,7 +142,9 @@ class WhatsAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):  # t
             # 2b. Fetch dashboard for passkey detection (lightweight, best-effort)
             dashboard: dict[str, Any] = {}
             try:
-                dashboard = await self.client.get_dashboard()
+                raw_dash = await self.client.get_dashboard()
+                if isinstance(raw_dash, dict):
+                    dashboard = raw_dash
             except Exception as dash_err:
                 _LOGGER.debug("Dashboard fetch skipped: %s", dash_err)
 
@@ -199,13 +205,34 @@ class WhatsAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):  # t
             # Always delete connection issue if we successfully reached this point
             ir.async_delete_issue(self.hass, DOMAIN, "connection_failed")
 
+            # Dynamically update device registry sw_version with live version
+            version = stats.get("version")
+            if version and version != "Unknown" and self.config_entry:
+                try:
+                    from homeassistant.helpers import device_registry as dr
+
+                    dev_reg = dr.async_get(self.hass)
+                    device = dev_reg.async_get_device(
+                        identifiers={(DOMAIN, self.client.session_id)}
+                    )
+                    if device and device.sw_version != version:
+                        dev_reg.async_update_device(device.id, sw_version=version)
+                except Exception as dr_err:
+                    _LOGGER.debug(
+                        "Failed to update device registry version: %s", dr_err
+                    )
+
             return {
                 "connected": connected,
                 "status": status,
                 "status_details": details,
                 "stats": stats,
                 "chats": chats,
+                "dashboard": dashboard,
             }
+        except WhatsAppAuthError as err:
+            _LOGGER.error("Authentication failed during polling: %s", err)
+            raise ConfigEntryAuthFailed("Invalid API Key for WhatsApp Addon") from err
         except (HomeAssistantError, aiohttp.ClientError, TimeoutError) as err:
             # Create issue for connection failure (Addon unreachable or Auth)
             ir.async_create_issue(

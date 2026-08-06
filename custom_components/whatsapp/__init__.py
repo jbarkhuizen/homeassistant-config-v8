@@ -73,6 +73,8 @@ _SERVICES = [
     "send_buttons",
     "search_groups",
     "mark_as_read",
+    "get_contacts",
+    "check_number",
 ]
 
 
@@ -102,7 +104,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         initial coordinator refresh fails.
     """
 
-    addon_url = entry.data.get(CONF_URL, "http://localhost:8066")
+    addon_url = (
+        entry.data.get(CONF_URL) or entry.data.get("host") or "http://localhost:8066"
+    )
     api_key = entry.data.get(CONF_API_KEY)
     mask_sensitive_data = entry.options.get("mask_sensitive_data", False)
     whitelist_str = entry.options.get(CONF_WHITELIST, "")
@@ -112,8 +116,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     session_id = entry.data.get("session_id", "default")
 
-    # Resolve localhost/127.0.0.1 for the 'Visit' button to the HA URL if possible
-    # This ensures the link works even when accessing HA from a remote device.
+    # Resolve internal container IPs/hostnames for the 'Visit' button
     ha_base_url = None
     try:
         import homeassistant.helpers.network as network_helper
@@ -123,7 +126,29 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.debug("Could not resolve HA URL", exc_info=True)
 
     config_url = addon_url
-    if ("localhost" in addon_url or "127.0.0.1" in addon_url) and ha_base_url:
+
+    is_internal_host = any(
+        pattern in addon_url.lower()
+        for pattern in ("localhost", "127.0.0.1", "172.", "7da084a7", "supervisor")
+    )
+
+    is_hassio_env = False
+    try:
+        import homeassistant.components.hassio as hassio_mod
+
+        if hasattr(hassio_mod, "is_hassio"):
+            is_hassio_env = bool(hassio_mod.is_hassio(hass))  # type: ignore[attr-defined]
+    except (ImportError, AttributeError):
+        pass
+
+    if is_hassio_env and is_internal_host:
+        slug = (
+            "7da084a7_whatsapp_edge"
+            if "edge" in addon_url.lower()
+            else "7da084a7_whatsapp"
+        )
+        config_url = f"/hassio/ingress/{slug}"
+    elif is_internal_host and ha_base_url:
         try:
             from yarl import URL
 
@@ -138,6 +163,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         except Exception:  # pylint: disable=broad-except
             _LOGGER.debug("Could not resolve HA URL for Visit button", exc_info=True)
 
+    session = None
+    try:
+        from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
+        session = async_get_clientsession(hass)
+    except Exception:  # pylint: disable=broad-except
+        _LOGGER.debug("Could not resolve HA aiohttp clientsession")
+
     client = WhatsAppApiClient(
         host=addon_url,
         api_key=api_key,
@@ -146,6 +179,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         whitelist=whitelist,
         config_url=config_url,
         ha_base_url=ha_base_url,
+        session=session,
     )
 
     coordinator = WhatsAppDataUpdateCoordinator(hass, client, entry)
@@ -212,6 +246,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.debug("Firing WhatsApp event: %s", data)
         hass.bus.async_fire(EVENT_MESSAGE_RECEIVED, data)
 
+        # Check for interactive button / template response
+        raw_msg_msg = raw_msg.get("message", {})
+        button_id = None
+        if "buttonsResponseMessage" in raw_msg_msg:
+            button_id = raw_msg_msg["buttonsResponseMessage"].get("selectedButtonId")
+        elif "listResponseMessage" in raw_msg_msg:
+            reply = raw_msg_msg["listResponseMessage"].get("singleSelectReply", {})
+            button_id = reply.get("selectedRowId")
+        elif "templateButtonReplyMessage" in raw_msg_msg:
+            button_id = raw_msg_msg["templateButtonReplyMessage"].get("selectedId")
+
+        if button_id:
+            button_data = {**data, "button_id": button_id}
+            _LOGGER.debug("Firing WhatsApp button event: %s", button_data)
+            hass.bus.async_fire("whatsapp_button_pressed", button_data)
+
         # Automatically mark as read if enabled
         if entry.options.get(CONF_MARK_AS_READ, False):
             # Extract ID and sender JID from the nested raw data
@@ -237,7 +287,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                             _exc,
                         )
 
-                hass.async_create_task(_safe_mark_as_read(number, message_id))
+                entry.async_create_background_task(
+                    hass,
+                    _safe_mark_as_read(number, message_id),
+                    name="whatsapp_mark_as_read",
+                )
             else:
                 _LOGGER.warning(
                     "Auto-mark-as-read enabled but missing data. "
@@ -250,9 +304,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     polling_interval = entry.options.get(CONF_POLLING_INTERVAL, 5)
     await client.start_polling(interval=polling_interval)
 
-    # Automatically try to start the session on HA startup/load
-    # This ensures that the addon starts working without manual intervention
-    hass.async_create_task(client.start_session())
+    if hasattr(entry, "async_create_background_task"):
+        entry.async_create_background_task(
+            hass, client.start_session(), name="whatsapp_start_session"
+        )
+    elif hasattr(hass, "async_create_task"):
+        hass.async_create_task(client.start_session(), name="whatsapp_start_session")
 
     # Register services globally
     await async_setup_services(hass)
