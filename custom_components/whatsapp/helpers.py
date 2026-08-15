@@ -1,0 +1,196 @@
+"""Helper utilities for HA WhatsApp integration."""
+
+from __future__ import annotations
+
+import logging
+from typing import Any, TypeVar, cast
+
+_LOGGER = logging.getLogger(__name__)
+
+try:
+    from homeassistant.helpers.entity_registry import RegistryEntryDisabler
+except ImportError:
+
+    class RegistryEntryDisabler:  # type: ignore[no-redef]
+        INTEGRATION = "integration"
+        USER = "user"
+        DEVICE = "device"
+
+
+from homeassistant.helpers.entity_registry import (  # noqa: E402
+    async_get as async_get_entity_registry,
+)
+from homeassistant.helpers.update_coordinator import CoordinatorEntity  # noqa: E402
+from homeassistant.util import dt as dt_util  # noqa: E402
+
+T = TypeVar("T")
+
+
+def safe_text(value: T) -> T:  # noqa: UP047
+    """Safely sanitize text values by replacing invalid Unicode surrogates.
+
+    Prevents Home Assistant WebSocket serialization errors when entity state
+    attributes contain invalid Unicode surrogate pairs.
+    """
+    if isinstance(value, str):
+        return cast(
+            T, value.encode("utf-8", errors="replace").decode("utf-8", errors="replace")
+        )
+    if isinstance(value, dict):
+        return cast(T, {safe_text(k): safe_text(v) for k, v in value.items()})
+    if isinstance(value, list):
+        return cast(T, [safe_text(v) for v in value])
+    return value
+
+
+def is_moderation_active(coordinator_data: dict[str, object] | None) -> bool:
+    """Return True if moderation is globally or group-level active.
+
+    Used by all moderation entities to decide whether they should be
+    enabled in the entity registry.  Moderation is considered active when:
+
+    * ``global_enabled`` is ``True`` in the moderation config, **or**
+    * At least one group has ``enabled: true`` in its per-group config.
+    """
+    if not coordinator_data:
+        return False
+    mod: dict[str, object] = coordinator_data.get("moderation", {})  # type: ignore[assignment]
+    if mod.get("global_enabled"):
+        return True
+    groups: dict[str, object] = mod.get("groups", {})  # type: ignore[assignment]
+    return any(isinstance(cfg, dict) and cfg.get("enabled") for cfg in groups.values())
+
+
+def sync_moderation_registry_enabled(entity: CoordinatorEntity[Any]) -> None:
+    """Enable or disable moderation entity in registry based on moderation state."""
+    if entity.hass is None or entity.registry_entry is None:
+        return
+    active = is_moderation_active(entity.coordinator.data)
+    if entity.registry_entry.disabled != (not active):
+        er = async_get_entity_registry(entity.hass)
+        er.async_update_entity(
+            entity.entity_id,
+            disabled_by=None if active else RegistryEntryDisabler.INTEGRATION,
+        )
+
+
+def is_telegram_bridge_active(coordinator_data: dict[str, object] | None) -> bool:
+    """Return True if Telegram bridge is configured with at least one enabled mapping.
+
+    The entity is considered active when:
+    * A ``bot_token`` is set, **and**
+    * At least one mapping has ``enabled: true``.
+    """
+    if not coordinator_data:
+        return False
+    tg: dict[str, object] = coordinator_data.get("telegram", {})  # type: ignore[assignment]
+    if not tg.get("bot_token") and not tg.get("enabled"):
+        return False
+    mappings: list[object] = tg.get("mappings", [])  # type: ignore[assignment]
+    return any(isinstance(m, dict) and m.get("enabled") for m in mappings)
+
+
+def sync_telegram_bridge_registry_enabled(entity: CoordinatorEntity[Any]) -> None:
+    """Enable or disable Telegram bridge entity in registry based on bridge state."""
+    if entity.hass is None or entity.registry_entry is None:
+        return
+    active = is_telegram_bridge_active(entity.coordinator.data)
+    if entity.registry_entry.disabled != (not active):
+        er = async_get_entity_registry(entity.hass)
+        er.async_update_entity(
+            entity.entity_id,
+            disabled_by=None if active else RegistryEntryDisabler.INTEGRATION,
+        )
+
+
+def async_sync_moderation_entities(
+    hass: Any, entry_id: str, coordinator_data: dict[str, Any] | None
+) -> None:
+    """Sync moderation entity enabled states in entity registry.
+
+    Ensures disabled entities are automatically enabled/disabled in the
+    Home Assistant Entity Registry during polling.
+    """
+    if hass is None:
+        return
+    from .const import DOMAIN
+
+    active = is_moderation_active(coordinator_data)
+    try:
+        er = async_get_entity_registry(hass)
+        moderation_unique_ids = [
+            f"{entry_id}_moderation_warnings",
+            f"{entry_id}_moderation_raid_status",
+            f"{entry_id}_moderation_status",
+        ]
+        for unique_id in moderation_unique_ids:
+            entity_id = er.async_get_entity_id(
+                "sensor", DOMAIN, unique_id
+            ) or er.async_get_entity_id("binary_sensor", DOMAIN, unique_id)
+            if entity_id:
+                entry = er.async_get(entity_id)
+                if entry:
+                    if (
+                        active
+                        and entry.disabled_by == RegistryEntryDisabler.INTEGRATION
+                    ):
+                        er.async_update_entity(entity_id, disabled_by=None)
+                    elif not active and entry.disabled_by is None:
+                        er.async_update_entity(
+                            entity_id, disabled_by=RegistryEntryDisabler.INTEGRATION
+                        )
+    except Exception as exc:
+        _LOGGER.debug("Entity registry sync skipped: %s", exc)
+
+
+def async_sync_telegram_bridge_entities(
+    hass: Any, entry_id: str, coordinator_data: dict[str, Any] | None
+) -> None:
+    """Sync Telegram bridge entity enabled state in entity registry.
+
+    Automatically enables ``telegram_bridge_status`` binary sensor when
+    at least one mapping is active, and disables it when none are.
+    """
+    if hass is None:
+        return
+    from .const import DOMAIN
+
+    active = is_telegram_bridge_active(coordinator_data)
+    try:
+        er = async_get_entity_registry(hass)
+        unique_id = f"{entry_id}_telegram_bridge_status"
+        entity_id = er.async_get_entity_id("binary_sensor", DOMAIN, unique_id)
+        if entity_id:
+            entry = er.async_get(entity_id)
+            if entry:
+                if active and entry.disabled_by == RegistryEntryDisabler.INTEGRATION:
+                    er.async_update_entity(entity_id, disabled_by=None)
+                elif not active and entry.disabled_by is None:
+                    er.async_update_entity(
+                        entity_id, disabled_by=RegistryEntryDisabler.INTEGRATION
+                    )
+    except Exception as exc:
+        _LOGGER.debug("Telegram bridge entity registry sync skipped: %s", exc)
+
+
+def format_timestamp(timestamp: int | None) -> str | None:
+    """Format a millisecond Unix timestamp into a readable ISO local string."""
+    if timestamp is None:
+        return None
+    return str(
+        dt_util.as_local(dt_util.utc_from_timestamp(timestamp / 1000)).isoformat()
+    )
+
+
+def extract_group_chats(chats_data: Any) -> list[dict[str, Any]]:
+    """Extract group chats (JIDs containing @g.us) safely from chats payload."""
+    if isinstance(chats_data, dict):
+        groups = chats_data.get("groups", [])
+        if isinstance(groups, list):
+            return [g for g in groups if isinstance(g, dict)]
+        return []
+    if isinstance(chats_data, list):
+        return [
+            c for c in chats_data if isinstance(c, dict) and "@g.us" in c.get("jid", "")
+        ]
+    return []

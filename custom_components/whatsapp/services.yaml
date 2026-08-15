@@ -262,6 +262,14 @@ send_document:
       example: "Energy_Report_January_2024.pdf"
       selector:
         text:
+    mimetype:
+      name: MIME Type
+      description: >
+        Optional MIME type for the document (e.g., 'audio/mpeg', 'application/pdf', 'video/mp4').
+        If not provided, the MIME type will be automatically inferred from the file name.
+      example: "audio/mpeg"
+      selector:
+        text:
     message:
       name: Caption
       description: Optional text caption displayed with the document.
@@ -1103,4 +1111,896 @@ check_number:
       required: true
       selector:
         text:
+
+create_group:
+  name: Create Group
+  description: Creates a new WhatsApp group with subject and initial participants.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    subject:
+      name: Subject
+      description: Group title / name.
+      required: true
+      selector:
+        text:
+    participants:
+      name: Participants
+      description: List of phone numbers to add to the group.
+      required: true
+      selector:
+        object:
+
+add_group_participant:
+  name: Add Group Participant
+  description: Adds participants to an existing WhatsApp group.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Group ID
+      description: Target Group JID (e.g., 120363... @g.us).
+      required: true
+      selector:
+        text:
+    participants:
+      name: Participants
+      description: List of phone numbers to add.
+      required: true
+      selector:
+        object:
+
+remove_group_participant:
+  name: Remove Group Participant
+  description: Removes participants from a WhatsApp group.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Group ID
+      description: Target Group JID.
+      required: true
+      selector:
+        text:
+    participants:
+      name: Participants
+      description: List of phone numbers to remove.
+      required: true
+      selector:
+        object:
+
+promote_group_participant:
+  name: Promote Group Participant
+  description: Promotes participants to group admin.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Group ID
+      description: Target Group JID.
+      required: true
+      selector:
+        text:
+    participants:
+      name: Participants
+      description: List of phone numbers to promote.
+      required: true
+      selector:
+        object:
+
+demote_group_participant:
+  name: Demote Group Participant
+  description: Demotes group admins to regular participants.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Group ID
+      description: Target Group JID.
+      required: true
+      selector:
+        text:
+    participants:
+      name: Participants
+      description: List of phone numbers to demote.
+      required: true
+      selector:
+        object:
+
+leave_group:
+  name: Leave Group
+  description: Leaves a WhatsApp group.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Group ID
+      description: Target Group JID to leave.
+      required: true
+      selector:
+        text:
+
+update_group_subject:
+  name: Update Group Subject
+  description: Changes the title / subject of a WhatsApp group.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Group ID
+      description: Target Group JID.
+      required: true
+      selector:
+        text:
+    subject:
+      name: Subject
+      description: New group title.
+      required: true
+      selector:
+        text:
+
+update_group_description:
+  name: Update Group Description
+  description: Changes the description of a WhatsApp group.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Group ID
+      description: Target Group JID.
+      required: true
+      selector:
+        text:
+    description:
+      name: Description
+      description: New group description text.
+      required: true
+      selector:
+        text:
+          multiline: true
+
+update_group_settings:
+  name: Update Group Settings
+  description: Configures group announcement mode and info restriction mode.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Group ID
+      description: Target Group JID.
+      required: true
+      selector:
+        text:
+    announce:
+      name: Announcement Mode
+      description: If true, only admins can send messages.
+      selector:
+        boolean:
+    locked:
+      name: Locked Info Mode
+      description: If true, only admins can edit group settings/description.
+      selector:
+        boolean:
+
+join_group:
+  name: Join Group
+  description: Joins a group using an invite link or code.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    code:
+      name: Invite Code / Link
+      description: Group invite code or full URL.
+      required: true
+      selector:
+        text:
+
+star_message:
+  name: Star Message
+  description: Stars a specific message in a chat.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number / Group ID
+      description: The chat JID or number.
+      required: true
+      selector:
+        text:
+    message_id:
+      name: Message ID
+      description: ID of the message to star.
+      required: true
+      selector:
+        text:
+
+unstar_message:
+  name: Unstar Message
+  description: Unstars a specific message in a chat.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number / Group ID
+      description: The chat JID or number.
+      required: true
+      selector:
+        text:
+    message_id:
+      name: Message ID
+      description: ID of the message to unstar.
+      required: true
+      selector:
+        text:
+
+pin_message:
+  name: Pin Message
+  description: Pins a message in a chat.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number / Group ID
+      description: The chat JID or number.
+      required: true
+      selector:
+        text:
+    message_id:
+      name: Message ID
+      description: ID of the message to pin.
+      required: true
+      selector:
+        text:
+    duration:
+      name: Duration (Seconds)
+      description: Duration to pin message (default 86400 / 24 hours).
+      selector:
+        number:
+          mode: box
+
+unpin_message:
+  name: Unpin Message
+  description: Unpins a message in a chat.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number / Group ID
+      description: The chat JID or number.
+      required: true
+      selector:
+        text:
+    message_id:
+      name: Message ID
+      description: ID of the message to unpin.
+      required: true
+      selector:
+        text:
+
+forward_message:
+  name: Forward Message
+  description: Forwards an existing message to another chat target.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Source Target Number / Group ID
+      description: Original chat where message exists.
+      required: true
+      selector:
+        text:
+    message_id:
+      name: Message ID
+      description: ID of message to forward.
+      required: true
+      selector:
+        text:
+    destination:
+      name: Destination Target
+      description: Recipient phone number or Group ID.
+      required: true
+      selector:
+        text:
+
+send_status:
+  name: Send Status
+  description: Posts a text or image/media status (story) to status@broadcast.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    message:
+      name: Message Text
+      description: Text content for status.
+      selector:
+        text:
+          multiline: true
+    url:
+      name: Media URL
+      description: Image/media URL for status update.
+      selector:
+        text:
+    caption:
+      name: Caption
+      description: Caption for media status.
+      selector:
+        text:
+
+get_profile_picture:
+  name: Get Profile Picture
+  description: Fetches profile picture / avatar URL of contact or group.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number / Group ID
+      description: Number or Group JID.
+      required: true
+      selector:
+        text:
+
+get_contact_info:
+  name: Get Contact Info
+  description: Fetches contact status/about message.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number
+      description: Contact phone number or JID.
+      required: true
+      selector:
+        text:
+
+block_contact:
+  name: Block Contact
+  description: Blocks a contact number.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number
+      description: Contact number to block.
+      required: true
+      selector:
+        text:
+
+unblock_contact:
+  name: Unblock Contact
+  description: Unblocks a contact number.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number
+      description: Contact number to unblock.
+      required: true
+      selector:
+        text:
+
+archive_chat:
+  name: Archive Chat
+  description: Archives a chat.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number / Group ID
+      description: Chat to archive.
+      required: true
+      selector:
+        text:
+
+unarchive_chat:
+  name: Unarchive Chat
+  description: Unarchives a chat.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number / Group ID
+      description: Chat to unarchive.
+      required: true
+      selector:
+        text:
+
+mute_chat:
+  name: Mute Chat
+  description: Mutes notifications for a chat.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number / Group ID
+      description: Chat to mute.
+      required: true
+      selector:
+        text:
+    duration_ms:
+      name: Duration (ms)
+      description: Duration in milliseconds (default 8 hours).
+      selector:
+        number:
+          mode: box
+
+unmute_chat:
+  name: Unmute Chat
+  description: Unmutes notifications for a chat.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number / Group ID
+      description: Chat to unmute.
+      required: true
+      selector:
+        text:
+
+get_channel_info:
+  name: Get Channel Info
+  description: Fetches metadata for a WhatsApp Channel (Newsletter) via JID or invite code.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Channel JID
+      description: Channel JID (e.g. 120363000000000000@newsletter).
+      selector:
+        text:
+    code:
+      name: Invite Code
+      description: Channel invite link or code.
+      selector:
+        text:
+
+follow_channel:
+  name: Follow Channel
+  description: Follows a WhatsApp Channel (Newsletter).
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Channel JID
+      description: Channel JID to follow.
+      required: true
+      selector:
+        text:
+
+unfollow_channel:
+  name: Unfollow Channel
+  description: Unfollows a WhatsApp Channel (Newsletter).
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Channel JID
+      description: Channel JID to unfollow.
+      required: true
+      selector:
+        text:
+
+mute_channel:
+  name: Mute Channel
+  description: Mutes notifications for a WhatsApp Channel.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Channel JID
+      description: Channel JID to mute.
+      required: true
+      selector:
+        text:
+
+unmute_channel:
+  name: Unmute Channel
+  description: Unmutes notifications for a WhatsApp Channel.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Channel JID
+      description: Channel JID to unmute.
+      required: true
+      selector:
+        text:
+
+add_chat_label:
+  name: Add Chat Label
+  description: Adds a WhatsApp Business label to a chat.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number / Group ID
+      description: Chat to label.
+      required: true
+      selector:
+        text:
+    label_id:
+      name: Label ID
+      description: ID of the label to add.
+      required: true
+      selector:
+        text:
+
+remove_chat_label:
+  name: Remove Chat Label
+  description: Removes a WhatsApp Business label from a chat.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number / Group ID
+      description: Chat to remove label from.
+      required: true
+      selector:
+        text:
+    label_id:
+      name: Label ID
+      description: ID of the label to remove.
+      required: true
+      selector:
+        text:
+
+clear_chat:
+  name: Clear Chat
+  description: Clears all messages in a chat history.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number / Group ID
+      description: Chat to clear.
+      required: true
+      selector:
+        text:
+
+delete_chat:
+  name: Delete Chat
+  description: Deletes a chat from WhatsApp.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number / Group ID
+      description: Chat to delete.
+      required: true
+      selector:
+        text:
+
+get_chat_messages:
+  name: Get Chat Messages
+  description: Fetches recent stored messages for a chat.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Number / Group ID
+      description: Chat to retrieve messages for.
+      required: true
+      selector:
+        text:
+    limit:
+      name: Message Limit
+      description: Maximum number of messages to return (default 50).
+      selector:
+        number:
+          mode: box
+
+enable_moderation:
+
+  name: Enable Group Moderation
+  description: Enables group moderation engine for a target WhatsApp group.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Group JID
+      description: Group JID (e.g. 1203630123456789@g.us).
+      required: true
+      selector:
+        text:
+
+disable_moderation:
+  name: Disable Group Moderation
+  description: Disables group moderation engine for a target WhatsApp group.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Group JID
+      description: Group JID (e.g. 1203630123456789@g.us).
+      required: true
+      selector:
+        text:
+
+warn_user:
+  name: Issue User Warning
+  description: Issues a warning to a group user and enforces penalty upon reaching maximum warnings.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Group JID
+      description: Group JID where the violation occurred.
+      required: true
+      selector:
+        text:
+    user_id:
+      name: User Phone Number / ID
+      description: Target user's phone number or ID.
+      required: true
+      selector:
+        text:
+    reason:
+      name: Reason
+      description: Reason for issuing the warning.
+      selector:
+        text:
+
+clear_warnings:
+  name: Clear User Warnings
+  description: Clears all active warnings for a group member.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Group JID
+      description: Group JID.
+      required: true
+      selector:
+        text:
+    user_id:
+      name: User Phone Number / ID
+      description: Target user's phone number or ID.
+      required: true
+      selector:
+        text:
+
+import_moderation_config:
+  name: Import Moderation Config
+  description: Imports JSON moderation configuration for a group.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account to use.
+      selector:
+        text:
+    target:
+      name: Target Group JID
+      description: Target group JID.
+      required: true
+      selector:
+        text:
+    config:
+      name: Configuration Data
+      description: Dictionary containing group moderation configuration.
+      required: true
+      selector:
+        object:
+
+configure_telegram_bot:
+  name: Configure Telegram Bot
+  description: Configures or updates Telegram Bot token and active state for the native bridge.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account instance to target.
+      selector:
+        text:
+    bot_token:
+      name: Bot Token
+      description: Telegram Bot Token provided by @BotFather.
+      selector:
+        text:
+    enabled:
+      name: Enabled
+      description: Toggle the Telegram bridge engine on or off globally.
+      selector:
+        boolean:
+
+add_telegram_mapping:
+  name: Add Telegram Mapping
+  description: Creates or updates a chat bridging mapping between WhatsApp and Telegram.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account instance to target.
+      selector:
+        text:
+    bot_id:
+      name: Telegram Bot ID
+      description: ID of the configured Telegram Bot to use for this mapping.
+      selector:
+        text:
+    mapping_name:
+      name: Mapping Name
+      description: Custom friendly name for this mapping (Auto-generated if omitted).
+      selector:
+        text:
+    wa_jid:
+      name: WhatsApp Target JID
+      description: WhatsApp Group ID or Phone Number JID (e.g. 1203630123456789@g.us).
+      required: true
+      selector:
+        text:
+    tg_chat_id:
+      name: Telegram Chat ID
+      description: Telegram Group / Supergroup / Channel ID (e.g. -1001234567890).
+      required: true
+      selector:
+        text:
+    sync_mode:
+      name: Sync Direction Mode
+      description: "Directional sync mode: 'bidirectional', 'outbound', or 'inbound'."
+      selector:
+        select:
+          options:
+            - "bidirectional"
+            - "outbound"
+            - "inbound"
+    sync_self_messages:
+      name: Sync Self Messages
+      description: "Enable mirroring messages manually sent by the bot WhatsApp account (Default: false)."
+      selector:
+        boolean:
+    tg_thread_id:
+      name: Telegram Topic ID
+      description: Optional Forum Topic thread ID for Telegram Forum supergroups.
+      selector:
+        text:
+    convert_formatting:
+      name: Convert Formatting
+      description: Convert WhatsApp formatting syntax to Telegram HTML syntax.
+      selector:
+        boolean:
+    anonymize_phone_numbers:
+      name: Anonymize Phone Numbers
+      description: Mask middle digits of phone numbers in headers.
+      selector:
+        boolean:
+    ignore_command_prefixes:
+      name: Ignore Command Prefixes
+      description: Comma separated list of prefixes to ignore (e.g. !, /).
+      selector:
+        text:
+    is_direct_chat_mirror:
+      name: 1:1 Direct Chat Mirror
+      description: Enables clean 1:1 message relay without header prefixes for dedicated WhatsApp single-contact groups.
+      selector:
+        boolean:
+
+remove_telegram_mapping:
+  name: Remove Telegram Mapping
+  description: Deletes an existing Telegram chat mapping by ID.
+  fields:
+    account:
+      name: Account
+      description: WhatsApp account instance to target.
+      selector:
+        text:
+    mapping_id:
+      name: Mapping ID
+      description: The ID of the mapping to delete.
+      required: true
+      selector:
+        text:
+
+
+
+
 

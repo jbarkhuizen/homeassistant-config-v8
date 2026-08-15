@@ -7,9 +7,6 @@ Provides the following sensor entities, all backed by the shared
   ``received``, ``failed``).  Each reports a running integer count and
   exposes detailed attributes such as the last message, target and
   timestamp.
-* :class:`WhatsAppUptimeSensor` – Reports the addon's uptime in seconds.
-  Exposed as a diagnostic entity in the ``duration`` device class so that
-  Home Assistant can convert the value to a human-readable duration.
 """
 
 from __future__ import annotations
@@ -17,19 +14,22 @@ from __future__ import annotations
 from typing import Any
 
 from homeassistant.components.sensor import (
-    SensorDeviceClass,
     SensorEntity,
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
 from .coordinator import WhatsAppDataUpdateCoordinator
+from .helpers import (
+    extract_group_chats,
+    format_timestamp,
+    safe_text,
+    sync_moderation_registry_enabled,
+)
 
 
 async def async_setup_entry(
@@ -39,12 +39,11 @@ async def async_setup_entry(
 ) -> None:
     """Set up WhatsApp sensor entities from a config entry.
 
-    Creates four sensor entities:
+    Creates sensor entities:
 
     * ``sent`` – Number of messages successfully sent.
     * ``received`` – Number of messages received.
     * ``failed`` – Number of failed send attempts.
-    * ``uptime`` – Addon uptime in seconds.
 
     Args:
         hass: The Home Assistant instance.
@@ -60,8 +59,10 @@ async def async_setup_entry(
             WhatsAppStatSensor(coordinator, entry, "sent"),
             WhatsAppStatSensor(coordinator, entry, "received"),
             WhatsAppStatSensor(coordinator, entry, "failed"),
-            WhatsAppUptimeSensor(coordinator, entry),
             WhatsAppChatsSensor(coordinator, entry),
+            WhatsAppModerationWarningsSensor(coordinator, entry),
+            WhatsAppModerationRaidStatusSensor(coordinator, entry),
+            WhatsAppPendingCaptchasSensor(coordinator, entry),
         ]
     )
 
@@ -108,96 +109,58 @@ class WhatsAppStatSensor(
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
         stats = (self.coordinator.data or {}).get("stats", {})
+        val = self.native_value
         if self._stat_key == "sent":
+            msg = safe_text(stats.get("last_sent_message"))
+            target = safe_text(stats.get("last_sent_target"))
+            t_str = format_timestamp(stats.get("last_sent_time"))
             return {
-                "last_message": stats.get("last_sent_message"),
-                "last_target": stats.get("last_sent_target"),
-                "last_time": self._format_time(stats.get("last_sent_time")),
+                "last_message": msg,
+                "last_target": target,
+                "last_time": t_str,
+                "status_description": (
+                    f"{val} sent (Last to {target} at {t_str})"
+                    if val > 0 and target
+                    else f"{val} sent"
+                ),
             }
         if self._stat_key == "received":
+            msg = safe_text(stats.get("last_received_message"))
+            sender = safe_text(stats.get("last_received_sender"))
+            t_str = format_timestamp(stats.get("last_received_time"))
             return {
-                "last_message": stats.get("last_received_message"),
-                "last_sender": stats.get("last_received_sender"),
-                "last_time": self._format_time(stats.get("last_received_time")),
+                "last_message": msg,
+                "last_sender": sender,
+                "last_time": t_str,
+                "status_description": (
+                    f"{val} received (Last from {sender} at {t_str})"
+                    if val > 0 and sender
+                    else f"{val} received"
+                ),
             }
         if self._stat_key == "failed":
+            msg = safe_text(stats.get("last_failed_message"))
+            target = safe_text(stats.get("last_failed_target"))
+            reason = safe_text(stats.get("last_error_reason"))
+            t_str = format_timestamp(stats.get("last_failed_time"))
             return {
-                "last_message": stats.get("last_failed_message"),
-                "last_target": stats.get("last_failed_target"),
-                "error_reason": stats.get("last_error_reason"),
-                "last_time": self._format_time(stats.get("last_failed_time")),
+                "last_message": msg,
+                "last_target": target,
+                "error_reason": reason,
+                "last_time": t_str,
+                "status_description": (
+                    f"{val} failed (Error: {reason})"
+                    if val > 0 and reason
+                    else "No transmission errors"
+                ),
             }
         return {}
-
-    def _format_time(self, timestamp: int | None) -> str | None:
-        """Format the timestamp into a readable string."""
-        if timestamp is None:
-            return None
-        return str(
-            dt_util.as_local(dt_util.utc_from_timestamp(timestamp / 1000)).isoformat()
-        )
 
     @property
     def native_value(self) -> int:
         """Return the state of the sensor."""
         stats = (self.coordinator.data or {}).get("stats", {})
         return int(stats.get(self._stat_key, 0))
-
-
-class WhatsAppUptimeSensor(
-    CoordinatorEntity[WhatsAppDataUpdateCoordinator],  # type: ignore[misc]
-    SensorEntity,  # type: ignore[misc]
-):
-    """Sensor that reports the WhatsApp addon's uptime in seconds.
-
-    Uses ``SensorDeviceClass.DURATION`` (``_attr_device_class = "duration"``)
-    with ``seconds`` as the unit of measurement, enabling Home Assistant to
-    display the value in a human-readable format (e.g. ``3 h 22 min``).
-
-    This entity is classified as a :attr:`EntityCategory.DIAGNOSTIC` sensor
-    so it is hidden from the default Lovelace entities card but still
-    accessible through the device page.
-    """
-
-    _attr_has_entity_name = True
-    _attr_state_class = SensorStateClass.TOTAL_INCREASING
-    _attr_device_class = SensorDeviceClass.DURATION
-    _attr_native_unit_of_measurement = "s"
-
-    def __init__(
-        self,
-        coordinator: WhatsAppDataUpdateCoordinator,
-        entry: ConfigEntry,
-    ) -> None:
-        """Initialise the uptime sensor.
-
-        Args:
-            coordinator: Shared data coordinator for this config entry.
-            entry: Config entry providing device-info identifiers.
-        """
-        super().__init__(coordinator)
-        self._attr_translation_key = "uptime"
-        self._attr_unique_id = f"{entry.entry_id}_uptime"
-        self._attr_device_info = coordinator.client.get_device_info()
-        self._attr_entity_category = EntityCategory.DIAGNOSTIC
-        self._attr_entity_registry_enabled_default = False
-
-    @property
-    def native_value(self) -> int:
-        """Return the state of the sensor."""
-        stats = (self.coordinator.data or {}).get("stats", {})
-        return int(stats.get("uptime", 0))
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return the state attributes."""
-        stats = (self.coordinator.data or {}).get("stats", {})
-        return {
-            "version": stats.get("version", "Unknown"),
-            "phone_number": stats.get("my_number", "Unknown"),
-            "connected": stats.get("connected", False),
-            "disconnect_reason": stats.get("disconnect_reason"),
-        }
 
 
 class WhatsAppChatsSensor(
@@ -209,6 +172,7 @@ class WhatsAppChatsSensor(
     _attr_has_entity_name = True
     _attr_icon = "mdi:forum"
     _attr_translation_key = "chats"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -235,19 +199,322 @@ class WhatsAppChatsSensor(
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        """Return the state attributes (lists all groups)."""
+        """Return the state attributes (lists all groups and clear description)."""
         if not self.coordinator.data or not isinstance(self.coordinator.data, dict):
-            return {"groups": []}
-        chats_data = self.coordinator.data.get("chats", {})
-        if isinstance(chats_data, dict):
             return {
-                "groups": chats_data.get("groups", []),
+                "groups": [],
+                "group_count": 0,
+                "status_description": "No data available",
             }
-        if isinstance(chats_data, list):
-            groups = [
-                c
-                for c in chats_data
-                if isinstance(c, dict) and "@g.us" in c.get("jid", "")
-            ]
-            return {"groups": groups}
-        return {"groups": []}
+        chats_data = self.coordinator.data.get("chats", {})
+        groups = safe_text(extract_group_chats(chats_data))
+        total_chats = self.native_value
+        group_count = len(groups) if isinstance(groups, list) else 0
+        return {
+            "groups": groups,
+            "group_count": group_count,
+            "status_description": (
+                f"{total_chats} chat(s) total ({group_count} group(s))"
+                if total_chats > 0
+                else "No active chats"
+            ),
+        }
+
+
+class WhatsAppModerationWarningsSensor(
+    CoordinatorEntity[WhatsAppDataUpdateCoordinator],  # type: ignore[misc]
+    SensorEntity,  # type: ignore[misc]
+):
+    """Sensor reporting active user warnings across all groups.
+
+    Disabled by default and automatically activated in the entity registry
+    as soon as moderation becomes active (globally or for any group).
+    It is disabled again when moderation is fully turned off.
+    """
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "moderation_warnings"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_entity_registry_enabled_default = False
+
+    def __init__(
+        self, coordinator: WhatsAppDataUpdateCoordinator, entry: ConfigEntry
+    ) -> None:
+        """Initialise the sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry.entry_id}_moderation_warnings"
+        self._attr_device_info = coordinator.client.get_device_info()
+
+    async def async_added_to_hass(self) -> None:
+        """React to entity added to hass; sync registry enabled state first."""
+        await super().async_added_to_hass()
+        self._sync_registry_enabled()
+
+    def _sync_registry_enabled(self) -> None:
+        """Enable or disable this entity in the registry based on moderation state."""
+        sync_moderation_registry_enabled(self)
+
+    def _handle_coordinator_update(self) -> None:
+        """React to coordinator data updates; sync registry enabled state first."""
+        self._sync_registry_enabled()
+        if self.enabled:
+            super()._handle_coordinator_update()
+
+    @property
+    def native_value(self) -> int:
+        """Return the total number of active user warnings across groups."""
+        data = self.coordinator.data or {}
+        mod = data.get("moderation", {})
+        groups = mod.get("groups", {})
+        total = 0
+        for group in groups.values():
+            user_warns = group.get("warnings", {}).get("user_warns", {})
+            for warns in user_warns.values():
+                if isinstance(warns, list):
+                    total += len(warns)
+        return total
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return detailed attributes about active group warnings."""
+        data = self.coordinator.data or {}
+        mod = data.get("moderation", {})
+        groups = mod.get("groups", {})
+        chats_data = data.get("chats", {})
+
+        # Build map of JID -> chat name from chats data
+        chat_names: dict[str, str] = {}
+        if isinstance(chats_data, dict):
+            for c in chats_data.get("groups", []):
+                if isinstance(c, dict) and c.get("jid"):
+                    chat_names[str(c.get("jid"))] = str(
+                        c.get("name") or c.get("subject") or c.get("jid")
+                    )
+        elif isinstance(chats_data, list):
+            for c in chats_data:
+                if isinstance(c, dict) and c.get("jid"):
+                    chat_names[str(c.get("jid"))] = str(
+                        c.get("name") or c.get("subject") or c.get("jid")
+                    )
+
+        warned_users_count = 0
+        warned_groups: list[str] = []
+        warning_details: list[dict[str, Any]] = []
+
+        for gid, group in groups.items():
+            user_warns = group.get("warnings", {}).get("user_warns", {})
+            group_name = (
+                group.get("name")
+                or group.get("subject")
+                or chat_names.get(str(gid))
+                or str(gid)
+            )
+            group_has_warns = False
+            for uid, warns in user_warns.items():
+                if isinstance(warns, list) and len(warns) > 0:
+                    warned_users_count += 1
+                    group_has_warns = True
+                    warning_details.append(
+                        {
+                            "group": group_name,
+                            "user": str(uid),
+                            "count": len(warns),
+                        }
+                    )
+            if group_has_warns:
+                warned_groups.append(group_name)
+
+        return {
+            "total_active_warnings": self.native_value,
+            "warned_users_count": warned_users_count,
+            "groups_with_warnings": warned_groups,
+            "warning_details": warning_details,
+            "status_description": (
+                (
+                    f"{self.native_value} warning(s)"
+                    f" for {warned_users_count} user(s)"
+                    f" in {len(warned_groups)} group(s)"
+                )
+                if self.native_value > 0
+                else "No active warnings"
+            ),
+        }
+
+
+class WhatsAppModerationRaidStatusSensor(
+    CoordinatorEntity[WhatsAppDataUpdateCoordinator],  # type: ignore[misc]
+    SensorEntity,  # type: ignore[misc]
+):
+    """Sensor reporting total groups with Anti-Raid shield active.
+
+    Disabled by default and automatically activated in the entity registry
+    as soon as moderation becomes active (globally or for any group).
+    It is disabled again when moderation is fully turned off.
+    """
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "moderation_raid_status"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_entity_registry_enabled_default = False
+
+    def __init__(
+        self, coordinator: WhatsAppDataUpdateCoordinator, entry: ConfigEntry
+    ) -> None:
+        """Initialise the sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry.entry_id}_moderation_raid_status"
+        self._attr_device_info = coordinator.client.get_device_info()
+
+    async def async_added_to_hass(self) -> None:
+        """React to entity added to hass; sync registry enabled state first."""
+        await super().async_added_to_hass()
+        self._sync_registry_enabled()
+
+    def _sync_registry_enabled(self) -> None:
+        """Enable or disable this entity in the registry based on moderation state."""
+        sync_moderation_registry_enabled(self)
+
+    def _handle_coordinator_update(self) -> None:
+        """React to coordinator data updates; sync registry enabled state first."""
+        self._sync_registry_enabled()
+        if self.enabled:
+            super()._handle_coordinator_update()
+
+    @property
+    def native_value(self) -> int:
+        """Return the number of groups with active Anti-Raid shield."""
+        data = self.coordinator.data or {}
+        mod = data.get("moderation", {})
+        groups = mod.get("groups", {})
+        active_raid_groups = 0
+        for group in groups.values():
+            antispam = group.get("antispam", {})
+            if antispam.get("anti_raid", {}).get("enabled"):
+                active_raid_groups += 1
+        return active_raid_groups
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return detailed Anti-Raid shield status attributes."""
+        data = self.coordinator.data or {}
+        mod = data.get("moderation", {})
+        groups = mod.get("groups", {})
+        chats_data = data.get("chats", {})
+
+        # Build map of JID -> chat name from chats data
+        chat_names: dict[str, str] = {}
+        if isinstance(chats_data, dict):
+            for c in chats_data.get("groups", []):
+                if isinstance(c, dict) and c.get("jid"):
+                    chat_names[str(c.get("jid"))] = str(
+                        c.get("name") or c.get("subject") or c.get("jid")
+                    )
+        elif isinstance(chats_data, list):
+            for c in chats_data:
+                if isinstance(c, dict) and c.get("jid"):
+                    chat_names[str(c.get("jid"))] = str(
+                        c.get("name") or c.get("subject") or c.get("jid")
+                    )
+
+        active_groups: list[str] = []
+        for gid, group in groups.items():
+            antispam = group.get("antispam", {})
+            if antispam.get("anti_raid", {}).get("enabled"):
+                name = (
+                    group.get("name")
+                    or group.get("subject")
+                    or chat_names.get(str(gid))
+                    or str(gid)
+                )
+                active_groups.append(str(name))
+        return {
+            "active_shield_count": len(active_groups),
+            "protected_groups": active_groups,
+            "status_description": (
+                f"Active in {len(active_groups)} group(s)"
+                if active_groups
+                else "Not active in any group"
+            ),
+        }
+
+
+class WhatsAppPendingCaptchasSensor(
+    CoordinatorEntity[WhatsAppDataUpdateCoordinator],  # type: ignore[misc]
+    SensorEntity,  # type: ignore[misc]
+):
+    """Sensor reporting total pending group member Captcha verifications.
+
+    Disabled by default in entity registry. Can be enabled manually or automatically
+    activated when group moderation features are used.
+    """
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "pending_captchas"
+    _attr_icon = "mdi:shield-account"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_entity_registry_enabled_default = False
+
+    def __init__(
+        self, coordinator: WhatsAppDataUpdateCoordinator, entry: ConfigEntry
+    ) -> None:
+        """Initialise the sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry.entry_id}_pending_captchas"
+        self._attr_device_info = coordinator.client.get_device_info()
+
+    @property
+    def native_value(self) -> int:
+        """Return the number of pending captchas across all groups."""
+        data = self.coordinator.data or {}
+        mod = data.get("moderation", {})
+        groups = mod.get("groups", {})
+        pending_total = 0
+        for group in groups.values():
+            captcha_data = group.get("captcha", {})
+            pending_list = captcha_data.get("pending", {})
+            if isinstance(pending_list, (dict, list)):
+                pending_total += len(pending_list)
+        return pending_total
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return detailed pending captcha attributes."""
+        data = self.coordinator.data or {}
+        mod = data.get("moderation", {})
+        groups = mod.get("groups", {})
+        chats_data = data.get("chats", {})
+
+        chat_names: dict[str, str] = {}
+        if isinstance(chats_data, dict):
+            for c in chats_data.get("groups", []):
+                if isinstance(c, dict) and c.get("jid"):
+                    chat_names[str(c.get("jid"))] = str(
+                        c.get("name") or c.get("subject") or c.get("jid")
+                    )
+
+        pending_groups: list[str] = []
+        for gid, group in groups.items():
+            captcha_data = group.get("captcha", {})
+            pending = captcha_data.get("pending", {})
+            if pending and (
+                (isinstance(pending, dict) and len(pending) > 0)
+                or (isinstance(pending, list) and len(pending) > 0)
+            ):
+                name = (
+                    group.get("name")
+                    or group.get("subject")
+                    or chat_names.get(str(gid))
+                    or str(gid)
+                )
+                pending_groups.append(str(name))
+
+        val = self.native_value
+        return {
+            "pending_count": val,
+            "groups_with_pending_captchas": pending_groups,
+            "status_description": (
+                f"{val} pending captcha(s) in {len(pending_groups)} group(s)"
+                if val > 0
+                else "No pending captchas"
+            ),
+        }

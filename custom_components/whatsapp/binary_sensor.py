@@ -24,6 +24,12 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import WhatsAppDataUpdateCoordinator
+from .helpers import (
+    format_timestamp,
+    safe_text,
+    sync_moderation_registry_enabled,
+    sync_telegram_bridge_registry_enabled,
+)
 
 
 async def async_setup_entry(
@@ -45,7 +51,13 @@ async def async_setup_entry(
     """
     data = hass.data[DOMAIN][entry.entry_id]
     coordinator: WhatsAppDataUpdateCoordinator = data["coordinator"]
-    async_add_entities([WhatsAppConnectionSensor(coordinator, entry)])
+    async_add_entities(
+        [
+            WhatsAppConnectionSensor(coordinator, entry),
+            WhatsAppModerationStatusBinarySensor(coordinator, entry),
+            WhatsAppTelegramBridgeStatusBinarySensor(coordinator, entry),
+        ]
+    )
 
 
 class WhatsAppConnectionSensor(
@@ -78,26 +90,255 @@ class WhatsAppConnectionSensor(
         data = self.coordinator.data or {}
         stats = data.get("stats", {})
         dashboard = data.get("dashboard", {})
+        # Build map of JID -> chat name from chats data
+        chats_data = data.get("chats", {})
+        chat_names: dict[str, str] = {}
+        if isinstance(chats_data, dict):
+            for c in chats_data.get("groups", []):
+                if isinstance(c, dict) and c.get("jid"):
+                    chat_names[str(c.get("jid"))] = str(
+                        c.get("name") or c.get("subject") or c.get("jid")
+                    )
+        elif isinstance(chats_data, list):
+            for c in chats_data:
+                if isinstance(c, dict) and c.get("jid"):
+                    chat_names[str(c.get("jid"))] = str(
+                        c.get("name") or c.get("subject") or c.get("jid")
+                    )
+
+        last_target_raw = safe_text(stats.get("last_sent_target"))
+        last_target_resolved = (
+            chat_names.get(str(last_target_raw), last_target_raw)
+            if last_target_raw
+            else None
+        )
+
+        health = data.get("health", {})
+        health_status = str(health.get("status", "")).lower()
+        last_reason = str(stats.get("last_disconnect_reason", "")).lower()
+        is_shutting_down = bool(stats.get("shutting_down", False))
+
+        connection_state = "connected" if self.is_on else "disconnected"
+        if health_status == "updating" or last_reason == "updating":
+            connection_state = "updating"
+        elif (
+            health_status == "shutting_down"
+            or last_reason == "shutting_down"
+            or is_shutting_down
+        ):
+            connection_state = "restarting"
+
+        num_str = safe_text(stats.get("my_number", "Unknown"))
+        det_str = safe_text(data.get("status_details", "Offline"))
+        state_title = connection_state.capitalize()
+
         return {
-            "version": stats.get("version", "Unknown"),
-            "phone_number": stats.get("my_number", "Unknown"),
-            "addon_status": data.get("status"),
-            "addon_status_details": data.get("status_details"),
+            "version": safe_text(stats.get("version", "Unknown")),
+            "phone_number": safe_text(stats.get("my_number", "Unknown")),
+            "addon_status": safe_text(data.get("status")),
+            "addon_status_details": safe_text(data.get("status_details")),
+            "connection_state": connection_state,
             "passkey_required": (
                 bool(dashboard.get("passkeyDetected", False))
                 if isinstance(dashboard, dict)
                 else False
             ),
-            "last_update": stats.get("start_time"),
+            "last_update": format_timestamp(stats.get("start_time")),
             "uptime_seconds": stats.get("uptime", 0),
             "total_sent": stats.get("sent", 0),
             "total_received": stats.get("received", 0),
             "total_failed": stats.get("failed", 0),
-            "last_message_sent": stats.get("last_sent_message"),
-            "last_message_target": stats.get("last_sent_target"),
+            "last_message_sent": safe_text(stats.get("last_sent_message")),
+            "last_message_target": last_target_resolved,
+            "status_description": (
+                f"{state_title} ({num_str})"
+                if self.is_on
+                else f"{state_title} ({det_str})"
+            ),
         }
 
     @property
     def entity_registry_enabled_default(self) -> bool:
         """Return if the entity should be enabled when first added."""
         return True
+
+
+class WhatsAppModerationStatusBinarySensor(
+    CoordinatorEntity[WhatsAppDataUpdateCoordinator],  # type: ignore[misc]
+    BinarySensorEntity,  # type: ignore[misc]
+):
+    """Binary sensor indicating global WhatsApp moderation engine status.
+
+    Disabled by default and automatically activated in the entity registry
+    as soon as moderation becomes active (globally or for any group).
+    It is disabled again when moderation is fully turned off.
+    """
+
+    _attr_device_class = BinarySensorDeviceClass.RUNNING
+    _attr_has_entity_name = True
+    _attr_translation_key = "moderation_status"
+    _attr_entity_registry_enabled_default = False
+
+    def __init__(
+        self, coordinator: WhatsAppDataUpdateCoordinator, entry: ConfigEntry
+    ) -> None:
+        """Initialise the moderation status binary sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry.entry_id}_moderation_status"
+        self._attr_device_info = coordinator.client.get_device_info()
+
+    async def async_added_to_hass(self) -> None:
+        """React to entity added to hass; sync registry enabled state first."""
+        await super().async_added_to_hass()
+        self._sync_registry_enabled()
+
+    def _sync_registry_enabled(self) -> None:
+        """Enable or disable this entity in the registry based on moderation state."""
+        sync_moderation_registry_enabled(self)
+
+    def _handle_coordinator_update(self) -> None:
+        """React to coordinator data updates; sync registry enabled state first."""
+        self._sync_registry_enabled()
+        if self.enabled:
+            super()._handle_coordinator_update()
+
+    @property
+    def is_on(self) -> bool:
+        """Return true if global moderation is enabled."""
+        data = self.coordinator.data or {}
+        mod = data.get("moderation", {})
+        return bool(mod.get("global_enabled", False))
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return detailed, user-friendly moderation attributes."""
+        data = self.coordinator.data or {}
+        mod = data.get("moderation", {})
+        groups = mod.get("groups", {})
+        federations = mod.get("federations", [])
+        chats_data = data.get("chats", {})
+
+        # Build map of JID -> chat name from chats data
+        chat_names: dict[str, str] = {}
+        if isinstance(chats_data, dict):
+            for c in chats_data.get("groups", []):
+                if isinstance(c, dict) and c.get("jid"):
+                    chat_names[str(c.get("jid"))] = str(
+                        c.get("name") or c.get("subject") or c.get("jid")
+                    )
+        elif isinstance(chats_data, list):
+            for c in chats_data:
+                if isinstance(c, dict) and c.get("jid"):
+                    chat_names[str(c.get("jid"))] = str(
+                        c.get("name") or c.get("subject") or c.get("jid")
+                    )
+
+        # Build list of managed group names / IDs for clarity
+        managed_group_list: list[str] = []
+        for gid, gdata in groups.items():
+            name = (
+                gdata.get("name")
+                or gdata.get("subject")
+                or chat_names.get(str(gid))
+                or str(gid)
+            )
+            managed_group_list.append(str(name))
+
+        return {
+            "global_enabled": mod.get("global_enabled", False),
+            "managed_groups_count": len(groups),
+            "managed_groups": managed_group_list,
+            "federations_count": len(federations),
+            "status_description": (
+                (
+                    f"Globally active with {len(groups)} managed group(s)"
+                    f" and {len(federations)} federation(s)"
+                )
+                if mod.get("global_enabled")
+                else "Globally disabled"
+            ),
+        }
+
+
+class WhatsAppTelegramBridgeStatusBinarySensor(
+    CoordinatorEntity[WhatsAppDataUpdateCoordinator],  # type: ignore[misc]
+    BinarySensorEntity,  # type: ignore[misc]
+):
+    """Binary sensor indicating global Telegram Bridge engine status.
+
+    Disabled by default in entity registry. Automatically enabled as soon as
+    a Telegram bot token is configured and at least one mapping is active.
+    Disabled again automatically when no active mappings remain.
+    """
+
+    _attr_device_class = BinarySensorDeviceClass.RUNNING
+    _attr_has_entity_name = True
+    _attr_translation_key = "telegram_bridge_status"
+    _attr_entity_registry_enabled_default = False
+
+    def __init__(
+        self, coordinator: WhatsAppDataUpdateCoordinator, entry: ConfigEntry
+    ) -> None:
+        """Initialise the Telegram bridge status binary sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry.entry_id}_telegram_bridge_status"
+        self._attr_device_info = coordinator.client.get_device_info()
+
+    async def async_added_to_hass(self) -> None:
+        """React to entity added to hass; sync registry enabled state first."""
+        await super().async_added_to_hass()
+        self._sync_registry_enabled()
+
+    def _sync_registry_enabled(self) -> None:
+        """Enable or disable this entity in the registry based on bridge state."""
+        sync_telegram_bridge_registry_enabled(self)
+
+    def _handle_coordinator_update(self) -> None:
+        """React to coordinator data updates; sync registry enabled state first."""
+        self._sync_registry_enabled()
+        if self.enabled:
+            super()._handle_coordinator_update()
+
+    @property
+    def is_on(self) -> bool:
+        """Return true if Telegram bridge is enabled and bot is connected."""
+        data = self.coordinator.data or {}
+        tg = data.get("telegram", {})
+        return bool(tg.get("enabled", False) and tg.get("bot_token"))
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return detailed Telegram bridge attributes."""
+        data = self.coordinator.data or {}
+        tg = data.get("telegram", {})
+        mappings = tg.get("mappings", [])
+        active_mappings = [m for m in mappings if m.get("enabled")]
+        active_count = len(active_mappings)
+        bot_username = tg.get("bot_username", "")
+
+        # Build human readable list of active forwarding mappings
+        active_mapping_names: list[str] = []
+        for m in active_mappings:
+            name = (
+                m.get("name")
+                or m.get("chat_name")
+                or m.get("tg_chat_id")
+                or "Unnamed forwarder"
+            )
+            active_mapping_names.append(str(name))
+
+        return {
+            "enabled": tg.get("enabled", False),
+            "bot_username": f"@{bot_username}" if bot_username else "None",
+            "mappings_count": len(mappings),
+            "active_mappings_count": active_count,
+            "active_forwarders": active_mapping_names,
+            "status_description": (
+                (
+                    f"Active with bot @{bot_username} — "
+                    f"{active_count} active forwarder(s)"
+                )
+                if self.is_on and bot_username
+                else "Inactive or no bot configured"
+            ),
+        }

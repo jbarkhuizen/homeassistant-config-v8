@@ -404,9 +404,6 @@
       "failed": {
         "name": "Fehlgeschlagene Nachrichten"
       },
-      "uptime": {
-        "name": "Betriebszeit"
-      },
       "version": {
         "name": "WhatsApp Version"
       },
@@ -415,16 +412,42 @@
       },
       "chats": {
         "name": "Chats"
+      },
+      "moderation_warnings": {
+        "name": "Aktive Moderations-Verwarnungen"
+      },
+      "moderation_raid_status": {
+        "name": "Anti-Raid Schutz-Status"
+      },
+      "pending_captchas": {
+        "name": "Ausstehende Captcha-Verifizierungen"
+      }
+    },
+    "switch": {
+      "moderation_master": {
+        "name": "Moderation Engine"
+      },
+      "telegram_bridge_master": {
+        "name": "Telegram-Brücke"
       }
     },
     "binary_sensor": {
       "connection": {
         "name": "Verbindung"
+      },
+      "moderation_status": {
+        "name": "WhatsApp Moderations-Engine"
+      },
+      "telegram_bridge_status": {
+        "name": "Telegram Bridge Status"
       }
     },
     "button": {
       "diagnostic_test": {
         "name": "Diagnose-Test"
+      },
+      "reconnect": {
+        "name": "WhatsApp-Sitzung neu starten"
       }
     },
     "notify": {

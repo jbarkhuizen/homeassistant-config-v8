@@ -52,6 +52,7 @@ PLATFORMS: list[Platform] = [
     Platform.BUTTON,
     Platform.NOTIFY,
     Platform.SENSOR,
+    Platform.SWITCH,
 ]
 
 _SERVICES = [
@@ -75,6 +76,49 @@ _SERVICES = [
     "mark_as_read",
     "get_contacts",
     "check_number",
+    "create_group",
+    "add_group_participant",
+    "remove_group_participant",
+    "promote_group_participant",
+    "demote_group_participant",
+    "leave_group",
+    "update_group_subject",
+    "update_group_description",
+    "update_group_settings",
+    "join_group",
+    "star_message",
+    "unstar_message",
+    "pin_message",
+    "unpin_message",
+    "forward_message",
+    "send_status",
+    "get_profile_picture",
+    "get_contact_info",
+    "block_contact",
+    "unblock_contact",
+    "archive_chat",
+    "unarchive_chat",
+    "mute_chat",
+    "unmute_chat",
+    "get_channel_info",
+    "follow_channel",
+    "unfollow_channel",
+    "mute_channel",
+    "unmute_channel",
+    "add_chat_label",
+    "remove_chat_label",
+    "mark_as_unread",
+    "clear_chat",
+    "delete_chat",
+    "get_chat_messages",
+    "enable_moderation",
+    "disable_moderation",
+    "warn_user",
+    "clear_warnings",
+    "import_moderation_config",
+    "configure_telegram_bot",
+    "add_telegram_mapping",
+    "remove_telegram_mapping",
 ]
 
 
@@ -193,7 +237,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Handle incoming messages
     def handle_incoming_message(data: dict[str, Any]) -> None:
-        """Handle incoming message from API."""
+        """Handle incoming message or event from API."""
+        event_type = str(data.get("type", "")).lower()
+        if event_type in (
+            "config_updated",
+            "state_changed",
+            "moderation_updated",
+            "telegram_updated",
+        ):
+            _LOGGER.debug(
+                "Received config update event (%s) from addon, refreshing coordinator",
+                event_type,
+            )
+            hass.async_create_task(coordinator.async_request_refresh())
+            return
+
         # Normalize sender for the event
         # The addon now sends 'sender_number' which is the best-effort phone number
         # We prefer that over splitting the raw JID which might be an LID (UUID)
@@ -380,9 +438,6 @@ def get_client_for_account(
 
 async def async_setup_services(hass: HomeAssistant) -> None:
     """Set up global WhatsApp services."""
-    global _SERVICES_REGISTERED
-    if _SERVICES_REGISTERED:
-        return
 
     async def _handle_service(call: ServiceCall) -> Any:
         """General service handler for routing."""
@@ -397,15 +452,15 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         if service == "send_message":
             await client.send_message(
-                data["target"],
-                data["message"],
+                data.get("target", ""),
+                data.get("message", ""),
                 quoted_message_id=_get_quoted(),
                 expiration=data.get("expiration"),
             )
         elif service == "send_poll":
             await client.send_poll(
-                data["target"],
-                data["question"],
+                data.get("target", ""),
+                data.get("question", ""),
                 data.get("options", []),
                 quoted_message_id=_get_quoted(),
                 expiration=data.get("expiration"),
@@ -413,17 +468,17 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             )
         elif service == "send_image":
             await client.send_image(
-                data["target"],
-                data["url"],
+                data.get("target", ""),
+                data.get("url", ""),
                 data.get("caption"),
                 quoted_message_id=_get_quoted(),
                 expiration=data.get("expiration"),
             )
         elif service == "send_location":
             await client.send_location(
-                data["target"],
-                float(data["latitude"]),
-                float(data["longitude"]),
+                data.get("target", ""),
+                float(data.get("latitude", 0)),
+                float(data.get("longitude", 0)),
                 data.get("name"),
                 data.get("address"),
                 quoted_message_id=_get_quoted(),
@@ -431,8 +486,8 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             )
         elif service == "send_event":
             await client.send_event(
-                data["target"],
-                data["name"],
+                data.get("target", ""),
+                data.get("name", ""),
                 description=data.get("description"),
                 date=data.get("date"),
                 location=data.get("location"),
@@ -442,21 +497,24 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             )
         elif service == "send_reaction":
             await client.send_reaction(
-                data["target"], data["reaction"], data["message_id"]
+                data.get("target", ""),
+                data.get("reaction", ""),
+                data.get("message_id", ""),
             )
         elif service == "send_document":
             await client.send_document(
-                data["target"],
-                data["url"],
+                data.get("target", ""),
+                data.get("url", ""),
                 data.get("file_name"),
                 data.get("message"),
                 quoted_message_id=_get_quoted(),
                 expiration=data.get("expiration"),
+                mimetype=data.get("mimetype") or data.get("mime_type"),
             )
         elif service == "send_video":
             await client.send_video(
-                data["target"],
-                data["url"],
+                data.get("target", ""),
+                data.get("url", ""),
                 data.get("message"),
                 quoted_message_id=_get_quoted(),
                 expiration=data.get("expiration"),
@@ -464,57 +522,220 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             )
         elif service == "send_audio":
             await client.send_audio(
-                data["target"],
-                data["url"],
+                data.get("target", ""),
+                data.get("url", ""),
                 data.get("ptt", False),
                 quoted_message_id=_get_quoted(),
                 expiration=data.get("expiration"),
                 seconds=data.get("seconds"),
             )
         elif service == "revoke_message":
-            await client.revoke_message(data["target"], data["message_id"])
+            await client.revoke_message(
+                data.get("target", ""), data.get("message_id", "")
+            )
         elif service == "edit_message":
             await client.edit_message(
-                data["target"], data["message_id"], data["message"]
+                data.get("target", ""),
+                data.get("message_id", ""),
+                data.get("message", ""),
             )
         elif service == "send_list":
             await client.send_list(
-                data["target"],
+                data.get("target", ""),
                 data.get("title") or "",
                 data.get("text") or "",
                 data.get("button_text") or "",
-                data["sections"],
+                data.get("sections", []),
                 quoted_message_id=_get_quoted(),
                 expiration=data.get("expiration"),
             )
         elif service == "send_contact":
             await client.send_contact(
-                data["target"], data["name"], data["contact_number"]
+                data.get("target", ""),
+                data.get("name", ""),
+                data.get("contact_number", ""),
             )
         elif service == "configure_webhook":
             await client.set_webhook(
-                data["url"], data.get("enabled", True), data.get("token")
+                data.get("url", ""), data.get("enabled", True), data.get("token")
             )
         elif service == "update_presence":
-            await client.set_presence(data["target"], data["presence"])
+            await client.set_presence(data.get("target", ""), data.get("presence", ""))
         elif service == "send_buttons":
             await client.send_buttons(
-                data["target"],
-                data["message"],
-                data["buttons"],
+                data.get("target", ""),
+                data.get("message", ""),
+                data.get("buttons", []),
                 data.get("footer"),
                 quoted_message_id=_get_quoted(),
                 expiration=data.get("expiration"),
             )
         elif service == "mark_as_read":
-            await client.mark_as_read(data["target"], data.get("message_id"))
+            await client.mark_as_read(data.get("target", ""), data.get("message_id"))
         elif service == "search_groups":
             await _handle_search_groups(hass, client, data.get("name_filter", ""))
         elif service == "get_contacts":
             contacts = await client.get_contacts()
             return {"contacts": contacts}
         elif service == "check_number":
-            return await client.check_number(data["number"])
+            return await client.check_number(data.get("number", ""))
+        elif service == "create_group":
+            return await client.create_group(
+                data.get("subject") or data.get("name") or "",
+                data.get("participants", []),
+            )
+        elif service == "add_group_participant":
+            return await client.add_group_participants(
+                data.get("target", ""), data.get("participants", [])
+            )
+        elif service == "remove_group_participant":
+            return await client.remove_group_participants(
+                data.get("target", ""), data.get("participants", [])
+            )
+        elif service == "promote_group_participant":
+            return await client.promote_group_participants(
+                data.get("target", ""), data.get("participants", [])
+            )
+        elif service == "demote_group_participant":
+            return await client.demote_group_participants(
+                data.get("target", ""), data.get("participants", [])
+            )
+        elif service == "leave_group":
+            return await client.leave_group(data.get("target", ""))
+        elif service == "update_group_subject":
+            return await client.update_group_subject(
+                data.get("target", ""), data.get("subject", "")
+            )
+        elif service == "update_group_description":
+            return await client.update_group_description(
+                data.get("target", ""), data.get("description", "")
+            )
+        elif service == "update_group_settings":
+            return await client.update_group_settings(
+                data.get("target", ""),
+                announce=data.get("announce"),
+                locked=data.get("locked"),
+            )
+        elif service == "join_group":
+            return await client.join_group_via_invite(data.get("code", ""))
+        elif service == "star_message":
+            return await client.star_message(
+                data.get("target", ""), data.get("message_id", ""), star=True
+            )
+        elif service == "unstar_message":
+            return await client.unstar_message(
+                data.get("target", ""), data.get("message_id", "")
+            )
+        elif service == "pin_message":
+            return await client.pin_message(
+                data.get("target", ""),
+                data.get("message_id", ""),
+                duration=data.get("duration", 86400),
+            )
+        elif service == "unpin_message":
+            return await client.unpin_message(
+                data.get("target", ""), data.get("message_id", "")
+            )
+        elif service == "forward_message":
+            return await client.forward_message(
+                data.get("target", ""),
+                data.get("message_id", ""),
+                data.get("destination", ""),
+            )
+        elif service == "send_status":
+            return await client.send_status(
+                message=data.get("message"),
+                url=data.get("url"),
+                caption=data.get("caption"),
+            )
+        elif service == "get_profile_picture":
+            return {
+                "profile_picture_url": await client.get_profile_picture(data["target"])
+            }
+        elif service == "get_contact_info":
+            return await client.get_contact_about(data["target"])
+        elif service == "block_contact":
+            return await client.block_contact(data["target"])
+        elif service == "unblock_contact":
+            return await client.unblock_contact(data["target"])
+        elif service == "archive_chat":
+            return await client.archive_chat(data["target"])
+        elif service == "unarchive_chat":
+            return await client.unarchive_chat(data["target"])
+        elif service == "mute_chat":
+            return await client.mute_chat(
+                data["target"], duration_ms=data.get("duration_ms", 8 * 3600 * 1000)
+            )
+        elif service == "unmute_chat":
+            return await client.unmute_chat(data["target"])
+        elif service == "get_channel_info":
+            return await client.get_channel_info(
+                data.get("target") or data.get("code") or ""
+            )
+        elif service == "follow_channel":
+            return await client.follow_channel(data["target"])
+        elif service == "unfollow_channel":
+            return await client.unfollow_channel(data["target"])
+        elif service == "mute_channel":
+            return await client.mute_channel(data["target"])
+        elif service == "unmute_channel":
+            return await client.unmute_channel(data["target"])
+        elif service == "add_chat_label":
+            return await client.add_chat_label(data["target"], data["label_id"])
+        elif service == "remove_chat_label":
+            return await client.remove_chat_label(data["target"], data["label_id"])
+        elif service == "mark_as_unread":
+            return await client.mark_as_unread(data["target"])
+        elif service == "clear_chat":
+            return await client.clear_chat(data["target"])
+        elif service == "delete_chat":
+            return await client.delete_chat(data["target"])
+        elif service == "get_chat_messages":
+            return await client.get_chat_messages(
+                data["target"], limit=data.get("limit", 50)
+            )
+        elif service == "enable_moderation":
+            return await client.enable_group_moderation(data["target"])
+        elif service == "disable_moderation":
+            return await client.disable_group_moderation(data["target"])
+        elif service == "warn_user":
+            return await client.warn_user(
+                data["target"], data["user_id"], data.get("reason")
+            )
+        elif service == "clear_warnings":
+            return await client.clear_warnings(data["target"], data["user_id"])
+        elif service == "import_moderation_config":
+            return await client.import_moderation_config(
+                data["target"], data.get("config", {})
+            )
+        elif service == "configure_telegram_bot":
+            return await client.update_telegram_config(
+                bot_token=data.get("bot_token"),
+                enabled=data.get("enabled"),
+            )
+        elif service == "add_telegram_mapping":
+            return await client.add_telegram_mapping(
+                wa_jid=data["wa_jid"],
+                tg_chat_id=data["tg_chat_id"],
+                bot_id=data.get("bot_id"),
+                mapping_name=data.get("mapping_name"),
+                wa_name=data.get("wa_name"),
+                tg_chat_title=data.get("tg_chat_title"),
+                sync_mode=data.get("sync_mode", "bidirectional"),
+                include_group_name=data.get("include_group_name", False),
+                include_sender_name=data.get("include_sender_name", True),
+                sync_self_messages=data.get("sync_self_messages", False),
+                tg_thread_id=data.get("tg_thread_id"),
+                convert_formatting=data.get("convert_formatting", True),
+                anonymize_phone_numbers=data.get("anonymize_phone_numbers", False),
+                ignore_command_prefixes=data.get("ignore_command_prefixes", ""),
+                sync_reactions=data.get("sync_reactions", True),
+                sync_edits=data.get("sync_edits", True),
+                sync_deletions=data.get("sync_deletions", True),
+                is_direct_chat_mirror=data.get("is_direct_chat_mirror", False),
+            )
+        elif service == "remove_telegram_mapping":
+            return await client.delete_telegram_mapping(data["mapping_id"])
         return None
 
     async def _handle_search_groups(
@@ -826,6 +1047,316 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         supports_response=SupportsResponse.OPTIONAL,
     )
 
+    create_group_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("subject"): cv.string,
+        vol.Required("participants"): vol.All(cv.ensure_list, [cv.string]),
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "create_group",
+        _handle_service,
+        schema=vol.Schema(create_group_schema),
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+
+    group_participants_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Required("participants"): vol.All(cv.ensure_list, [cv.string]),
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "add_group_participant",
+        _handle_service,
+        schema=vol.Schema(group_participants_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "remove_group_participant",
+        _handle_service,
+        schema=vol.Schema(group_participants_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "promote_group_participant",
+        _handle_service,
+        schema=vol.Schema(group_participants_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "demote_group_participant",
+        _handle_service,
+        schema=vol.Schema(group_participants_schema),
+    )
+
+    target_only_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "leave_group",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+    )
+
+    group_subject_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Required("subject"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "update_group_subject",
+        _handle_service,
+        schema=vol.Schema(group_subject_schema),
+    )
+
+    group_desc_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Required("description"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "update_group_description",
+        _handle_service,
+        schema=vol.Schema(group_desc_schema),
+    )
+
+    group_settings_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Optional("announce"): cv.boolean,
+        vol.Optional("locked"): cv.boolean,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "update_group_settings",
+        _handle_service,
+        schema=vol.Schema(group_settings_schema),
+    )
+
+    join_group_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("code"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "join_group",
+        _handle_service,
+        schema=vol.Schema(join_group_schema),
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+
+    msg_id_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Required("message_id"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "star_message",
+        _handle_service,
+        schema=vol.Schema(msg_id_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "unstar_message",
+        _handle_service,
+        schema=vol.Schema(msg_id_schema),
+    )
+
+    pin_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Required("message_id"): cv.string,
+        vol.Optional("duration", default=86400): cv.positive_int,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "pin_message",
+        _handle_service,
+        schema=vol.Schema(pin_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "unpin_message",
+        _handle_service,
+        schema=vol.Schema(msg_id_schema),
+    )
+
+    forward_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Required("message_id"): cv.string,
+        vol.Required("destination"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "forward_message",
+        _handle_service,
+        schema=vol.Schema(forward_schema),
+    )
+
+    status_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Optional("message"): cv.string,
+        vol.Optional("url"): cv.string,
+        vol.Optional("caption"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "send_status",
+        _handle_service,
+        schema=vol.Schema(status_schema),
+    )
+
+    hass.services.async_register(
+        DOMAIN,
+        "get_profile_picture",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "get_contact_info",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "block_contact",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "unblock_contact",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "archive_chat",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "unarchive_chat",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+    )
+
+    mute_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Optional("duration_ms", default=8 * 3600 * 1000): cv.positive_int,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "mute_chat",
+        _handle_service,
+        schema=vol.Schema(mute_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "unmute_chat",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+    )
+
+    channel_info_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Optional("target"): cv.string,
+        vol.Optional("code"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "get_channel_info",
+        _handle_service,
+        schema=vol.Schema(channel_info_schema),
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "follow_channel",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "unfollow_channel",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "mute_channel",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "unmute_channel",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+    )
+
+    chat_label_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Required("label_id"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "add_chat_label",
+        _handle_service,
+        schema=vol.Schema(chat_label_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "remove_chat_label",
+        _handle_service,
+        schema=vol.Schema(chat_label_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "mark_as_unread",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "clear_chat",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "delete_chat",
+        _handle_service,
+        schema=vol.Schema(target_only_schema),
+    )
+
+    get_messages_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Required("target"): cv.string,
+        vol.Optional("limit", default=50): cv.positive_int,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "get_chat_messages",
+        _handle_service,
+        schema=vol.Schema(get_messages_schema),
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+
+    global _SERVICES_REGISTERED
     _SERVICES_REGISTERED = True
 
 

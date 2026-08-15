@@ -22,7 +22,18 @@ from typing import Any
 import aiohttp
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
+
+try:
+    from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
+except ImportError:
+    from homeassistant.exceptions import (
+        HomeAssistantError,  # type: ignore[attr-defined]
+    )
+
+    class ConfigEntryAuthFailed(Exception):  # type: ignore[no-redef] # noqa: N818
+        pass
+
+
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
@@ -31,6 +42,13 @@ from homeassistant.helpers.update_coordinator import (
 
 from .api import WhatsAppApiClient, WhatsAppAuthError
 from .const import CONF_POLLING_INTERVAL, DOMAIN
+from .helpers import (
+    async_sync_moderation_entities,
+    async_sync_telegram_bridge_entities,
+)
+from .helpers import (
+    safe_text as _safe_text,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -148,6 +166,22 @@ class WhatsAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):  # t
             except Exception as dash_err:
                 _LOGGER.debug("Dashboard fetch skipped: %s", dash_err)
 
+            moderation: dict[str, Any] = {}
+            try:
+                mod_res = await self.client.get_moderation_config()
+                if isinstance(mod_res, dict) and "data" in mod_res:
+                    moderation = mod_res["data"]
+            except Exception as mod_err:
+                _LOGGER.debug("Moderation fetch skipped: %s", mod_err)
+
+            telegram: dict[str, Any] = {}
+            try:
+                tg_res = await self.client.get_telegram_config()
+                if isinstance(tg_res, dict) and "data" in tg_res:
+                    telegram = tg_res["data"]
+            except Exception as tg_err:
+                _LOGGER.debug("Telegram fetch skipped: %s", tg_err)
+
             chats = {"total_chats": 0, "groups": []}
             if connected:
                 try:
@@ -222,34 +256,88 @@ class WhatsAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):  # t
                         "Failed to update device registry version: %s", dr_err
                     )
 
-            return {
+            data = {
                 "connected": connected,
                 "status": status,
                 "status_details": details,
                 "stats": stats,
                 "chats": chats,
                 "dashboard": dashboard,
+                "moderation": moderation,
+                "telegram": telegram,
             }
+            if self.config_entry:
+                async_sync_moderation_entities(
+                    self.hass, self.config_entry.entry_id, data
+                )
+                async_sync_telegram_bridge_entities(
+                    self.hass, self.config_entry.entry_id, data
+                )
+            return _safe_text(data)
         except WhatsAppAuthError as err:
             _LOGGER.error("Authentication failed during polling: %s", err)
             raise ConfigEntryAuthFailed("Invalid API Key for WhatsApp Addon") from err
         except (HomeAssistantError, aiohttp.ClientError, TimeoutError) as err:
-            # Create issue for connection failure (Addon unreachable or Auth)
+            previous_data = self.data or {}
+            prev_stats = previous_data.get("stats", {})
+            prev_health = previous_data.get("health", {})
+            last_reason = str(prev_stats.get("last_disconnect_reason", "")).lower()
+            health_status = str(prev_health.get("status", "")).lower()
+            is_shutting_down = (
+                bool(prev_stats.get("shutting_down", False))
+                or health_status in ("shutting_down", "updating")
+                or last_reason in ("shutting_down", "updating")
+            )
+
+            if is_shutting_down:
+                status_str = (
+                    "updating"
+                    if (health_status == "updating" or last_reason == "updating")
+                    else "shutting_down"
+                )
+                status_desc = (
+                    "Addon is updating to new version..."
+                    if status_str == "updating"
+                    else "Addon is restarting..."
+                )
+                _LOGGER.info(
+                    "WhatsApp Addon is %s — maintaining entity availability (%s)",
+                    status_str,
+                    err,
+                )
+                return _safe_text(
+                    {
+                        "connected": False,
+                        "status": status_str,
+                        "status_details": status_desc,
+                        "health": {"status": status_str},
+                        "stats": {
+                            "last_disconnect_reason": status_str,
+                            "shutting_down": True,
+                            "my_number": prev_stats.get("my_number", "Unknown"),
+                            "version": prev_stats.get("version", "Unknown"),
+                            "sent": prev_stats.get("sent", 0),
+                            "received": prev_stats.get("received", 0),
+                            "failed": prev_stats.get("failed", 0),
+                        },
+                        "chats": previous_data.get("chats", {}),
+                        "dashboard": previous_data.get("dashboard", {}),
+                        "moderation": previous_data.get("moderation", {}),
+                        "telegram": previous_data.get("telegram", {}),
+                    }
+                )
+
             ir.async_create_issue(
                 self.hass,
                 DOMAIN,
                 "connection_failed",
                 is_fixable=False,
-                severity=ir.IssueSeverity.ERROR,
+                severity=ir.IssueSeverity.WARNING,
                 translation_key="connection_failed",
                 translation_placeholders={"error": str(err)},
             )
-            # If we were previously connected, we might want to log a warning instead
-            # of failing hard immediately to let entities keep their last known
-            # state for a short while.
-            # But HA's DataUpdateCoordinator usually handles this via UpdateFailed.
             _LOGGER.debug("Error communicating with WhatsApp API: %s", err)
-            raise UpdateFailed(f"Error communicating with API: {err}") from err
+            raise UpdateFailed(f"Addon unreachable: {err}") from err
         except Exception as err:
             _LOGGER.error("Unexpected error communicating with WhatsApp API: %s", err)
             raise UpdateFailed(
