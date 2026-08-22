@@ -27,6 +27,7 @@ import contextlib
 import json
 import logging
 import re
+from collections import deque
 from collections.abc import AsyncGenerator
 from typing import Any, cast
 
@@ -35,6 +36,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 
 from .const import DOMAIN
+from .helpers import normalize_media_url
 from .helpers import safe_text as _safe_text
 
 _LOGGER = logging.getLogger(__name__)
@@ -93,6 +95,8 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
         self.mask_sensitive_data = mask_sensitive_data
         self.whitelist = whitelist or []
         self.retry_attempts = 2
+        self.buttons_as_polls = False
+        self._active_button_polls: dict[str, dict[str, Any]] = {}
         self._connected = False
         self._disconnect_reason: str | None = None
         self.stats: dict[str, Any] = {
@@ -112,6 +116,9 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
         self._polling_task: asyncio.Task[Any] | None = None
         self._session: aiohttp.ClientSession | None = session
         self._owns_session: bool = session is None
+        # Tracks IDs of messages sent by this HA integration so echoes can be
+        # identified and blocked from firing whatsapp_message_received (loop guard).
+        self._sent_message_ids: deque[str] = deque(maxlen=500)
 
     def _extract_error(self, text: str) -> str:
         """Extract a clean error message from a JSON response."""
@@ -120,6 +127,14 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
             return data.get("detail") or data.get("error") or text
         except (json.JSONDecodeError, AttributeError):
             return text
+
+    def was_sent_by_ha(self, msg_id: str) -> bool:
+        """Return True if this message ID was sent by this HA integration.
+
+        Used to identify echoed messages and prevent them from re-firing
+        whatsapp_message_received, which would cause automation loops.
+        """
+        return bool(msg_id) and msg_id in self._sent_message_ids
 
     def is_allowed(self, target: str) -> bool:
         """Check if a target JID is allowed by the whitelist."""
@@ -226,14 +241,62 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
 
     def _normalize_url(self, url: str) -> str:
         """Prepend HA base URL to relative URLs starting with '/'."""
-        if not url or url.startswith("//"):
-            return url
-        # /config/www/ is the filesystem path; HA serves it at /local/
-        if url.startswith("/config/www/"):
-            url = "/local/" + url[len("/config/www/") :]
-        if url.startswith("/") and self.ha_base_url:
-            return f"{self.ha_base_url.rstrip('/')}{url}"
-        return url
+        return normalize_media_url(url, self.ha_base_url)
+
+    def _validate_target(self, number: str) -> str:
+        """Validate that number is whitelisted and return resolved JID."""
+        if not self.is_allowed(number):
+            raise HomeAssistantError(f"Target {number} is not in the whitelist.")
+        target_jid = self.ensure_jid(number)
+        if not target_jid:
+            raise HomeAssistantError(f"Could not parse valid JID from target: {number}")
+        return target_jid
+
+    async def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        json_data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+        timeout: float = 30.0,
+        action_name: str = "request",
+    ) -> Any:
+        """Central request handler for addon API calls."""
+        url = f"{self.host}{path if path.startswith('/') else f'/{path}'}"
+        headers = {"X-Auth-Token": self.api_key} if self.api_key else {}
+        query_params = {"session_id": self.session_id}
+        if params:
+            query_params.update(params)
+
+        async with (
+            self._get_session() as session,
+            session.request(
+                method,
+                url,
+                json=json_data,
+                headers=headers,
+                params=query_params,
+                timeout=aiohttp.ClientTimeout(total=timeout),
+            ) as resp,
+        ):
+            if resp.status == 401:
+                raise WhatsAppAuthError("Invalid API Key")
+            if resp.status == 429:
+                raise WhatsAppRateLimitError("Too many requests (429)")
+            if resp.status != 200:
+                text = await resp.text()
+                error_msg = self._extract_error(text)
+                raise HomeAssistantError(f"Failed to {action_name}: {error_msg}")
+
+            # Try to return JSON if present, otherwise text
+            content_type = resp.headers.get("Content-Type", "")
+            if "application/json" in content_type:
+                return await resp.json()
+            try:
+                return await resp.json()
+            except Exception:
+                return await resp.text()
 
     @contextlib.asynccontextmanager
     async def _get_session(self) -> AsyncGenerator[aiohttp.ClientSession, None]:
@@ -493,6 +556,25 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
             return cast(str, number)
         return f"{number.split(':')[0]}@s.whatsapp.net"
 
+    def get_admin_jid(self) -> str | None:
+        """Return the primary admin JID if configured in stats or options."""
+        admins = self.stats.get("admin_numbers")
+        if not admins:
+            return None
+        if isinstance(admins, list) and admins:
+            raw_num = str(admins[0]).strip()
+        elif isinstance(admins, str) and admins.strip():
+            raw_num = admins.split(",")[0].strip()
+        else:
+            return None
+
+        if not raw_num:
+            return None
+        clean = "".join(c for c in raw_num if c.isdigit())
+        if not clean:
+            return None
+        return f"{clean}@s.whatsapp.net"
+
     async def get_stats(self) -> dict[str, Any]:
         """Fetch stats from the Addon."""
         url = f"{self.host}/stats"
@@ -741,6 +823,9 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
             result = await resp.json()
 
             msg_id = str(result.get("id", ""))
+            # Track sent message ID to identify echoes and prevent automation loops.
+            if msg_id:
+                self._sent_message_ids.append(msg_id)
             # Local fallback increment (stats will update on next poll)
             self.stats["sent"] += 1
             self.stats["last_sent_message"] = message
@@ -818,13 +903,31 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
         target_jid = self.ensure_jid(number)
         if not target_jid:
             raise HomeAssistantError(f"Could not parse valid JID from target: {number}")
+
+        if not options or not isinstance(options, list):
+            raise HomeAssistantError("WhatsApp polls require a list of voting options.")
+        cleaned_options = [str(opt).strip() for opt in options if str(opt).strip()]
+        if len(cleaned_options) < 2:
+            raise HomeAssistantError(
+                "WhatsApp polls require at least 2 voting options (maximum 12). "
+                "If you need a single confirmation button, provide at least two "
+                "distinct choices."
+            )
+        if len(cleaned_options) > 12:
+            raise HomeAssistantError("WhatsApp polls support a maximum of 12 options.")
+        if len(set(cleaned_options)) != len(cleaned_options):
+            raise HomeAssistantError(
+                "WhatsApp polls require unique voting options. "
+                "Duplicate options are not supported by WhatsApp."
+            )
+
         return cast(
             str,
             await self._send_with_retry(
                 self._send_poll_internal,
                 target_jid,
                 question,
-                options,
+                cleaned_options,
                 quoted_message_id,
                 expiration,
                 allow_multiple_responses,
@@ -1293,7 +1396,9 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
         payload: dict[str, Any] = {
             "number": number,
             "message_id": message_id,
+            "messageId": message_id,
             "new_content": new_content,
+            "newText": new_content,
         }
         headers = {"X-Auth-Token": self.api_key} if self.api_key else {}
 
@@ -1718,8 +1823,8 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
         api_url = f"{self.host}/send_contact"
         payload: dict[str, Any] = {
             "number": number,
-            "contact_name": contact_name,
-            "contact_number": contact_number,
+            "contactName": contact_name,
+            "contactNumber": contact_number,
         }
         if quoted_message_id:
             payload["quotedMessageId"] = quoted_message_id
@@ -1813,6 +1918,77 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
         target_jid = self.ensure_jid(number)
         if not target_jid:
             raise HomeAssistantError(f"Could not parse valid JID from target: {number}")
+
+        if self.buttons_as_polls:
+            seen_counts: dict[str, int] = {}
+            poll_options: list[str] = []
+            button_id_map: dict[str, str] = {}
+
+            for i, b in enumerate(buttons):
+                btn_id = str(b.get("id") or b.get("buttonId") or f"btn_{i}")
+                raw_text = str(
+                    b.get("text") or b.get("displayText") or f"Option {i + 1}"
+                ).strip()
+                if not raw_text:
+                    raw_text = f"Option {i + 1}"
+
+                if raw_text in seen_counts:
+                    seen_counts[raw_text] += 1
+                    unique_text = f"{raw_text} ({seen_counts[raw_text]})"
+                else:
+                    seen_counts[raw_text] = 1
+                    unique_text = raw_text
+
+                poll_options.append(unique_text)
+                button_id_map[unique_text] = btn_id
+
+            # WhatsApp requires at least 2 options for polls.
+            # If only 1 button was provided, append a placeholder option
+            # as an auto-fix for WhatsApp limitations.
+            if len(poll_options) == 1:
+                lang = getattr(self, "language", None) or "en"
+                placeholder_label = (
+                    "— (Platzhalter / WA-Limit) —"
+                    if str(lang).lower().startswith("de")
+                    else "— (Placeholder / WA Limit) —"
+                )
+                poll_options.append(placeholder_label)
+                button_id_map[placeholder_label] = "__placeholder_ignore__"
+
+            poll_question = f"{text}\n\n_{footer}_" if footer else text
+            _LOGGER.debug(
+                "Emulating buttons via WhatsApp Poll (buttons_as_polls=True): "
+                "'%s' -> %s",
+                poll_question,
+                poll_options,
+            )
+            msg_id = await self.send_poll(
+                number=target_jid,
+                question=poll_question,
+                options=poll_options,
+                quoted_message_id=quoted_message_id,
+                expiration=expiration,
+                allow_multiple_responses=False,
+            )
+            if msg_id:
+                self._active_button_polls[msg_id] = {
+                    "question": poll_question,
+                    "button_map": button_id_map,
+                    "target": target_jid,
+                }
+                # Keep active_button_polls map bounded
+                if len(self._active_button_polls) > 200:
+                    oldest_key = next(iter(self._active_button_polls))
+                    self._active_button_polls.pop(oldest_key, None)
+            return msg_id
+
+        _LOGGER.warning(
+            "WhatsApp has deprecated interactive buttons on standard Multi-Device "
+            "(Web) accounts. The message was dispatched, but mobile clients may only "
+            "display plain text without buttons. For reliable 1-click interactions, "
+            "enable the 'Emulate buttons using Polls' option in integration settings "
+            "or use 'whatsapp.send_poll' directly."
+        )
         return cast(
             str,
             await self._send_with_retry(
@@ -3348,4 +3524,92 @@ class WhatsAppApiClient:  # noqa: PLR0904 – many public API methods are intent
             text = await resp.text()
             raise HomeAssistantError(
                 f"Failed to toggle Telegram bridge: {self._extract_error(text)}"
+            )
+
+    async def get_auto_responder_config(self) -> dict[str, Any]:
+        """Fetch auto responder configuration from addon."""
+        url = f"{self.host}/api/autoresponder/config"
+        headers = {"X-Auth-Token": self.api_key} if self.api_key else {}
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get(
+                url,
+                headers=headers,
+                params={"session_id": self.session_id},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as resp,
+        ):
+            if resp.status == 200:
+                return cast(dict[str, Any], await resp.json())
+            text = await resp.text()
+            raise HomeAssistantError(
+                f"Failed to fetch auto responder config: {self._extract_error(text)}"
+            )
+
+    async def set_auto_responder_config(
+        self,
+        enabled: bool | None = None,
+        start_time: str | None = None,
+        end_time: str | None = None,
+        direct_only: bool | None = None,
+        once_per_contact: bool | None = None,
+        message_template: str | None = None,
+    ) -> dict[str, Any]:
+        """Update auto responder configuration."""
+        url = f"{self.host}/api/autoresponder/config"
+        headers = {"X-Auth-Token": self.api_key} if self.api_key else {}
+        payload: dict[str, Any] = {}
+        if enabled is not None:
+            payload["enabled"] = enabled
+        if start_time is not None:
+            payload["start_time"] = start_time
+        if end_time is not None:
+            payload["end_time"] = end_time
+        if direct_only is not None:
+            payload["direct_only"] = direct_only
+        if once_per_contact is not None:
+            payload["once_per_contact"] = once_per_contact
+        if message_template is not None:
+            payload["message_template"] = message_template
+
+        async with (
+            aiohttp.ClientSession() as session,
+            session.post(
+                url,
+                json=payload,
+                headers=headers,
+                params={"session_id": self.session_id},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as resp,
+        ):
+            if resp.status == 200:
+                return cast(dict[str, Any], await resp.json())
+            text = await resp.text()
+            raise HomeAssistantError(
+                f"Failed to update auto responder config: {self._extract_error(text)}"
+            )
+
+    async def set_auto_responder_enabled(self, enabled: bool) -> dict[str, Any]:
+        """Enable or disable Auto Responder."""
+        return await self.set_auto_responder_config(enabled=enabled)
+
+    async def reset_auto_responder_seen(self) -> dict[str, Any]:
+        """Reset seen recipients for Auto Responder."""
+        url = f"{self.host}/api/autoresponder/reset-seen"
+        headers = {"X-Auth-Token": self.api_key} if self.api_key else {}
+        async with (
+            aiohttp.ClientSession() as session,
+            session.post(
+                url,
+                headers=headers,
+                params={"session_id": self.session_id},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as resp,
+        ):
+            if resp.status == 200:
+                return cast(dict[str, Any], await resp.json())
+            text = await resp.text()
+            err_msg = self._extract_error(text)
+            raise HomeAssistantError(
+                f"Failed to reset auto responder seen contacts: {err_msg}"
             )

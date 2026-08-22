@@ -34,12 +34,14 @@ from homeassistant.exceptions import ServiceValidationError
 from .api import WhatsAppApiClient
 from .const import (
     CONF_API_KEY,
+    CONF_BUTTONS_AS_POLLS,
     CONF_MARK_AS_READ,
     CONF_POLLING_INTERVAL,
     CONF_SELF_MESSAGES,
     CONF_WHITELIST,
     DOMAIN,
     EVENT_MESSAGE_RECEIVED,
+    EVENT_MESSAGE_SENT,
 )
 from .coordinator import WhatsAppDataUpdateCoordinator
 
@@ -119,6 +121,8 @@ _SERVICES = [
     "configure_telegram_bot",
     "add_telegram_mapping",
     "remove_telegram_mapping",
+    "set_auto_responder",
+    "reset_auto_responder_seen",
 ]
 
 
@@ -225,6 +229,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ha_base_url=ha_base_url,
         session=session,
     )
+    client.buttons_as_polls = bool(entry.options.get(CONF_BUTTONS_AS_POLLS, False))
 
     coordinator = WhatsAppDataUpdateCoordinator(hass, client, entry)
     hass.data.setdefault(DOMAIN, {})
@@ -272,15 +277,66 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         data["sender_number"] = clean_sender
 
-        # Self-message filtering (fromMe)
-        # Default: Don't monitor 'fromMe' messages unless explicitly enabled in options
+        # Self-message handling (fromMe)
         raw_msg = data.get("raw", {})
-        from_me = raw_msg.get("key", {}).get("fromMe", False)
-        if from_me and not entry.options.get(CONF_SELF_MESSAGES, False):
+        from_me = bool(
+            raw_msg.get("key", {}).get("fromMe", False) or data.get("from_me", False)
+        )
+        remote_id = str(
+            raw_msg.get("key", {}).get("remoteJid", "")
+            or data.get("to")
+            or data.get("from", "")
+        )
+        is_group = "@g.us" in remote_id or bool(data.get("is_group", False))
+
+        # --- Loop Guard (highest priority) ---
+        # If the incoming message ID matches one that HA itself sent, this is an
+        # echo from the addon.  We MUST NOT fire whatsapp_message_received — doing
+        # so would let user automations respond, producing an infinite loop.
+        # This guard is unconditional: it cannot be bypassed by CONF_SELF_MESSAGES.
+        incoming_msg_id = str(
+            raw_msg.get("key", {}).get("id", "")
+            or data.get("id", "")
+            or data.get("message_id", "")
+        )
+        if client.was_sent_by_ha(incoming_msg_id):
             _LOGGER.debug(
-                "Ignoring self-message (fromMe) as it's disabled in configuration"
+                "Dropping echo of HA-sent message %s — loop guard (ID match)",
+                incoming_msg_id,
             )
             return
+
+        if from_me:
+            # Fire dedicated whatsapp_message_sent event with rich metadata (Issue #94)
+            sent_data = {
+                **data,
+                "from": "me",
+                "to": remote_id,
+                "sender": "me",
+                "recipient": remote_id,
+                "recipient_number": (
+                    remote_id.split("@")[0]
+                    if ("@s.whatsapp.net" in remote_id or "@lid" in remote_id)
+                    else remote_id
+                ),
+                "is_group": is_group,
+                "entry_id": entry.entry_id,
+                "session_id": session_id,
+                "from_me": True,
+            }
+            if is_group:
+                sent_data["group_id"] = remote_id
+
+            _LOGGER.debug("Firing WhatsApp sent event: %s", sent_data)
+            hass.bus.async_fire(EVENT_MESSAGE_SENT, sent_data)
+
+            # Unless explicitly enabled in options, don't also fire received event
+            if not entry.options.get(CONF_SELF_MESSAGES, False):
+                _LOGGER.debug(
+                    "Ignoring self-message from whatsapp_message_received (fromMe) "
+                    "as self_messages option is disabled"
+                )
+                return
 
         # Whitelist filtering
         if whitelist is not None:
@@ -314,6 +370,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             button_id = reply.get("selectedRowId")
         elif "templateButtonReplyMessage" in raw_msg_msg:
             button_id = raw_msg_msg["templateButtonReplyMessage"].get("selectedId")
+        elif "pollUpdateMessage" in raw_msg_msg:
+            # Check if this poll was created as a button emulation poll
+            poll_creation_key = raw_msg_msg["pollUpdateMessage"].get(
+                "pollCreationMessageKey", {}
+            )
+            poll_creation_id = poll_creation_key.get("id")
+            if poll_creation_id and poll_creation_id in client._active_button_polls:
+                poll_info = client._active_button_polls[poll_creation_id]
+                button_map = poll_info.get("button_map", {})
+                votes = data.get("vote", [])
+                if isinstance(votes, list) and votes:
+                    selected_text = votes[0]
+                    button_id = button_map.get(selected_text)
+                    if button_id and button_id != "__placeholder_ignore__":
+                        _LOGGER.info(
+                            "Resolved emulated button press from WhatsApp poll vote: "
+                            "'%s' -> button_id '%s'",
+                            selected_text,
+                            button_id,
+                        )
+                    else:
+                        button_id = None
 
         if button_id:
             button_data = {**data, "button_id": button_id}
@@ -736,6 +814,17 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             )
         elif service == "remove_telegram_mapping":
             return await client.delete_telegram_mapping(data["mapping_id"])
+        elif service == "set_auto_responder":
+            return await client.set_auto_responder_config(
+                enabled=data.get("enabled"),
+                start_time=data.get("start_time"),
+                end_time=data.get("end_time"),
+                direct_only=data.get("direct_only"),
+                once_per_contact=data.get("once_per_contact"),
+                message_template=data.get("message_template"),
+            )
+        elif service == "reset_auto_responder_seen":
+            return await client.reset_auto_responder_seen()
         return None
 
     async def _handle_search_groups(
@@ -809,11 +898,27 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         schema=vol.Schema(msg_schema),
     )
 
+    def _validate_poll_options(value: Any) -> list[str]:
+        raw_list = cv.ensure_list(value)
+        cleaned = [str(opt).strip() for opt in raw_list if str(opt).strip()]
+        if len(cleaned) < 2:
+            raise vol.Invalid(
+                "WhatsApp polls require at least 2 voting options (maximum 12)."
+            )
+        if len(cleaned) > 12:
+            raise vol.Invalid("WhatsApp polls support a maximum of 12 options.")
+        if len(set(cleaned)) != len(cleaned):
+            raise vol.Invalid(
+                "WhatsApp polls require unique voting options. "
+                "Duplicate options are not allowed."
+            )
+        return cleaned
+
     poll_schema: dict[vol.Marker, Any] = {  # type: ignore[misc]
         **s_quotable,
         vol.Required("target"): cv.string,
         vol.Required("question"): cv.string,
-        vol.Required("options"): vol.All(cv.ensure_list, [cv.string]),
+        vol.Required("options"): _validate_poll_options,
         vol.Optional("allow_multiple_responses", default=False): cv.boolean,
     }
     hass.services.async_register(
@@ -1354,6 +1459,28 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         _handle_service,
         schema=vol.Schema(get_messages_schema),
         supports_response=SupportsResponse.OPTIONAL,
+    )
+
+    auto_responder_schema: dict[vol.Marker, Any] = {
+        **s_account,
+        vol.Optional("enabled"): cv.boolean,
+        vol.Optional("start_time"): vol.Any(cv.string, None),
+        vol.Optional("end_time"): vol.Any(cv.string, None),
+        vol.Optional("direct_only"): cv.boolean,
+        vol.Optional("once_per_contact"): cv.boolean,
+        vol.Optional("message_template"): cv.string,
+    }
+    hass.services.async_register(
+        DOMAIN,
+        "set_auto_responder",
+        _handle_service,
+        schema=vol.Schema(auto_responder_schema),
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "reset_auto_responder_seen",
+        _handle_service,
+        schema=vol.Schema(s_account),
     )
 
     global _SERVICES_REGISTERED
