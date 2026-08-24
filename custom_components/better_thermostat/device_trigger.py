@@ -24,6 +24,9 @@ from __future__ import annotations
 
 from homeassistant.components.climate.const import HVAC_MODES
 from homeassistant.components.device_automation import DEVICE_TRIGGER_BASE_SCHEMA
+from homeassistant.components.device_automation.exceptions import (
+    InvalidDeviceAutomationConfig,
+)
 from homeassistant.components.homeassistant.triggers import (
     numeric_state as numeric_state_trigger,
     state as state_trigger,
@@ -48,10 +51,9 @@ from homeassistant.helpers.typing import ConfigType
 import voluptuous as vol
 
 from . import DOMAIN
+from .utils.helpers import is_bt_climate_entity
 
-# ---------------------------------------------------------------------------
 # All supported trigger types
-# ---------------------------------------------------------------------------
 
 # Purpose-specific (new in HA 2025.12)
 _PURPOSE_TRIGGER_TYPES = {
@@ -74,13 +76,16 @@ _CLASSIC_TRIGGER_TYPES = {
 
 TRIGGER_TYPES = _PURPOSE_TRIGGER_TYPES | _CLASSIC_TRIGGER_TYPES
 
-# ---------------------------------------------------------------------------
 # Static TRIGGER_SCHEMA required by HA 2025.12 device automation framework.
 # Extra fields are validated dynamically via async_get_trigger_capabilities.
-# ---------------------------------------------------------------------------
 TRIGGER_SCHEMA = DEVICE_TRIGGER_BASE_SCHEMA.extend(
     {
         vol.Required(CONF_TYPE): vol.In(TRIGGER_TYPES),
+        # The automation editor stores the entity alongside the device, and
+        # the base schema does not carry the key, so without it every trigger
+        # this platform offers fails validation. It stays optional because the
+        # blueprints shipped with the integration pick a device only.
+        vol.Optional(CONF_ENTITY_ID): cv.entity_id_or_uuid,
         # Fields used by classic triggers
         vol.Optional(CONF_TO): vol.Any(str, [str]),
         # Fields used by numeric triggers
@@ -91,9 +96,7 @@ TRIGGER_SCHEMA = DEVICE_TRIGGER_BASE_SCHEMA.extend(
     }
 )
 
-# ---------------------------------------------------------------------------
 # Default threshold values
-# ---------------------------------------------------------------------------
 DEFAULT_HUMIDITY_THRESHOLD = 60.0  # %
 DEFAULT_BATTERY_THRESHOLD = 20.0  # %
 # Temperature delta at which "target reached" fires (current - target >= value)
@@ -108,7 +111,7 @@ async def async_get_triggers(
     triggers: list[dict[str, str | dict[str, bool]]] = []
 
     for entry in entity_registry.async_entries_for_device(registry, device_id):
-        if entry.domain != DOMAIN:
+        if not is_bt_climate_entity(entry):
             continue
 
         if not hass.states.get(entry.entity_id):
@@ -121,9 +124,7 @@ async def async_get_triggers(
             CONF_ENTITY_ID: entry.entity_id,
         }
 
-        # ------------------------------------------------------------------
         # Purpose-specific triggers (primary – shown first in the UI)
-        # ------------------------------------------------------------------
         primary_types = [
             "heating_active",
             "heating_stopped",
@@ -137,18 +138,14 @@ async def async_get_triggers(
                 {**base, CONF_TYPE: trigger_type, "metadata": {"secondary": False}}
             )
 
-        # ------------------------------------------------------------------
         # Purpose-specific triggers (secondary – sensor / diagnostic info)
-        # ------------------------------------------------------------------
         secondary_types = ["humidity_high", "battery_low"]
         for trigger_type in secondary_types:
             triggers.append(
                 {**base, CONF_TYPE: trigger_type, "metadata": {"secondary": True}}
             )
 
-        # ------------------------------------------------------------------
         # Classic / legacy triggers
-        # ------------------------------------------------------------------
         triggers.extend(
             [
                 {
@@ -172,6 +169,41 @@ async def async_get_triggers(
     return triggers
 
 
+def _resolve_entity_id(hass: HomeAssistant, config: ConfigType) -> str | None:
+    """Return the thermostat entity a trigger config watches.
+
+    The automation editor stores the entity next to the device; the blueprints
+    shipped with the integration pick a device only, so the entity has to be
+    recoverable from the device alone as well.
+
+    A configured value is passed through as it stands, including a registry id:
+    every branch below hands it to a state or numeric-state trigger, and those
+    resolve a registry id to an entity id themselves.
+
+    Parameters
+    ----------
+    hass : HomeAssistant
+        The running Home Assistant instance.
+    config : ConfigType
+        A validated trigger configuration.
+
+    Returns
+    -------
+    str or None
+        The entity or registry id to watch, or None when the device carries no
+        Better Thermostat climate entity.
+    """
+    if configured := config.get(CONF_ENTITY_ID):
+        return configured
+    registry = entity_registry.async_get(hass)
+    for entry in entity_registry.async_entries_for_device(
+        registry, config[CONF_DEVICE_ID]
+    ):
+        if is_bt_climate_entity(entry):
+            return entry.entity_id
+    return None
+
+
 async def async_attach_trigger(
     hass: HomeAssistant,
     config: ConfigType,
@@ -180,11 +212,14 @@ async def async_attach_trigger(
 ) -> CALLBACK_TYPE:
     """Attach a trigger and return an unsubscribe callback."""
     trigger_type: str = config[CONF_TYPE]
-    entity_id: str = config[CONF_ENTITY_ID]
+    entity_id = _resolve_entity_id(hass, config)
+    if entity_id is None:
+        raise InvalidDeviceAutomationConfig(
+            f"No Better Thermostat climate entity found for device "
+            f"{config[CONF_DEVICE_ID]}"
+        )
 
-    # ------------------------------------------------------------------
     # Helpers
-    # ------------------------------------------------------------------
     def _build_state(
         attribute: str, to: str | None = None, from_: str | None = None
     ) -> dict:
@@ -215,10 +250,8 @@ async def async_attach_trigger(
             cfg[CONF_FOR] = config[CONF_FOR]
         return cfg
 
-    # ------------------------------------------------------------------
     # Purpose-specific trigger: heating_active
     #   Fires when hvac_action changes TO "heating".
-    # ------------------------------------------------------------------
     if trigger_type == "heating_active":
         state_config = _build_state("hvac_action", to="heating")
         state_config = await state_trigger.async_validate_trigger_config(
@@ -228,10 +261,8 @@ async def async_attach_trigger(
             hass, state_config, action, trigger_info, platform_type="device"
         )
 
-    # ------------------------------------------------------------------
     # Purpose-specific trigger: heating_stopped
     #   Fires when hvac_action changes FROM "heating" to anything else.
-    # ------------------------------------------------------------------
     if trigger_type == "heating_stopped":
         state_config = _build_state("hvac_action", from_="heating")
         state_config = await state_trigger.async_validate_trigger_config(
@@ -241,11 +272,9 @@ async def async_attach_trigger(
             hass, state_config, action, trigger_info, platform_type="device"
         )
 
-    # ------------------------------------------------------------------
     # Purpose-specific trigger: window_opened
     #   Fires when window_open attribute becomes truthy (True).
     #   Uses a numeric template to avoid bool→string comparison issues.
-    # ------------------------------------------------------------------
     if trigger_type == "window_opened":
         numeric_config = {
             numeric_state_trigger.CONF_PLATFORM: "numeric_state",
@@ -264,10 +293,8 @@ async def async_attach_trigger(
             hass, numeric_config, action, trigger_info, platform_type="device"
         )
 
-    # ------------------------------------------------------------------
     # Purpose-specific trigger: window_closed
     #   Fires when window_open attribute becomes falsy (False / None).
-    # ------------------------------------------------------------------
     if trigger_type == "window_closed":
         numeric_config = {
             numeric_state_trigger.CONF_PLATFORM: "numeric_state",
@@ -286,14 +313,12 @@ async def async_attach_trigger(
             hass, numeric_config, action, trigger_info, platform_type="device"
         )
 
-    # ------------------------------------------------------------------
     # Purpose-specific trigger: humidity_high
     #   Fires when the BT humidity attribute exceeds the threshold.
     #   Threshold is configurable (CONF_ABOVE); default is DEFAULT_HUMIDITY_THRESHOLD.
-    # ------------------------------------------------------------------
     if trigger_type == "humidity_high":
         numeric_config = _build_numeric(
-            "{{ state.attributes.get('humidity', 0) | float(0) }}"
+            "{{ state.attributes.get('current_humidity', 0) | float(0) }}"
         )
         if CONF_ABOVE not in numeric_config:
             numeric_config[CONF_ABOVE] = DEFAULT_HUMIDITY_THRESHOLD
@@ -304,12 +329,10 @@ async def async_attach_trigger(
             hass, numeric_config, action, trigger_info, platform_type="device"
         )
 
-    # ------------------------------------------------------------------
     # Purpose-specific trigger: battery_low
     #   Fires when the minimum TRV battery level drops below the threshold.
     #   Threshold is configurable (CONF_BELOW); default is DEFAULT_BATTERY_THRESHOLD.
     #   Template extracts the minimum 'battery' value from the batteries JSON dict.
-    # ------------------------------------------------------------------
     if trigger_type == "battery_low":
         battery_template = (
             "{%- set bat = state.attributes.get('batteries', '{}') | from_json -%}"
@@ -326,10 +349,8 @@ async def async_attach_trigger(
             hass, numeric_config, action, trigger_info, platform_type="device"
         )
 
-    # ------------------------------------------------------------------
     # Purpose-specific trigger: device_error
     #   Fires when the errors attribute contains at least one entry.
-    # ------------------------------------------------------------------
     if trigger_type == "device_error":
         error_template = (
             "{{ (state.attributes.get('errors', '[]') | from_json | length) }}"
@@ -349,11 +370,9 @@ async def async_attach_trigger(
             hass, numeric_config, action, trigger_info, platform_type="device"
         )
 
-    # ------------------------------------------------------------------
     # Purpose-specific trigger: target_temp_reached
     #   Fires when current_temperature >= target_temperature.
     #   The template computes (current - target); triggers when value >= TARGET_REACHED_DELTA.
-    # ------------------------------------------------------------------
     if trigger_type == "target_temp_reached":
         reached_template = (
             "{{ (state.attributes.get('current_temperature', 0) | float(0))"
@@ -374,9 +393,7 @@ async def async_attach_trigger(
             hass, numeric_config, action, trigger_info, platform_type="device"
         )
 
-    # ------------------------------------------------------------------
     # Classic trigger: hvac_mode_changed
-    # ------------------------------------------------------------------
     if trigger_type == "hvac_mode_changed":
         state_config = {
             state_trigger.CONF_PLATFORM: "state",
@@ -393,9 +410,7 @@ async def async_attach_trigger(
             hass, state_config, action, trigger_info, platform_type="device"
         )
 
-    # ------------------------------------------------------------------
     # Classic triggers: current_temperature_changed / current_humidity_changed
-    # ------------------------------------------------------------------
     if trigger_type == "current_temperature_changed":
         template = "{{ state.attributes.current_temperature }}"
     else:
@@ -416,9 +431,7 @@ async def async_get_trigger_capabilities(
     """List trigger capabilities (extra fields shown in the automation editor)."""
     trigger_type = config[CONF_TYPE]
 
-    # ------------------------------------------------------------------
     # Triggers with a "for" duration option only
-    # ------------------------------------------------------------------
     if trigger_type in {
         "heating_active",
         "heating_stopped",
@@ -433,9 +446,7 @@ async def async_get_trigger_capabilities(
             )
         }
 
-    # ------------------------------------------------------------------
     # humidity_high: configurable threshold + duration
-    # ------------------------------------------------------------------
     if trigger_type == "humidity_high":
         return {
             "extra_fields": vol.Schema(
@@ -450,9 +461,7 @@ async def async_get_trigger_capabilities(
             )
         }
 
-    # ------------------------------------------------------------------
     # battery_low: configurable threshold + duration
-    # ------------------------------------------------------------------
     if trigger_type == "battery_low":
         return {
             "extra_fields": vol.Schema(
@@ -467,9 +476,7 @@ async def async_get_trigger_capabilities(
             )
         }
 
-    # ------------------------------------------------------------------
     # Classic trigger: hvac_mode_changed
-    # ------------------------------------------------------------------
     if trigger_type == "hvac_mode_changed":
         return {
             "extra_fields": vol.Schema(
@@ -480,9 +487,7 @@ async def async_get_trigger_capabilities(
             )
         }
 
-    # ------------------------------------------------------------------
     # Classic triggers: temperature / humidity value thresholds
-    # ------------------------------------------------------------------
     if trigger_type in {"current_temperature_changed", "current_humidity_changed"}:
         unit = (
             hass.config.units.temperature_unit

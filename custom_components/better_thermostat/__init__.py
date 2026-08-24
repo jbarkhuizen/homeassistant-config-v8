@@ -1,5 +1,7 @@
 """The better_thermostat component."""
 
+from __future__ import annotations
+
 from asyncio import Lock
 import logging
 
@@ -20,16 +22,16 @@ from .utils.const import (
     CONF_SENSOR_WINDOW,
     CONF_WINDOW_TIMEOUT,
     CONF_WINDOW_TIMEOUT_AFTER,
+    DOMAIN,
     CalibrationMode,
 )
 from .utils.helpers import get_device_model
 
 _LOGGER = logging.getLogger(__name__)
-DOMAIN = "better_thermostat"
 PLATFORMS = [Platform.CLIMATE, Platform.SENSOR, Platform.NUMBER, Platform.SWITCH]
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
 
-config_entry_update_listener_lock = Lock()
+RELOAD_LOCKS = f"{DOMAIN}_reload_locks"
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -52,17 +54,39 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
     except Exception:
         _LOGGER.exception(
-            "better_thermostat: Fehler beim Laden der Plattformen für Entry %s",
-            entry.entry_id,
+            "better_thermostat: error loading platforms for entry %s", entry.entry_id
         )
         return False
     entry.async_on_unload(entry.add_update_listener(config_entry_update_listener))
     return True
 
 
+def _reload_lock(hass: HomeAssistant, entry: ConfigEntry) -> Lock:
+    """Return the lock one entry serializes its own reloads on.
+
+    The lock lives on the Home Assistant instance and is keyed by entry, so
+    two thermostats reload independently and a lock never outlives the
+    instance it was created for. It has to survive the reload it guards,
+    which is why it does not live in the per-entry data the unload clears.
+
+    Parameters
+    ----------
+    hass : HomeAssistant
+        The running Home Assistant instance.
+    entry : ConfigEntry
+        The config entry about to reload.
+
+    Returns
+    -------
+    Lock
+        The lock for this entry, created on first use.
+    """
+    return hass.data.setdefault(RELOAD_LOCKS, {}).setdefault(entry.entry_id, Lock())
+
+
 async def config_entry_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle options update."""
-    async with config_entry_update_listener_lock:
+    async with _reload_lock(hass, entry):
         await hass.config_entries.async_reload(entry.entry_id)
 
 
@@ -81,6 +105,8 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     persist in HA's issue registry until explicitly deleted, so they have to
     be cleaned up here to avoid stale warnings after a config entry is gone.
     """
+    hass.data.get(RELOAD_LOCKS, {}).pop(entry.entry_id, None)
+
     device_name = entry.data.get(CONF_NAME, entry.title)
 
     for issue_id in (
@@ -107,12 +133,6 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
     for eid in entity_ids:
         ir.async_delete_issue(hass, DOMAIN, f"missing_entity_{eid}")
-
-
-async def async_reload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
-    """Reload the config entry."""
-    await async_unload_entry(hass, config_entry)
-    await async_setup_entry(hass, config_entry)
 
 
 async def async_migrate_entry(hass, config_entry: ConfigEntry):
