@@ -144,6 +144,7 @@ def build_dashboard(
                             {
                                 "type": "custom:sunsynk-power-flow-card",
                                 "cardstyle": "lite",
+                                "card_width": "50%",
                                 "show_solar": True,
                                 "show_battery": True,
                                 "show_grid": True,
@@ -393,6 +394,7 @@ def build_dashboard(
                                 for item in [
                                     {"type": "section", "label": f"Slot {i}"},
                                     sw(f"setting_time{i}on"),
+                                    sw(f"setting_sell_time{i}_en"),
                                     {"entity": tx(f"setting_sell_time{i}"), "name": "Start Time"},
                                     nm(f"setting_cap{i}"),
                                     nm(f"setting_sell_time{i}_pac"),
