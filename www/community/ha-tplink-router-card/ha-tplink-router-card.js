@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const Ye = globalThis, kt = Ye.ShadowRoot && (Ye.ShadyCSS === void 0 || Ye.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, $t = Symbol(), Pt = /* @__PURE__ */ new WeakMap();
-let gi = class {
+let yi = class {
   constructor(e, t, i) {
     if (this._$cssResult$ = !0, i !== $t) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = e, this.t = t;
@@ -22,33 +22,33 @@ let gi = class {
     return this.cssText;
   }
 };
-const Zi = (n) => new gi(typeof n == "string" ? n : n + "", void 0, $t), Qi = (n, ...e) => {
+const Qi = (n) => new yi(typeof n == "string" ? n : n + "", void 0, $t), en = (n, ...e) => {
   const t = n.length === 1 ? n[0] : e.reduce((i, o, s) => i + ((a) => {
     if (a._$cssResult$ === !0) return a.cssText;
     if (typeof a == "number") return a;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + a + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
   })(o) + n[s + 1], n[0]);
-  return new gi(t, n, $t);
-}, en = (n, e) => {
+  return new yi(t, n, $t);
+}, tn = (n, e) => {
   if (kt) n.adoptedStyleSheets = e.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
   else for (const t of e) {
     const i = document.createElement("style"), o = Ye.litNonce;
     o !== void 0 && i.setAttribute("nonce", o), i.textContent = t.cssText, n.appendChild(i);
   }
-}, Ut = kt ? (n) => n : (n) => n instanceof CSSStyleSheet ? ((e) => {
+}, Wt = kt ? (n) => n : (n) => n instanceof CSSStyleSheet ? ((e) => {
   let t = "";
   for (const i of e.cssRules) t += i.cssText;
-  return Zi(t);
+  return Qi(t);
 })(n) : n;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: tn, defineProperty: nn, getOwnPropertyDescriptor: on, getOwnPropertyNames: sn, getOwnPropertySymbols: rn, getPrototypeOf: an } = Object, te = globalThis, Wt = te.trustedTypes, ln = Wt ? Wt.emptyScript : "", cn = te.reactiveElementPolyfillSupport, Ee = (n, e) => n, yt = { toAttribute(n, e) {
+const { is: nn, defineProperty: on, getOwnPropertyDescriptor: sn, getOwnPropertyNames: rn, getOwnPropertySymbols: an, getPrototypeOf: ln } = Object, te = globalThis, Kt = te.trustedTypes, cn = Kt ? Kt.emptyScript : "", dn = te.reactiveElementPolyfillSupport, Ee = (n, e) => n, yt = { toAttribute(n, e) {
   switch (e) {
     case Boolean:
-      n = n ? ln : null;
+      n = n ? cn : null;
       break;
     case Object:
     case Array:
@@ -73,7 +73,7 @@ const { is: tn, defineProperty: nn, getOwnPropertyDescriptor: on, getOwnProperty
       }
   }
   return t;
-} }, yi = (n, e) => !tn(n, e), Kt = { attribute: !0, type: String, converter: yt, reflect: !1, useDefault: !1, hasChanged: yi };
+} }, bi = (n, e) => !nn(n, e), jt = { attribute: !0, type: String, converter: yt, reflect: !1, useDefault: !1, hasChanged: bi };
 Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), te.litPropertyMetadata ?? (te.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
 let ye = class extends HTMLElement {
   static addInitializer(e) {
@@ -82,14 +82,14 @@ let ye = class extends HTMLElement {
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(e, t = Kt) {
+  static createProperty(e, t = jt) {
     if (t.state && (t.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((t = Object.create(t)).wrapped = !0), this.elementProperties.set(e, t), !t.noAccessor) {
       const i = Symbol(), o = this.getPropertyDescriptor(e, i, t);
-      o !== void 0 && nn(this.prototype, e, o);
+      o !== void 0 && on(this.prototype, e, o);
     }
   }
   static getPropertyDescriptor(e, t, i) {
-    const { get: o, set: s } = on(this.prototype, e) ?? { get() {
+    const { get: o, set: s } = sn(this.prototype, e) ?? { get() {
       return this[t];
     }, set(a) {
       this[t] = a;
@@ -100,17 +100,17 @@ let ye = class extends HTMLElement {
     }, configurable: !0, enumerable: !0 };
   }
   static getPropertyOptions(e) {
-    return this.elementProperties.get(e) ?? Kt;
+    return this.elementProperties.get(e) ?? jt;
   }
   static _$Ei() {
     if (this.hasOwnProperty(Ee("elementProperties"))) return;
-    const e = an(this);
+    const e = ln(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
     if (this.hasOwnProperty(Ee("finalized"))) return;
     if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(Ee("properties"))) {
-      const t = this.properties, i = [...sn(t), ...rn(t)];
+      const t = this.properties, i = [...rn(t), ...an(t)];
       for (const o of i) this.createProperty(o, t[o]);
     }
     const e = this[Symbol.metadata];
@@ -129,8 +129,8 @@ let ye = class extends HTMLElement {
     const t = [];
     if (Array.isArray(e)) {
       const i = new Set(e.flat(1 / 0).reverse());
-      for (const o of i) t.unshift(Ut(o));
-    } else e !== void 0 && t.push(Ut(e));
+      for (const o of i) t.unshift(Wt(o));
+    } else e !== void 0 && t.push(Wt(e));
     return t;
   }
   static _$Eu(e, t) {
@@ -156,7 +156,7 @@ let ye = class extends HTMLElement {
   }
   createRenderRoot() {
     const e = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return en(e, this.constructor.elementStyles), e;
+    return tn(e, this.constructor.elementStyles), e;
   }
   connectedCallback() {
     this.renderRoot ?? (this.renderRoot = this.createRenderRoot()), this.enableUpdating(!0), this._$EO?.forEach((e) => e.hostConnected?.());
@@ -188,7 +188,7 @@ let ye = class extends HTMLElement {
   requestUpdate(e, t, i, o = !1, s) {
     if (e !== void 0) {
       const a = this.constructor;
-      if (o === !1 && (s = this[e]), i ?? (i = a.getPropertyOptions(e)), !((i.hasChanged ?? yi)(s, t) || i.useDefault && i.reflect && s === this._$Ej?.get(e) && !this.hasAttribute(a._$Eu(e, i)))) return;
+      if (o === !1 && (s = this[e]), i ?? (i = a.getPropertyOptions(e)), !((i.hasChanged ?? bi)(s, t) || i.useDefault && i.reflect && s === this._$Ej?.get(e) && !this.hasAttribute(a._$Eu(e, i)))) return;
       this.C(e, t, i);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$EP());
@@ -256,48 +256,48 @@ let ye = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-ye.elementStyles = [], ye.shadowRootOptions = { mode: "open" }, ye[Ee("elementProperties")] = /* @__PURE__ */ new Map(), ye[Ee("finalized")] = /* @__PURE__ */ new Map(), cn?.({ ReactiveElement: ye }), (te.reactiveElementVersions ?? (te.reactiveElementVersions = [])).push("2.1.2");
+ye.elementStyles = [], ye.shadowRootOptions = { mode: "open" }, ye[Ee("elementProperties")] = /* @__PURE__ */ new Map(), ye[Ee("finalized")] = /* @__PURE__ */ new Map(), dn?.({ ReactiveElement: ye }), (te.reactiveElementVersions ?? (te.reactiveElementVersions = [])).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Me = globalThis, jt = (n) => n, Je = Me.trustedTypes, Gt = Je ? Je.createPolicy("lit-html", { createHTML: (n) => n }) : void 0, bi = "$lit$", ee = `lit$${Math.random().toFixed(9).slice(2)}$`, vi = "?" + ee, dn = `<${vi}>`, ue = document, Fe = () => ue.createComment(""), Ne = (n) => n === null || typeof n != "object" && typeof n != "function", St = Array.isArray, un = (n) => St(n) || typeof n?.[Symbol.iterator] == "function", ht = `[ 	
-\f\r]`, Ae = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, qt = /-->/g, Xt = />/g, le = RegExp(`>|${ht}(?:([^\\s"'>=/]+)(${ht}*=${ht}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), Yt = /'/g, Jt = /"/g, wi = /^(?:script|style|textarea|title)$/i, pn = (n) => (e, ...t) => ({ _$litType$: n, strings: e, values: t }), f = pn(1), be = Symbol.for("lit-noChange"), S = Symbol.for("lit-nothing"), Zt = /* @__PURE__ */ new WeakMap(), de = ue.createTreeWalker(ue, 129);
-function xi(n, e) {
+const Me = globalThis, Gt = (n) => n, Je = Me.trustedTypes, qt = Je ? Je.createPolicy("lit-html", { createHTML: (n) => n }) : void 0, vi = "$lit$", ee = `lit$${Math.random().toFixed(9).slice(2)}$`, wi = "?" + ee, un = `<${wi}>`, ue = document, Fe = () => ue.createComment(""), Ne = (n) => n === null || typeof n != "object" && typeof n != "function", St = Array.isArray, pn = (n) => St(n) || typeof n?.[Symbol.iterator] == "function", ht = `[ 	
+\f\r]`, Ae = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Xt = /-->/g, Yt = />/g, le = RegExp(`>|${ht}(?:([^\\s"'>=/]+)(${ht}*=${ht}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Jt = /'/g, Zt = /"/g, xi = /^(?:script|style|textarea|title)$/i, hn = (n) => (e, ...t) => ({ _$litType$: n, strings: e, values: t }), f = hn(1), be = Symbol.for("lit-noChange"), S = Symbol.for("lit-nothing"), Qt = /* @__PURE__ */ new WeakMap(), de = ue.createTreeWalker(ue, 129);
+function ki(n, e) {
   if (!St(n) || !n.hasOwnProperty("raw")) throw Error("invalid template strings array");
-  return Gt !== void 0 ? Gt.createHTML(e) : e;
+  return qt !== void 0 ? qt.createHTML(e) : e;
 }
-const hn = (n, e) => {
+const fn = (n, e) => {
   const t = n.length - 1, i = [];
   let o, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", a = Ae;
   for (let l = 0; l < t; l++) {
     const c = n[l];
     let d, u, p = -1, h = 0;
-    for (; h < c.length && (a.lastIndex = h, u = a.exec(c), u !== null); ) h = a.lastIndex, a === Ae ? u[1] === "!--" ? a = qt : u[1] !== void 0 ? a = Xt : u[2] !== void 0 ? (wi.test(u[2]) && (o = RegExp("</" + u[2], "g")), a = le) : u[3] !== void 0 && (a = le) : a === le ? u[0] === ">" ? (a = o ?? Ae, p = -1) : u[1] === void 0 ? p = -2 : (p = a.lastIndex - u[2].length, d = u[1], a = u[3] === void 0 ? le : u[3] === '"' ? Jt : Yt) : a === Jt || a === Yt ? a = le : a === qt || a === Xt ? a = Ae : (a = le, o = void 0);
+    for (; h < c.length && (a.lastIndex = h, u = a.exec(c), u !== null); ) h = a.lastIndex, a === Ae ? u[1] === "!--" ? a = Xt : u[1] !== void 0 ? a = Yt : u[2] !== void 0 ? (xi.test(u[2]) && (o = RegExp("</" + u[2], "g")), a = le) : u[3] !== void 0 && (a = le) : a === le ? u[0] === ">" ? (a = o ?? Ae, p = -1) : u[1] === void 0 ? p = -2 : (p = a.lastIndex - u[2].length, d = u[1], a = u[3] === void 0 ? le : u[3] === '"' ? Zt : Jt) : a === Zt || a === Jt ? a = le : a === Xt || a === Yt ? a = Ae : (a = le, o = void 0);
     const y = a === le && n[l + 1].startsWith("/>") ? " " : "";
-    s += a === Ae ? c + dn : p >= 0 ? (i.push(d), c.slice(0, p) + bi + c.slice(p) + ee + y) : c + ee + (p === -2 ? l : y);
+    s += a === Ae ? c + un : p >= 0 ? (i.push(d), c.slice(0, p) + vi + c.slice(p) + ee + y) : c + ee + (p === -2 ? l : y);
   }
-  return [xi(n, s + (n[t] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), i];
+  return [ki(n, s + (n[t] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), i];
 };
 class De {
   constructor({ strings: e, _$litType$: t }, i) {
     let o;
     this.parts = [];
     let s = 0, a = 0;
-    const l = e.length - 1, c = this.parts, [d, u] = hn(e, t);
+    const l = e.length - 1, c = this.parts, [d, u] = fn(e, t);
     if (this.el = De.createElement(d, i), de.currentNode = this.el.content, t === 2 || t === 3) {
       const p = this.el.content.firstChild;
       p.replaceWith(...p.childNodes);
     }
     for (; (o = de.nextNode()) !== null && c.length < l; ) {
       if (o.nodeType === 1) {
-        if (o.hasAttributes()) for (const p of o.getAttributeNames()) if (p.endsWith(bi)) {
+        if (o.hasAttributes()) for (const p of o.getAttributeNames()) if (p.endsWith(vi)) {
           const h = u[a++], y = o.getAttribute(p).split(ee), g = /([.?@])?(.*)/.exec(h);
-          c.push({ type: 1, index: s, name: g[2], strings: y, ctor: g[1] === "." ? _n : g[1] === "?" ? mn : g[1] === "@" ? gn : st }), o.removeAttribute(p);
+          c.push({ type: 1, index: s, name: g[2], strings: y, ctor: g[1] === "." ? mn : g[1] === "?" ? gn : g[1] === "@" ? yn : st }), o.removeAttribute(p);
         } else p.startsWith(ee) && (c.push({ type: 6, index: s }), o.removeAttribute(p));
-        if (wi.test(o.tagName)) {
+        if (xi.test(o.tagName)) {
           const p = o.textContent.split(ee), h = p.length - 1;
           if (h > 0) {
             o.textContent = Je ? Je.emptyScript : "";
@@ -305,7 +305,7 @@ class De {
             o.append(p[h], Fe());
           }
         }
-      } else if (o.nodeType === 8) if (o.data === vi) c.push({ type: 2, index: s });
+      } else if (o.nodeType === 8) if (o.data === wi) c.push({ type: 2, index: s });
       else {
         let p = -1;
         for (; (p = o.data.indexOf(ee, p + 1)) !== -1; ) c.push({ type: 7, index: s }), p += ee.length - 1;
@@ -324,7 +324,7 @@ function ve(n, e, t = n, i) {
   const s = Ne(e) ? void 0 : e._$litDirective$;
   return o?.constructor !== s && (o?._$AO?.(!1), s === void 0 ? o = void 0 : (o = new s(n), o._$AT(n, t, i)), i !== void 0 ? (t._$Co ?? (t._$Co = []))[i] = o : t._$Cl = o), o !== void 0 && (e = ve(n, o._$AS(n, e.values), o, i)), e;
 }
-class fn {
+class _n {
   constructor(e, t) {
     this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = t;
   }
@@ -341,7 +341,7 @@ class fn {
     for (; c !== void 0; ) {
       if (a === c.index) {
         let d;
-        c.type === 2 ? d = new ze(s, s.nextSibling, this, e) : c.type === 1 ? d = new c.ctor(s, c.name, c.strings, this, e) : c.type === 6 && (d = new yn(s, this, e)), this._$AV.push(d), c = i[++l];
+        c.type === 2 ? d = new ze(s, s.nextSibling, this, e) : c.type === 1 ? d = new c.ctor(s, c.name, c.strings, this, e) : c.type === 6 && (d = new bn(s, this, e)), this._$AV.push(d), c = i[++l];
       }
       a !== c?.index && (s = de.nextNode(), a++);
     }
@@ -371,7 +371,7 @@ class ze {
     return this._$AB;
   }
   _$AI(e, t = this) {
-    e = ve(this, e, t), Ne(e) ? e === S || e == null || e === "" ? (this._$AH !== S && this._$AR(), this._$AH = S) : e !== this._$AH && e !== be && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : un(e) ? this.k(e) : this._(e);
+    e = ve(this, e, t), Ne(e) ? e === S || e == null || e === "" ? (this._$AH !== S && this._$AR(), this._$AH = S) : e !== this._$AH && e !== be && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : pn(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -383,16 +383,16 @@ class ze {
     this._$AH !== S && Ne(this._$AH) ? this._$AA.nextSibling.data = e : this.T(ue.createTextNode(e)), this._$AH = e;
   }
   $(e) {
-    const { values: t, _$litType$: i } = e, o = typeof i == "number" ? this._$AC(e) : (i.el === void 0 && (i.el = De.createElement(xi(i.h, i.h[0]), this.options)), i);
+    const { values: t, _$litType$: i } = e, o = typeof i == "number" ? this._$AC(e) : (i.el === void 0 && (i.el = De.createElement(ki(i.h, i.h[0]), this.options)), i);
     if (this._$AH?._$AD === o) this._$AH.p(t);
     else {
-      const s = new fn(o, this), a = s.u(this.options);
+      const s = new _n(o, this), a = s.u(this.options);
       s.p(t), this.T(a), this._$AH = s;
     }
   }
   _$AC(e) {
-    let t = Zt.get(e.strings);
-    return t === void 0 && Zt.set(e.strings, t = new De(e)), t;
+    let t = Qt.get(e.strings);
+    return t === void 0 && Qt.set(e.strings, t = new De(e)), t;
   }
   k(e) {
     St(this._$AH) || (this._$AH = [], this._$AR());
@@ -403,8 +403,8 @@ class ze {
   }
   _$AR(e = this._$AA.nextSibling, t) {
     for (this._$AP?.(!1, !0, t); e !== this._$AB; ) {
-      const i = jt(e).nextSibling;
-      jt(e).remove(), e = i;
+      const i = Gt(e).nextSibling;
+      Gt(e).remove(), e = i;
     }
   }
   setConnected(e) {
@@ -436,7 +436,7 @@ class st {
     e === S ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
   }
 }
-class _n extends st {
+class mn extends st {
   constructor() {
     super(...arguments), this.type = 3;
   }
@@ -444,7 +444,7 @@ class _n extends st {
     this.element[this.name] = e === S ? void 0 : e;
   }
 }
-class mn extends st {
+class gn extends st {
   constructor() {
     super(...arguments), this.type = 4;
   }
@@ -452,7 +452,7 @@ class mn extends st {
     this.element.toggleAttribute(this.name, !!e && e !== S);
   }
 }
-class gn extends st {
+class yn extends st {
   constructor(e, t, i, o, s) {
     super(e, t, i, o, s), this.type = 5;
   }
@@ -465,7 +465,7 @@ class gn extends st {
     typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, e) : this._$AH.handleEvent(e);
   }
 }
-class yn {
+class bn {
   constructor(e, t, i) {
     this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = i;
   }
@@ -476,9 +476,9 @@ class yn {
     ve(this, e);
   }
 }
-const bn = Me.litHtmlPolyfillSupport;
-bn?.(De, ze), (Me.litHtmlVersions ?? (Me.litHtmlVersions = [])).push("3.3.2");
-const vn = (n, e, t) => {
+const vn = Me.litHtmlPolyfillSupport;
+vn?.(De, ze), (Me.litHtmlVersions ?? (Me.litHtmlVersions = [])).push("3.3.2");
+const wn = (n, e, t) => {
   const i = t?.renderBefore ?? e;
   let o = i._$litPart$;
   if (o === void 0) {
@@ -504,7 +504,7 @@ class Oe extends ye {
   }
   update(e) {
     const t = this.render();
-    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = vn(t, this.renderRoot, this.renderOptions);
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = wn(t, this.renderRoot, this.renderOptions);
   }
   connectedCallback() {
     super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -517,10 +517,10 @@ class Oe extends ye {
   }
 }
 Oe._$litElement$ = !0, Oe.finalized = !0, Le.litElementHydrateSupport?.({ LitElement: Oe });
-const wn = Le.litElementPolyfillSupport;
-wn?.({ LitElement: Oe });
+const xn = Le.litElementPolyfillSupport;
+xn?.({ LitElement: Oe });
 (Le.litElementVersions ?? (Le.litElementVersions = [])).push("4.2.2");
-const xn = Qi`
+const kn = en`
   :host {
     display: block;
   }
@@ -1594,7 +1594,7 @@ const xn = Qi`
     --ud-rate-excellent: #f97316;
     --ud-rate-ultra: #ef4444;
   }
-`, kn = {
+`, $n = {
   title: "TP-Link Router Clients",
   subtitle: "Router: {name}",
   selectRouter: "Select a TP-Link router in card settings.",
@@ -1612,7 +1612,7 @@ const xn = Qi`
   speedTooltipMbps: "Mbps: {value}/{max}",
   cpuUsage: "CPU usage: {value}",
   memUsage: "Memory usage: {value}"
-}, $n = {
+}, Sn = {
   all: "All",
   band2: "2G",
   band5: "5G",
@@ -1623,7 +1623,7 @@ const xn = Qi`
   guest: "Guest",
   online: "Online",
   offline: "Offline"
-}, Sn = {
+}, Cn = {
   name: "Name",
   status: "Status",
   connection: "Connection",
@@ -1649,10 +1649,10 @@ const xn = Qi`
   deviceFirmware: "Firmware",
   deviceStatus: "Device Status",
   actions: "Actions"
-}, Cn = {
+}, An = {
   online: "Online",
   offline: "Offline"
-}, An = {
+}, Tn = {
   title: "Card Title",
   router: "TP-Link Entry",
   routerPlaceholder: "Select router",
@@ -1698,7 +1698,7 @@ const xn = Qi`
   columnFixedNone: "None",
   columnFixedStart: "Start",
   columnFixedEnd: "End"
-}, Tn = {
+}, Rn = {
   wifi: "WiFi",
   guest: "Guest",
   iot: "IoT",
@@ -1708,17 +1708,17 @@ const xn = Qi`
   targetDevice: "Action target device",
   holdHint: "Hold {seconds}s",
   holdWithLabel: "{label} (hold {seconds}s)"
-}, Rn = {
-  lists: "Could not load lists. Admin rights may be required."
 }, En = {
-  card: kn,
-  filters: $n,
-  columns: Sn,
-  status: Cn,
-  editor: An,
-  actions: Tn,
-  errors: Rn
+  lists: "Could not load lists. Admin rights may be required."
 }, Mn = {
+  card: $n,
+  filters: Sn,
+  columns: Cn,
+  status: An,
+  editor: Tn,
+  actions: Rn,
+  errors: En
+}, Ln = {
   title: "TP-Link Router Cihazları",
   subtitle: "Router: {name}",
   selectRouter: "Kart ayarlarından bir TP-Link router seçin.",
@@ -1736,7 +1736,7 @@ const xn = Qi`
   speedTooltipMbps: "Mbps: {value}/{max}",
   cpuUsage: "CPU kullanımı: {value}",
   memUsage: "Bellek kullanımı: {value}"
-}, Ln = {
+}, On = {
   all: "Tümü",
   band2: "2G",
   band5: "5G",
@@ -1747,7 +1747,7 @@ const xn = Qi`
   guest: "Misafir",
   online: "Çevrimiçi",
   offline: "Çevrimdışı"
-}, On = {
+}, In = {
   name: "Ad",
   status: "Durum",
   connection: "Bağlantı",
@@ -1773,10 +1773,10 @@ const xn = Qi`
   deviceFirmware: "Firmware",
   deviceStatus: "Cihaz Durumu",
   actions: "Aksiyonlar"
-}, In = {
+}, Fn = {
   online: "Çevrimiçi",
   offline: "Çevrimdışı"
-}, Fn = {
+}, Nn = {
   title: "Kart Başlığı",
   router: "TP-Link Girişi",
   routerPlaceholder: "Router seçin",
@@ -1822,7 +1822,7 @@ const xn = Qi`
   columnFixedNone: "Yok",
   columnFixedStart: "Başlangıç",
   columnFixedEnd: "Bitiş"
-}, Nn = {
+}, Dn = {
   wifi: "WiFi",
   guest: "Misafir",
   iot: "IoT",
@@ -1832,37 +1832,37 @@ const xn = Qi`
   targetDevice: "Aksiyon hedef cihazı",
   holdHint: "{seconds} sn basılı tut",
   holdWithLabel: "{label} ({seconds} sn basılı tut)"
-}, Dn = {
-  lists: "Veri listeleri alınamadı. Yönetici yetkisi gerekebilir."
 }, Bn = {
-  card: Mn,
-  filters: Ln,
-  columns: On,
-  status: In,
-  editor: Fn,
-  actions: Nn,
-  errors: Dn
+  lists: "Veri listeleri alınamadı. Yönetici yetkisi gerekebilir."
+}, zn = {
+  card: Ln,
+  filters: On,
+  columns: In,
+  status: Fn,
+  editor: Nn,
+  actions: Dn,
+  errors: Bn
 }, Ze = {
-  en: En,
-  tr: Bn
-}, zn = (n) => {
+  en: Mn,
+  tr: zn
+}, Hn = (n) => {
   const e = (n?.locale?.language || n?.language || "en").toLowerCase();
   if (Ze[e]) return e;
   const t = e.split("-")[0];
   return Ze[t] ? t : "en";
-}, Qt = (n, e) => {
+}, ei = (n, e) => {
   const t = e.split(".");
   let i = n;
   for (const o of t)
     if (typeof i != "object" || i === null || (i = i[o], i === void 0)) return null;
   return typeof i == "string" ? i : null;
 }, qe = (n, e, t) => {
-  const i = zn(n);
-  let o = Qt(Ze[i], e) ?? Qt(Ze.en, e) ?? e;
+  const i = Hn(n);
+  let o = ei(Ze[i], e) ?? ei(Ze.en, e) ?? e;
   return t && Object.entries(t).forEach(([s, a]) => {
     o = o.replace(new RegExp(`\\{${s}\\}`, "g"), String(a));
   }), o;
-}, ki = /^(?:\d{1,3}\.){3}\d{1,3}$/, Hn = /^[0-9a-f:]+$/i, Vn = /^(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}$/i, Pn = /^[a-z][a-z0-9+.-]*:\/\//i, Un = /^[^\s@]+@[^\s@]+\.[^\s@]+$/, Wn = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/, Kn = /^[A-Za-z0-9+/_=-]{24,}$/, jn = /(password|passwd|token|secret|auth|cookie|session|ssid|host|hostname|name|url|ip|mac|email)/i, Gn = () => ({
+}, $i = /^(?:\d{1,3}\.){3}\d{1,3}$/, Vn = /^[0-9a-f:]+$/i, Un = /^(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}$/i, Pn = /^[a-z][a-z0-9+.-]*:\/\//i, Wn = /^[^\s@]+@[^\s@]+\.[^\s@]+$/, Kn = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/, jn = /^[A-Za-z0-9+/_=-]{24,}$/, Gn = /(password|passwd|token|secret|auth|cookie|session|ssid|host|hostname|name|url|ip|mac|email)/i, qn = () => ({
   visitedNodes: 0,
   circularRefs: 0,
   depthTruncations: 0,
@@ -1870,7 +1870,7 @@ const xn = Qi`
   objectKeyTruncations: 0,
   stringTruncations: 0,
   maxNodeHits: 0
-}), qn = () => ({
+}), Xn = () => ({
   totalMasked: 0,
   maskedByKey: 0,
   maskedIp: 0,
@@ -1878,7 +1878,7 @@ const xn = Qi`
   maskedUrl: 0,
   maskedToken: 0,
   maskedEmail: 0
-}), Te = (n, e, t) => Math.max(e, Math.min(t, n)), Xn = (n) => ({
+}), Te = (n, e, t) => Math.max(e, Math.min(t, n)), Yn = (n) => ({
   maxDepth: Te(n?.maxDepth, 2, 20),
   maxNodes: Te(n?.maxNodes, 500, 2e5),
   maxArrayLength: Te(n?.maxArrayLength, 1, 2e4),
@@ -1891,15 +1891,15 @@ const xn = Qi`
 }), Re = (n, e) => `[truncated:${n}${e ? `:${e}` : ""}]`, H = (n, e = 2, t = 2) => {
   const i = n.trim();
   return i && (i.length <= 2 ? `${i.slice(0, 1)}*` : i.length <= e + t ? `${i.slice(0, 1)}***${i.slice(-1)}` : `${i.slice(0, e)}***${i.slice(-t)}`);
-}, $i = (n) => {
+}, Si = (n) => {
   const e = n.split(".");
   return e.length !== 4 ? H(n) : `${e[0]}.xxx.xxx.${e[3]}`;
-}, Yn = (n) => {
+}, Jn = (n) => {
   const e = n.includes("-") ? "-" : ":", t = n.split(/[:-]/);
   return t.length !== 6 ? H(n) : `${t[0]}${e}**${e}**${e}**${e}**${e}${t[5]}`;
-}, Jn = (n) => {
+}, Zn = (n) => {
   try {
-    const e = new URL(n), t = ki.test(e.hostname) ? $i(e.hostname) : H(e.hostname, 2, 2), i = e.search ? "?***" : "", o = e.hash ? "#***" : "";
+    const e = new URL(n), t = $i.test(e.hostname) ? Si(e.hostname) : H(e.hostname, 2, 2), i = e.search ? "?***" : "", o = e.hash ? "#***" : "";
     return `${e.protocol}//${t}${e.port ? `:${e.port}` : ""}${e.pathname}${i}${o}`;
   } catch {
     return H(n);
@@ -1907,12 +1907,12 @@ const xn = Qi`
 }, ft = (n, e, t) => n.length <= e.maxStringLength ? n : (t.stringTruncations += 1, `${n.slice(0, e.maxStringLength)}${Re(
   "string",
   String(n.length - e.maxStringLength)
-)}`), Zn = (n) => typeof n == "bigint" ? `${n.toString()}n` : typeof n == "function" ? `[function:${n.name || "anonymous"}]` : typeof n == "symbol" ? `[symbol:${String(n.description || "")}]` : typeof n == "number" ? Number.isFinite(n) ? n : String(n) : n, Qn = (n, e) => {
-  const t = Xn(e), i = Gn(), o = /* @__PURE__ */ new WeakMap(), s = (a, l, c) => {
+)}`), Qn = (n) => typeof n == "bigint" ? `${n.toString()}n` : typeof n == "function" ? `[function:${n.name || "anonymous"}]` : typeof n == "symbol" ? `[symbol:${String(n.description || "")}]` : typeof n == "number" ? Number.isFinite(n) ? n : String(n) : n, eo = (n, e) => {
+  const t = Yn(e), i = qn(), o = /* @__PURE__ */ new WeakMap(), s = (a, l, c) => {
     if (i.visitedNodes >= t.maxNodes)
       return i.maxNodeHits += 1, Re("max_nodes");
     if (a == null) return a;
-    const d = Zn(a);
+    const d = Qn(a);
     if (d !== a)
       return i.visitedNodes += 1, d;
     if (typeof a == "string")
@@ -1957,26 +1957,26 @@ const xn = Qi`
   return { value: s(n, 0, "$"), limits: t, stats: i };
 }, Z = (n, e) => {
   n[e] += 1, n.totalMasked += 1;
-}, eo = (n, e, t) => {
+}, to = (n, e, t) => {
   const i = n.trim();
   if (!i) return i;
-  if (ki.test(i)) {
-    const o = $i(i);
+  if ($i.test(i)) {
+    const o = Si(i);
     return o !== i && Z(t, "maskedIp"), o;
   }
-  if (i.includes(":") && Hn.test(i) && i.length > 8) {
+  if (i.includes(":") && Vn.test(i) && i.length > 8) {
     const o = H(i, 4, 4);
     return o !== i && Z(t, "maskedIp"), o;
   }
-  if (Vn.test(i)) {
-    const o = Yn(i);
+  if (Un.test(i)) {
+    const o = Jn(i);
     return o !== i && Z(t, "maskedMac"), o;
   }
   if (Pn.test(i)) {
-    const o = Jn(i);
+    const o = Zn(i);
     return o !== i && Z(t, "maskedUrl"), o;
   }
-  if (Un.test(i)) {
+  if (Wn.test(i)) {
     const [o, s] = i.split("@"), a = `${H(o, 1, 1)}@${H(s, 2, 2)}`;
     return a !== i && Z(t, "maskedEmail"), a;
   }
@@ -1984,17 +1984,17 @@ const xn = Qi`
     const o = i.replace(/^bearer\s+/i, ""), s = `Bearer ${H(o, 3, 3)}`;
     return s !== i && Z(t, "maskedToken"), s;
   }
-  if (Wn.test(i) || Kn.test(i)) {
+  if (Kn.test(i) || jn.test(i)) {
     const o = H(i, 3, 3);
     return o !== i && Z(t, "maskedToken"), o;
   }
-  if (e && jn.test(e)) {
+  if (e && Gn.test(e)) {
     const o = H(i, 2, 2);
     return o !== i && Z(t, "maskedByKey"), o;
   }
   return i;
 }, bt = (n, e, t) => {
-  if (typeof n == "string") return eo(n, e, t);
+  if (typeof n == "string") return to(n, e, t);
   if (Array.isArray(n)) return n.map((i) => bt(i, e, t));
   if (n !== null && typeof n == "object") {
     const i = n, o = {};
@@ -2003,11 +2003,11 @@ const xn = Qi`
     }), o;
   }
   return n;
-}, to = (n) => {
-  const e = qn();
+}, io = (n) => {
+  const e = Xn();
   return { value: bt(n, void 0, e), stats: e };
-}, io = (n, e) => {
-  const t = Qn(n, e?.limits), i = to(t.value);
+}, no = (n, e) => {
+  const t = eo(n, e?.limits), i = io(t.value);
   return {
     schema_version: "1",
     generated_at: (/* @__PURE__ */ new Date()).toISOString(),
@@ -2020,7 +2020,7 @@ const xn = Qi`
   if (/(2\.4|2g|2ghz|24g)/i.test(n)) return "2g";
   if (/(5g|5ghz)/i.test(n)) return "5g";
   if (/(6g|6ghz)/i.test(n)) return "6g";
-}, no = (n, e, t, i) => {
+}, oo = (n, e, t, i) => {
   const o = `${e} ${t}`.toLowerCase(), s = i === "omada" || i === "tplink_omada";
   if (n === "button")
     return o.includes("reboot") || o.includes("restart") ? { kind: "router", requiresHold: !0 } : s && o.includes("reconnect") ? { kind: "router", requiresHold: !0 } : s && (o.includes("wlan optimization") || o.includes("rf planning")) ? { kind: "router", requiresHold: !0 } : null;
@@ -2038,7 +2038,7 @@ const xn = Qi`
     return l ? { kind: "host", band: l, requiresHold: !0 } : null;
   }
   return null;
-}, oo = (n, e) => new Intl.Collator(void 0, { numeric: !0, sensitivity: "base" }).compare(n, e), so = (n, e) => {
+}, so = (n, e) => new Intl.Collator(void 0, { numeric: !0, sensitivity: "base" }).compare(n, e), ro = (n, e) => {
   const t = /* @__PURE__ */ new Map(), i = new Map(e.map((o) => [o.id, o]));
   for (const o of n) {
     if (o.isGlobalCommon || !o.deviceId || t.has(o.deviceId)) continue;
@@ -2048,14 +2048,14 @@ const xn = Qi`
       deviceName: o.deviceName ?? s?.name_by_user ?? s?.name ?? o.deviceId.slice(0, 8)
     });
   }
-  return [...t.values()].sort((o, s) => oo(o.deviceName, s.deviceName));
-}, ei = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"], Qe = (n) => Number.isFinite(n) ? new Intl.NumberFormat(void 0, { maximumFractionDigits: 0 }).format(n) : "—", j = (n, e = !1) => {
+  return [...t.values()].sort((o, s) => so(o.deviceName, s.deviceName));
+}, ti = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"], Qe = (n) => Number.isFinite(n) ? new Intl.NumberFormat(void 0, { maximumFractionDigits: 0 }).format(n) : "—", j = (n, e = !1) => {
   if (n == null || !Number.isFinite(n)) return "—";
   const t = Math.abs(n);
   let i = 0, o = t;
-  for (; o >= 1024 && i < ei.length - 1; )
+  for (; o >= 1024 && i < ti.length - 1; )
     o /= 1024, i += 1;
-  const s = o >= 100 ? 0 : o >= 10 ? 1 : 2, a = `${o.toFixed(s)} ${ei[i]}`;
+  const s = o >= 100 ? 0 : o >= 10 ? 1 : 2, a = `${o.toFixed(s)} ${ti[i]}`;
   return e ? `${a}/s` : a;
 }, vt = (n) => n == null || !Number.isFinite(n) ? null : n * 8 / 1e6, Be = (n, e, t = "auto") => {
   if (n == null || !Number.isFinite(n)) return null;
@@ -2103,25 +2103,25 @@ const xn = Qi`
   }
   const o = i >= 100 ? 0 : i >= 10 ? 1 : 2;
   return `${i.toFixed(o)} Mbps`;
-}, v = (n) => n == null || typeof n == "string" && n.trim().length === 0 ? "—" : String(n), ro = /* @__PURE__ */ new Set(["home", "on", "connected"]), $ = (n) => {
+}, v = (n) => n == null || typeof n == "string" && n.trim().length === 0 ? "—" : String(n), ao = /* @__PURE__ */ new Set(["home", "on", "connected"]), lo = "var(--tplink-router-card-online-color, var(--success-color, #3aa45b))", co = "var(--tplink-router-card-offline-color, var(--error-color, #d32f2f))", At = (n) => n ? lo : co, $ = (n) => {
   if (typeof n == "number" && Number.isFinite(n)) return n;
   if (typeof n == "string" && n.trim() !== "") {
     const e = Number(n);
     return Number.isFinite(e) ? e : null;
   }
   return null;
-}, Si = (n) => {
+}, Ci = (n) => {
   if (n == null) return "unknown";
   const e = String(n).toLowerCase();
   return e.includes("2.4") || e.includes("2g") ? "2g" : e.includes("5g") ? "5g" : e.includes("6g") ? "6g" : "unknown";
-}, ao = (n) => {
+}, uo = (n) => {
   if (n == null) return "unknown";
   const e = String(n).trim().toLowerCase();
   return e.length === 0 || e === "—" || e === "-" || e === "unknown" || e === "unavailable" || e === "none" || e === "null" || e === "n/a" || e === "na" ? "unknown" : e.includes("guest") ? "guest" : e.includes("iot") ? "iot" : e.includes("wired") || e.includes("lan") || e.includes("ethernet") ? "wired" : "wifi";
-}, pe = (n) => n.replace(/[^0-9a-f]/gi, "").toLowerCase(), rt = (n) => n === null ? "var(--secondary-text-color)" : n <= -80 ? "var(--signal-bad)" : n <= -70 ? "var(--signal-poor)" : n <= -65 ? "var(--signal-fair)" : n <= -60 ? "var(--signal-good)" : "var(--signal-excellent)", lo = (n) => {
+}, pe = (n) => n.replace(/[^0-9a-f]/gi, "").toLowerCase(), rt = (n) => n === null ? "var(--secondary-text-color)" : n <= -80 ? "var(--signal-bad)" : n <= -70 ? "var(--signal-poor)" : n <= -65 ? "var(--signal-fair)" : n <= -60 ? "var(--signal-good)" : "var(--signal-excellent)", po = (n) => {
   let e = 0, t = 0;
   for (const i of n) {
-    const o = i.attributes, s = Si(o.band ?? o.bandwidth ?? o.frequency), a = $(o.tx_rate), l = $(o.rx_rate);
+    const o = i.attributes, s = Ci(o.band ?? o.bandwidth ?? o.frequency), a = $(o.tx_rate), l = $(o.rx_rate);
     for (const c of [a, l]) {
       if (c === null) continue;
       const d = Math.abs(c);
@@ -2129,7 +2129,7 @@ const xn = Qi`
     }
   }
   return e >= 1e4 || t >= 1e3 ? "kbps" : "auto";
-}, co = (n, e, t, i) => {
+}, ho = (n, e, t, i) => {
   const o = Object.values(n).filter((u) => u.entity_id.startsWith("device_tracker.") ? u.attributes.source_type === "router" : !1);
   if (!t) return o;
   if (!i && e.length === 0) return [];
@@ -2153,7 +2153,7 @@ const xn = Qi`
     if (p.length > 0) return p;
   }
   return [];
-}, uo = (n, e) => {
+}, fo = (n, e) => {
   if (!e || n.length === 0) return [];
   const t = n.filter((s) => s.config_entry_id === e), i = new Set(
     t.filter((s) => s.device_id).map((s) => s.device_id)
@@ -2161,7 +2161,7 @@ const xn = Qi`
     t.filter((s) => !s.entity_id.startsWith("device_tracker.") && s.device_id).map((s) => s.device_id)
   );
   return [...o.size > 0 ? o : i];
-}, He = (n) => v(Array.isArray(n) ? n.join(",") : n), po = {
+}, He = (n) => v(Array.isArray(n) ? n.join(",") : n), _o = {
   up: {
     bytesPerSecond: ["up_speed"],
     kiloBytesPerSecond: ["up_kilobytes_per_s"]
@@ -2176,42 +2176,42 @@ const xn = Qi`
     if (i !== null) return i;
   }
   return null;
-}, ho = [
+}, mo = [
   "tx_rate",
   "txRate",
   "tx_mbps",
   "txMbps",
   "tx_speed",
   "txSpeed"
-], fo = [
+], go = [
   "rx_rate",
   "rxRate",
   "rx_mbps",
   "rxMbps",
   "rx_speed",
   "rxSpeed"
-], _o = [
+], yo = [
   "signal",
   "rssi",
   "signal_dbm",
   "signalDbm",
   "dbm"
-], mo = (n) => {
+], bo = (n) => {
   const e = He(n).toLowerCase();
   return e === "—" ? "" : e.includes("main") ? "host" : e.includes("guest") ? "guest" : e.includes("iot") ? "iot" : e;
-}, go = (n) => {
+}, vo = (n) => {
   const e = He(n).toLowerCase();
   return e === "—" ? "" : e.includes("wired") || e.includes("ethernet") || e.includes("lan") ? "wired" : e.includes("wireless") || e.includes("wifi") || e.includes("wlan") ? "wifi" : e;
-}, yo = (n) => {
+}, wo = (n) => {
   const e = n.toLowerCase();
   return e.includes("band2_4") || e.includes("2.4") ? "2G" : e.includes("band5") ? "5G" : e.includes("band6") ? "6G" : "—";
-}, bo = (n, e, t) => {
+}, xo = (n, e, t) => {
   const i = e.toLowerCase();
   return t === "wired" || i.includes("wired") || i.includes("ethernet") || i.includes("lan") ? "wired" : n || (t === "wifi" || i.includes("band2_4") || i.includes("band5") || i.includes("band6") || i.includes("wifi") || i.includes("wireless") || i.includes("wlan") ? "wifi" : e);
-}, vo = (n) => n.split(/[\s_-]+/).filter((e) => e.length > 0).map((e) => e[0].toUpperCase() + e.slice(1)).join(" "), wo = (n) => {
+}, ko = (n) => n.split(/[\s_-]+/).filter((e) => e.length > 0).map((e) => e[0].toUpperCase() + e.slice(1)).join(" "), $o = (n) => {
   const e = He(n).toLowerCase();
-  return e === "—" ? "—" : e === "deco" ? "Deco" : e === "client" ? "Client" : vo(e);
-}, xo = (n) => {
+  return e === "—" ? "—" : e === "deco" ? "Deco" : e === "client" ? "Client" : ko(e);
+}, So = (n) => {
   const e = n.internet_online;
   if (typeof e == "boolean") return e ? "Online" : "Offline";
   if (typeof e == "string") {
@@ -2221,23 +2221,23 @@ const xn = Qi`
   }
   const t = He(n.status);
   return t === "—" ? "—" : t;
-}, ti = (n, e) => {
-  const t = po[e], i = Ie(n, t.bytesPerSecond);
+}, ii = (n, e) => {
+  const t = _o[e], i = Ie(n, t.bytesPerSecond);
   if (i !== null) return i;
   const o = Ie(n, t.kiloBytesPerSecond);
   return o === null ? null : o * 1e3;
-}, ko = (n, e, t) => {
-  const i = n.attributes, o = v(i.friendly_name ?? n.entity_id), s = i.interface ?? i.client_type ?? i.clientType, a = i.wire_type ?? i.wireType, l = mo(s), c = go(a), d = i.connection ?? i.connection_type ?? i.connectionType ?? "—", u = He(d), p = v(
-    bo(l, u, c)
-  ), h = yo(u), y = v(
+}, Co = (n, e, t) => {
+  const i = n.attributes, o = v(i.friendly_name ?? n.entity_id), s = i.interface ?? i.client_type ?? i.clientType, a = i.wire_type ?? i.wireType, l = bo(s), c = vo(a), d = i.connection ?? i.connection_type ?? i.connectionType ?? "—", u = He(d), p = v(
+    xo(l, u, c)
+  ), h = wo(u), y = v(
     i.band ?? i.bandwidth ?? i.frequency ?? i.wifi_band ?? h
-  ), g = Si(y), b = ao(p), w = v(i.ip ?? i.ip_address ?? i.ipaddr ?? "—"), T = v(i.mac ?? i.mac_address ?? i.macaddr ?? "—"), R = v(
+  ), g = Ci(y), b = uo(p), w = v(i.ip ?? i.ip_address ?? i.ipaddr ?? "—"), T = v(i.mac ?? i.mac_address ?? i.macaddr ?? "—"), R = v(
     i.host_name ?? i.hostname ?? i.host ?? i.name ?? i.deco_device ?? i.device_model ?? "—"
   ), E = $(i.packets_sent ?? i.up_packet ?? i.upPacket), M = $(
     i.packets_received ?? i.down_packet ?? i.downPacket
-  ), B = ti(i, "up"), ie = ti(i, "down"), G = Ie(i, ho), ne = Ie(i, fo), oe = vt(B), V = vt(ie), P = Be(G, g, t), q = Be(ne, g, t), he = $(i.online_time ?? i.uptime ?? i.connected_time), X = $(i.traffic_down ?? i.trafficDown), U = $(i.traffic_up ?? i.trafficUp), fe = X !== null || U !== null ? (X ?? 0) + (U ?? 0) : $(i.traffic_usage ?? i.total_traffic ?? i.traffic_total), z = Ie(i, _o), N = wo(i.device_type ?? i.type), se = v(i.device_model ?? i.model ?? "—"), W = v(
+  ), B = ii(i, "up"), ie = ii(i, "down"), G = Ie(i, mo), ne = Ie(i, go), oe = vt(B), V = vt(ie), U = Be(G, g, t), q = Be(ne, g, t), he = $(i.online_time ?? i.uptime ?? i.connected_time), X = $(i.traffic_down ?? i.trafficDown), P = $(i.traffic_up ?? i.trafficUp), fe = X !== null || P !== null ? (X ?? 0) + (P ?? 0) : $(i.traffic_usage ?? i.total_traffic ?? i.traffic_total), z = Ie(i, yo), N = $o(i.device_type ?? i.type), se = v(i.device_model ?? i.model ?? "—"), W = v(
     i.sw_version ?? i.firmware ?? i.firmware_version ?? "—"
-  ), Y = xo(i), xe = (w === "0.0.0.0" || w === "—") && b === "unknown" && g === "unknown", D = ro.has(n.state) && !xe;
+  ), Y = So(i), xe = (w === "0.0.0.0" || w === "—") && b === "unknown" && g === "unknown", D = ao.has(n.state) && !xe;
   return {
     entity_id: n.entity_id,
     name: o,
@@ -2245,7 +2245,7 @@ const xn = Qi`
     macNormalized: pe(T),
     isOnline: D,
     statusValue: D ? 1 : 0,
-    statusColor: D ? "#3aa45b" : "#9aa0a6",
+    statusColor: At(D),
     connection: p,
     connectionType: b,
     band: y,
@@ -2262,15 +2262,15 @@ const xn = Qi`
     downSpeed: wt(ie, e),
     downSpeedValue: V,
     txRate: et(G, g, t),
-    txRateValue: P,
+    txRateValue: U,
     rxRate: et(ne, g, t),
     rxRateValue: q,
     onlineTime: Ct(he),
     onlineTimeValue: he,
     downloaded: j(X),
     downloadedValue: X,
-    uploaded: j(U),
-    uploadedValue: U,
+    uploaded: j(P),
+    uploadedValue: P,
     trafficUsage: j(fe),
     trafficUsageValue: fe,
     signal: z !== null ? `${z} dBm` : "—",
@@ -2285,7 +2285,7 @@ const xn = Qi`
     deviceFirmware: W,
     deviceStatus: Y
   };
-}, Ci = /* @__PURE__ */ new Set(["home", "on", "connected"]), $o = () => ({
+}, Ai = /* @__PURE__ */ new Set(["home", "on", "connected"]), Ao = () => ({
   downloadedMB: null,
   uploadedMB: null,
   rxActivityMBps: null,
@@ -2293,11 +2293,11 @@ const xn = Qi`
   rssi: null,
   snr: null,
   uptimeSeconds: null
-}), So = (n) => n.entity_id.startsWith("device_tracker."), tt = (n) => String(n ?? "").trim(), Co = (n) => {
-  if (!So(n)) return !1;
+}), To = (n) => n.entity_id.startsWith("device_tracker."), tt = (n) => String(n ?? "").trim(), Ro = (n) => {
+  if (!To(n)) return !1;
   const e = n.attributes, t = String(e.source_type ?? "").toLowerCase();
   return t && t !== "router" ? !1 : "wireless" in e || "guest" in e || "ssid" in e || "ap_name" in e || "ap_mac" in e || "switch_port" in e || "channel_width" in e || "radio" in e;
-}, Ao = (n) => {
+}, Eo = (n) => {
   const e = [n.band, n.radio, n.wifi_mode, n.ssid].map((t) => String(t ?? "").toLowerCase()).filter((t) => t.length > 0);
   for (const t of e) {
     if (t.includes("6g") || t.includes("6ghz") || t.includes("6 ghz") || t.includes("11bea"))
@@ -2308,7 +2308,7 @@ const xn = Qi`
       return "2g";
   }
   return "unknown";
-}, To = (n) => {
+}, Mo = (n) => {
   const e = n.guest === !0 || String(n.guest).toLowerCase() === "true", t = n.wireless === !0 || String(n.wireless).toLowerCase() === "true", i = n.switch_port !== void 0 || n.switchPort !== void 0 || n.standard_port !== void 0 || n.switch_name !== void 0 || n.switchName !== void 0 || n.switch_mac !== void 0 || n.switchMac !== void 0, o = n.ap_name !== void 0 || n.apName !== void 0 || n.ap_mac !== void 0 || n.apMac !== void 0 || n.ssid !== void 0, s = [
     n.connection,
     n.connect_type,
@@ -2322,7 +2322,7 @@ const xn = Qi`
     label: v(n.connection ?? n.type ?? "—"),
     type: "unknown"
   };
-}, Ai = (n) => {
+}, Ti = (n) => {
   if (n == null) return null;
   const e = $(n);
   if (e !== null) return e;
@@ -2349,13 +2349,13 @@ const xn = Qi`
   }
   const i = t >= 100 ? 0 : t >= 10 ? 1 : 2;
   return `${t.toFixed(i)} Mbps`;
-}, ii = (n, e) => {
+}, ni = (n, e) => {
   for (const t of e) {
     const i = $(n[t]);
     if (i !== null) return i;
   }
   return null;
-}, Ro = (n, e) => {
+}, Lo = (n, e) => {
   const t = n.entity_id.toLowerCase(), i = String(n.attributes.friendly_name ?? "").toLowerCase().trim(), o = `${t} ${i}`;
   if (o.includes("downloaded") || /\bdownload\b/.test(o)) {
     e.downloadedMB = $(n.state);
@@ -2381,17 +2381,17 @@ const xn = Qi`
     e.rssi = $(n.state);
     return;
   }
-  (o.includes("uptime") || o.includes("duration") || o.includes("connected")) && (e.uptimeSeconds = Ai(n.state));
-}, Eo = (n) => {
+  (o.includes("uptime") || o.includes("duration") || o.includes("connected")) && (e.uptimeSeconds = Ti(n.state));
+}, Oo = (n) => {
   const e = tt(n).toLowerCase();
   return e ? e === "ap" ? "Access Point" : e === "gateway" ? "Gateway" : e === "switch" ? "Switch" : v(n) : "—";
-}, Ti = (n) => {
+}, Ri = (n) => {
   if (!n) return;
   const e = n.toLowerCase();
   if (e.startsWith("eap")) return "Access Point";
   if (e.startsWith("er")) return "Gateway";
   if (e.startsWith("sg") || e.startsWith("tl-sg")) return "Switch";
-}, Ri = (n, e) => {
+}, Ei = (n, e) => {
   if (!e) return n;
   const t = e.connections?.find((i) => String(i[0] ?? "").toLowerCase().includes("mac"))?.[1];
   return {
@@ -2400,20 +2400,20 @@ const xn = Qi`
     nameRaw: n.nameRaw === "—" ? v(e.name_by_user ?? e.name ?? "—") : n.nameRaw,
     mac: n.mac === "—" ? v(t ?? n.mac) : n.mac,
     macNormalized: n.macNormalized.length === 0 && t ? pe(t) : n.macNormalized,
-    deviceType: n.deviceType && n.deviceType !== "—" ? n.deviceType : Ti(e.model) ?? n.deviceType,
+    deviceType: n.deviceType && n.deviceType !== "—" ? n.deviceType : Ri(e.model) ?? n.deviceType,
     deviceModel: n.deviceModel && n.deviceModel !== "—" ? n.deviceModel : v(e.model ?? n.deviceModel ?? "—"),
     deviceFirmware: n.deviceFirmware && n.deviceFirmware !== "—" ? n.deviceFirmware : v(e.sw_version ?? n.deviceFirmware ?? "—")
   };
-}, Mo = (n) => {
+}, Io = (n) => {
   for (const t of n) {
     const i = String(t.state ?? "").toLowerCase();
-    if (Ci.has(i)) return { isOnline: !0, raw: t.state };
+    if (Ai.has(i)) return { isOnline: !0, raw: t.state };
     if (i === "off" || i === "not_home")
       return { isOnline: !1, raw: t.state };
   }
   const e = n.find((t) => t.entity_id.startsWith("switch."));
   return e ? { isOnline: String(e.state).toLowerCase() !== "off", raw: e.state } : { isOnline: !1, raw: "unknown" };
-}, Lo = (n) => {
+}, Fo = (n) => {
   const e = [
     (t) => t.entity_id.startsWith("device_tracker."),
     (t) => t.entity_id.startsWith("switch."),
@@ -2425,10 +2425,10 @@ const xn = Qi`
     if (i) return i;
   }
   return n[0];
-}, Oo = (n) => n.some((e) => e.entity_id.startsWith("device_tracker.")) ? !1 : n.every((e) => e.entity_id.startsWith("update.")), Io = (n) => n.some((e) => {
+}, No = (n) => n.some((e) => e.entity_id.startsWith("device_tracker.")) ? !1 : n.every((e) => e.entity_id.startsWith("update.")), Do = (n) => n.some((e) => {
   const t = e.entity_id.toLowerCase(), i = e.attributes, o = String(i.friendly_name ?? "").toLowerCase(), s = `${t} ${o}`;
   return s.includes("reconnect") || s.includes("rssi") || s.includes(" snr") || s.includes(" 5g") || s.includes(" 6g") || s.includes(" 2.4g") || i.wireless === !0 || String(i.wireless).toLowerCase() === "true";
-}), ni = (n, e) => {
+}), oi = (n, e) => {
   for (const t of n) {
     const i = t.entity_id.toLowerCase(), o = t.attributes, s = String(o.friendly_name ?? "").toLowerCase(), a = `${i} ${s}`;
     if (!e.some((c) => a.includes(c))) continue;
@@ -2436,14 +2436,14 @@ const xn = Qi`
     if (l !== null) return l;
   }
   return null;
-}, Fo = (n) => {
+}, Bo = (n) => {
   for (const e of n) {
     if (!e.entity_id.toLowerCase().includes("power_save")) continue;
     const i = String(e.state ?? "").toLowerCase();
     return i === "on" ? { text: "On", value: 1 } : i === "off" ? { text: "Off", value: 0 } : { text: v(e.state), value: null };
   }
   return { text: "—", value: null };
-}, Ei = (n) => n.trim().toLowerCase(), No = (n) => {
+}, Mi = (n) => n.trim().toLowerCase(), zo = (n) => {
   const e = /* @__PURE__ */ new Map(), t = /* @__PURE__ */ new Map();
   for (const i of n) {
     if (!i.entity_id.startsWith("sensor.")) continue;
@@ -2456,12 +2456,12 @@ const xn = Qi`
           name: u === "—" ? void 0 : u,
           mac: c === "—" ? void 0 : c
         };
-        d.length > 0 && e.set(d, h), u !== "—" && t.set(Ei(u), h);
+        d.length > 0 && e.set(d, h), u !== "—" && t.set(Mi(u), h);
       }
   }
   return { byMac: e, byName: t };
-}, oi = (n, e) => {
-  const t = n.macNormalized.length > 0 ? e.byMac.get(n.macNormalized) : void 0, i = e.byName.get(Ei(n.nameRaw)), o = t ?? i;
+}, si = (n, e) => {
+  const t = n.macNormalized.length > 0 ? e.byMac.get(n.macNormalized) : void 0, i = e.byName.get(Mi(n.nameRaw)), o = t ?? i;
   if (!o) return n;
   const s = n.mac === "—" ? v(o.mac ?? "—") : n.mac, a = pe(s);
   return {
@@ -2473,8 +2473,8 @@ const xn = Qi`
     mac: s,
     macNormalized: a.length > 0 ? a : n.macNormalized
   };
-}, Mi = (n, e) => {
-  const t = Io(e), i = n.snrValue ?? ni(e, ["snr"]), o = n.signalValue ?? ni(e, ["rssi", " signal"]), s = Fo(e), a = n.connectionType === "wired" && t ? "wifi" : n.connectionType, l = n.connectionType === "wired" && t ? "WiFi" : n.connection;
+}, Li = (n, e) => {
+  const t = Do(e), i = n.snrValue ?? oi(e, ["snr"]), o = n.signalValue ?? oi(e, ["rssi", " signal"]), s = Bo(e), a = n.connectionType === "wired" && t ? "wifi" : n.connectionType, l = n.connectionType === "wired" && t ? "WiFi" : n.connection;
   return {
     ...n,
     connectionType: a,
@@ -2487,11 +2487,11 @@ const xn = Qi`
     powerSave: s.text,
     powerSaveValue: s.value
   };
-}, Do = (n, e, t, i, o) => {
-  if (e.length === 0 || Oo(e)) return null;
-  const s = Lo(e);
+}, Ho = (n, e, t, i, o) => {
+  if (e.length === 0 || No(e)) return null;
+  const s = Fo(e);
   if (!s) return null;
-  const a = s.attributes, l = Mo(e), c = Eo(a.type ?? Ti(o?.model)), d = c === "Gateway" || c === "Switch" || c === "Access Point" ? c : "Wired", u = t?.downloadedMB ?? null, p = t?.uploadedMB ?? null, h = u !== null ? u * 1024 * 1024 : null, y = p !== null ? p * 1024 * 1024 : null, g = h !== null || y !== null ? (h ?? 0) + (y ?? 0) : null, b = {
+  const a = s.attributes, l = Io(e), c = Oo(a.type ?? Ri(o?.model)), d = c === "Gateway" || c === "Switch" || c === "Access Point" ? c : "Wired", u = t?.downloadedMB ?? null, p = t?.uploadedMB ?? null, h = u !== null ? u * 1024 * 1024 : null, y = p !== null ? p * 1024 * 1024 : null, g = h !== null || y !== null ? (h ?? 0) + (y ?? 0) : null, b = {
     entity_id: s.entity_id,
     deviceId: n,
     name: v(o?.name_by_user ?? o?.name ?? s.attributes.friendly_name ?? s.entity_id),
@@ -2503,7 +2503,7 @@ const xn = Qi`
     ),
     isOnline: l.isOnline,
     statusValue: l.isOnline ? 1 : 0,
-    statusColor: l.isOnline ? "#3aa45b" : "#9aa0a6",
+    statusColor: At(l.isOnline),
     connection: d,
     connectionType: c === "—" ? "wired" : "unknown",
     band: "—",
@@ -2545,45 +2545,45 @@ const xn = Qi`
     deviceFirmware: v(o?.sw_version ?? a.firmware ?? a.firmware_version ?? "—"),
     deviceStatus: l.raw !== "unknown" ? v(l.raw) : v(a.status ?? "—")
   };
-  return Ri(Mi(b, e), o);
-}, Bo = (n, e, t) => {
+  return Ei(Li(b, e), o);
+}, Vo = (n, e, t) => {
   const i = /* @__PURE__ */ new Map();
   if (!t || e.length === 0) return i;
   for (const o of e) {
     if (o.config_entry_id !== t || !o.device_id || !o.entity_id.startsWith("sensor.")) continue;
     const s = n[o.entity_id];
-    s && (i.has(o.device_id) || i.set(o.device_id, $o()), Ro(s, i.get(o.device_id)));
+    s && (i.has(o.device_id) || i.set(o.device_id, Ao()), Lo(s, i.get(o.device_id)));
   }
   return i;
-}, zo = (n, e, t, i) => {
+}, Uo = (n, e, t, i) => {
   const o = Object.values(n).filter(
-    (a) => Co(a)
+    (a) => Ro(a)
   );
   if (!t) return o;
   if (!i && e.length === 0) return [];
   if (i || e.length === 0) return o;
   const s = e.filter((a) => a.config_entry_id === t).filter((a) => a.entity_id.startsWith("device_tracker.")).map((a) => n[a.entity_id]).filter((a) => a !== void 0);
   return s.length > 0 ? s : [];
-}, si = (n, e, t) => {
-  const i = n.attributes, o = v(i.friendly_name ?? i.name ?? n.entity_id), s = Ci.has(n.state), { label: a, type: l } = To(i), c = Ao(i), d = c === "2g" ? "2G" : c === "5g" ? "5G" : c === "6g" ? "6G" : "—", u = v(i.ip ?? i.ip_address ?? "—"), p = v(i.mac ?? i.mac_address ?? i.client_mac ?? "—"), h = v(
+}, ri = (n, e, t) => {
+  const i = n.attributes, o = v(i.friendly_name ?? i.name ?? n.entity_id), s = Ai.has(n.state), { label: a, type: l } = Mo(i), c = Eo(i), d = c === "2g" ? "2G" : c === "5g" ? "5G" : c === "6g" ? "6G" : "—", u = v(i.ip ?? i.ip_address ?? "—"), p = v(i.mac ?? i.mac_address ?? i.client_mac ?? "—"), h = v(
     i.host_name ?? i.hostname ?? i.hostName ?? i.name ?? i.model ?? "—"
   ), y = $(i.packets_sent ?? i.up_packet ?? i.upPacket), g = $(
     i.packets_received ?? i.down_packet ?? i.downPacket
-  ), b = t?.txActivityMBps ?? null, w = t?.rxActivityMBps ?? null, T = b !== null ? b * 8 : null, R = w !== null ? w * 8 : null, E = ii(i, [
+  ), b = t?.txActivityMBps ?? null, w = t?.rxActivityMBps ?? null, T = b !== null ? b * 8 : null, R = w !== null ? w * 8 : null, E = ni(i, [
     "tx_rate",
     "txRate",
     "link_tx_rate",
     "linkTxRate",
     "tx_link_speed",
     "txLinkSpeed"
-  ]), M = ii(i, [
+  ]), M = ni(i, [
     "rx_rate",
     "rxRate",
     "link_rx_rate",
     "linkRxRate",
     "rx_link_speed",
     "rxLinkSpeed"
-  ]), B = Be(E, c, "auto"), ie = Be(M, c, "auto"), G = t?.downloadedMB ?? null, ne = t?.uploadedMB ?? null, oe = G !== null ? G * 1024 * 1024 : null, V = ne !== null ? ne * 1024 * 1024 : null, P = $(i.traffic_down ?? i.trafficDown), q = $(i.traffic_up ?? i.trafficUp), he = $(i.traffic_usage), X = oe ?? P, U = V ?? q, fe = oe !== null || V !== null ? (oe ?? 0) + (V ?? 0) : P !== null || q !== null ? (P ?? 0) + (q ?? 0) : he, z = t?.uptimeSeconds ?? Ai(i.uptime ?? i.online_time ?? i.connected_since) ?? null, N = $(i.rssi ?? i.signal) ?? t?.rssi ?? null, se = $(i.snr) ?? t?.snr ?? null, W = i.power_save ?? i.powerSave, Y = String(W).toLowerCase() === "on" || W === !0 ? 1 : String(W).toLowerCase() === "off" || W === !1 ? 0 : null, xe = Y === 1 ? "On" : Y === 0 ? "Off" : "—", D = tt(i.type), Ve = D.toLowerCase() === "ap" ? "Access Point" : D.toLowerCase() === "gateway" ? "Gateway" : D.toLowerCase() === "switch" ? "Switch" : v(i.connect_dev_type ?? i.connectDevType ?? "—"), at = v(i.model ?? i.device_model ?? "—"), Pe = v(i.firmware ?? i.firmware_version ?? "—"), Ue = v(i.status ?? i.status_category ?? "—");
+  ]), B = Be(E, c, "auto"), ie = Be(M, c, "auto"), G = t?.downloadedMB ?? null, ne = t?.uploadedMB ?? null, oe = G !== null ? G * 1024 * 1024 : null, V = ne !== null ? ne * 1024 * 1024 : null, U = $(i.traffic_down ?? i.trafficDown), q = $(i.traffic_up ?? i.trafficUp), he = $(i.traffic_usage), X = oe ?? U, P = V ?? q, fe = oe !== null || V !== null ? (oe ?? 0) + (V ?? 0) : U !== null || q !== null ? (U ?? 0) + (q ?? 0) : he, z = t?.uptimeSeconds ?? Ti(i.uptime ?? i.online_time ?? i.connected_since) ?? null, N = $(i.rssi ?? i.signal) ?? t?.rssi ?? null, se = $(i.snr) ?? t?.snr ?? null, W = i.power_save ?? i.powerSave, Y = String(W).toLowerCase() === "on" || W === !0 ? 1 : String(W).toLowerCase() === "off" || W === !1 ? 0 : null, xe = Y === 1 ? "On" : Y === 0 ? "Off" : "—", D = tt(i.type), Ve = D.toLowerCase() === "ap" ? "Access Point" : D.toLowerCase() === "gateway" ? "Gateway" : D.toLowerCase() === "switch" ? "Switch" : v(i.connect_dev_type ?? i.connectDevType ?? "—"), at = v(i.model ?? i.device_model ?? "—"), Ue = v(i.firmware ?? i.firmware_version ?? "—"), Pe = v(i.status ?? i.status_category ?? "—");
   return {
     entity_id: n.entity_id,
     name: o,
@@ -2591,7 +2591,7 @@ const xn = Qi`
     macNormalized: pe(p),
     isOnline: s,
     statusValue: s ? 1 : 0,
-    statusColor: s ? "#3aa45b" : "#9aa0a6",
+    statusColor: At(s),
     connection: a,
     connectionType: l,
     band: d,
@@ -2615,8 +2615,8 @@ const xn = Qi`
     onlineTimeValue: z,
     downloaded: j(X),
     downloadedValue: X,
-    uploaded: j(U),
-    uploadedValue: U,
+    uploaded: j(P),
+    uploadedValue: P,
     trafficUsage: j(fe),
     trafficUsageValue: fe,
     signal: N !== null ? `${N} dBm` : "—",
@@ -2628,15 +2628,15 @@ const xn = Qi`
     powerSaveValue: Y,
     deviceType: Ve,
     deviceModel: at,
-    deviceFirmware: Pe,
-    deviceStatus: Ue
+    deviceFirmware: Ue,
+    deviceStatus: Pe
   };
-}, Ho = (n, e, t, i, o, s) => {
+}, Po = (n, e, t, i, o, s) => {
   if (!i) return [];
   if (!o && e.length === 0) return [];
   if (o || e.length === 0)
-    return zo(n, e, i, o).map(
-      (h) => si(h, s)
+    return Uo(n, e, i, o).map(
+      (h) => ri(h, s)
     );
   const a = e.filter((h) => h.config_entry_id === i);
   if (a.length === 0) return [];
@@ -2646,7 +2646,7 @@ const xn = Qi`
     g.entries.push(h), l.set(y, g);
   }
   if (l.size === 0) return [];
-  const c = Bo(n, e, i), d = new Map(t.map((h) => [h.id, h])), u = No(
+  const c = Vo(n, e, i), d = new Map(t.map((h) => [h.id, h])), u = zo(
     a.map((h) => n[h.entity_id]).filter((h) => h !== void 0)
   ), p = [];
   for (const h of l.values()) {
@@ -2654,10 +2654,10 @@ const xn = Qi`
     if (b.length === 0) continue;
     const w = b.find((M) => M.entity_id.startsWith("device_tracker.")), T = y ? c.get(y) : void 0, R = y ? d.get(y) : void 0;
     if (w) {
-      const M = oi(
-        Mi(
+      const M = si(
+        Li(
           {
-            ...si(w, s, T),
+            ...ri(w, s, T),
             deviceId: y
           },
           b
@@ -2667,10 +2667,10 @@ const xn = Qi`
           byName: u.byName
         }
       );
-      p.push(Ri(M, R));
+      p.push(Ei(M, R));
       continue;
     }
-    const E = Do(
+    const E = Ho(
       y ?? g[0]?.entity_id,
       b,
       T,
@@ -2678,7 +2678,7 @@ const xn = Qi`
       R
     );
     E && p.push(
-      oi(E, u)
+      si(E, u)
     );
   }
   return p;
@@ -2698,70 +2698,70 @@ const xn = Qi`
   "online",
   "traffic",
   "signal"
-], Vo = [
+], Wo = [
   "downloaded",
   "uploaded"
-], Li = [
+], Oi = [
   "deviceType",
   "deviceModel",
   "deviceFirmware",
   "deviceStatus"
-], Oi = [
+], Ii = [
   "actions",
   "snr",
   "powerSave",
-  ...Vo
-], Po = [
+  ...Wo
+], Ko = [
   "deviceType",
   "deviceModel",
   "deviceFirmware",
   "deviceStatus"
-], Uo = [
+], jo = [
   ...we,
-  ...Po
-], ri = [
-  ...we,
-  ...Li,
-  ...Oi
+  ...Ko
 ], ai = [
   ...we,
-  ...Li,
-  ...Oi
-], li = {
+  ...Oi,
+  ...Ii
+], li = [
+  ...we,
+  ...Oi,
+  ...Ii
+], ci = {
   tplink_router: we,
-  tplink_deco: Uo,
-  omada: ri,
-  tplink_omada: ri
-}, Wo = (n) => n && n in li ? li[n] : we, Ko = (n) => {
+  tplink_deco: jo,
+  omada: ai,
+  tplink_omada: ai
+}, Go = (n) => n && n in ci ? ci[n] : we, qo = (n) => {
   const e = n.length > 0 ? Math.max(...n) : 0;
   return e <= 120 ? 100 : e <= 600 ? 300 : e <= 1200 ? 1e3 : e <= 2500 ? 2e3 : e <= 5e3 ? 5e3 : 1e4;
-}, ci = (n, e) => {
-  const t = Ko(n), i = 0, o = typeof e == "number" ? e : t;
+}, di = (n, e) => {
+  const t = qo(n), i = 0, o = typeof e == "number" ? e : t;
   return o <= i ? { min: i, max: Math.max(i + 1, t) } : { min: i, max: o };
-}, jo = (n, e, t) => {
+}, Xo = (n, e, t) => {
   if (n === null || !Number.isFinite(n) || n <= 0) return "rate--na";
   const i = Math.min(Math.max(n, e), t), o = Math.max(t - e, 1), s = (i - e) / o;
   return s < 0.1 ? "ud-rate--bad" : s < 0.22 ? "ud-rate--poor" : s < 0.38 ? "ud-rate--fair" : s < 0.54 ? "ud-rate--good" : s < 0.66 ? "ud-rate--great" : s < 0.75 ? "ud-rate--excellent" : "ud-rate--ultra";
-}, di = (n) => {
+}, ui = (n) => {
   if (!Number.isFinite(n)) return "0";
   const e = Math.abs(n);
   return e >= 100 ? n.toFixed(0) : e >= 10 ? n.toFixed(1) : n.toFixed(2);
-}, ui = (n) => n === null || !Number.isFinite(n) || n <= 0 ? "rate--na" : n < 10 ? "rate--bad" : n < 30 ? "rate--poor" : n < 100 ? "rate--fair" : n < 300 ? "rate--good" : n < 1e3 ? "rate--great" : n < 2e3 ? "rate--excellent" : "rate--ultra", Q = {
+}, pi = (n) => n === null || !Number.isFinite(n) || n <= 0 ? "rate--na" : n < 10 ? "rate--bad" : n < 30 ? "rate--poor" : n < 100 ? "rate--fair" : n < 300 ? "rate--good" : n < 1e3 ? "rate--great" : n < 2e3 ? "rate--excellent" : "rate--ultra", Q = {
   band: "all",
   connection: "all",
   status: "all"
-}, Go = /* @__PURE__ */ new Set(["all", "2g", "5g", "6g"]), qo = /* @__PURE__ */ new Set([
+}, Yo = /* @__PURE__ */ new Set(["all", "2g", "5g", "6g"]), Jo = /* @__PURE__ */ new Set([
   "all",
   "wifi",
   "wired",
   "iot",
   "guest"
-]), Xo = /* @__PURE__ */ new Set(["all", "online", "offline"]), mt = "none", pi = 1e3, Yo = "0.4.1", hi = /* @__PURE__ */ new Map(), gt = /* @__PURE__ */ new Map(), Xe = "__saved__", fi = /* @__PURE__ */ new Set([
+]), Zo = /* @__PURE__ */ new Set(["all", "online", "offline"]), mt = "none", hi = 1e3, Qo = "0.4.2", fi = /* @__PURE__ */ new Map(), gt = /* @__PURE__ */ new Map(), Xe = "__saved__", _i = /* @__PURE__ */ new Set([
   "tplink_router",
   "tplink_deco",
   "omada",
   "tplink_omada"
-]), Jo = /* @__PURE__ */ new Set([
+]), es = /* @__PURE__ */ new Set([
   "down",
   "up",
   "tx",
@@ -2773,7 +2773,7 @@ const xn = Qi`
   "signal",
   "snr",
   "powerSave"
-]), Zo = 5 * 60 * 1e3, Qo = 20 * 1e3, ce = {
+]), ts = 5 * 60 * 1e3, is = 20 * 1e3, ce = {
   tap: 8,
   holdStart: 12,
   holdCommit: [16, 22, 16],
@@ -2781,7 +2781,7 @@ const xn = Qi`
   actionOn: [16, 20, 16],
   actionOff: 46,
   error: [26, 40, 26]
-}, es = (n) => /^[0-9a-f:-]+$/i.test(n), nt = (n) => /^\d{1,3}(\.\d{1,3}){3}$/.test(n), _i = (n) => {
+}, ns = (n) => /^[0-9a-f:-]+$/i.test(n), nt = (n) => /^\d{1,3}(\.\d{1,3}){3}$/.test(n), mi = (n) => {
   if (!n) return;
   const e = n.trim();
   if (!e) return;
@@ -2793,11 +2793,11 @@ const xn = Qi`
   }
   const t = e.match(/(\d{1,3}(?:\.\d{1,3}){3})/);
   return t ? t[1] : void 0;
-}, ge = (n, e) => n == null ? e == null ? 0 : 1 : e == null ? -1 : typeof n == "number" && typeof e == "number" ? n - e : new Intl.Collator(void 0, { numeric: !0, sensitivity: "base" }).compare(String(n), String(e)), ts = (n) => {
+}, ge = (n, e) => n == null ? e == null ? 0 : 1 : e == null ? -1 : typeof n == "number" && typeof e == "number" ? n - e : new Intl.Collator(void 0, { numeric: !0, sensitivity: "base" }).compare(String(n), String(e)), os = (n) => {
   if (/(2\.4|2_4|2g|2ghz|24g)/i.test(n)) return "2g";
   if (/(5g|5ghz)/i.test(n)) return "5g";
   if (/(6g|6ghz)/i.test(n)) return "6g";
-}, mi = (n) => {
+}, gi = (n) => {
   if (n == null) return !0;
   if (typeof n == "number") return !Number.isFinite(n);
   if (typeof n == "string") {
@@ -2822,7 +2822,7 @@ const xn = Qi`
       ...this._config ?? {},
       ...e ?? {},
       type: "custom:tplink-router-card"
-    }, s = /* @__PURE__ */ new Set(["name", ...ai]), a = this._resolveConfiguredColumnLayoutFromInput(o.column_layout, s) ?? this._normalizeLegacyColumnsToLayout(o.columns, s), l = o, c = this._resolveConfiguredDefaultFilters(o), d = typeof l.upload_speed_color_max == "number" ? l.upload_speed_color_max : 1e3, u = typeof l.download_speed_color_max == "number" ? l.download_speed_color_max : 100;
+    }, s = /* @__PURE__ */ new Set(["name", ...li]), a = this._resolveConfiguredColumnLayoutFromInput(o.column_layout, s) ?? this._normalizeLegacyColumnsToLayout(o.columns, s), l = o, c = this._resolveConfiguredDefaultFilters(o), d = typeof l.upload_speed_color_max == "number" ? l.upload_speed_color_max : 1e3, u = typeof l.download_speed_color_max == "number" ? l.download_speed_color_max : 100;
     this._config = {
       speed_unit: "MBps",
       txrx_color: !0,
@@ -2867,7 +2867,7 @@ const xn = Qi`
     this._refreshTimer !== void 0 && (window.clearTimeout(this._refreshTimer), this._refreshTimer = void 0);
   }
   _getRegistryRefreshIntervalMs() {
-    return this._config?.show_hidden_entities ? Zo : Qo;
+    return this._config?.show_hidden_entities ? ts : is;
   }
   _updateRefreshScheduling() {
     if (this._clearRefreshTimer(), !this._loaded || !this._isVisibleForRefresh()) return;
@@ -3011,7 +3011,7 @@ const xn = Qi`
               type: "config_entries/get",
               domain: t
             })).filter(
-              (a) => fi.has(a.domain)
+              (a) => _i.has(a.domain)
             );
             if (s.length > 0) {
               const a = new Map(
@@ -3070,7 +3070,7 @@ const xn = Qi`
         } catch {
           i = null;
         }
-        e && (this._entries = e.filter((o) => fi.has(o.domain)), this._entries.forEach((o) => gt.set(o.entry_id, o.title))), t ? (this._entityRegistry = t, this._registryFailed = !1) : this._registryFailed = !0, i && (this._deviceRegistry = i), this._filtersLoaded || this._restoreFilters(this._selectedEntryId), !e && !t && (this._error = qe(this.hass, "errors.lists")), this._loaded = !0, this._lastRegistryRefreshAt = Date.now();
+        e && (this._entries = e.filter((o) => _i.has(o.domain)), this._entries.forEach((o) => gt.set(o.entry_id, o.title))), t ? (this._entityRegistry = t, this._registryFailed = !1) : this._registryFailed = !0, i && (this._deviceRegistry = i), this._filtersLoaded || this._restoreFilters(this._selectedEntryId), !e && !t && (this._error = qe(this.hass, "errors.lists")), this._loaded = !0, this._lastRegistryRefreshAt = Date.now();
       } catch {
         this._error = qe(this.hass, "errors.lists");
       } finally {
@@ -3100,17 +3100,17 @@ const xn = Qi`
   _normalizeBandFilter(e) {
     if (typeof e != "string") return null;
     const t = e.trim().toLowerCase();
-    return Go.has(t) ? t : null;
+    return Yo.has(t) ? t : null;
   }
   _normalizeConnectionFilter(e) {
     if (typeof e != "string") return null;
     const t = e.trim().toLowerCase();
-    return t === "lan" ? "wired" : qo.has(t) ? t : null;
+    return t === "lan" ? "wired" : Jo.has(t) ? t : null;
   }
   _normalizeStatusFilter(e) {
     if (typeof e != "string") return null;
     const t = e.trim().toLowerCase();
-    return Xo.has(t) ? t : null;
+    return Zo.has(t) ? t : null;
   }
   _normalizeColumnFixed(e) {
     if (typeof e == "number")
@@ -3437,7 +3437,7 @@ const xn = Qi`
     }
   }
   _isShiftEntityCellClickable(e, t, i, o) {
-    return this._isOmadaDomain(e) && Jo.has(t) && this._hasMeaningfulCellValue(i, t) && !!this._resolveShiftEntityForColumn(i, t, o);
+    return this._isOmadaDomain(e) && es.has(t) && this._hasMeaningfulCellValue(i, t) && !!this._resolveShiftEntityForColumn(i, t, o);
   }
   _handleShiftEntityCellClick(e, t, i, o) {
     if (!(e.shiftKey || this._isShiftPressed) || e.target?.closest("button, a, input, select, textarea")) return;
@@ -3455,7 +3455,7 @@ const xn = Qi`
     if (!this.hass) return [];
     const e = this._selectedEntryId;
     if (!e) return [];
-    const t = hi.get(e);
+    const t = fi.get(e);
     if (this._loading && this._entityRegistry.length === 0 && !this._registryFailed && t)
       return t;
     const o = this._resolveEntryDomain(e);
@@ -3463,7 +3463,7 @@ const xn = Qi`
       return t || [];
     let s = [];
     if (o === "omada" || o === "tplink_omada")
-      s = Ho(
+      s = Po(
         this.hass.states,
         this._entityRegistry,
         this._deviceRegistry,
@@ -3472,17 +3472,17 @@ const xn = Qi`
         this._config?.speed_unit ?? "MBps"
       );
     else {
-      const a = co(
+      const a = ho(
         this.hass.states,
         this._entityRegistry,
         e,
         this._registryFailed
-      ), l = lo(a), c = new Map(
+      ), l = po(a), c = new Map(
         this._entityRegistry.filter((d) => d.entity_id.startsWith("device_tracker.") && d.device_id).map((d) => [d.entity_id, d.device_id])
       );
       s = a.map(
         (d) => ({
-          ...ko(
+          ...Co(
             d,
             this._config?.speed_unit ?? "MBps",
             l
@@ -3491,7 +3491,7 @@ const xn = Qi`
         })
       );
     }
-    return (s.length > 0 || !this._loading) && hi.set(e, s), s.length === 0 && t && this._loading ? t : s;
+    return (s.length > 0 || !this._loading) && fi.set(e, s), s.length === 0 && t && this._loading ? t : s;
   }
   _isGlobalCommonAction(e) {
     return e.includes("data fetching") || e.includes("scanning") || e.includes("wlan optimization") || e.includes("rf planning") || e.includes("ai optimization");
@@ -3519,7 +3519,7 @@ const xn = Qi`
         isOn: E,
         available: M,
         requiresHold: this._requiresHoldAction(l, d),
-        band: ts(d),
+        band: os(d),
         deviceId: p,
         deviceName: h?.name_by_user ?? h?.name,
         role: T
@@ -3542,7 +3542,7 @@ const xn = Qi`
   }
   _getHeaderActionItems(e, t, i) {
     return e.map((o) => {
-      const s = no(
+      const s = oo(
         o.domain,
         o.entity_id,
         o.label,
@@ -3574,7 +3574,7 @@ const xn = Qi`
     return t;
   }
   _buildActionDeviceOptions(e) {
-    return so(e, this._deviceRegistry);
+    return ro(e, this._deviceRegistry);
   }
   _hasVisibleFalseFlag(e, t = 0) {
     if (!e || t > 4) return !1;
@@ -3696,7 +3696,7 @@ const xn = Qi`
   }
   _getRouterDevice(e) {
     if (!e || this._entityRegistry.length === 0) return;
-    const t = uo(this._entityRegistry, e).map((c) => this._deviceRegistry.find((d) => d.id === c)).filter((c) => c !== void 0);
+    const t = fo(this._entityRegistry, e).map((c) => this._deviceRegistry.find((d) => d.id === c)).filter((c) => c !== void 0);
     if (t.length === 0) return;
     const i = this._entries.find((c) => c.entry_id === e)?.title ?? "", o = t.find((c) => c.configuration_url);
     if (o) return o;
@@ -3776,7 +3776,7 @@ const xn = Qi`
     }
   }
   _getLocalUrl(e, t, i) {
-    const o = _i(e);
+    const o = mi(e);
     if (o) return `http://${o}`;
     const s = this._normalizeUrl(t?.configuration_url);
     if (s) return s;
@@ -3803,7 +3803,7 @@ const xn = Qi`
     return {
       meta: {
         card: "ha-tplink-router-card",
-        version: Yo,
+        version: Qo,
         exported_at: (/* @__PURE__ */ new Date()).toISOString(),
         selected_adapter: i === "omada" || i === "tplink_omada" ? "omada" : i === "tplink_deco" ? "tplink_deco" : "tplink_router"
       },
@@ -3832,7 +3832,7 @@ const xn = Qi`
   }
   _downloadDebugExport() {
     this._hapticTap();
-    const e = io(this._buildDebugExportPayload(), {
+    const e = no(this._buildDebugExportPayload(), {
       limits: {
         maxDepth: 8,
         maxNodes: 3e4,
@@ -3849,7 +3849,7 @@ const xn = Qi`
     const i = t.entity_id;
     this._holdAnimationIds[i] && (cancelAnimationFrame(this._holdAnimationIds[i]), delete this._holdAnimationIds[i]), this._holdTimers[i] && (window.clearTimeout(this._holdTimers[i]), delete this._holdTimers[i]), this._holdStates[i] = { progress: 0, completed: !1 }, this.requestUpdate();
     const o = performance.now(), s = () => {
-      const a = performance.now() - o, l = Math.min(a / pi, 1);
+      const a = performance.now() - o, l = Math.min(a / hi, 1);
       if (this._holdStates[i] = { progress: l, completed: l >= 1 }, this.requestUpdate(), l >= 1) {
         delete this._holdAnimationIds[i], this._hapticHoldCommit(), this._invokeAction(t, { fromHold: !0 }), this._holdTimers[i] = window.setTimeout(() => {
           this._holdStates[i] = { progress: 0, completed: !1 }, this.requestUpdate(), delete this._holdTimers[i];
@@ -3884,7 +3884,7 @@ const xn = Qi`
       ...h ? ["offline"] : []
     ], g = d.includes(this._filters.band) ? this._filters.band : "all", b = u.includes(
       this._filters.connection
-    ) ? this._filters.connection : "all", w = y.includes(this._filters.status) ? this._filters.status : "all", T = this._filter.trim(), R = this._parseRegexSearch(T), E = T.toLowerCase(), M = pe(E), B = !R && E.length > 1 && es(E), ie = a.filter((r) => {
+    ) ? this._filters.connection : "all", w = y.includes(this._filters.status) ? this._filters.status : "all", T = this._filter.trim(), R = this._parseRegexSearch(T), E = T.toLowerCase(), M = pe(E), B = !R && E.length > 1 && ns(E), ie = a.filter((r) => {
       const m = this._buildRowSearchValues(r), _ = m.join(" ");
       if (T) {
         if (R) {
@@ -3987,29 +3987,29 @@ const xn = Qi`
       {
         key: "actions",
         label: e("columns.actions"),
-        sort: (r) => Rt.get(r.deviceId ?? "")?.length ?? null
+        sort: (r) => Et.get(r.deviceId ?? "")?.length ?? null
       }
     ], ne = Array.isArray(this._config?.columns) ? this._config.columns : [], oe = Array.isArray(this._config?.column_layout) ? this._config.column_layout.map((r) => r && typeof r == "object" ? r.key : void 0).filter((r) => typeof r == "string") : [], V = /* @__PURE__ */ new Set([
       "name",
-      ...Wo(s),
+      ...Go(s),
       ...ne,
       ...oe
-    ]), P = new Map(G.map((r) => [r.key, r])), q = G.filter((r) => V.has(r.key)).map((r) => r.key), he = this._config?.columns && this._config.columns.length > 0 ? this._config.columns : q, U = Array.from(new Set(he)).filter((r) => V.has(r)).map((r) => ({ key: r })), z = (this._resolveConfiguredColumnLayout(V) ?? U).map((r) => {
-      const m = P.get(r.key);
+    ]), U = new Map(G.map((r) => [r.key, r])), q = G.filter((r) => V.has(r.key)).map((r) => r.key), he = this._config?.columns && this._config.columns.length > 0 ? this._config.columns : q, P = Array.from(new Set(he)).filter((r) => V.has(r)).map((r) => ({ key: r })), z = (this._resolveConfiguredColumnLayout(V) ?? P).map((r) => {
+      const m = U.get(r.key);
       return m ? {
         ...r,
         col: m
       } : null;
     }).filter((r) => r !== null), N = z.length > 0 ? z : q.map((r) => {
-      const m = P.get(r);
+      const m = U.get(r);
       return m ? { key: r, fixed: void 0, name: void 0, max_width: void 0, col: m } : null;
     }).filter((r) => r !== null), se = N.map((r) => r.col);
     this._stickyStartColumnKeys = N.filter((r) => r.fixed === "start").map((r) => r.key), this._stickyEndColumnKeys = N.filter((r) => r.fixed === "end").map((r) => r.key);
     const W = this._stickyStartColumnKeys[this._stickyStartColumnKeys.length - 1], Y = this._stickyEndColumnKeys[0], xe = new Set(se.map((r) => r.key)), D = this._sorts.filter((r) => xe.has(r.key)), Ve = [...ie].sort((r, m) => {
       for (const _ of D) {
-        const L = P.get(_.key);
+        const L = U.get(_.key);
         if (!L) continue;
-        const A = L.sort(r), C = L.sort(m), k = mi(A), x = mi(C);
+        const A = L.sort(r), C = L.sort(m), k = gi(A), x = gi(C);
         if (k && x) continue;
         if (k) return 1;
         if (x) return -1;
@@ -4017,19 +4017,19 @@ const xn = Qi`
         if (O !== 0) return _.direction === "asc" ? O : -O;
       }
       return 0;
-    }), at = a.filter((r) => r.isOnline).length, Pe = !!this._config?.txrx_color, Ue = !!this._config?.updown_color, Ii = a.filter((r) => r.isOnline).map((r) => r.upSpeedValue).filter((r) => typeof r == "number" && Number.isFinite(r)), Fi = a.filter((r) => r.isOnline).map((r) => r.downSpeedValue).filter((r) => typeof r == "number" && Number.isFinite(r)), Ni = ci(
-      Ii,
-      this._config?.upload_speed_color_max
-    ), Di = ci(
+    }), at = a.filter((r) => r.isOnline).length, Ue = !!this._config?.txrx_color, Pe = !!this._config?.updown_color, Fi = a.filter((r) => r.isOnline).map((r) => r.upSpeedValue).filter((r) => typeof r == "number" && Number.isFinite(r)), Ni = a.filter((r) => r.isOnline).map((r) => r.downSpeedValue).filter((r) => typeof r == "number" && Number.isFinite(r)), Di = di(
       Fi,
+      this._config?.upload_speed_color_max
+    ), Bi = di(
+      Ni,
       this._config?.download_speed_color_max
-    ), At = (r, m, _, L) => {
+    ), Tt = (r, m, _, L) => {
       if (r === null || !Number.isFinite(r) || r <= 0) return m;
       const A = Math.max(_, 1), k = {
         percent: Math.max(0, Math.min(100, r / A * 100)).toFixed(1),
         transfer: wt(r * 1e6 / 8, "MBps"),
-        mbps: di(r),
-        max: di(A)
+        mbps: ui(r),
+        max: ui(A)
       };
       return f`
         <span
@@ -4037,23 +4037,23 @@ const xn = Qi`
           @mouseenter=${(x) => this._openSpeedTooltip(x, k)}
           @mouseleave=${() => this._closeSpeedTooltip()}
         >
-          ${L ? f`<span class="rate ${jo(r, 0, A)}">${m}</span>` : m}
+          ${L ? f`<span class="rate ${Xo(r, 0, A)}">${m}</span>` : m}
         </span>
       `;
-    }, lt = this._getActionItems(t), Bi = this._collectInfrastructureActionDeviceIds(lt), Tt = this._getHeaderActionItems(
+    }, lt = this._getActionItems(t), zi = this._collectInfrastructureActionDeviceIds(lt), Rt = this._getHeaderActionItems(
       lt,
       s,
-      Bi
-    ), Rt = this._getRowActionsByDevice(lt), ke = Math.max(1, Math.round(pi / 1e3)), F = this._getActionRenderMode("header"), ct = this._getActionRenderMode("row"), $e = this._getRouterEntityId(t), We = i?.title ?? o, Et = this._getEntryStates(t).filter(
+      zi
+    ), Et = this._getRowActionsByDevice(lt), ke = Math.max(1, Math.round(hi / 1e3)), F = this._getActionRenderMode("header"), ct = this._getActionRenderMode("row"), $e = this._getRouterEntityId(t), We = i?.title ?? o, Mt = this._getEntryStates(t).filter(
       (r) => !r.entity_id.startsWith("device_tracker.")
-    ), Mt = $e ? this._getDeviceIdForEntity($e) : void 0, Lt = _i(We), Ot = Lt ? this._findDeviceIdByIp(Et, Lt) : void 0, _e = (Mt ? this._deviceRegistry.find((r) => r.id === Mt) : void 0) ?? (Ot ? this._deviceRegistry.find((r) => r.id === Ot) : void 0) ?? this._getRouterDevice(t), It = this._getStatesForDevice(t, _e?.id), Ke = It.length > 0 ? It.filter((r) => !r.entity_id.startsWith("device_tracker.")) : Et, Se = this._getLocalUrl(We, _e, Ke), Ft = this._getPublicIp(Ke), zi = this._getRouterStats(Ke), K = this._getRouterDetails(Ke, _e), Hi = [
+    ), Lt = $e ? this._getDeviceIdForEntity($e) : void 0, Ot = mi(We), It = Ot ? this._findDeviceIdByIp(Mt, Ot) : void 0, _e = (Lt ? this._deviceRegistry.find((r) => r.id === Lt) : void 0) ?? (It ? this._deviceRegistry.find((r) => r.id === It) : void 0) ?? this._getRouterDevice(t), Ft = this._getStatesForDevice(t, _e?.id), Ke = Ft.length > 0 ? Ft.filter((r) => !r.entity_id.startsWith("device_tracker.")) : Mt, Se = this._getLocalUrl(We, _e, Ke), Nt = this._getPublicIp(Ke), Hi = this._getRouterStats(Ke), K = this._getRouterDetails(Ke, _e), Vi = [
       K.model ?? null,
       K.manufacturer ? `by ${K.manufacturer}` : null,
       K.swVersion ? `Firmware: ${K.swVersion}` : null,
       K.hwVersion ? `Hardware: ${K.hwVersion}` : null,
       K.mac ? `MAC: ${K.mac}` : null
     ].filter(Boolean).join(`
-`), dt = s === "omada" || s === "tplink_omada", Nt = e(dt ? "card.controllerLabel" : "card.routerLabel"), Vi = t ? `${Nt}: ${dt ? We ?? t : Se ?? We ?? t}` : e(dt ? "card.controllerNotSelected" : "card.routerNotSelected"), Pi = !!this._config?.hide_header, Ui = !!this._config?.hide_filter_section, Dt = d.length > 1, Bt = u.length > 1, zt = y.length > 1, Wi = Dt || Bt || zt, Ce = this._buildActionDeviceOptions(Tt), re = Ce.find((r) => r.deviceId === this._selectedActionDeviceId)?.deviceId ?? Ce[0]?.deviceId, Ht = Ce.find((r) => r.deviceId === re)?.deviceName ?? _e?.name_by_user ?? _e?.name, ut = re ?? _e?.id, Ki = Ht ? e("actions.goToDevice", { name: Ht }) : e("actions.router"), Vt = re ? this._getStatesForDevice(t, re) : [], me = Vt.length > 0 ? this._getRouterStats(Vt) : zi, je = Tt.filter((r) => r.isGlobalCommon || !re ? !0 : r.deviceId === re), J = {
+`), dt = s === "omada" || s === "tplink_omada", Dt = e(dt ? "card.controllerLabel" : "card.routerLabel"), Ui = t ? `${Dt}: ${dt ? We ?? t : Se ?? We ?? t}` : e(dt ? "card.controllerNotSelected" : "card.routerNotSelected"), Pi = !!this._config?.hide_header, Wi = !!this._config?.hide_filter_section, Bt = d.length > 1, zt = u.length > 1, Ht = y.length > 1, Ki = Bt || zt || Ht, Ce = this._buildActionDeviceOptions(Rt), re = Ce.find((r) => r.deviceId === this._selectedActionDeviceId)?.deviceId ?? Ce[0]?.deviceId, Vt = Ce.find((r) => r.deviceId === re)?.deviceName ?? _e?.name_by_user ?? _e?.name, ut = re ?? _e?.id, ji = Vt ? e("actions.goToDevice", { name: Vt }) : e("actions.router"), Ut = re ? this._getStatesForDevice(t, re) : [], me = Ut.length > 0 ? this._getRouterStats(Ut) : Hi, je = Rt.filter((r) => r.isGlobalCommon || !re ? !0 : r.deviceId === re), J = {
       host: je.filter((r) => r.kind === "host").sort(
         (r, m) => ge(
           { "2g": 1, "5g": 2, "6g": 3 }[r.band ?? "2g"],
@@ -4079,12 +4079,12 @@ const xn = Qi`
         }, L = _(r) - _(m);
         return L !== 0 ? L : ge(r.label, m.label);
       })
-    }, ji = this._config?.shift_click_underline !== !1, Ge = F === "icon" ? "action-group" : "action-group action-group--wide", Gi = [
+    }, Gi = this._config?.shift_click_underline !== !1, Ge = F === "icon" ? "action-group" : "action-group action-group--wide", qi = [
       this._isShiftPressed ? "shift-mode" : "",
-      ji ? "shift-underline-enabled" : "shift-underline-disabled"
+      Gi ? "shift-underline-enabled" : "shift-underline-disabled"
     ].filter((r) => r.length > 0).join(" ");
     return f`
-      <ha-card class=${Gi}>
+      <ha-card class=${qi}>
         <div class="header ${Pi ? "hidden" : ""}">
           <div class="title">
             <div
@@ -4286,22 +4286,22 @@ const xn = Qi`
             <div class="router-left">
               <span class="router-label">
                 ${t && Se ? f`
-                      ${Nt}:
+                      ${Dt}:
                       <a
                         class="router-link"
                         href=${Se}
                         target="_blank"
                         rel="noopener noreferrer"
-                        title=${Hi || Se}
+                        title=${Vi || Se}
                         @click=${() => this._hapticTap()}
                       >
                         ${Se}
                       </a>
-                    ` : Vi}
+                    ` : Ui}
               </span>
             </div>
             <div class="router-right">
-              ${Ft ? f`<span class="router-public">${Ft}</span>` : ""}
+              ${Nt ? f`<span class="router-public">${Nt}</span>` : ""}
             </div>
           </div>
 
@@ -4335,7 +4335,7 @@ const xn = Qi`
               ${ut || $e ? f`
                     <button
                       class="icon-button"
-                      title=${Ki}
+                      title=${ji}
                       @click=${() => {
       ut ? this._openDevicePage(ut) : $e && this._showMoreInfo($e);
     }}
@@ -4347,8 +4347,8 @@ const xn = Qi`
           </div>
         </div>
 
-        <div class="filter-row ${Ui || !Wi ? "hidden" : ""}">
-          ${Dt ? f`
+        <div class="filter-row ${Wi || !Ki ? "hidden" : ""}">
+          ${Bt ? f`
                 <div class="filter-group">
                   <button
                     class="filter-button ${g === "all" ? "active" : ""}"
@@ -4391,7 +4391,7 @@ const xn = Qi`
                 </div>
               ` : ""}
 
-          ${Bt ? f`
+          ${zt ? f`
                 <div class="filter-group">
                   <button
                     class="filter-button ${b === "all" ? "active" : ""}"
@@ -4448,7 +4448,7 @@ const xn = Qi`
                 </div>
               ` : ""}
 
-          ${zt ? f`
+          ${Ht ? f`
                 <div class="filter-group">
                   <button
                     class="filter-button ${w === "all" ? "active" : ""}"
@@ -4574,25 +4574,25 @@ const xn = Qi`
           hostname: r.hostname,
           packetsSent: r.packetsSent,
           packetsReceived: r.packetsReceived,
-          up: m ? "—" : At(
+          up: m ? "—" : Tt(
             r.upSpeedValue,
             r.upSpeed,
-            Ni.max,
-            Ue
+            Di.max,
+            Pe
           ),
-          down: m ? "—" : At(
+          down: m ? "—" : Tt(
             r.downSpeedValue,
             r.downSpeed,
-            Di.max,
-            Ue
+            Bi.max,
+            Pe
           ),
-          tx: m ? "—" : Pe ? f`
-                                      <span class="rate ${ui(r.txRateValue)}">
+          tx: m ? "—" : Ue ? f`
+                                      <span class="rate ${pi(r.txRateValue)}">
                                         ${r.txRate}
                                       </span>
                                     ` : r.txRate,
-          rx: m ? "—" : Pe ? f`
-                                      <span class="rate ${ui(r.rxRateValue)}">
+          rx: m ? "—" : Ue ? f`
+                                      <span class="rate ${pi(r.rxRateValue)}">
                                         ${r.rxRate}
                                       </span>
                                     ` : r.rxRate,
@@ -4605,7 +4605,7 @@ const xn = Qi`
           deviceFirmware: r.deviceFirmware ?? "—",
           deviceStatus: r.deviceStatus ?? "—",
           actions: (() => {
-            const k = r.deviceId ? Rt.get(r.deviceId) ?? [] : [];
+            const k = r.deviceId ? Et.get(r.deviceId) ?? [] : [];
             return k.length === 0 ? "—" : f`
                       <span class="row-actions">
                         ${k.map((x) => {
@@ -4665,23 +4665,23 @@ const xn = Qi`
               k.key,
               r,
               t
-            ), ae = O ? `max-width:${O};` : "", qi = !!(O && (x === void 0 || k.key === "name")), Xi = !!(O && x === void 0), Yi = [
+            ), ae = O ? `max-width:${O};` : "", Xi = !!(O && (x === void 0 || k.key === "name")), Yi = !!(O && x === void 0), Ji = [
               k.key === "actions" ? "actions-cell" : "",
               x === "start" ? "sticky-start" : "",
               x === "end" ? "sticky-end" : "",
               x === "start" && k.key === W ? "sticky-start-edge" : "",
               x === "end" && k.key === Y ? "sticky-end-edge" : "",
-              Xi ? "cell-ellipsis" : "",
+              Yi ? "cell-ellipsis" : "",
               I ? "shift-entity-clickable" : ""
-            ].filter((pt) => pt.length > 0).join(" "), Ji = qi ? "cell-content cell-content-ellipsis" : "cell-content";
+            ].filter((pt) => pt.length > 0).join(" "), Zi = Xi ? "cell-content cell-content-ellipsis" : "cell-content";
             return f`
                       <td
-                        class=${Yi}
+                        class=${Ji}
                         data-col-key=${k.key}
                         style=${ae}
                         @click=${(pt) => I ? this._handleShiftEntityCellClick(pt, r, k.key, t) : void 0}
                       >
-                        <span class=${Ji}>${C[k.key]}</span>
+                        <span class=${Zi}>${C[k.key]}</span>
                       </td>
                     `;
           }
@@ -4734,7 +4734,7 @@ const xn = Qi`
     };
   }
   static getConfigForm() {
-    const e = () => document.querySelector("home-assistant")?.hass, t = (d) => qe(e(), d), i = ["name", ...ai].map((d) => ({
+    const e = () => document.querySelector("home-assistant")?.hass, t = (d) => qe(e(), d), i = ["name", ...li].map((d) => ({
       value: d,
       label: t(`columns.${d}`)
     })), o = [
@@ -4960,10 +4960,10 @@ ot.properties = {
   _isShiftPressed: { state: !0 },
   _tableScrolledLeft: { state: !0 },
   _tableScrolledRight: { state: !0 }
-}, ot.styles = xn;
+}, ot.styles = kn;
 let xt = ot;
 customElements.get("tplink-router-card") || customElements.define("tplink-router-card", xt);
-const is = "0.4.1";
+const ss = "0.4.2";
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: "tplink-router-card",
@@ -4971,4 +4971,4 @@ window.customCards.push({
   description: "List TP-Link router clients with live stats",
   preview: !0
 });
-console.info(`TPLINK-ROUTER-CARD ${is} loaded`);
+console.info(`TPLINK-ROUTER-CARD ${ss} loaded`);

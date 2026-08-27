@@ -1,0 +1,51 @@
+import_csv:
+  name: Import CSV
+  description: >-
+    Import events from a CSV file - the same columns and behavior as the
+    "Import events from CSV" step under the Annuals Settings hub entry.
+    Re-importing a previously imported row (matched by type + day/month +
+    name) updates that event instead of creating a duplicate, so this is
+    safe to call repeatedly, e.g. from a scheduled automation syncing a
+    centrally maintained CSV file.
+  fields:
+    content:
+      name: CSV content
+      description: >-
+        The full CSV text, including the header row. Use this or file_path,
+        not both.
+      example: |
+        name,type,day,month,year,icon,vip
+        Anna,birthday,12,4,1988,,
+      selector:
+        text:
+          multiline: true
+    file_path:
+      name: File path
+      description: >-
+        Path to a CSV file on the Home Assistant host. Use this or content,
+        not both. Must be inside a directory listed under
+        homeassistant: allowlist_external_dirs in configuration.yaml.
+      example: /config/annuals/contacts.csv
+      selector:
+        text:
+
+export_csv:
+  name: Export CSV
+  description: >-
+    Export every manually-added/CSV-imported event (not holidays - see the
+    integration for why) as CSV, using the same columns as CSV import so the
+    result can be re-imported unchanged. Optionally writes the file to the
+    Home Assistant host directly; the exported content is also returned as
+    response data (call with "Perform action" -> response, or from a script)
+    either way.
+  fields:
+    file_path:
+      name: File path
+      description: >-
+        Optional path to write the CSV file to on the Home Assistant host.
+        Must be inside a directory listed under
+        homeassistant: allowlist_external_dirs in configuration.yaml. Leave
+        empty to only get the content back as response data.
+      example: /config/annuals/export.csv
+      selector:
+        text:

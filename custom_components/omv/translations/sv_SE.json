@@ -1,0 +1,339 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Anslut till OpenMediaVault",
+        "data": {
+          "host": "Vard",
+          "username": "Anvandarnamn",
+          "password": "Losenord",
+          "port": "Port",
+          "ssl": "Anvand SSL",
+          "verify_ssl": "Verifiera SSL-certifikat"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ogiltiga inloggningsuppgifter",
+      "cannot_connect": "Kan inte ansluta till OMV",
+      "unknown": "Okant fel"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Skanningsintervall (sekunder)",
+          "smart_interval": "SMART-pollningsintervall (sekunder)",
+          "smart_polling_disabled": "Inaktivera SMART-pollning",
+          "selected_disks": "Valda diskar",
+          "selected_filesystems": "Valda filsystem",
+          "selected_services": "Valda tjänster",
+          "selected_network_interfaces": "Valda nätverksgränssnitt",
+          "selected_raids": "Valda RAID",
+          "selected_zfs_pools": "Valda ZFS-pooler",
+          "selected_compose_projects": "Valda Compose-projekt",
+          "selected_containers": "Valda containrar",
+          "selected_vms": "Valda VM:ar",
+          "selected_cron_jobs": "Cron-jobb med utlösarknapp"
+        },
+        "data_description": {
+          "smart_interval": "Hur ofta SMART-data (status, attribut, disktemperatur) läses. Att läsa SMART väcker diskar ur vänteläge, så ett större värde låter diskar stängas av för att spara ström. Standard: skanningsintervallet.",
+          "smart_polling_disabled": "När aktiverat pollas SMART aldrig. Diskar väcks aldrig av denna integration, men entiteterna för SMART-status, SMART-attribut och disktemperatur blir otillgängliga.",
+          "selected_cron_jobs": "Skapar en knapp för varje valt användardefinierat cron-jobb. Varning: när knappen trycks körs jobbets godtyckliga skalkommando på NAS:en. Standard: inga."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "cpu_utilization": {
+        "name": "CPU-anvandning"
+      },
+      "memory_usage": {
+        "name": "Minnesanvandning"
+      },
+      "memory_total": {
+        "name": "Totalt minne"
+      },
+      "memory_used": {
+        "name": "Använt minne"
+      },
+      "cpu_temperature": {
+        "name": "CPU-temperatur"
+      },
+      "uptime": {
+        "name": "Upptid"
+      },
+      "available_package_updates": {
+        "name": "Tillgangliga paketuppdateringar"
+      },
+      "load_average_1min": {
+        "name": "Genomsnittlig belastning (1 min)"
+      },
+      "load_average_5min": {
+        "name": "Genomsnittlig belastning (5 min)"
+      },
+      "load_average_15min": {
+        "name": "Genomsnittlig belastning (15 min)"
+      },
+      "docker_container_total": {
+        "name": "Docker-containrar totalt"
+      },
+      "docker_container_running": {
+        "name": "Docker-containrar som kor"
+      },
+      "docker_container_not_running": {
+        "name": "Docker-containrar som inte kor"
+      },
+      "compose_project_status": {
+        "name": "{resource} status"
+      },
+      "compose_project_total": {
+        "name": "{resource} containrar totalt"
+      },
+      "compose_project_running": {
+        "name": "{resource} containrar som kor"
+      },
+      "compose_project_not_running": {
+        "name": "{resource} containrar som inte kor"
+      },
+      "container_state": {
+        "name": "{resource} tillstand"
+      },
+      "container_status_detail": {
+        "name": "{resource} statusdetalj"
+      },
+      "container_created_at": {
+        "name": "{resource} skapad"
+      },
+      "container_started_at": {
+        "name": "{resource} startad"
+      },
+      "container_version": {
+        "name": "{resource} version"
+      },
+      "container_volume_size": {
+        "name": "Volym {resource} storlek"
+      },
+      "disk_temperature": {
+        "name": "Temperatur"
+      },
+      "disk_used_percent": {
+        "name": "{resource} anvant %"
+      },
+      "disk_free_percent": {
+        "name": "{resource} ledigt %"
+      },
+      "disk_used_size": {
+        "name": "{resource} anvand storlek"
+      },
+      "disk_free_size": {
+        "name": "{resource} ledig storlek"
+      },
+      "disk_total_size": {
+        "name": "{resource} total storlek"
+      },
+      "filesystem_used_percent": {
+        "name": "{resource} anvant %"
+      },
+      "filesystem_free_percent": {
+        "name": "{resource} ledigt %"
+      },
+      "filesystem_used_size": {
+        "name": "{resource} anvand storlek"
+      },
+      "filesystem_free_size": {
+        "name": "{resource} ledig storlek"
+      },
+      "filesystem_total_size": {
+        "name": "{resource} total storlek"
+      },
+      "network_tx": {
+        "name": "{resource} TX"
+      },
+      "network_rx": {
+        "name": "{resource} RX"
+      },
+      "raid": {
+        "name": "{resource} RAID-status"
+      },
+      "zfs_pool": {
+        "name": "{resource} ZFS-pool"
+      },
+      "zfs_pool_last_scrub": {
+        "name": "{resource} senaste scrub"
+      },
+      "zfs_pool_dataset_count": {
+        "name": "{resource} dataset"
+      },
+      "zfs_pool_snapshot_count": {
+        "name": "{resource} ögonblicksbilder"
+      },
+      "disk_smart_status": {
+        "name": "SMART-status"
+      },
+      "vm_state": {
+        "name": "{resource} tillstand"
+      },
+      "ups_battery_charge": {
+        "name": "UPS-batteriladdning"
+      },
+      "ups_battery_runtime": {
+        "name": "UPS-batteritid"
+      },
+      "ups_load": {
+        "name": "UPS-belastning"
+      },
+      "zfs_dataset_used": {
+        "name": "{resource} använt"
+      }
+    },
+    "binary_sensor": {
+      "update_available": {
+        "name": "Uppdatering tillganglig"
+      },
+      "reboot_required": {
+        "name": "Omstart kravs"
+      },
+      "service": {
+        "name": "{resource} tjanst"
+      },
+      "disk_bad_sectors": {
+        "name": "{resource} skadade sektorer"
+      },
+      "disk_crc_errors": {
+        "name": "{resource} CRC-fel"
+      },
+      "vm_running": {
+        "name": "{resource} kor"
+      },
+      "ups_on_battery": {
+        "name": "UPS pa batteri"
+      },
+      "rsync_job_enabled": {
+        "name": "rsync {resource} aktiverad"
+      },
+      "zfs_pool_scrub_active": {
+        "name": "{resource} scrub aktiv"
+      }
+    },
+    "update": {
+      "omv_system_update": {
+        "name": "Systemuppdatering"
+      }
+    },
+    "button": {
+      "reboot": {
+        "name": "Starta om"
+      },
+      "shutdown": {
+        "name": "Stang av"
+      },
+      "compose_up": {
+        "name": "compose up"
+      },
+      "compose_down": {
+        "name": "compose down"
+      },
+      "compose_start": {
+        "name": "Start"
+      },
+      "compose_stop": {
+        "name": "Stop"
+      },
+      "compose_pull": {
+        "name": "Pull"
+      },
+      "compose_image_prune": {
+        "name": "docker image prune"
+      },
+      "compose_container_prune": {
+        "name": "docker container prune"
+      },
+      "container_restart": {
+        "name": "Starta om"
+      },
+      "vm_restart": {
+        "name": "Starta om"
+      },
+      "rsync_run": {
+        "name": "Kör rsync {name}"
+      },
+      "cron_run": {
+        "name": "Kör cron {name}"
+      },
+      "zfs_scrub": {
+        "name": "Scrubba {name}"
+      },
+      "standby": {
+        "name": "Vänteläge"
+      },
+      "wake_on_lan": {
+        "name": "Wake-on-LAN {interface}"
+      }
+    }
+  },
+  "services": {
+    "container_command": {
+      "name": "Containerkommando",
+      "description": "Kör ett kommando på en Docker-container som hanteras av OMV:s compose-plugin.",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV-instans",
+          "description": "Konfigurationspost som mål. Valfritt när endast en OMV-instans är konfigurerad."
+        },
+        "container": {
+          "name": "Container",
+          "description": "Containerns namn eller id."
+        },
+        "command": {
+          "name": "Kommando",
+          "description": "Kommando att köra på containern."
+        }
+      }
+    },
+    "compose_command": {
+      "name": "Compose-projektkommando",
+      "description": "Kör ett kommando på ett Docker-compose-projekt som hanteras av OMV:s compose-plugin.",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV-instans",
+          "description": "Konfigurationspost som mål. Valfritt när endast en OMV-instans är konfigurerad."
+        },
+        "project": {
+          "name": "Projekt",
+          "description": "Compose-projektets namn eller uuid."
+        },
+        "command": {
+          "name": "Kommando",
+          "description": "Kommando att köra på projektet."
+        }
+      }
+    },
+    "apply_config": {
+      "name": "Tillämpa konfiguration",
+      "description": "Tillämpar väntande OpenMediaVault-konfigurationsändringar.",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV-instans",
+          "description": "Konfigurationspost som mål. Valfritt när endast en OMV-instans är konfigurerad."
+        }
+      }
+    },
+    "run_rsync_job": {
+      "name": "Kör rsync-jobb",
+      "description": "Startar ett konfigurerat OpenMediaVault-rsync-jobb (fire-and-forget).",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV-instans",
+          "description": "Konfigurationspost som mål. Valfritt när endast en OMV-instans är konfigurerad."
+        },
+        "job": {
+          "name": "Jobb",
+          "description": "Rsync-jobbets namn eller uuid."
+        }
+      }
+    }
+  }
+}

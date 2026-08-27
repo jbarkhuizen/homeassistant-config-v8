@@ -1,0 +1,339 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to OpenMediaVault",
+        "data": {
+          "host": "Host",
+          "username": "Username",
+          "password": "Password",
+          "port": "Poort",
+          "ssl": "SSL gebruiken",
+          "verify_ssl": "SSL-certificaat controleren"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ongeldige inloggegevens",
+      "cannot_connect": "Kan geen verbinding maken met OMV",
+      "unknown": "Onbekende fout"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Scaninterval (seconden)",
+          "smart_interval": "SMART-pollinginterval (seconden)",
+          "smart_polling_disabled": "SMART-polling uitschakelen",
+          "selected_disks": "Geselecteerde schijven",
+          "selected_filesystems": "Geselecteerde bestandssystemen",
+          "selected_services": "Geselecteerde services",
+          "selected_network_interfaces": "Geselecteerde netwerkinterfaces",
+          "selected_raids": "Geselecteerde RAIDs",
+          "selected_zfs_pools": "Geselecteerde ZFS-pools",
+          "selected_compose_projects": "Geselecteerde Compose-projecten",
+          "selected_containers": "Geselecteerde containers",
+          "selected_vms": "Geselecteerde VM's",
+          "selected_cron_jobs": "Cron-taken met triggerknop"
+        },
+        "data_description": {
+          "smart_interval": "Hoe vaak SMART-gegevens (status, attributen, schijftemperatuur) worden gelezen. Het lezen van SMART haalt schijven uit stand-by, dus een hogere waarde laat schijven uitschakelen om energie te besparen. Standaard: het scaninterval.",
+          "smart_polling_disabled": "Indien ingeschakeld wordt SMART nooit gepolld. Schijven worden door deze integratie niet gewekt, maar de entiteiten voor SMART-status, SMART-attributen en schijftemperatuur worden niet beschikbaar.",
+          "selected_cron_jobs": "Maakt een knop voor elke geselecteerde door de gebruiker gedefinieerde cron-taak. Waarschuwing: het indrukken van zo'n knop voert het willekeurige shell-commando van de taak uit op de NAS. Standaard: geen."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "cpu_utilization": {
+        "name": "CPU-gebruik"
+      },
+      "memory_usage": {
+        "name": "Geheugengebruik"
+      },
+      "memory_total": {
+        "name": "Totaal geheugen"
+      },
+      "memory_used": {
+        "name": "Gebruikt geheugen"
+      },
+      "cpu_temperature": {
+        "name": "CPU-temperatuur"
+      },
+      "uptime": {
+        "name": "Uptime"
+      },
+      "available_package_updates": {
+        "name": "Beschikbare pakketupdates"
+      },
+      "load_average_1min": {
+        "name": "Gemiddelde belasting (1 min)"
+      },
+      "load_average_5min": {
+        "name": "Gemiddelde belasting (5 min)"
+      },
+      "load_average_15min": {
+        "name": "Gemiddelde belasting (15 min)"
+      },
+      "docker_container_total": {
+        "name": "Docker-containers totaal"
+      },
+      "docker_container_running": {
+        "name": "Docker-containers actief"
+      },
+      "docker_container_not_running": {
+        "name": "Docker-containers niet actief"
+      },
+      "compose_project_status": {
+        "name": "{resource} status"
+      },
+      "compose_project_total": {
+        "name": "{resource} containers totaal"
+      },
+      "compose_project_running": {
+        "name": "{resource} containers actief"
+      },
+      "compose_project_not_running": {
+        "name": "{resource} containers niet actief"
+      },
+      "container_state": {
+        "name": "{resource} status"
+      },
+      "container_status_detail": {
+        "name": "{resource} statusdetail"
+      },
+      "container_created_at": {
+        "name": "{resource} aangemaakt"
+      },
+      "container_started_at": {
+        "name": "{resource} gestart"
+      },
+      "container_version": {
+        "name": "{resource} versie"
+      },
+      "container_volume_size": {
+        "name": "Volume {resource} grootte"
+      },
+      "disk_temperature": {
+        "name": "Temperatuur"
+      },
+      "disk_used_percent": {
+        "name": "{resource} gebruikt %"
+      },
+      "disk_free_percent": {
+        "name": "{resource} vrij %"
+      },
+      "disk_used_size": {
+        "name": "{resource} gebruikte grootte"
+      },
+      "disk_free_size": {
+        "name": "{resource} vrije grootte"
+      },
+      "disk_total_size": {
+        "name": "{resource} totale grootte"
+      },
+      "filesystem_used_percent": {
+        "name": "{resource} gebruikt %"
+      },
+      "filesystem_free_percent": {
+        "name": "{resource} vrij %"
+      },
+      "filesystem_used_size": {
+        "name": "{resource} gebruikte grootte"
+      },
+      "filesystem_free_size": {
+        "name": "{resource} vrije grootte"
+      },
+      "filesystem_total_size": {
+        "name": "{resource} totale grootte"
+      },
+      "network_tx": {
+        "name": "{resource} TX"
+      },
+      "network_rx": {
+        "name": "{resource} RX"
+      },
+      "raid": {
+        "name": "{resource} RAID-status"
+      },
+      "zfs_pool": {
+        "name": "{resource} ZFS-pool"
+      },
+      "zfs_pool_last_scrub": {
+        "name": "{resource} laatste scrub"
+      },
+      "zfs_pool_dataset_count": {
+        "name": "{resource} datasets"
+      },
+      "zfs_pool_snapshot_count": {
+        "name": "{resource} snapshots"
+      },
+      "disk_smart_status": {
+        "name": "SMART Status"
+      },
+      "vm_state": {
+        "name": "{resource} status"
+      },
+      "ups_battery_charge": {
+        "name": "UPS-batterijlading"
+      },
+      "ups_battery_runtime": {
+        "name": "UPS-batterijduur"
+      },
+      "ups_load": {
+        "name": "UPS-belasting"
+      },
+      "zfs_dataset_used": {
+        "name": "{resource} gebruikt"
+      }
+    },
+    "binary_sensor": {
+      "update_available": {
+        "name": "Update beschikbaar"
+      },
+      "reboot_required": {
+        "name": "Herstart vereist"
+      },
+      "service": {
+        "name": "{resource} service"
+      },
+      "disk_bad_sectors": {
+        "name": "{resource} slechte sectoren"
+      },
+      "disk_crc_errors": {
+        "name": "{resource} CRC-fouten"
+      },
+      "vm_running": {
+        "name": "{resource} actief"
+      },
+      "ups_on_battery": {
+        "name": "UPS op batterij"
+      },
+      "rsync_job_enabled": {
+        "name": "rsync {resource} ingeschakeld"
+      },
+      "zfs_pool_scrub_active": {
+        "name": "{resource} scrub actief"
+      }
+    },
+    "update": {
+      "omv_system_update": {
+        "name": "Systeem-update"
+      }
+    },
+    "button": {
+      "reboot": {
+        "name": "Herstarten"
+      },
+      "shutdown": {
+        "name": "Uitschakelen"
+      },
+      "compose_up": {
+        "name": "compose up"
+      },
+      "compose_down": {
+        "name": "compose down"
+      },
+      "compose_start": {
+        "name": "Start"
+      },
+      "compose_stop": {
+        "name": "Stop"
+      },
+      "compose_pull": {
+        "name": "Pull"
+      },
+      "compose_image_prune": {
+        "name": "docker image prune"
+      },
+      "compose_container_prune": {
+        "name": "docker container prune"
+      },
+      "container_restart": {
+        "name": "Herstarten"
+      },
+      "vm_restart": {
+        "name": "Herstarten"
+      },
+      "rsync_run": {
+        "name": "rsync {name} uitvoeren"
+      },
+      "cron_run": {
+        "name": "Cron {name} uitvoeren"
+      },
+      "zfs_scrub": {
+        "name": "Scrub {name}"
+      },
+      "standby": {
+        "name": "Stand-by"
+      },
+      "wake_on_lan": {
+        "name": "Wake-on-LAN {interface}"
+      }
+    }
+  },
+  "services": {
+    "container_command": {
+      "name": "Containercommando",
+      "description": "Voert een commando uit op een Docker-container die wordt beheerd door de OMV-compose-plugin.",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV-instantie",
+          "description": "Configuratie-item als doel. Optioneel wanneer slechts één OMV-instantie is geconfigureerd."
+        },
+        "container": {
+          "name": "Container",
+          "description": "Containernaam of -id."
+        },
+        "command": {
+          "name": "Commando",
+          "description": "Uit te voeren commando op de container."
+        }
+      }
+    },
+    "compose_command": {
+      "name": "Compose-projectcommando",
+      "description": "Voert een commando uit op een Docker-compose-project dat wordt beheerd door de OMV-compose-plugin.",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV-instantie",
+          "description": "Configuratie-item als doel. Optioneel wanneer slechts één OMV-instantie is geconfigureerd."
+        },
+        "project": {
+          "name": "Project",
+          "description": "Naam of uuid van het compose-project."
+        },
+        "command": {
+          "name": "Commando",
+          "description": "Uit te voeren commando op het project."
+        }
+      }
+    },
+    "apply_config": {
+      "name": "Configuratie toepassen",
+      "description": "Past openstaande OpenMediaVault-configuratiewijzigingen toe.",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV-instantie",
+          "description": "Configuratie-item als doel. Optioneel wanneer slechts één OMV-instantie is geconfigureerd."
+        }
+      }
+    },
+    "run_rsync_job": {
+      "name": "Rsync-taak uitvoeren",
+      "description": "Start een geconfigureerde OpenMediaVault-rsync-taak (fire-and-forget).",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV-instantie",
+          "description": "Configuratie-item als doel. Optioneel wanneer slechts één OMV-instantie is geconfigureerd."
+        },
+        "job": {
+          "name": "Taak",
+          "description": "Naam of uuid van de rsync-taak."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,451 @@
+{
+    "title": "Annuals",
+    "selector": {
+        "holiday_span": {
+            "options": {
+                "start": "begin",
+                "end": "einde",
+                "day": "dag {day}"
+            }
+        },
+        "holiday_breaks": {
+            "options": {
+                "note": "Meerdaagse vakanties zoals schoolvakanties worden weer als hele vakantie behandeld - kies hieronder welke delen ervan worden geïmporteerd."
+            }
+        },
+        "event_type": {
+            "options": {
+                "birthday": "Verjaardag",
+                "anniversary": "Jaardag",
+                "name_day": "Naamdag",
+                "wedding_anniversary": "Trouwdag",
+                "memorial": "Sterfdag",
+                "pet_birthday": "Verjaardag huisdier",
+                "work_anniversary": "Werkjubileum",
+                "custom": "Aangepast",
+                "one_time": "Eenmalig evenement",
+                "holiday": "Feestdag"
+            }
+        },
+        "month": {
+            "options": {
+                "1": "januari",
+                "2": "februari",
+                "3": "maart",
+                "4": "april",
+                "5": "mei",
+                "6": "juni",
+                "7": "juli",
+                "8": "augustus",
+                "9": "september",
+                "10": "oktober",
+                "11": "november",
+                "12": "december"
+            }
+        },
+        "holiday_category": {
+            "options": {
+                "public": "Officieel",
+                "bank": "Bankfeestdag",
+                "government": "Overheid",
+                "school": "Schoolvakantie",
+                "optional": "Optioneel",
+                "unofficial": "Niet-officieel",
+                "half_day": "Halve dag",
+                "armed_forces": "Krijgsmacht",
+                "workday": "Werkdag",
+                "catholic": "Katholiek",
+                "christian": "Christelijk",
+                "orthodox": "Orthodox",
+                "hebrew": "Joods",
+                "islamic": "Islamitisch",
+                "hindu": "Hindoeïstisch",
+                "buddhist": "Boeddhistisch",
+                "de_facto": "De facto",
+                "protestant": "Protestants",
+                "sabian": "Sabisch",
+                "yazidi": "Jezidisch",
+                "albanian": "Albanees",
+                "armenian": "Armeens",
+                "bosnian": "Bosnisch",
+                "roma": "Roma",
+                "serbian": "Servisch",
+                "turkish": "Turks",
+                "vlach": "Vlachs"
+            }
+        }
+    },
+    "config": {
+        "step": {
+            "user": {
+                "title": "Evenement toevoegen",
+                "description": "Elk evenement krijgt een eigen item, dat je later kunt terugvinden en bewerken via Instellingen → Apparaten en diensten door op de naam te zoeken.",
+                "data": {
+                    "name": "Naam",
+                    "last_name": "Achternaam (optioneel)",
+                    "type": "Type evenement",
+                    "day": "Dag",
+                    "month": "Maand",
+                    "year": "Jaar (leeg laten indien onbekend; verplicht voor eenmalige evenementen)",
+                    "end_date": "Einddatum (alleen eenmalige gebeurtenissen, optioneel - maakt er een meerdaagse gebeurtenis van)",
+                    "icon": "Icoon overschrijven (optioneel)",
+                    "vip": "VIP Annual"
+                }
+            },
+            "reconfigure": {
+                "title": "Evenement bewerken",
+                "description": "Wijzig een willekeurig veld hieronder en verzend om dit evenement bij te werken.",
+                "data": {
+                    "name": "Naam",
+                    "last_name": "Achternaam (optioneel)",
+                    "type": "Type evenement",
+                    "day": "Dag",
+                    "month": "Maand",
+                    "year": "Jaar (leeg laten indien onbekend; verplicht voor eenmalige evenementen)",
+                    "end_date": "Einddatum (alleen eenmalige gebeurtenissen, optioneel - maakt er een meerdaagse gebeurtenis van)",
+                    "icon": "Icoon overschrijven (optioneel)",
+                    "vip": "VIP Annual"
+                }
+            }
+        },
+        "error": {
+            "name_required": "Voer een naam in.",
+            "end_date_one_time_only": "Een einddatum kan alleen bij een eenmalige gebeurtenis worden ingesteld.",
+            "end_date_before_start": "De einddatum moet na de startdatum liggen.",
+            "invalid_date": "Deze combinatie van dag/maand/jaar is geen geldige datum.",
+            "year_required": "Eenmalige evenementen vereisen een jaar."
+        },
+        "abort": {
+            "hub_not_configurable": "De Annuals-hub heeft geen eigen instellingen - hij bevat alleen de gedeelde kalenders.",
+            "already_configured": "De Annuals-hub bestaat al.",
+            "invalid_import_row": "Deze rij kon niet worden geïmporteerd."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Evenement bewerken",
+                "description": "Wijzig een willekeurig veld hieronder en verzend om dit evenement bij te werken.",
+                "data": {
+                    "name": "Naam",
+                    "last_name": "Achternaam (optioneel)",
+                    "type": "Type evenement",
+                    "day": "Dag",
+                    "month": "Maand",
+                    "year": "Jaar (leeg laten indien onbekend; verplicht voor eenmalige evenementen)",
+                    "end_date": "Einddatum (alleen eenmalige gebeurtenissen, optioneel - maakt er een meerdaagse gebeurtenis van)",
+                    "icon": "Icoon overschrijven (optioneel)",
+                    "vip": "VIP Annual"
+                }
+            },
+            "import_csv": {
+                "title": "Evenementen importeren vanuit CSV",
+                "description": "Kolommen: name, type, day, month, year (optioneel, verplicht voor one_time), icon (optioneel), vip (optioneel), last_name (optioneel). „type” moet een van de volgende Engelse sleutels zijn: birthday, anniversary, name_day, wedding_anniversary, memorial, pet_birthday, work_anniversary, custom, one_time (altijd in het Engels, ongeacht je taalinstelling). „vip” accepteert 1/true/yes/y/x (hoofdlettergevoeligheid maakt niet uit); laat leeg of laat de kolom weg voor een niet-VIP-evenement. Houd elke kolom aan, ook als een waarde leeg is - een rij zonder komma aan het einde schuift de volgende waarden naar links. Ongeldige rijen worden overgeslagen en gelogd.\n\nVoorbeeld:\n```\nname,type,day,month,year,icon,vip,last_name\nAnna,birthday,12,4,1988,,,Miller\nMax,pet_birthday,3,9,2020,mdi:dog,,\nTest Custom,custom,1,1,,mdi:test-tube,1,\nFamilievakantie,one_time,15,7,2026,mdi:airplane,,\n```",
+                "data": {
+                    "csv_file": "CSV-bestand"
+                }
+            },
+            "import_ics": {
+                "title": "Evenementen importeren vanuit ICS-kalender",
+                "description": "Upload een .ics-kalenderbestand - doorgaans een geëxporteerde kalender. Alleen hele-dag-items zonder herhalingsoverride worden gelezen; evenementen met een tijdstip worden overgeslagen. In de volgende stappen kun je de voorgestelde naamsplitsing controleren en corrigeren (en voor iedereen tegelijk voornaam/achternaam omwisselen) voordat er iets wordt geïmporteerd.",
+                "data": {
+                    "ics_file": "ICS-bestand"
+                }
+            },
+            "import_vcard_menu": {
+                "title": "Evenementen importeren vanuit vCard",
+                "description": "De verjaardag van een contact en diens overige datums (jaardagen, aangepaste datums) doorlopen aparte trajecten, aangezien alleen verjaardagen voor de hele batch één gezamenlijk evenementtype delen - elke andere datum krijgt tijdens de controle zijn eigen type toegewezen.",
+                "menu_options": {
+                    "import_vcard": "Verjaardagen importeren",
+                    "import_vcard_other_dates": "Overige datums importeren (jaardagen, ...)"
+                }
+            },
+            "import_vcard": {
+                "title": "Verjaardagen importeren vanuit vCard",
+                "description": "Upload een .vcf-bestand - doorgaans geëxporteerde contacten. Alleen items met een ingestelde verjaardag worden gelezen. Voornaam/achternaam komt uit de gestructureerde naamvelden van het contact, niet uit een gok, en een verjaardag zonder ingesteld jaar (zoals vCard dit zelf uitdrukt) blijft onbekend in plaats van verzonnen te worden. In de volgende stappen kun je alles controleren en corrigeren (en voor iedereen tegelijk voornaam/achternaam omwisselen) voordat er iets wordt geïmporteerd.",
+                "data": {
+                    "vcard_file": "vCard-bestand"
+                }
+            },
+            "import_vcard_other_dates": {
+                "title": "Overige datums importeren vanuit vCard",
+                "description": "Upload een .vcf-bestand. Leest elke datum behalve de verjaardag: het standaardveld „Jaardag”, plus elke aangepast gelabelde datum die je contacten-app je per contact laat toevoegen (bijv. „Jaardag”, „Overig”, of een zelf ingetypt label). In tegenstelling tot verjaardagen zijn dit niet allemaal hetzelfde soort evenement - in de volgende stappen kun je elke datum afzonderlijk controleren, met het gedetecteerde label als context, en het juiste evenementtype toewijzen.",
+                "data": {
+                    "vcard_file": "vCard-bestand"
+                }
+            },
+            "import_options": {
+                "title": "Importeren vanuit {source_label} - instellingen",
+                "description": "Deze gelden voor elk item dat in het bestand is gevonden. Je krijgt hierna de kans om individuele items te controleren en te bewerken.",
+                "data": {
+                    "swap_names": "Voornaam/achternaam omwisselen voor alle items",
+                    "use_description_year": "Gebruik het jaar uit de omschrijving van elk item in plaats van de startdatum, indien daar een jaar in gevonden wordt (bijv. „geb. 1985”)",
+                    "type": "Type evenement"
+                }
+            },
+            "import_review": {
+                "title": "Importeren vanuit {source_label} - controle ({page}/{total_pages})",
+                "description": "{legend}\n\nControleer de voorgestelde splitsing in voornaam/achternaam hieronder en corrigeer wat fout is - ook de verjaardag zelf is bewerkbaar - of vink een item uit om het volledig weg te laten. Een mogelijk duplicaat wordt gemarkeerd met de naam van het bestaande item; laat „als nieuw aanmaken” uitgevinkt om dat item bij te werken in plaats van een tweede toe te voegen. Veldlabels worden hier altijd in het Engels getoond, ongeacht je taalinstelling.",
+                "data": {
+                    "go_back": "Terug naar de vorige pagina"
+                }
+            },
+            "remove_ics_imports": {
+                "title": "Uit ICS geïmporteerde evenementen verwijderen",
+                "description": "{count} evenement(en) zijn aangemaakt door een eerdere ICS-import. Klik op „OK” om ze allemaal te verwijderen - items die een ICS-import alleen heeft bijgewerkt (in plaats van aangemaakt) worden nooit beïnvloed, evenmin als handmatig toegevoegde, CSV- of vCard-geïmporteerde evenementen."
+            },
+            "remove_vcard_imports": {
+                "title": "Uit vCard geïmporteerde evenementen verwijderen",
+                "description": "{count} evenement(en) zijn aangemaakt door een eerdere vCard-import. Klik op „OK” om ze allemaal te verwijderen - items die een vCard-import alleen heeft bijgewerkt (in plaats van aangemaakt) worden nooit beïnvloed, evenmin als handmatig toegevoegde, CSV- of ICS-geïmporteerde evenementen."
+            },
+            "holiday_menu": {
+                "title": "Feestdag",
+                "description": "**{name}**\n\n{type} · {date} · {region} · {category}",
+                "menu_options": {
+                    "holiday_settings": "⚙️ Instellingen",
+                    "holiday_names": "🌐 Naam en vertalingen"
+                }
+            },
+            "holiday_settings": {
+                "title": "Feestdag-instellingen",
+                "description": "**{name}**\n\n{type} · {date} · {region} · {category}\n\nDatum, type en regio komen uit de feestdagendatabase en zijn hier niet te wijzigen.",
+                "data": {
+                    "icon": "Icoon"
+                }
+            },
+            "holiday_names": {
+                "title": "Naam en vertalingen",
+                "description": "**{name}**\n\n{type} · {date} · {region} · {category}\n\nKies de taal waarin je de naam van deze feestdag wilt invoeren.",
+                "data": {
+                    "language": "Taal"
+                }
+            },
+            "holiday_name_edit": {
+                "title": "Naam van de feestdag",
+                "description": "{language}\n\n**{name}**\n\n{type} · {date} · {region} · {category}\n\nVooringevuld met wat nu wordt getoond. Laat leeg om terug te vallen op de feestdagendatabase.",
+                "data": {
+                    "name": "Naam"
+                }
+            },
+            "holiday_translations": {
+                "title": "🌐 Holiday translations",
+                "description": "Export and import the holiday names you wrote yourself.",
+                "menu_options": {
+                    "export_translations": "📤 Export translations",
+                    "import_translations": "📥 Import translations"
+                }
+            },
+            "import_translations": {
+                "title": "Import translations",
+                "description": "Upload a translations CSV. Columns: `country,subdivision,category,holiday_key,observed,language,name`. Rows are matched onto holidays by country, subdivision, category, holiday key and observed flag - not by entry id, so a file exported before re-importing a country still applies. Rows whose holiday isn't present are skipped and counted.",
+                "data": {
+                    "csv_file": "CSV"
+                }
+            },
+            "hub_menu": {
+                "title": "Annuals Instellingen",
+                "menu_options": {
+                    "annual_settings": "{icon_annual_settings} Annual Instellingen",
+                    "import_events": "{icon_import_events} Evenementen importeren",
+                    "export_csv": "{icon_export_csv} Evenementen exporteren naar CSV",
+                    "holiday_translations": "{icon_holiday_translations} Holiday translations",
+                    "remove_events": "{icon_remove_events} Evenementen verwijderen",
+                    "delete_all": "{icon_delete_all} Alle Annuals-gegevens verwijderen"
+                }
+            },
+            "import_events": {
+                "title": "Evenementen importeren",
+                "description": "Kies een bron om vanuit te importeren.",
+                "menu_options": {
+                    "import_csv": "CSV",
+                    "import_ics": "ICS-kalender",
+                    "import_vcard_menu": "vCard",
+                    "import_holidays": "Feestdagen"
+                }
+            },
+            "remove_events": {
+                "title": "Evenementen verwijderen",
+                "description": "Kies welke eerder geïmporteerde evenementen je wilt verwijderen.",
+                "menu_options": {
+                    "remove_ics_imports": "Uit ICS geïmporteerd",
+                    "remove_vcard_imports": "Uit vCard geïmporteerd",
+                    "remove_holidays": "Feestdagen"
+                }
+            },
+            "import_holidays": {
+                "title": "Feestdagen importeren",
+                "description": "Kies een land om de feestdagen ervan als evenementen te importeren. Dit later opnieuw uitvoeren voor hetzelfde land (en dezelfde subdivisie) werkt bestaande items bij in plaats van ze te dupliceren - veilig om te herhalen als een land een nieuwe feestdag toevoegt.",
+                "data": {
+                    "country": "Land"
+                }
+            },
+            "import_holidays_options": {
+                "title": "Feestdagen importeren - {country}",
+                "description": "Laat de subdivisie leeg voor alleen landelijke feestdagen - een provincie voegt eigen regionale feestdagen toe. Categorieën en taal hangen af van wat de feestdaggegevens van dit land bieden.{breaks}",
+                "data": {
+                    "include_actual": "Werkelijke datum importeren",
+                    "include_observed": "Waargenomen (verschoven) datum importeren",
+                    "break_start": "Eerste vakantiedag importeren",
+                    "break_end": "Laatste vakantiedag importeren",
+                    "break_days": "Elke vakantiedag importeren",
+                    "subdivision": "Subdivisie (provincie, optioneel)",
+                    "categories": "Categorieën",
+                    "language": "Taal voor feestdagnamen"
+                },
+                "data_description": {
+                    "break_start": "Schoolvakanties bevatten alleen schooldagen, dus de vakantie begint eerder - er wordt teruggerekend over het weekend en aangrenzende feestdagen tot de eerste echt vrije dag.",
+                    "break_end": "Hetzelfde andersom: de laatste vrije dag, niet de laatst vermelde.",
+                    "break_days": "Eén evenement per vakantiedag. Alleen de zomervakantie levert er al meer dan veertig op.",
+                    "include_observed": "Feestdagen van dit land worden soms verschoven naar een nabije werkdag als ze in het weekend vallen (bijv. waargenomen op de vrijdag ervoor of de maandag erna) - importeer deze verschoven datum ook als apart evenement."
+                }
+            },
+            "remove_holidays": {
+                "title": "Geïmporteerde feestdagen verwijderen",
+                "description": "{total} feestdag(en) momenteel geïmporteerd. Vink het vakje hieronder aan om ze allemaal te verwijderen, of laat het uitgevinkt en kies in plaats daarvan een batch. Handmatig toegevoegde evenementen worden nooit beïnvloed.",
+                "data": {
+                    "remove_all": "Alle geïmporteerde feestdagen verwijderen",
+                    "batch": "Batch om te verwijderen"
+                }
+            },
+            "annual_settings": {
+                "title": "Annual Instellingen",
+                "sections": {
+                    "important_events": {
+                        "name": "❗ Belangrijke evenementen",
+                        "description": "Kommagescheiden lijst van jubileumgetallen waarbij een evenement van dat type automatisch als „Important” wordt gemarkeerd, bijv. „18,21,30,40,50”. Laat een veld leeg om dit voor dat type uit te schakelen.",
+                        "data": {
+                            "important_thresholds_birthday": "Verjaardag",
+                            "important_thresholds_anniversary": "Jaardag",
+                            "important_thresholds_name_day": "Naamdag",
+                            "important_thresholds_wedding_anniversary": "Trouwdag",
+                            "important_thresholds_memorial": "Sterfdag",
+                            "important_thresholds_pet_birthday": "Verjaardag huisdier",
+                            "important_thresholds_work_anniversary": "Werkjubileum",
+                            "important_thresholds_custom": "Aangepast"
+                        }
+                    },
+                    "todo": {
+                        "name": "📍 Takenlijsten",
+                        "description": "Openstaande taken op deze lijsten markeren een evenement: elke evenementsensor krijgt dan een attribuut \"todo\" - true zolang er minstens één nog openstaande taak aan gekoppeld is, anders false - voor je eigen automatiseringen, templates en dashboards. Koppeling gebeurt eerst op vervaldatum en daarna op de vraag of de tekst van de taak het evenement noemt (volledige naam, naam, type, volgnummer); een taak die even goed bij twee evenementen past blijft ongekoppeld. Laat leeg om dit uit te schakelen. Los van de gelijknamige instelling van de dashboardkaart.",
+                        "data": {
+                            "todo_lists": "Takenlijsten"
+                        }
+                    }
+                }
+            },
+            "delete_all": {
+                "title": "Alle Annuals-gegevens verwijderen",
+                "description": "Dit verwijdert definitief alle {count} evenement(en), de gedeelde kalenders en de Annuals-hub zelf - de volledige integratie en alles wat hij heeft aangemaakt. Dit kan niet ongedaan worden gemaakt. Klik op „OK” om te bevestigen."
+            }
+        },
+        "error": {
+            "name_required": "Voer een naam in.",
+            "end_date_one_time_only": "Een einddatum kan alleen bij een eenmalige gebeurtenis worden ingesteld.",
+            "end_date_before_start": "De einddatum moet na de startdatum liggen.",
+            "invalid_date": "Deze combinatie van dag/maand/jaar is geen geldige datum.",
+            "year_required": "Eenmalige evenementen vereisen een jaar.",
+            "invalid_csv": "Dit bestand kon niet als CSV worden gelezen. Controleer de codering en indeling.",
+            "no_valid_rows": "Geen geldige rijen gevonden in dit bestand. Bekijk het logboek voor details over overgeslagen rijen.",
+            "invalid_ics": "Dit bestand kon niet als ICS-kalender worden gelezen. Controleer de indeling.",
+            "no_valid_entries": "Geen bruikbare hele-dag-items gevonden in dit bestand. Bekijk het logboek voor details over overgeslagen items.",
+            "invalid_vcard": "Dit bestand kon niet als vCard worden gelezen. Controleer de indeling.",
+            "no_valid_vcard_entries": "Geen contacten met een bruikbare verjaardag gevonden in dit bestand. Bekijk het logboek voor details over overgeslagen items.",
+            "no_valid_vcard_dates": "Geen jaardagen of andere datums (naast verjaardagen) gevonden in dit bestand. Bekijk het logboek voor details over overgeslagen items.",
+            "no_batch_selected": "Vink „Alle geïmporteerde feestdagen verwijderen” aan, of kies een batch."
+        },
+        "abort": {
+            "translations_exported": "{count} vertaling(en) geëxporteerd. [annuals_holiday_translations.csv downloaden]({url}) (Ctrl/Cmd+klik om te downloaden - een gewone klik werkt hier niet)\n\nOf kopieer de CSV hieronder:\n\n```\n{csv}\n```",
+            "translations_imported": "{updated} holiday(s) updated, {skipped} row(s) skipped.",
+            "no_translations_to_export": "No holiday names have been written yet - there is nothing to export.",
+            "hub_not_configurable": "De Annuals-hub heeft geen eigen instellingen - hij bevat alleen de gedeelde kalenders.",
+            "import_started": "Import gestart: {created} evenement(en) in de wachtrij, {skipped} rij(en) overgeslagen (zie het logboek voor details).",
+            "ics_import_started": "Import gestart: {created} evenement(en) aangemaakt, {updated} bijgewerkt, {skipped} item(s) overgeslagen of uitgesloten.",
+            "csv_exported": "{count} evenement(en) geëxporteerd. [annuals_export.csv downloaden]({url}) (Ctrl/Cmd+klik om te downloaden - een gewone klik werkt hier niet)\n\nOf kopieer de CSV hieronder:\n\n```\n{csv}\n```",
+            "no_events_to_export": "Er zijn nog geen evenementen om te exporteren.",
+            "deleted_all": "Alle Annuals-evenementen, kalenders en de hub zijn verwijderd.",
+            "holiday_import_started": "Import gestart: {count} feestdag-gebeurtenis(sen) in de wachtrij voor {country} ({new} nieuw, {updated} bijgewerkt).",
+            "no_holidays_imported": "Er zijn nog geen feestdagen geïmporteerd.",
+            "holidays_removed": "{count} feestdag(en) verwijderd.",
+            "no_ics_imports": "Er zijn geen door een ICS-import aangemaakte evenementen gevonden.",
+            "ics_imports_removed": "{count} uit ICS geïmporteerd(e) evenement(en) verwijderd.",
+            "no_vcard_imports": "Er zijn geen door een vCard-import aangemaakte evenementen gevonden.",
+            "vcard_imports_removed": "{count} uit vCard geïmporteerd(e) evenement(en) verwijderd."
+        }
+    },
+    "entity": {
+        "sensor": {
+            "birthday": {
+                "name": "Verjaardag van {name}",
+                "unit_of_measurement": "dagen"
+            },
+            "anniversary": {
+                "name": "Jaardag van {name}",
+                "unit_of_measurement": "dagen"
+            },
+            "name_day": {
+                "name": "Naamdag van {name}",
+                "unit_of_measurement": "dagen"
+            },
+            "wedding_anniversary": {
+                "name": "Trouwdag van {name}",
+                "unit_of_measurement": "dagen"
+            },
+            "memorial": {
+                "name": "Sterfdag van {name}",
+                "unit_of_measurement": "dagen"
+            },
+            "pet_birthday": {
+                "name": "Verjaardag van {name}",
+                "unit_of_measurement": "dagen"
+            },
+            "work_anniversary": {
+                "name": "Werkjubileum van {name}",
+                "unit_of_measurement": "dagen"
+            },
+            "custom": {
+                "name": "{name}",
+                "unit_of_measurement": "dagen"
+            },
+            "one_time": {
+                "name": "{name}",
+                "unit_of_measurement": "dagen"
+            },
+            "holiday": {
+                "name": "{name}",
+                "unit_of_measurement": "dagen"
+            }
+        },
+        "calendar": {
+            "birthday": {
+                "name": "Verjaardagen"
+            },
+            "anniversary": {
+                "name": "Jaardagen"
+            },
+            "name_day": {
+                "name": "Naamdagen"
+            },
+            "wedding_anniversary": {
+                "name": "Trouwdagen"
+            },
+            "memorial": {
+                "name": "Sterfdagen"
+            },
+            "pet_birthday": {
+                "name": "Verjaardagen huisdieren"
+            },
+            "work_anniversary": {
+                "name": "Werkjubilea"
+            },
+            "custom": {
+                "name": "Aangepaste evenementen"
+            },
+            "one_time": {
+                "name": "Eenmalige evenementen"
+            },
+            "holiday": {
+                "name": "Feestdagen"
+            }
+        }
+    }
+}

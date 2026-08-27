@@ -1,0 +1,47 @@
+name: Validate
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  validate-hacs:
+    name: HACS Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: HACS validation
+        uses: "hacs/action@main"
+        with:
+          category: "integration"
+
+  hassfest:
+    name: Hassfest
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: tmp_src
+      - name: Create expected directory structure for hassfest
+        run: |
+          mkdir -p custom_components/solar_energy_management
+          rsync -a --exclude='.git' --exclude='.github' --exclude='tmp_src' tmp_src/ custom_components/solar_energy_management/
+          rm -rf tmp_src
+      - name: Hassfest (with retry on ghcr rate limit)
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          retry_wait_seconds: 30
+          command: |
+            docker run --rm \
+              -v "$GITHUB_WORKSPACE":/github/workspace \
+              ghcr.io/home-assistant/hassfest

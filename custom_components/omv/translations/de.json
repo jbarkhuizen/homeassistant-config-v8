@@ -1,0 +1,451 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mit OpenMediaVault verbinden",
+        "data": {
+          "host": "Host",
+          "username": "Benutzername",
+          "password": "Passwort",
+          "port": "Port",
+          "ssl": "SSL verwenden",
+          "verify_ssl": "SSL-Zertifikat überprüfen"
+        },
+        "data_description": {
+          "host": "IP-Adresse oder Hostname — ohne http(s):// Präfix, ohne Port-Suffix (z. B. 192.168.1.100 oder mynas.local)",
+          "username": "OMV Admin Account (z. B. admin)",
+          "password": "Dein OMV-Kontopasswort",
+          "port": "z. B. 80 für HTTP, 443 (oder ein benutzerdefinierter Port) bei aktiviertem SSL",
+          "ssl": "Aktivieren, wenn die OMV-Weboberfläche über HTTPS erreichbar ist",
+          "verify_ssl": "Nur bei einem selbstsignierten Zertifikat deaktivieren"
+        }
+      },
+      "totp": {
+        "title": "Zwei-Faktor-Authentifizierung",
+        "description": "Melde dich entweder mit einem einmaligen Verifizierungscode oder mit deinem TOTP-Secret an. Ein Code gilt nur für diese Anmeldung — nach einem Home-Assistant-Neustart oder Sitzungsablauf ist eine erneute Reauthentifizierung nötig. Das Secret wird gespeichert und ermöglicht der Integration eine automatische Neuanmeldung.",
+        "data": {
+          "code": "Verifizierungscode",
+          "totp_secret": "TOTP-Secret"
+        },
+        "data_description": {
+          "code": "6-stelliger Einmalcode aus deiner Authenticator-App. Benötigt nach einem Home-Assistant-Neustart oder Sitzungsablauf eine erneute Reauthentifizierung.",
+          "totp_secret": "Base32-Secret aus deiner Authenticator-Einrichtung — ermöglicht automatische Re-Logins, keine Reauthentifizierung nach Neustarts. Code-Feld leer lassen, wenn du das Secret nutzt."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ungültige Zugangsdaten",
+      "invalid_totp_code": "Ungültiger oder abgelaufener Verifizierungscode",
+      "cannot_connect": "Verbindung zu OMV nicht möglich",
+      "unknown": "Unbekannter Fehler",
+      "invalid_totp_secret": "Ungültiges TOTP-Secret oder der erzeugte Code wurde abgelehnt",
+      "totp_code_or_secret_required": "Gib entweder einen Verifizierungscode oder das TOTP-Secret ein (genau eines von beiden)"
+    },
+    "abort": {
+      "already_configured": "Dieser OpenMediaVault-Host ist bereits konfiguriert. Verwende „Neu konfigurieren“, um Host, Port, SSL- oder Zwei-Faktor-Authentifizierungs-Einstellungen zu ändern, anstatt ihn erneut hinzuzufügen.",
+      "unique_id_mismatch": "Dieses Konto gehört zu einem anderen OpenMediaVault-Host als dem, der gerade neu konfiguriert oder erneut authentifiziert wird.",
+      "reconfigure_successful": "OpenMediaVault-Einstellungen erfolgreich aktualisiert.",
+      "reauth_successful": "Erneute Authentifizierung bei OpenMediaVault erfolgreich."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Abfrageintervall (Sekunden)",
+          "reboot_repair_disabled": "Neustart-Benachrichtigung deaktivieren",
+          "smart_interval": "SMART-Abfrageintervall (Sekunden)",
+          "smart_polling_disabled": "SMART-Abfrage deaktivieren",
+          "selected_disks": "Ausgewählte Festplatten",
+          "selected_filesystems": "Ausgewählte Dateisysteme",
+          "selected_services": "Ausgewählte Dienste",
+          "selected_network_interfaces": "Ausgewählte Netzwerkschnittstellen",
+          "selected_raids": "Ausgewählte RAIDs",
+          "selected_zfs_pools": "Ausgewählte ZFS-Pools",
+          "selected_compose_projects": "Ausgewählte Compose-Projekte",
+          "selected_containers": "Ausgewählte Container",
+          "selected_vms": "Ausgewählte VMs",
+          "selected_cron_jobs": "Cron-Jobs mit Auslöse-Button"
+        },
+        "data_description": {
+          "reboot_repair_disabled": "Wenn aktiviert, wird die Home Assistant Repair-Benachrichtigung für einen ausstehenden OMV-Neustart unterdrückt. Nützlich, wenn ein Neustart nicht sofort möglich ist, z. B. weil VMs auf dem NAS laufen.",
+          "smart_interval": "Wie oft SMART-Daten (Status, Attribute, Festplattentemperatur) gelesen werden. Das Lesen von SMART weckt Festplatten aus dem Standby, daher lässt ein größerer Wert die Festplatten zum Energiesparen herunterfahren. Standard: das Abfrageintervall.",
+          "smart_polling_disabled": "Wenn aktiviert, wird SMART nie abgefragt. Festplatten werden von dieser Integration nicht geweckt, aber die Entitäten für SMART-Status, SMART-Attribute und Festplattentemperatur werden nicht verfügbar.",
+          "selected_cron_jobs": "Erstellt einen Button für jeden ausgewählten benutzerdefinierten Cron-Job. Achtung: Das Drücken eines solchen Buttons führt das beliebige Shell-Kommando des Jobs auf dem NAS aus. Standard: keine."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "cpu_utilization": {
+        "name": "CPU-Auslastung"
+      },
+      "memory_usage": {
+        "name": "Speicherauslastung"
+      },
+      "memory_total": {
+        "name": "Gesamtspeicher"
+      },
+      "memory_used": {
+        "name": "Genutzter Speicher"
+      },
+      "cpu_temperature": {
+        "name": "CPU-Temperatur"
+      },
+      "uptime": {
+        "name": "Laufzeit"
+      },
+      "available_package_updates": {
+        "name": "Verfügbare Paket-Updates"
+      },
+      "load_average_1min": {
+        "name": "Systemlast (1 Min)"
+      },
+      "load_average_5min": {
+        "name": "Systemlast (5 Min)"
+      },
+      "load_average_15min": {
+        "name": "Systemlast (15 Min)"
+      },
+      "gpu_load": {
+        "name": "GPU-Auslastung"
+      },
+      "gpu_cur_freq": {
+        "name": "GPU-Frequenz"
+      },
+      "docker_container_total": {
+        "name": "Docker Container gesamt"
+      },
+      "docker_container_running": {
+        "name": "Docker Container laufend"
+      },
+      "docker_container_not_running": {
+        "name": "Docker Container nicht laufend"
+      },
+      "compose_project_status": {
+        "name": "{resource} Status"
+      },
+      "compose_project_total": {
+        "name": "{resource} Container gesamt"
+      },
+      "compose_project_running": {
+        "name": "{resource} Container laufend"
+      },
+      "compose_project_not_running": {
+        "name": "{resource} Container nicht laufend"
+      },
+      "container_state": {
+        "name": "{resource} Zustand"
+      },
+      "container_status_detail": {
+        "name": "{resource} Statusdetail"
+      },
+      "container_created_at": {
+        "name": "{resource} Erstellt"
+      },
+      "container_started_at": {
+        "name": "{resource} Gestartet"
+      },
+      "container_version": {
+        "name": "{resource} Version"
+      },
+      "container_volume_size": {
+        "name": "Volume {resource} Größe"
+      },
+      "disk_temperature": {
+        "name": "Temperatur"
+      },
+      "disk_wear_level": {
+        "name": "{resource} Wear-Level"
+      },
+      "disk_data_written": {
+        "name": "{resource} geschriebene Daten"
+      },
+      "disk_data_read": {
+        "name": "{resource} gelesene Daten"
+      },
+      "disk_used_percent": {
+        "name": "{resource} Belegt %"
+      },
+      "disk_free_percent": {
+        "name": "{resource} Frei %"
+      },
+      "disk_used_size": {
+        "name": "{resource} Belegt"
+      },
+      "disk_free_size": {
+        "name": "{resource} Frei"
+      },
+      "disk_total_size": {
+        "name": "{resource} Gesamtgröße"
+      },
+      "filesystem_used_percent": {
+        "name": "{resource} Belegt %"
+      },
+      "filesystem_free_percent": {
+        "name": "{resource} Frei %"
+      },
+      "filesystem_used_size": {
+        "name": "{resource} Belegt"
+      },
+      "filesystem_free_size": {
+        "name": "{resource} Frei"
+      },
+      "filesystem_total_size": {
+        "name": "{resource} Gesamtgröße"
+      },
+      "network_tx": {
+        "name": "{resource} Senden"
+      },
+      "network_rx": {
+        "name": "{resource} Empfangen"
+      },
+      "raid": {
+        "name": "{resource} RAID-Status"
+      },
+      "zfs_pool": {
+        "name": "{resource} ZFS-Pool"
+      },
+      "zfs_pool_last_scrub": {
+        "name": "{resource} letzter Scrub"
+      },
+      "zfs_pool_dataset_count": {
+        "name": "{resource} Datasets"
+      },
+      "zfs_pool_snapshot_count": {
+        "name": "{resource} Snapshots"
+      },
+      "disk_smart_status": {
+        "name": "SMART Status"
+      },
+      "tempmon_temperature": {
+        "name": "{resource} Temperatur"
+      },
+      "vm_state": {
+        "name": "{resource} Zustand"
+      },
+      "ups_battery_charge": {
+        "name": "USV-Batterieladung"
+      },
+      "ups_battery_runtime": {
+        "name": "USV-Batterielaufzeit"
+      },
+      "ups_load": {
+        "name": "USV-Last"
+      },
+      "zfs_dataset_used": {
+        "name": "{resource} belegt"
+      }
+    },
+    "binary_sensor": {
+      "update_available": {
+        "name": "Update verfügbar"
+      },
+      "reboot_required": {
+        "name": "Neustart erforderlich"
+      },
+      "service": {
+        "name": "{resource} Dienst"
+      },
+      "disk_bad_sectors": {
+        "name": "{resource} defekte Sektoren"
+      },
+      "disk_crc_errors": {
+        "name": "{resource} CRC-Fehler"
+      },
+      "vm_running": {
+        "name": "{resource} läuft"
+      },
+      "ups_on_battery": {
+        "name": "USV im Batteriebetrieb"
+      },
+      "rsync_job_enabled": {
+        "name": "rsync {resource} aktiviert"
+      },
+      "zfs_pool_scrub_active": {
+        "name": "{resource} Scrub aktiv"
+      }
+    },
+    "update": {
+      "omv_system_update": {
+        "name": "System-Update"
+      }
+    },
+    "button": {
+      "reboot": {
+        "name": "Neustart"
+      },
+      "shutdown": {
+        "name": "Herunterfahren"
+      },
+      "apply_config": {
+        "name": "Konfiguration anwenden"
+      },
+      "compose_up": {
+        "name": "Compose up"
+      },
+      "compose_down": {
+        "name": "Compose down"
+      },
+      "compose_start": {
+        "name": "Start"
+      },
+      "compose_stop": {
+        "name": "Stop"
+      },
+      "compose_pull": {
+        "name": "Pull"
+      },
+      "compose_image_prune": {
+        "name": "Docker Image prune"
+      },
+      "compose_container_prune": {
+        "name": "Docker Container prune"
+      },
+      "container_restart": {
+        "name": "Neustart"
+      },
+      "vm_restart": {
+        "name": "Neustart"
+      },
+      "rsync_run": {
+        "name": "rsync {name} starten"
+      },
+      "cron_run": {
+        "name": "Cron {name} ausführen"
+      },
+      "zfs_scrub": {
+        "name": "Scrub {name}"
+      },
+      "standby": {
+        "name": "Standby"
+      },
+      "wake_on_lan": {
+        "name": "Wake-on-LAN {interface}"
+      }
+    }
+  },
+  "exceptions": {
+    "reboot_blocked_config_dirty": {
+      "message": "Neustart nicht möglich: OMV hat ausstehende Konfigurationsänderungen ({modules}). Bitte zuerst 'Konfiguration anwenden' drücken."
+    },
+    "apply_config_failed": {
+      "message": "Konfigurationsänderungen konnten nicht angewendet werden. Bitte die OMV-Logs prüfen."
+    },
+    "container_command_failed": {
+      "message": "Container {resource} konnte nicht {command} werden. Bitte die OMV-Logs prüfen."
+    },
+    "vm_command_failed": {
+      "message": "VM {resource} konnte nicht {command} werden. Bitte die OMV-Logs prüfen."
+    },
+    "rsync_execute_failed": {
+      "message": "Rsync-Auftrag {name} konnte nicht gestartet werden. Prüfe die OMV-Logs."
+    },
+    "cron_execute_failed": {
+      "message": "Cron-Job {name} konnte nicht ausgeführt werden. Prüfe die OMV-Logs."
+    },
+    "zfs_scrub_failed": {
+      "message": "Scrub für Pool {name} konnte nicht gestartet werden. Prüfe die OMV-Logs."
+    },
+    "compose_command_failed": {
+      "message": "Befehl {command} für Compose-Projekt {resource} fehlgeschlagen. Prüfe die OMV-Logs."
+    },
+    "service_entry_not_found": {
+      "message": "Kein geladener OpenMediaVault-Konfigurationseintrag passt zu diesem Service-Aufruf."
+    },
+    "service_entry_ambiguous": {
+      "message": "Mehrere OpenMediaVault-Konfigurationseinträge sind geladen. Gib 'config_entry_id' an."
+    },
+    "service_project_not_found": {
+      "message": "Compose-Projekt {project} wurde auf dem OMV-Host nicht gefunden."
+    },
+    "service_job_not_found": {
+      "message": "Rsync-Job {job} wurde auf dem OMV-Host nicht gefunden."
+    },
+    "invalid_container_reference": {
+      "message": "Container-Referenz {container} enthält Zeichen, die in einem Docker-Namen oder einer Docker-Id nicht zulässig sind."
+    },
+    "wol_failed": {
+      "message": "Wake-on-LAN-Paket für {interface} konnte nicht gesendet werden."
+    }
+  },
+  "issues": {
+    "reboot_required": {
+      "title": "Neustart erforderlich – {title}",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "{title} neu starten?",
+            "description": "Klicke auf **OK**, um {title} jetzt neu zu starten. Das System ist kurzzeitig nicht erreichbar."
+          }
+        },
+        "abort": {
+          "config_dirty": "Neustart abgebrochen: {title} hat ausstehende Konfigurationsänderungen ({modules}). Bitte zuerst die Konfiguration anwenden."
+        }
+      }
+    }
+  },
+  "services": {
+    "container_command": {
+      "name": "Container-Befehl",
+      "description": "Führt einen Befehl auf einem Docker-Container aus, der vom OMV-Compose-Plugin verwaltet wird.",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV-Instanz",
+          "description": "Ziel-Konfigurationseintrag. Optional, wenn nur eine OMV-Instanz konfiguriert ist."
+        },
+        "container": {
+          "name": "Container",
+          "description": "Container-Name oder -ID."
+        },
+        "command": {
+          "name": "Befehl",
+          "description": "Auf dem Container auszuführender Befehl."
+        }
+      }
+    },
+    "compose_command": {
+      "name": "Compose-Projekt-Befehl",
+      "description": "Führt einen Befehl auf einem Docker-Compose-Projekt aus, das vom OMV-Compose-Plugin verwaltet wird.",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV-Instanz",
+          "description": "Ziel-Konfigurationseintrag. Optional, wenn nur eine OMV-Instanz konfiguriert ist."
+        },
+        "project": {
+          "name": "Projekt",
+          "description": "Compose-Projektname oder UUID."
+        },
+        "command": {
+          "name": "Befehl",
+          "description": "Auf dem Projekt auszuführender Befehl."
+        }
+      }
+    },
+    "apply_config": {
+      "name": "Konfiguration anwenden",
+      "description": "Wendet ausstehende OpenMediaVault-Konfigurationsänderungen an.",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV-Instanz",
+          "description": "Ziel-Konfigurationseintrag. Optional, wenn nur eine OMV-Instanz konfiguriert ist."
+        }
+      }
+    },
+    "run_rsync_job": {
+      "name": "Rsync-Job ausführen",
+      "description": "Startet einen konfigurierten OpenMediaVault-Rsync-Job (Fire-and-Forget).",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV-Instanz",
+          "description": "Ziel-Konfigurationseintrag. Optional, wenn nur eine OMV-Instanz konfiguriert ist."
+        },
+        "job": {
+          "name": "Job",
+          "description": "Rsync-Job-Name oder UUID."
+        }
+      }
+    }
+  }
+}

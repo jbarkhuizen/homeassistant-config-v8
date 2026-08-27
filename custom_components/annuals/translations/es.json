@@ -1,0 +1,451 @@
+{
+    "title": "Annuals",
+    "selector": {
+        "holiday_span": {
+            "options": {
+                "start": "inicio",
+                "end": "fin",
+                "day": "día {day}"
+            }
+        },
+        "holiday_breaks": {
+            "options": {
+                "note": "Los periodos de varios días, como las vacaciones escolares, se reconstruyen como vacaciones completas: elige abajo qué partes importar."
+            }
+        },
+        "event_type": {
+            "options": {
+                "birthday": "Cumpleaños",
+                "anniversary": "Aniversario",
+                "name_day": "Onomástica",
+                "wedding_anniversary": "Aniversario de boda",
+                "memorial": "Aniversario de fallecimiento",
+                "pet_birthday": "Cumpleaños de mascota",
+                "work_anniversary": "Aniversario laboral",
+                "custom": "Personalizado",
+                "one_time": "Evento puntual",
+                "holiday": "Festivo"
+            }
+        },
+        "month": {
+            "options": {
+                "1": "enero",
+                "2": "febrero",
+                "3": "marzo",
+                "4": "abril",
+                "5": "mayo",
+                "6": "junio",
+                "7": "julio",
+                "8": "agosto",
+                "9": "septiembre",
+                "10": "octubre",
+                "11": "noviembre",
+                "12": "diciembre"
+            }
+        },
+        "holiday_category": {
+            "options": {
+                "public": "Festivo oficial",
+                "bank": "Bancario",
+                "government": "Administración pública",
+                "school": "Vacaciones escolares",
+                "optional": "Opcional",
+                "unofficial": "No oficial",
+                "half_day": "Medio día",
+                "armed_forces": "Fuerzas armadas",
+                "workday": "Día laborable",
+                "catholic": "Católico",
+                "christian": "Cristiano",
+                "orthodox": "Ortodoxo",
+                "hebrew": "Judío",
+                "islamic": "Islámico",
+                "hindu": "Hindú",
+                "buddhist": "Budista",
+                "de_facto": "De facto",
+                "protestant": "Protestante",
+                "sabian": "Sabea",
+                "yazidi": "Yazidí",
+                "albanian": "Albanesa",
+                "armenian": "Armenia",
+                "bosnian": "Bosnia",
+                "roma": "Romaní",
+                "serbian": "Serbia",
+                "turkish": "Turca",
+                "vlach": "Valaca"
+            }
+        }
+    },
+    "config": {
+        "step": {
+            "user": {
+                "title": "Añadir evento",
+                "description": "Cada evento obtiene su propia entrada, que luego puedes encontrar y editar desde Ajustes → Dispositivos y servicios buscando su nombre.",
+                "data": {
+                    "name": "Nombre",
+                    "last_name": "Apellido (opcional)",
+                    "type": "Tipo de evento",
+                    "day": "Día",
+                    "month": "Mes",
+                    "year": "Año (dejar vacío si se desconoce; obligatorio para eventos puntuales)",
+                    "end_date": "Fecha de fin (solo eventos únicos, opcional: lo convierte en un evento de varios días)",
+                    "icon": "Sobrescribir icono (opcional)",
+                    "vip": "VIP Annual"
+                }
+            },
+            "reconfigure": {
+                "title": "Editar evento",
+                "description": "Cambia cualquier campo de abajo y envía para actualizar este evento.",
+                "data": {
+                    "name": "Nombre",
+                    "last_name": "Apellido (opcional)",
+                    "type": "Tipo de evento",
+                    "day": "Día",
+                    "month": "Mes",
+                    "year": "Año (dejar vacío si se desconoce; obligatorio para eventos puntuales)",
+                    "end_date": "Fecha de fin (solo eventos únicos, opcional: lo convierte en un evento de varios días)",
+                    "icon": "Sobrescribir icono (opcional)",
+                    "vip": "VIP Annual"
+                }
+            }
+        },
+        "error": {
+            "name_required": "Introduce un nombre.",
+            "end_date_one_time_only": "Solo se puede establecer una fecha de fin en un evento único.",
+            "end_date_before_start": "La fecha de fin debe ser posterior a la de inicio.",
+            "invalid_date": "Esta combinación de día/mes/año no es una fecha válida.",
+            "year_required": "Los eventos puntuales requieren un año."
+        },
+        "abort": {
+            "hub_not_configurable": "El concentrador Annuals no tiene ajustes propios: solo contiene los calendarios compartidos.",
+            "already_configured": "El concentrador Annuals ya existe.",
+            "invalid_import_row": "No se pudo importar esta fila."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Editar evento",
+                "description": "Cambia cualquier campo de abajo y envía para actualizar este evento.",
+                "data": {
+                    "name": "Nombre",
+                    "last_name": "Apellido (opcional)",
+                    "type": "Tipo de evento",
+                    "day": "Día",
+                    "month": "Mes",
+                    "year": "Año (dejar vacío si se desconoce; obligatorio para eventos puntuales)",
+                    "end_date": "Fecha de fin (solo eventos únicos, opcional: lo convierte en un evento de varios días)",
+                    "icon": "Sobrescribir icono (opcional)",
+                    "vip": "VIP Annual"
+                }
+            },
+            "import_csv": {
+                "title": "Importar eventos desde CSV",
+                "description": "Columnas: name, type, day, month, year (opcional, obligatorio para one_time), icon (opcional), vip (opcional), last_name (opcional). «type» debe ser una de estas claves en inglés: birthday, anniversary, name_day, wedding_anniversary, memorial, pet_birthday, work_anniversary, custom, one_time (siempre en inglés, sin importar tu idioma). «vip» acepta 1/true/yes/y/x (sin distinguir mayúsculas/minúsculas); déjalo vacío u omite la columna para un evento que no sea VIP. Mantén todas las columnas aunque un valor esté vacío: una fila sin la coma final desplaza los valores siguientes hacia la izquierda. Las filas no válidas se omiten y quedan registradas.\n\nEjemplo:\n```\nname,type,day,month,year,icon,vip,last_name\nAnna,birthday,12,4,1988,,,Miller\nMax,pet_birthday,3,9,2020,mdi:dog,,\nTest Custom,custom,1,1,,mdi:test-tube,1,\nVacaciones familiares,one_time,15,7,2026,mdi:airplane,,\n```",
+                "data": {
+                    "csv_file": "Archivo CSV"
+                }
+            },
+            "import_ics": {
+                "title": "Importar eventos desde calendario ICS",
+                "description": "Sube un archivo de calendario .ics - normalmente un calendario exportado. Solo se leen las entradas de día completo sin excepciones de recurrencia; los eventos con hora se omiten. Los siguientes pasos te permiten revisar y corregir la división propuesta de nombre y apellido (e intercambiar nombre/apellido para todos a la vez) antes de importar nada.",
+                "data": {
+                    "ics_file": "Archivo ICS"
+                }
+            },
+            "import_vcard_menu": {
+                "title": "Importar eventos desde vCard",
+                "description": "El cumpleaños de un contacto y sus otras fechas (aniversarios, fechas personalizadas) siguen ramas distintas, ya que solo los cumpleaños comparten un único tipo de evento para todo el lote - a cada otra fecha se le asigna su propio tipo durante la revisión.",
+                "menu_options": {
+                    "import_vcard": "Importar cumpleaños",
+                    "import_vcard_other_dates": "Importar otras fechas (aniversarios, ...)"
+                }
+            },
+            "import_vcard": {
+                "title": "Importar cumpleaños desde vCard",
+                "description": "Sube un archivo .vcf - normalmente contactos exportados. Solo se leen las entradas con un cumpleaños establecido. El nombre y el apellido provienen de los campos de nombre estructurado del contacto, no de una suposición, y un cumpleaños sin año establecido (la forma en que vCard expresa esto) se mantiene como desconocido en lugar de inventarse. Los siguientes pasos te permiten revisar y corregir todo (e intercambiar nombre/apellido para todos a la vez) antes de importar nada.",
+                "data": {
+                    "vcard_file": "Archivo vCard"
+                }
+            },
+            "import_vcard_other_dates": {
+                "title": "Importar otras fechas desde vCard",
+                "description": "Sube un archivo .vcf. Se leen todas las fechas excepto el cumpleaños: el campo estándar «Aniversario», además de cualquier fecha con etiqueta personalizada que tu aplicación de contactos te permite añadir por contacto (por ejemplo, «Aniversario», «Otro» o una etiqueta escrita por ti). A diferencia de los cumpleaños, estas no son todas del mismo tipo de evento - los siguientes pasos te permiten revisar cada una, con su etiqueta detectada mostrada como referencia, y asignarle individualmente el tipo de evento correcto.",
+                "data": {
+                    "vcard_file": "Archivo vCard"
+                }
+            },
+            "import_options": {
+                "title": "Importar desde {source_label} - ajustes",
+                "description": "Estos se aplican a cada entrada encontrada en el archivo. A continuación podrás revisar y editar las entradas individuales.",
+                "data": {
+                    "swap_names": "Intercambiar nombre/apellido en todas las entradas",
+                    "use_description_year": "Usar el año encontrado en la descripción de cada entrada en lugar de su fecha de inicio, cuando se encuentre uno (por ejemplo, «geb. 1985»)",
+                    "type": "Tipo de evento"
+                }
+            },
+            "import_review": {
+                "title": "Importar desde {source_label} - revisión ({page}/{total_pages})",
+                "description": "{legend}\n\nRevisa la división propuesta de nombre/apellido de abajo y corrige lo que esté mal - el propio cumpleaños también es editable - o desmarca una entrada para excluirla por completo. Un posible duplicado se marca con el nombre de su entrada existente; deja «crear como nuevo» sin marcar para actualizar esa entrada en lugar de añadir una segunda. Las etiquetas de los campos se muestran aquí solo en inglés, independientemente de tu idioma.",
+                "data": {
+                    "go_back": "Volver a la página anterior"
+                }
+            },
+            "remove_ics_imports": {
+                "title": "Eliminar eventos importados por ICS",
+                "description": "{count} evento(s) se crearon mediante una importación ICS anterior. Haz clic en «OK» para eliminarlos todos - las entradas que una importación ICS solo actualizó (en lugar de crear) nunca se ven afectadas, como tampoco los eventos añadidos manualmente o importados por CSV o vCard."
+            },
+            "remove_vcard_imports": {
+                "title": "Eliminar eventos importados por vCard",
+                "description": "{count} evento(s) se crearon mediante una importación vCard anterior. Haz clic en «OK» para eliminarlos todos - las entradas que una importación vCard solo actualizó (en lugar de crear) nunca se ven afectadas, como tampoco los eventos añadidos manualmente o importados por CSV o ICS."
+            },
+            "holiday_menu": {
+                "title": "Festivo",
+                "description": "**{name}**\n\n{type} · {date} · {region} · {category}",
+                "menu_options": {
+                    "holiday_settings": "⚙️ Ajustes",
+                    "holiday_names": "🌐 Nombre y traducciones"
+                }
+            },
+            "holiday_settings": {
+                "title": "Ajustes del festivo",
+                "description": "**{name}**\n\n{type} · {date} · {region} · {category}\n\nLa fecha, el tipo y la región vienen de la base de datos de festivos y no se pueden editar aquí.",
+                "data": {
+                    "icon": "Icono"
+                }
+            },
+            "holiday_names": {
+                "title": "Nombre y traducciones",
+                "description": "**{name}**\n\n{type} · {date} · {region} · {category}\n\nElige el idioma en el que quieres escribir el nombre de este festivo.",
+                "data": {
+                    "language": "Idioma"
+                }
+            },
+            "holiday_name_edit": {
+                "title": "Nombre del festivo",
+                "description": "{language}\n\n**{name}**\n\n{type} · {date} · {region} · {category}\n\nRellenado con lo que se muestra actualmente. Déjalo vacío para volver a la base de datos de festivos.",
+                "data": {
+                    "name": "Nombre"
+                }
+            },
+            "holiday_translations": {
+                "title": "🌐 Holiday translations",
+                "description": "Export and import the holiday names you wrote yourself.",
+                "menu_options": {
+                    "export_translations": "📤 Export translations",
+                    "import_translations": "📥 Import translations"
+                }
+            },
+            "import_translations": {
+                "title": "Import translations",
+                "description": "Upload a translations CSV. Columns: `country,subdivision,category,holiday_key,observed,language,name`. Rows are matched onto holidays by country, subdivision, category, holiday key and observed flag - not by entry id, so a file exported before re-importing a country still applies. Rows whose holiday isn't present are skipped and counted.",
+                "data": {
+                    "csv_file": "CSV"
+                }
+            },
+            "hub_menu": {
+                "title": "Annuals Ajustes",
+                "menu_options": {
+                    "annual_settings": "{icon_annual_settings} Annual Ajustes",
+                    "import_events": "{icon_import_events} Importar eventos",
+                    "export_csv": "{icon_export_csv} Exportar eventos a CSV",
+                    "holiday_translations": "{icon_holiday_translations} Holiday translations",
+                    "remove_events": "{icon_remove_events} Eliminar eventos",
+                    "delete_all": "{icon_delete_all} Eliminar todos los datos de Annuals"
+                }
+            },
+            "import_events": {
+                "title": "Importar eventos",
+                "description": "Elige una fuente desde la que importar.",
+                "menu_options": {
+                    "import_csv": "CSV",
+                    "import_ics": "Calendario ICS",
+                    "import_vcard_menu": "vCard",
+                    "import_holidays": "Festivos"
+                }
+            },
+            "remove_events": {
+                "title": "Eliminar eventos",
+                "description": "Elige qué eventos importados anteriormente deseas eliminar.",
+                "menu_options": {
+                    "remove_ics_imports": "Importados por ICS",
+                    "remove_vcard_imports": "Importados por vCard",
+                    "remove_holidays": "Festivos"
+                }
+            },
+            "import_holidays": {
+                "title": "Importar festivos",
+                "description": "Elige un país para importar sus festivos como eventos. Repetir esto más tarde para el mismo país (y subdivisión) actualiza las entradas existentes en lugar de duplicarlas - seguro de repetir si un país añade un nuevo festivo.",
+                "data": {
+                    "country": "País"
+                }
+            },
+            "import_holidays_options": {
+                "title": "Importar festivos - {country}",
+                "description": "Deja la subdivisión vacía para solo festivos nacionales - una comunidad/provincia añade sus propios festivos regionales. Las categorías y el idioma dependen de lo que ofrezcan los datos de festivos de ese país.{breaks}",
+                "data": {
+                    "include_actual": "Importar la fecha real",
+                    "include_observed": "Importar la fecha observada (trasladada)",
+                    "break_start": "Importar el primer día de las vacaciones",
+                    "break_end": "Importar el último día de las vacaciones",
+                    "break_days": "Importar cada día de las vacaciones",
+                    "subdivision": "Subdivisión (comunidad/provincia, opcional)",
+                    "categories": "Categorías",
+                    "language": "Idioma de los nombres de los festivos"
+                },
+                "data_description": {
+                    "break_start": "Las vacaciones escolares solo incluyen días lectivos, así que empiezan antes: se retrocede por el fin de semana y los festivos contiguos hasta el primer día realmente libre.",
+                    "break_end": "Lo mismo al revés: el último día libre, no el último indicado.",
+                    "break_days": "Un evento por cada día de vacaciones. Solo las de verano ya suponen más de cuarenta.",
+                    "include_observed": "Los festivos de este país a veces se trasladan a un día laborable cercano cuando caen en fin de semana (p. ej. observado el viernes anterior o el lunes siguiente) - importa también esa fecha trasladada como un evento separado."
+                }
+            },
+            "remove_holidays": {
+                "title": "Eliminar festivos importados",
+                "description": "{total} festivo(s) importado(s) actualmente. Marca la casilla de abajo para eliminarlos todos, o déjala sin marcar y elige un lote en su lugar. Los eventos añadidos manualmente nunca se ven afectados.",
+                "data": {
+                    "remove_all": "Eliminar todos los festivos importados",
+                    "batch": "Lote a eliminar"
+                }
+            },
+            "annual_settings": {
+                "title": "Annual Ajustes",
+                "sections": {
+                    "important_events": {
+                        "name": "❗ Eventos importantes",
+                        "description": "Números de aniversario separados por comas que marcan automáticamente un evento de ese tipo como «Important», por ejemplo «18,21,30,40,50». Deja un campo vacío para desactivar esto en ese tipo.",
+                        "data": {
+                            "important_thresholds_birthday": "Cumpleaños",
+                            "important_thresholds_anniversary": "Aniversario",
+                            "important_thresholds_name_day": "Onomástica",
+                            "important_thresholds_wedding_anniversary": "Aniversario de boda",
+                            "important_thresholds_memorial": "Aniversario de fallecimiento",
+                            "important_thresholds_pet_birthday": "Cumpleaños de mascota",
+                            "important_thresholds_work_anniversary": "Aniversario laboral",
+                            "important_thresholds_custom": "Personalizado"
+                        }
+                    },
+                    "todo": {
+                        "name": "📍 Listas de tareas",
+                        "description": "Las tareas pendientes de estas listas marcan un evento: cada sensor de evento tendrá entonces un atributo «todo» - verdadero mientras tenga asociada al menos una tarea aún pendiente, falso en caso contrario - para tus propias automatizaciones, plantillas y paneles. La asociación se hace primero por la fecha de vencimiento y después por si el texto de la tarea menciona el evento (nombre completo, nombre, tipo, número de ocurrencia); una tarea que encaja igual de bien en dos eventos queda sin asociar. Déjalo vacío para desactivarlo. Independiente del ajuste del mismo nombre de la tarjeta del panel.",
+                        "data": {
+                            "todo_lists": "Listas de tareas"
+                        }
+                    }
+                }
+            },
+            "delete_all": {
+                "title": "Eliminar todos los datos de Annuals",
+                "description": "Esto elimina permanentemente los {count} evento(s), los calendarios compartidos y el propio concentrador Annuals: toda la integración y todo lo que ha creado. Esta acción no se puede deshacer. Haz clic en «OK» para confirmar."
+            }
+        },
+        "error": {
+            "name_required": "Introduce un nombre.",
+            "end_date_one_time_only": "Solo se puede establecer una fecha de fin en un evento único.",
+            "end_date_before_start": "La fecha de fin debe ser posterior a la de inicio.",
+            "invalid_date": "Esta combinación de día/mes/año no es una fecha válida.",
+            "year_required": "Los eventos puntuales requieren un año.",
+            "invalid_csv": "No se pudo leer este archivo como CSV. Comprueba la codificación y el formato.",
+            "no_valid_rows": "No se encontraron filas válidas en este archivo. Consulta el registro para ver los detalles de las filas omitidas.",
+            "invalid_ics": "No se pudo leer este archivo como calendario ICS. Comprueba el formato.",
+            "no_valid_entries": "No se encontraron entradas de día completo utilizables en este archivo. Consulta el registro para ver los detalles de las entradas omitidas.",
+            "invalid_vcard": "No se pudo leer este archivo como vCard. Comprueba el formato.",
+            "no_valid_vcard_entries": "No se encontraron contactos con un cumpleaños utilizable en este archivo. Consulta el registro para ver los detalles de las entradas omitidas.",
+            "no_valid_vcard_dates": "No se encontraron aniversarios ni otras fechas (aparte de cumpleaños) en este archivo. Consulta el registro para ver los detalles de las entradas omitidas.",
+            "no_batch_selected": "Marca «Eliminar todos los festivos importados» o elige un lote."
+        },
+        "abort": {
+            "translations_exported": "{count} traducción(es) exportado(s). [Descargar annuals_holiday_translations.csv]({url}) (Ctrl/Cmd+clic para descargar - un clic normal no funciona aquí)\n\nO copia el CSV de abajo:\n\n```\n{csv}\n```",
+            "translations_imported": "{updated} holiday(s) updated, {skipped} row(s) skipped.",
+            "no_translations_to_export": "No holiday names have been written yet - there is nothing to export.",
+            "hub_not_configurable": "El concentrador Annuals no tiene ajustes propios: solo contiene los calendarios compartidos.",
+            "import_started": "Importación iniciada: {created} evento(s) en cola, {skipped} fila(s) omitida(s) (consulta el registro para más detalles).",
+            "ics_import_started": "Importación iniciada: {created} evento(s) creado(s), {updated} actualizado(s), {skipped} entrada(s) omitida(s) o excluida(s).",
+            "csv_exported": "{count} evento(s) exportado(s). [Descargar annuals_export.csv]({url}) (Ctrl/Cmd+clic para descargar - un clic normal no funciona aquí)\n\nO copia el CSV de abajo:\n\n```\n{csv}\n```",
+            "no_events_to_export": "Todavía no hay eventos para exportar.",
+            "deleted_all": "Se han eliminado todos los eventos, calendarios y el concentrador de Annuals.",
+            "holiday_import_started": "Importación iniciada: {count} evento(s) festivo(s) en cola para {country} ({new} nuevos, {updated} actualizados).",
+            "no_holidays_imported": "Todavía no se ha importado ningún festivo.",
+            "holidays_removed": "{count} festivo(s) eliminado(s).",
+            "no_ics_imports": "No se encontraron eventos creados por una importación ICS.",
+            "ics_imports_removed": "{count} evento(s) importado(s) por ICS eliminado(s).",
+            "no_vcard_imports": "No se encontraron eventos creados por una importación vCard.",
+            "vcard_imports_removed": "{count} evento(s) importado(s) por vCard eliminado(s)."
+        }
+    },
+    "entity": {
+        "sensor": {
+            "birthday": {
+                "name": "Cumpleaños de {name}",
+                "unit_of_measurement": "días"
+            },
+            "anniversary": {
+                "name": "Aniversario de {name}",
+                "unit_of_measurement": "días"
+            },
+            "name_day": {
+                "name": "Onomástica de {name}",
+                "unit_of_measurement": "días"
+            },
+            "wedding_anniversary": {
+                "name": "Aniversario de boda de {name}",
+                "unit_of_measurement": "días"
+            },
+            "memorial": {
+                "name": "Aniversario de fallecimiento de {name}",
+                "unit_of_measurement": "días"
+            },
+            "pet_birthday": {
+                "name": "Cumpleaños de {name}",
+                "unit_of_measurement": "días"
+            },
+            "work_anniversary": {
+                "name": "Aniversario laboral de {name}",
+                "unit_of_measurement": "días"
+            },
+            "custom": {
+                "name": "{name}",
+                "unit_of_measurement": "días"
+            },
+            "one_time": {
+                "name": "{name}",
+                "unit_of_measurement": "días"
+            },
+            "holiday": {
+                "name": "{name}",
+                "unit_of_measurement": "días"
+            }
+        },
+        "calendar": {
+            "birthday": {
+                "name": "Cumpleaños"
+            },
+            "anniversary": {
+                "name": "Aniversarios"
+            },
+            "name_day": {
+                "name": "Onomásticas"
+            },
+            "wedding_anniversary": {
+                "name": "Aniversarios de boda"
+            },
+            "memorial": {
+                "name": "Aniversarios de fallecimiento"
+            },
+            "pet_birthday": {
+                "name": "Cumpleaños de mascotas"
+            },
+            "work_anniversary": {
+                "name": "Aniversarios laborales"
+            },
+            "custom": {
+                "name": "Eventos personalizados"
+            },
+            "one_time": {
+                "name": "Eventos puntuales"
+            },
+            "holiday": {
+                "name": "Festivos"
+            }
+        }
+    }
+}

@@ -1,0 +1,9176 @@
+/**
+ * Home Tasks Card for Home Assistant
+ * A feature-rich todo list with drag & drop, sub-tasks, notes, and due dates.
+ *
+ * Security: All user-controlled content is set via textContent or DOM properties,
+ * never via innerHTML with unsanitized data.
+ */
+console.info("%c HOME-TASKS-CARD %c v2.2.1 ", "color: white; background: #03a9f4; font-weight: bold;", "color: #03a9f4; background: white; font-weight: bold;");
+
+const _TRANSLATIONS = {
+  en: {
+    voice_failed: "Voice input failed",
+    voice_input: "Voice input", voice_stop: "Stop recording", img_label: "Image", img_generate: "Generate", img_regenerate: "Regenerate", img_generating: "Generating…", img_from_media: "From media library", img_remove: "Remove image", img_generate_failed: "Image generation failed: ", img_save_failed: "Saving image failed: ", mb_title: "Media library", mb_loading: "Loading…", mb_root: "Media", mb_back: "Back", mb_empty: "No files", mb_error: "Error: ",
+    my_tasks: "My Tasks",
+    add_placeholder: "Add new task...",
+    dialog_cancel: "Cancel", dialog_add: "Add",
+    filter_all: "All",
+    filter_open: "Open",
+    filter_done: "Done",
+    filter_due_soon: "Due Soon",
+    ed_show_due_soon_filter: "Due soon filter",
+    ed_due_soon_days: "Days ahead",
+    ed_hide_overdue: "Hide overdue",
+    progress: "{0} of {1} done",
+    empty: "No tasks",
+    drag_handle: "Drag to reorder",
+    due_date: "Due",
+    notes: "Notes",
+    notes_placeholder: "Add notes here",
+    sub_items: "Sub-tasks",
+    add_sub_item: "+ Add sub-task",
+    recurrence: "Recurrence",
+    recurrence_enabled: "Enabled",
+    recurrence_every: "Every",
+    rec_hours: "Hours", rec_days: "Days", rec_weeks: "Weeks", rec_months: "Months", rec_years: "Years",
+    rec_short_h: "h", rec_short_d: "d", rec_short_w: "w", rec_short_m: "mo", rec_short_y: "y",
+    priority: "Priority",
+    pri_high: "High", pri_medium: "Medium", pri_low: "Low",
+    rec_hourly: "Hourly", rec_daily: "Daily", rec_weekly: "Weekly", rec_monthly: "Monthly", rec_yearly: "Yearly",
+    rec_type_interval: "Every \u2026", rec_type_weekdays: "On weekdays",
+    rec_wd_0: "Mon", rec_wd_1: "Tue", rec_wd_2: "Wed", rec_wd_3: "Thu", rec_wd_4: "Fri", rec_wd_5: "Sat", rec_wd_6: "Sun",
+    assigned_to: "Assigned to",
+    nobody: "\u2013 Nobody \u2013",
+    delete_task: "Delete task",
+    duplicate_task: "Duplicate", move_task: "Move", move_task_msg: "Move \"{0}\" to:", ed_show_move: "Move button",
+    delete_sub: "Delete",
+    ed_default_filter: "Default filter",
+    ed_list: "List",
+    ed_title: "Title (optional)",
+    ed_title_placeholder: "Default: List name",
+    ed_display: "Display",
+    ed_show_title: "Title",
+    ed_show_progress: "Progress",
+    ed_show_due_date: "Due dates",
+    ed_show_notes: "Notes",
+    ed_show_recurrence: "Recurrences",
+    ed_show_sub_items: "Sub-tasks",
+    ed_show_person: "Assignees",
+    ed_auto_delete: "Delete completed immediately",
+    ed_confirm_complete: "Confirm before completing",
+    ed_show_add_due: "Due date when adding",
+    ed_max_height: "Max height (px, 0 = unlimited)", ed_badge_priority: "Priority chips", ed_badge_progress: "Progress chips", ed_badge_due: "Due chips", ed_badge_recurrence: "Recurrence chips", ed_badge_person: "Person chips", ed_badge_tags: "Tag chips", ed_badge_reminders: "Reminder chips",
+    ed_sec_defaults: "Defaults",
+    ed_default_assignee: "Default assignee",
+    ed_defaults_hint: "Applied to every new task in this list \u2014 no matter how it is created (card, service, voice, todo). Changes are saved immediately.", ed_defaults_saved: "Saved", ed_defaults_load_failed: "Could not load defaults", ed_defaults_save_failed: "Save failed",
+    confirm_complete_msg: "Mark \"{0}\" as completed?",
+    confirm_complete_ok: "Complete",
+    ed_compact: "Compact",
+    ed_show_tags: "Tags",
+    ed_hint: "New lists can be created under Settings \u2192 Integrations \u2192 Home Tasks.",
+    ed_external_lists: "External",
+    tags: "Tags",
+    add_tag: "+ Add tag",
+    tag_placeholder: "New tag...",
+    remove_tag: "Remove",
+    tag_suggestions_label: "Existing tags",
+    tag_no_matches: "No matching tags",
+    new_sub_item: "New sub-task",
+    remove_reminder: "Remove reminder",
+    sort_label: "Sort",
+    sort_manual: "Manual",
+    sort_due: "Due date",
+    sort_priority: "Priority",
+    sort_title: "Title (A\u2013Z)",
+    sort_person: "Assigned",
+    ed_show_sort: "Sort",
+    ed_show_filters: "Status filter",
+    ed_show_tag_chips: "Tag filter",
+    ed_show_person_chips: "Person filter",
+    ed_show_voice: "Voice input",
+    ed_auto_image: "Auto-generate image",
+    ed_show_priority: "Priorities",
+    ed_default_sort: "Default sort",
+    reminder: "Reminders",
+    rem_add: "+ Add reminder",
+    rem_none: "No reminder",
+    rem_at_due: "At due time",
+    rem_5m: "5 min before",
+    rem_15m: "15 min before",
+    rem_30m: "30 min before",
+    rem_1h: "1 hour before",
+    rem_2h: "2 hours before",
+    rem_1d: "1 day before",
+    rem_2d: "2 days before",
+    ed_show_reminders: "Reminders",
+    ed_add_column: "Add column",
+    ed_move_left: "Move left",
+    ed_move_right: "Move right",
+    ed_duplicate: "Duplicate column",
+    ed_delete_column: "Delete column",
+    ed_code_editor: "Code editor",
+    ed_visual_editor: "Visual editor",
+    ed_icon: "Icon (optional)",
+    ed_card_title: "Card title (optional)",
+    ed_card_title_placeholder: "Title shown above columns",
+    ed_sec_view: "Display",
+    ed_sec_display: "Task features",
+    ed_tile_help: "Tile view:\n• Click = complete\n• Hold = edit\n• Drag = reorder",
+    due_time_lbl: "Time",
+    due_date_lbl: "Date",
+    rec_mode_lbl: "Mode",
+    rec_time: "Time", rec_end: "End", rec_end_never: "Never", rec_end_date: "Until", rec_end_count: "X times",
+    rec_end_date_lbl: "Until", rec_max_count_lbl: "Count", rec_remaining: "{0} left", rec_start_date_lbl: "From",
+    rec_pattern_dom: "Day of month", rec_pattern_nth: "Nth weekday", rec_pattern_none: "From completion",
+    rec_dom_lbl: "Day", rec_dom_last: "Last day",
+    rec_nth_lbl: "On the", rec_nth_1: "1st", rec_nth_2: "2nd", rec_nth_3: "3rd", rec_nth_4: "4th", rec_nth_last: "Last",
+    rec_anniversary_lbl: "On",
+    rec_dd: "Day", rec_mm: "Month",
+    rec_dom_short: "th", rec_last_short: "last",
+    rec_value_lbl: "Every", rec_unit_lbl: "Unit", rec_wd_lbl: "Weekday",
+    rec_at_lbl: "At",
+    rec_todoist_pattern_unsupported: "Sub-patterns aren't supported when the interval is greater than 1.",
+    history: "History", history_created: "Created", history_completed: "Completed", history_reopened: "Reopened",
+    history_reset: "Auto-reset (recurrence)", history_changed: "changed", history_empty: "No history yet", hist_title: "Title", history_disabled: "Disabled",
+    ed_show_history: "Histories", hist_by_user: "User",
+    ed_show_images: "Images",
+    ed_view_mode: "View mode", ed_view_mode_list: "List", ed_view_mode_tiles: "Tiles",
+    ed_show_tile_title: "Title in tiles",
+    ed_show_add_task: "Add task",
+    assigned_unknown: "Unknown (%s)", recurrence_readonly: "Managed by %s", synced_with: "Synced with %s",
+    due_today: "Today", due_tomorrow: "Tomorrow", due_yesterday: "Yesterday",
+    due_day_after_tomorrow: "In 2 days", due_day_before_yesterday: "2 days ago",
+    due_in_hours: "In {0}h {1}m", due_in_minutes: "In {0} min", due_in_seconds: "Now",
+    due_ago_hours: "{0}h {1}m ago", due_ago_minutes: "{0} min ago", due_ago_seconds: "Just now",
+    done_section_header: "Done",
+    ed_sec_sections: "Sections",
+    ed_section_name: "Name",
+    ed_section_icon: "Icon",
+    ed_add_section: "+ Add section",
+    ed_delete_section: "Delete section",
+    ed_section_name_prompt: "Section name:",
+    ed_sections_select_list_hint: "Select a list first to manage its sections.",
+    ed_sections_empty: "No sections yet — tasks will render flat.",
+    ed_loading: "Loading…",
+    ed_move_up: "Move up",
+    ed_move_down: "Move down",
+    confirm_delete_section: "Delete this section? Tasks inside will become unsorted.",
+    ed_sec_filters: "Filters",
+    ed_preset_assignees: "Limit to assignees",
+    ed_preset_labels: "Limit to tags",
+    ed_ms_add: "Add…",
+    ed_ai_image_section: "AI Image Generation",
+    ed_ai_image_entity: "AI entity for image generation",
+    ed_ai_image_entity_placeholder: "e.g. ai_task.openai",
+    ed_ai_prompt_prefix: "Prompt prefix (optional)",
+    ed_ai_prompt_prefix_placeholder: "e.g. Minimalist icon of",
+  },
+  nl: {
+    voice_failed: "Spraakinvoer mislukt",
+    confirm_delete_section: "Deze sectie verwijderen? Taken erin worden ongesorteerd.", done_section_header: "Klaar", duplicate_task: "Dupliceren", move_task: "Verplaatsen", move_task_msg: "\u201e{0}\u201d verplaatsen naar:", ed_show_move: "Verplaatsknop", ed_add_section: "+ Sectie toevoegen", ed_ai_image_entity: "AI-entiteit voor beeldgeneratie", ed_ai_image_entity_placeholder: "bijv. ai_task.openai", ed_ai_image_section: "AI-beeldgeneratie", ed_ai_prompt_prefix: "Prompt-prefix (optioneel)", ed_ai_prompt_prefix_placeholder: "bijv. Minimalistisch icoon van", ed_auto_image: "Afbeelding automatisch genereren", ed_delete_section: "Sectie verwijderen", ed_external_lists: "Extern", ed_loading: "Laden…", ed_move_down: "Omlaag verplaatsen", ed_move_up: "Omhoog verplaatsen", ed_sec_sections: "Secties", ed_section_icon: "Pictogram", ed_section_name: "Naam", ed_section_name_prompt: "Sectienaam:", ed_sections_empty: "Nog geen secties — taken worden plat weergegeven.", ed_sections_select_list_hint: "Selecteer eerst een lijst om de secties te beheren.", ed_show_filters: "Statusfilter", ed_show_images: "Afbeeldingen", ed_show_person_chips: "Persoonfilter", ed_show_tag_chips: "Tagfilter", ed_show_tile_title: "Titel in tegels", ed_show_voice: "Spraakinvoer", ed_tile_help: "Tegelweergave:\n• Klikken = voltooien\n• Vasthouden = bewerken\n• Slepen = volgorde wijzigen", ed_view_mode: "Weergavemodus", ed_view_mode_list: "Lijst", ed_view_mode_tiles: "Tegels",
+    voice_input: "Spraakinvoer", voice_stop: "Opname stoppen", img_label: "Afbeelding", img_generate: "Genereren", img_regenerate: "Opnieuw genereren", img_generating: "Genereren…", img_from_media: "Uit mediabibliotheek", img_remove: "Afbeelding verwijderen", img_generate_failed: "Genereren van afbeelding mislukt: ", img_save_failed: "Afbeelding opslaan mislukt: ", mb_title: "Mediabibliotheek", mb_loading: "Laden…", mb_root: "Media", mb_back: "Terug", mb_empty: "Geen bestanden", mb_error: "Fout: ",
+    my_tasks: "Mijn taken",
+    add_placeholder: "Nieuwe taak toevoegen...",
+    dialog_cancel: "Annuleren", dialog_add: "Toevoegen",
+    filter_all: "Alle", filter_open: "Open", filter_done: "Klaar", filter_due_soon: "Binnenkort",
+    ed_show_due_soon_filter: "Binnenkort-filter", ed_due_soon_days: "Dagen vooruit", ed_hide_overdue: "Verlopen verbergen",
+    progress: "{0} van {1} klaar",
+    empty: "Geen taken",
+    drag_handle: "Slepen om te herordenen",
+    due_date: "Deadline", notes: "Notities", notes_placeholder: "Voeg notities toe",
+    sub_items: "Subtaken", add_sub_item: "+ Subtaak toevoegen",
+    recurrence: "Herhaling", recurrence_enabled: "Ingeschakeld", recurrence_every: "Elke",
+    rec_hours: "Uren", rec_days: "Dagen", rec_weeks: "Weken", rec_months: "Maanden", rec_years: "Jaren",
+    rec_short_h: "u", rec_short_d: "d", rec_short_w: "w", rec_short_m: "m", rec_short_y: "j",
+    priority: "Prioriteit", pri_high: "Hoog", pri_medium: "Middel", pri_low: "Laag",
+    ed_show_priority: "Prioriteiten",
+    rec_hourly: "Uurlijks", rec_daily: "Dagelijks", rec_weekly: "Wekelijks", rec_monthly: "Maandelijks", rec_yearly: "Jaarlijks",
+    rec_type_interval: "Elke \u2026", rec_type_weekdays: "Op weekdagen",
+    rec_wd_0: "Ma", rec_wd_1: "Di", rec_wd_2: "Wo", rec_wd_3: "Do", rec_wd_4: "Vr", rec_wd_5: "Za", rec_wd_6: "Zo",
+    assigned_to: "Toegewezen aan", nobody: "\u2013 Niemand \u2013",
+    delete_task: "Taak verwijderen", delete_sub: "Verwijderen",
+    ed_default_filter: "Standaardfilter", ed_list: "Lijst",
+    ed_title: "Titel (optioneel)", ed_title_placeholder: "Standaard: lijstnaam",
+    ed_display: "Weergave", ed_show_title: "Titel", ed_show_progress: "Voortgang",
+    ed_show_due_date: "Deadlines", ed_show_notes: "Notities", ed_show_recurrence: "Herhalingen",
+    ed_show_sub_items: "Subtaken", ed_show_person: "Personen",
+    ed_auto_delete: "Voltooide meteen verwijderen", ed_compact: "Compact", ed_show_tags: "Tags",
+    ed_confirm_complete: "Bevestigen voor afronden",
+    ed_show_add_due: "Vervaldatum bij toevoegen",
+    ed_max_height: "Max. hoogte (px, 0 = onbeperkt)", ed_badge_priority: "Prioriteitschips", ed_badge_progress: "Voortgangschips", ed_badge_due: "Vervaldatumchips", ed_badge_recurrence: "Herhalingschips", ed_badge_person: "Persoonchips", ed_badge_tags: "Tagchips", ed_badge_reminders: "Herinneringschips",
+    ed_sec_defaults: "Standaardwaarden",
+    ed_default_assignee: "Standaard toegewezene",
+    ed_defaults_hint: "Geldt voor elke nieuwe taak in deze lijst \u2014 ongeacht hoe die wordt aangemaakt. Wijzigingen worden direct opgeslagen.", ed_defaults_saved: "Opgeslagen", ed_defaults_load_failed: "Standaardwaarden konden niet worden geladen", ed_defaults_save_failed: "Opslaan mislukt",
+    confirm_complete_msg: "\u201e{0}\u201d als afgerond markeren?",
+    confirm_complete_ok: "Afronden",
+    ed_hint: "Nieuwe lijsten kunnen worden aangemaakt via Instellingen \u2192 Integraties \u2192 Home Tasks.",
+    tags: "Tags", add_tag: "+ Tag toevoegen", tag_placeholder: "Nieuwe tag...", remove_tag: "Verwijderen", tag_suggestions_label: "Bestaande tags", tag_no_matches: "Geen overeenkomende tags",
+    new_sub_item: "Nieuwe subtaak", remove_reminder: "Herinnering verwijderen",
+    sort_label: "Sorteren", sort_manual: "Handmatig", sort_due: "Deadline",
+    sort_priority: "Prioriteit", sort_title: "Titel (A\u2013Z)", sort_person: "Toegewezen",
+    ed_show_sort: "Sorteren", ed_default_sort: "Standaard sortering",
+    reminder: "Herinneringen", rem_add: "+ Herinnering toevoegen", rem_none: "Geen herinnering",
+    rem_at_due: "Op vervaldatum", rem_5m: "5 min. eerder", rem_15m: "15 min. eerder",
+    rem_30m: "30 min. eerder", rem_1h: "1 uur eerder", rem_2h: "2 uur eerder",
+    rem_1d: "1 dag eerder", rem_2d: "2 dagen eerder",
+    ed_show_reminders: "Herinneringen", ed_add_column: "Kolom toevoegen",
+    ed_move_left: "Naar links", ed_move_right: "Naar rechts",
+    ed_duplicate: "Kolom dupliceren", ed_delete_column: "Kolom verwijderen",
+    ed_code_editor: "Code-editor", ed_visual_editor: "Visuele editor",
+    ed_icon: "Pictogram (optioneel)", ed_card_title: "Kaarttitel (optioneel)",
+    ed_card_title_placeholder: "Titel boven kolommen",
+    ed_sec_view: "Weergave", ed_sec_display: "Configuratie",
+    ed_sec_filters: "Filters",
+    ed_preset_assignees: "Beperken tot personen",
+    ed_preset_labels: "Beperken tot tags",
+    ed_ms_add: "Toevoegen…",
+    due_time_lbl: "Tijd", due_date_lbl: "Datum", rec_mode_lbl: "Modus",
+    rec_time: "Tijdstip", rec_end: "Einde", rec_end_never: "Nooit", rec_end_date: "Tot", rec_end_count: "X keer",
+    rec_end_date_lbl: "Tot", rec_max_count_lbl: "Aantal", rec_remaining: "nog {0}", rec_start_date_lbl: "Vanaf",
+    rec_pattern_dom: "Dag van de maand", rec_pattern_nth: "Nde weekdag", rec_pattern_none: "Vanaf voltooiing",
+    rec_dom_lbl: "Dag", rec_dom_last: "Laatste dag",
+    rec_nth_lbl: "Op", rec_nth_1: "1e", rec_nth_2: "2e", rec_nth_3: "3e", rec_nth_4: "4e", rec_nth_last: "Laatste",
+    rec_anniversary_lbl: "Op", rec_dd: "Dag", rec_mm: "Maand",
+    rec_dom_short: "e", rec_last_short: "laatste",
+    rec_value_lbl: "Elke", rec_unit_lbl: "Eenheid", rec_wd_lbl: "Weekdag", rec_at_lbl: "Om",
+    rec_todoist_pattern_unsupported: "Subpatronen werken niet als het interval groter is dan 1.",
+    history: "Geschiedenis", history_created: "Aangemaakt", history_completed: "Voltooid", history_reopened: "Heropend",
+    history_reset: "Automatisch teruggezet", history_changed: "gewijzigd", history_empty: "Geen geschiedenis", hist_title: "Titel", history_disabled: "Uitgeschakeld",
+    ed_show_history: "Geschiedenissen", hist_by_user: "Gebruiker",
+    ed_show_add_task: "Taak toevoegen",
+    assigned_unknown: "Onbekend (%s)", recurrence_readonly: "Beheerd door %s", synced_with: "Gesynchroniseerd met %s",
+    due_today: "Vandaag", due_tomorrow: "Morgen", due_yesterday: "Gisteren",
+    due_day_after_tomorrow: "Overmorgen", due_day_before_yesterday: "Eergisteren",
+    due_in_hours: "Over {0} u {1} min", due_in_minutes: "Over {0} min", due_in_seconds: "Nu",
+    due_ago_hours: "{0} u {1} min geleden", due_ago_minutes: "{0} min geleden", due_ago_seconds: "Zojuist",
+  },
+  it: {
+    voice_failed: "Input vocale non riuscito",
+    confirm_delete_section: "Eliminare questa sezione? Le attività al suo interno diventeranno non ordinate.", done_section_header: "Fatto", duplicate_task: "Duplica", move_task: "Sposta", move_task_msg: "Sposta \u201c{0}\u201d in:", ed_show_move: "Pulsante Sposta", ed_add_section: "+ Aggiungi sezione", ed_ai_image_entity: "Entità IA per la generazione di immagini", ed_ai_image_entity_placeholder: "es. ai_task.openai", ed_ai_image_section: "Generazione immagini IA", ed_ai_prompt_prefix: "Prefisso prompt (facoltativo)", ed_ai_prompt_prefix_placeholder: "es. Icona minimalista di", ed_auto_image: "Genera immagine automaticamente", ed_delete_section: "Elimina sezione", ed_external_lists: "Esterna", ed_loading: "Caricamento…", ed_move_down: "Sposta giù", ed_move_up: "Sposta su", ed_sec_sections: "Sezioni", ed_section_icon: "Icona", ed_section_name: "Nome", ed_section_name_prompt: "Nome sezione:", ed_sections_empty: "Nessuna sezione — le attività verranno mostrate senza raggruppamenti.", ed_sections_select_list_hint: "Seleziona prima un elenco per gestirne le sezioni.", ed_show_filters: "Filtro stato", ed_show_images: "Immagini", ed_show_person_chips: "Filtro persone", ed_show_tag_chips: "Filtro tag", ed_show_tile_title: "Titolo nelle caselle", ed_show_voice: "Input vocale", ed_tile_help: "Vista a caselle:\n• Clic = completa\n• Tieni premuto = modifica\n• Trascina = riordina", ed_view_mode: "Modalità di visualizzazione", ed_view_mode_list: "Elenco", ed_view_mode_tiles: "Caselle",
+    voice_input: "Input vocale", voice_stop: "Interrompi registrazione", img_label: "Immagine", img_generate: "Genera", img_regenerate: "Rigenera", img_generating: "Generazione…", img_from_media: "Dalla libreria multimediale", img_remove: "Rimuovi immagine", img_generate_failed: "Generazione immagine non riuscita: ", img_save_failed: "Salvataggio immagine non riuscito: ", mb_title: "Libreria multimediale", mb_loading: "Caricamento…", mb_root: "Media", mb_back: "Indietro", mb_empty: "Nessun file", mb_error: "Errore: ",
+    my_tasks: "Le mie attivit\u00e0",
+    add_placeholder: "Aggiungi nuova attivit\u00e0...",
+    dialog_cancel: "Annulla", dialog_add: "Aggiungi",
+    filter_all: "Tutte", filter_open: "Aperte", filter_done: "Completate", filter_due_soon: "In scadenza",
+    ed_show_due_soon_filter: "Filtro in scadenza", ed_due_soon_days: "Giorni avanti", ed_hide_overdue: "Nascondi scadute",
+    progress: "{0} di {1} completate",
+    empty: "Nessuna attivit\u00e0",
+    drag_handle: "Trascina per riordinare",
+    due_date: "Scadenza", notes: "Note", notes_placeholder: "Aggiungi note qui",
+    sub_items: "Sotto-attivit\u00e0", add_sub_item: "+ Aggiungi sotto-attivit\u00e0",
+    recurrence: "Ricorrenza", recurrence_enabled: "Attivata", recurrence_every: "Ogni",
+    rec_hours: "Ore", rec_days: "Giorni", rec_weeks: "Settimane", rec_months: "Mesi", rec_years: "Anni",
+    rec_short_h: "h", rec_short_d: "g", rec_short_w: "s", rec_short_m: "m", rec_short_y: "a",
+    priority: "Priorit\u00e0", pri_high: "Alta", pri_medium: "Media", pri_low: "Bassa",
+    ed_show_priority: "Priorit\u00e0",
+    rec_hourly: "Oraria", rec_daily: "Giornaliera", rec_weekly: "Settimanale", rec_monthly: "Mensile", rec_yearly: "Annuale",
+    rec_type_interval: "Ogni \u2026", rec_type_weekdays: "Nei giorni feriali",
+    rec_wd_0: "Lun", rec_wd_1: "Mar", rec_wd_2: "Mer", rec_wd_3: "Gio", rec_wd_4: "Ven", rec_wd_5: "Sab", rec_wd_6: "Dom",
+    assigned_to: "Assegnato a", nobody: "\u2013 Nessuno \u2013",
+    delete_task: "Elimina attivit\u00e0", delete_sub: "Elimina",
+    ed_default_filter: "Filtro predefinito", ed_list: "Lista",
+    ed_title: "Titolo (opzionale)", ed_title_placeholder: "Predefinito: nome lista",
+    ed_display: "Visualizzazione", ed_show_title: "Titolo", ed_show_progress: "Avanzamento",
+    ed_show_due_date: "Scadenze", ed_show_notes: "Note", ed_show_recurrence: "Ricorrenze",
+    ed_show_sub_items: "Sotto-attivit\u00e0", ed_show_person: "Persone",
+    ed_auto_delete: "Elimina completate immediatamente", ed_compact: "Compatto", ed_show_tags: "Tag",
+    ed_confirm_complete: "Conferma prima di completare",
+    ed_show_add_due: "Scadenza alla creazione",
+    ed_max_height: "Altezza max (px, 0 = illimitata)", ed_badge_priority: "Chip priorit\u00e0", ed_badge_progress: "Chip avanzamento", ed_badge_due: "Chip scadenza", ed_badge_recurrence: "Chip ricorrenza", ed_badge_person: "Chip persona", ed_badge_tags: "Chip tag", ed_badge_reminders: "Chip promemoria",
+    ed_sec_defaults: "Predefiniti",
+    ed_default_assignee: "Assegnatario predefinito",
+    ed_defaults_hint: "Si applica a ogni nuova attivit\u00e0 di questo elenco, comunque venga creata. Le modifiche vengono salvate immediatamente.", ed_defaults_saved: "Salvato", ed_defaults_load_failed: "Impossibile caricare i valori predefiniti", ed_defaults_save_failed: "Salvataggio non riuscito",
+    confirm_complete_msg: "Segnare \u201c{0}\u201d come completata?",
+    confirm_complete_ok: "Completa",
+    ed_hint: "Nuove liste possono essere create in Impostazioni \u2192 Integrazioni \u2192 Home Tasks.",
+    tags: "Tag", add_tag: "+ Aggiungi tag", tag_placeholder: "Nuovo tag...", remove_tag: "Rimuovi", tag_suggestions_label: "Tag esistenti", tag_no_matches: "Nessun tag corrispondente",
+    new_sub_item: "Nuova sotto-attivit\u00e0", remove_reminder: "Rimuovi promemoria",
+    sort_label: "Ordina", sort_manual: "Manuale", sort_due: "Scadenza",
+    sort_priority: "Priorit\u00e0", sort_title: "Titolo (A\u2013Z)", sort_person: "Assegnato",
+    ed_show_sort: "Ordinamento", ed_default_sort: "Ordinamento predefinito",
+    reminder: "Promemoria", rem_add: "+ Aggiungi promemoria", rem_none: "Nessun promemoria",
+    rem_at_due: "All\u2019ora di scadenza", rem_5m: "5 min. prima", rem_15m: "15 min. prima",
+    rem_30m: "30 min. prima", rem_1h: "1 ora prima", rem_2h: "2 ore prima",
+    rem_1d: "1 giorno prima", rem_2d: "2 giorni prima",
+    ed_show_reminders: "Promemoria", ed_add_column: "Aggiungi colonna",
+    ed_move_left: "Sposta a sinistra", ed_move_right: "Sposta a destra",
+    ed_duplicate: "Duplica colonna", ed_delete_column: "Elimina colonna",
+    ed_code_editor: "Editor codice", ed_visual_editor: "Editor visuale",
+    ed_icon: "Icona (opzionale)", ed_card_title: "Titolo scheda (opzionale)",
+    ed_card_title_placeholder: "Titolo sopra le colonne",
+    ed_sec_view: "Visualizzazione", ed_sec_display: "Configurazione",
+    ed_sec_filters: "Filtri",
+    ed_preset_assignees: "Limita alle persone",
+    ed_preset_labels: "Limita ai tag",
+    ed_ms_add: "Aggiungi\u2026",
+    due_time_lbl: "Ora", due_date_lbl: "Data", rec_mode_lbl: "Modalit\u00e0",
+    rec_time: "Orario", rec_end: "Fine", rec_end_never: "Mai", rec_end_date: "Fino al", rec_end_count: "X volte",
+    rec_end_date_lbl: "Fino al", rec_max_count_lbl: "Numero", rec_remaining: "ancora {0}", rec_start_date_lbl: "Dal",
+    rec_pattern_dom: "Giorno del mese", rec_pattern_nth: "N\u00ba giorno", rec_pattern_none: "Dal completamento",
+    rec_dom_lbl: "Giorno", rec_dom_last: "Ultimo giorno",
+    rec_nth_lbl: "Il", rec_nth_1: "1\u00ba", rec_nth_2: "2\u00ba", rec_nth_3: "3\u00ba", rec_nth_4: "4\u00ba", rec_nth_last: "Ultimo",
+    rec_anniversary_lbl: "Il", rec_dd: "Giorno", rec_mm: "Mese",
+    rec_dom_short: "\u00ba", rec_last_short: "ultimo",
+    rec_value_lbl: "Ogni", rec_unit_lbl: "Unit\u00e0", rec_wd_lbl: "Giorno", rec_at_lbl: "Alle",
+    rec_todoist_pattern_unsupported: "I sottoschemi non sono supportati con intervallo maggiore di 1.",
+    history: "Cronologia", history_created: "Creato", history_completed: "Completato", history_reopened: "Riaperto",
+    history_reset: "Ripristino automatico", history_changed: "modificato", history_empty: "Nessuna cronologia", hist_title: "Titolo", history_disabled: "Disabilitato",
+    ed_show_history: "Cronologie", hist_by_user: "Utente",
+    ed_show_add_task: "Aggiungi attività",
+    assigned_unknown: "Sconosciuto (%s)", recurrence_readonly: "Gestito da %s", synced_with: "Sincronizzato con %s",
+    due_today: "Oggi", due_tomorrow: "Domani", due_yesterday: "Ieri",
+    due_day_after_tomorrow: "Dopodomani", due_day_before_yesterday: "L'altroieri",
+    due_in_hours: "Tra {0} h {1} min", due_in_minutes: "Tra {0} min", due_in_seconds: "Adesso",
+    due_ago_hours: "{0} h {1} min fa", due_ago_minutes: "{0} min fa", due_ago_seconds: "Proprio ora",
+  },
+  pl: {
+    voice_failed: "Wprowadzanie głosowe nie powiodło się",
+    confirm_delete_section: "Usunąć tę sekcję? Zadania w niej staną się nieposortowane.", done_section_header: "Gotowe", duplicate_task: "Duplikuj", move_task: "Przenie\u015b", move_task_msg: "Przenie\u015b \u201e{0}\u201d do:", ed_show_move: "Przycisk przenoszenia", ed_add_section: "+ Dodaj sekcję", ed_ai_image_entity: "Encja AI do generowania obrazów", ed_ai_image_entity_placeholder: "np. ai_task.openai", ed_ai_image_section: "Generowanie obrazów AI", ed_ai_prompt_prefix: "Prefiks promptu (opcjonalnie)", ed_ai_prompt_prefix_placeholder: "np. Minimalistyczna ikona", ed_auto_image: "Automatycznie generuj obraz", ed_delete_section: "Usuń sekcję", ed_external_lists: "Zewnętrzna", ed_loading: "Ładowanie…", ed_move_down: "Przenieś w dół", ed_move_up: "Przenieś w górę", ed_sec_sections: "Sekcje", ed_section_icon: "Ikona", ed_section_name: "Nazwa", ed_section_name_prompt: "Nazwa sekcji:", ed_sections_empty: "Brak sekcji — zadania będą wyświetlane płasko.", ed_sections_select_list_hint: "Najpierw wybierz listę, aby zarządzać jej sekcjami.", ed_show_filters: "Filtr statusu", ed_show_images: "Obrazy", ed_show_person_chips: "Filtr os\u00f3b", ed_show_tag_chips: "Filtr tag\u00f3w", ed_show_tile_title: "Tytuł na kafelkach", ed_show_voice: "Wprowadzanie głosowe", ed_tile_help: "Widok kafelków:\n• Kliknięcie = ukończ\n• Przytrzymanie = edycja\n• Przeciągnięcie = zmiana kolejności", ed_view_mode: "Tryb widoku", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Kafelki",
+    voice_input: "Wprowadzanie głosowe", voice_stop: "Zatrzymaj nagrywanie", img_label: "Obraz", img_generate: "Generuj", img_regenerate: "Generuj ponownie", img_generating: "Generowanie…", img_from_media: "Z biblioteki multimediów", img_remove: "Usuń obraz", img_generate_failed: "Generowanie obrazu nie powiodło się: ", img_save_failed: "Zapisywanie obrazu nie powiodło się: ", mb_title: "Biblioteka multimediów", mb_loading: "Ładowanie…", mb_root: "Multimedia", mb_back: "Wstecz", mb_empty: "Brak plików", mb_error: "Błąd: ",
+    my_tasks: "Moje zadania",
+    add_placeholder: "Dodaj nowe zadanie...",
+    dialog_cancel: "Anuluj", dialog_add: "Dodaj",
+    filter_all: "Wszystkie", filter_open: "Otwarte", filter_done: "Uko\u0144czone", filter_due_soon: "Wkr\u00f3tce",
+    ed_show_due_soon_filter: "Filtr wkr\u00f3tce", ed_due_soon_days: "Dni naprz\u00f3d", ed_hide_overdue: "Ukryj zaleg\u0142e",
+    progress: "{0} z {1} uko\u0144czono",
+    empty: "Brak zada\u0144",
+    drag_handle: "Przeci\u0105gnij, aby zmieni\u0107 kolejno\u015b\u0107",
+    due_date: "Termin", notes: "Notatki", notes_placeholder: "Dodaj notatki tutaj",
+    sub_items: "Podzadania", add_sub_item: "+ Dodaj podzadanie",
+    recurrence: "Powtarzanie", recurrence_enabled: "W\u0142\u0105czone", recurrence_every: "Co",
+    rec_hours: "Godziny", rec_days: "Dni", rec_weeks: "Tygodnie", rec_months: "Miesi\u0105ce", rec_years: "Lata",
+    rec_short_h: "g", rec_short_d: "d", rec_short_w: "t", rec_short_m: "m", rec_short_y: "r",
+    priority: "Priorytet", pri_high: "Wysoki", pri_medium: "\u015arednij", pri_low: "Niski",
+    ed_show_priority: "Priorytety",
+    rec_hourly: "Co godz.", rec_daily: "Codziennie", rec_weekly: "Co tydz.", rec_monthly: "Co mies.", rec_yearly: "Rocznie",
+    rec_type_interval: "Co \u2026", rec_type_weekdays: "W dni robocze",
+    rec_wd_0: "Pn", rec_wd_1: "Wt", rec_wd_2: "\u015ar", rec_wd_3: "Cz", rec_wd_4: "Pt", rec_wd_5: "So", rec_wd_6: "Nd",
+    assigned_to: "Przypisano do", nobody: "\u2013 Nikt \u2013",
+    delete_task: "Usu\u0144 zadanie", delete_sub: "Usu\u0144",
+    ed_default_filter: "Domy\u015blny filtr", ed_list: "Lista",
+    ed_title: "Tytu\u0142 (opcjonalnie)", ed_title_placeholder: "Domy\u015blnie: nazwa listy",
+    ed_display: "Wy\u015bwietlanie", ed_show_title: "Tytu\u0142", ed_show_progress: "Post\u0119p",
+    ed_show_due_date: "Terminy", ed_show_notes: "Notatki", ed_show_recurrence: "Powtórzenia",
+    ed_show_sub_items: "Podzadania", ed_show_person: "Osoby",
+    ed_auto_delete: "Natychmiast usu\u0144 uko\u0144czone", ed_compact: "Kompaktowy", ed_show_tags: "Tagi",
+    ed_confirm_complete: "Potwierd\u017a przed uko\u0144czeniem",
+    ed_show_add_due: "Termin przy dodawaniu",
+    ed_max_height: "Maks. wysoko\u015b\u0107 (px, 0 = bez limitu)", ed_badge_priority: "Znaczniki priorytetu", ed_badge_progress: "Znaczniki post\u0119pu", ed_badge_due: "Znaczniki terminu", ed_badge_recurrence: "Znaczniki powtarzania", ed_badge_person: "Znaczniki osoby", ed_badge_tags: "Znaczniki tag\u00f3w", ed_badge_reminders: "Znaczniki przypomnie\u0144",
+    ed_sec_defaults: "Domy\u015blne",
+    ed_default_assignee: "Domy\u015blny przypisany",
+    ed_defaults_hint: "Dotyczy ka\u017cdego nowego zadania na tej li\u015bcie \u2014 niezale\u017cnie od sposobu utworzenia. Zmiany s\u0105 zapisywane natychmiast.", ed_defaults_saved: "Zapisano", ed_defaults_load_failed: "Nie uda\u0142o si\u0119 wczyta\u0107 ustawie\u0144 domy\u015blnych", ed_defaults_save_failed: "Zapis nie powi\u00f3d\u0142 si\u0119",
+    confirm_complete_msg: "Oznaczy\u0107 \u201e{0}\u201d jako uko\u0144czone?",
+    confirm_complete_ok: "Uko\u0144cz",
+    ed_hint: "Nowe listy mo\u017cna tworzy\u0107 w Ustawienia \u2192 Integracje \u2192 Home Tasks.",
+    tags: "Tagi", add_tag: "+ Dodaj tag", tag_placeholder: "Nowy tag...", remove_tag: "Usu\u0144", tag_suggestions_label: "Istniej\u0105ce tagi", tag_no_matches: "Brak pasuj\u0105cych tag\u00f3w",
+    new_sub_item: "Nowe podzadanie", remove_reminder: "Usu\u0144 przypomnienie",
+    sort_label: "Sortuj", sort_manual: "R\u0119cznie", sort_due: "Termin",
+    sort_priority: "Priorytet", sort_title: "Tytu\u0142 (A\u2013Z)", sort_person: "Przypisany",
+    ed_show_sort: "Sortowanie", ed_default_sort: "Domy\u015blne sortowanie",
+    reminder: "Przypomnienia", rem_add: "+ Dodaj przypomnienie", rem_none: "Brak przypomnienia",
+    rem_at_due: "W czasie terminu", rem_5m: "5 min. wcze\u015bniej", rem_15m: "15 min. wcze\u015bniej",
+    rem_30m: "30 min. wcze\u015bniej", rem_1h: "1 godz. wcze\u015bniej", rem_2h: "2 godz. wcze\u015bniej",
+    rem_1d: "1 dzie\u0144 wcze\u015bniej", rem_2d: "2 dni wcze\u015bniej",
+    ed_show_reminders: "Przypomnienia", ed_add_column: "Dodaj kolumn\u0119",
+    ed_move_left: "Przesu\u0144 w lewo", ed_move_right: "Przesu\u0144 w prawo",
+    ed_duplicate: "Duplikuj kolumn\u0119", ed_delete_column: "Usu\u0144 kolumn\u0119",
+    ed_code_editor: "Edytor kodu", ed_visual_editor: "Edytor wizualny",
+    ed_icon: "Ikona (opcjonalnie)", ed_card_title: "Tytu\u0142 karty (opcjonalnie)",
+    ed_card_title_placeholder: "Tytu\u0142 nad kolumnami",
+    ed_sec_view: "Wy\u015bwietlanie", ed_sec_display: "Konfiguracja",
+    ed_sec_filters: "Filtry",
+    ed_preset_assignees: "Ogranicz do os\u00f3b",
+    ed_preset_labels: "Ogranicz do tag\u00f3w",
+    ed_ms_add: "Dodaj\u2026",
+    due_time_lbl: "Czas", due_date_lbl: "Data", rec_mode_lbl: "Tryb",
+    rec_time: "Godzina", rec_end: "Koniec", rec_end_never: "Nigdy", rec_end_date: "Do", rec_end_count: "X razy",
+    rec_end_date_lbl: "Do", rec_max_count_lbl: "Liczba", rec_remaining: "jeszcze {0}", rec_start_date_lbl: "Od",
+    rec_pattern_dom: "Dzie\u0144 miesi\u0105ca", rec_pattern_nth: "N-ty dzie\u0144", rec_pattern_none: "Od wykonania",
+    rec_dom_lbl: "Dzie\u0144", rec_dom_last: "Ostatni dzie\u0144",
+    rec_nth_lbl: "W", rec_nth_1: "1.", rec_nth_2: "2.", rec_nth_3: "3.", rec_nth_4: "4.", rec_nth_last: "Ostatni",
+    rec_anniversary_lbl: "W", rec_dd: "Dzie\u0144", rec_mm: "Miesi\u0105c",
+    rec_dom_short: ".", rec_last_short: "ostatni",
+    rec_value_lbl: "Co", rec_unit_lbl: "Jednostka", rec_wd_lbl: "Dzie\u0144 tygodnia", rec_at_lbl: "O",
+    rec_todoist_pattern_unsupported: "Podwzorce nie s\u0105 obs\u0142ugiwane, gdy interwa\u0142 jest wi\u0119kszy ni\u017c 1.",
+    history: "Historia", history_created: "Utworzono", history_completed: "Uko\u0144czono", history_reopened: "Ponownie otwarto",
+    history_reset: "Auto-reset", history_changed: "zmieniono", history_empty: "Brak historii", hist_title: "Tytu\u0142", history_disabled: "Wy\u0142\u0105czono",
+    ed_show_history: "Historie", hist_by_user: "U\u017cytkownik",
+    ed_show_add_task: "Dodaj zadanie",
+    assigned_unknown: "Nieznany (%s)", recurrence_readonly: "Zarz\u0105dzane przez %s", synced_with: "Zsynchronizowane z %s",
+    due_today: "Dzisiaj", due_tomorrow: "Jutro", due_yesterday: "Wczoraj",
+    due_day_after_tomorrow: "Pojutrze", due_day_before_yesterday: "Przedwczoraj",
+    due_in_hours: "Za {0} godz. {1} min", due_in_minutes: "Za {0} min", due_in_seconds: "Teraz",
+    due_ago_hours: "{0} godz. {1} min temu", due_ago_minutes: "{0} min temu", due_ago_seconds: "W\u0142a\u015bnie",
+  },
+  sv: {
+    voice_failed: "Röstinmatning misslyckades",
+    confirm_delete_section: "Ta bort det här avsnittet? Uppgifter i det blir osorterade.", done_section_header: "Klar", duplicate_task: "Duplicera", move_task: "Flytta", move_task_msg: "Flytta \u201d{0}\u201d till:", ed_show_move: "Flytta-knapp", ed_add_section: "+ Lägg till avsnitt", ed_ai_image_entity: "AI-entitet för bildgenerering", ed_ai_image_entity_placeholder: "t.ex. ai_task.openai", ed_ai_image_section: "AI-bildgenerering", ed_ai_prompt_prefix: "Promptprefix (valfritt)", ed_ai_prompt_prefix_placeholder: "t.ex. Minimalistisk ikon av", ed_auto_image: "Generera bild automatiskt", ed_delete_section: "Ta bort avsnitt", ed_external_lists: "Extern", ed_loading: "Läser in…", ed_move_down: "Flytta ned", ed_move_up: "Flytta upp", ed_sec_sections: "Avsnitt", ed_section_icon: "Ikon", ed_section_name: "Namn", ed_section_name_prompt: "Avsnittsnamn:", ed_sections_empty: "Inga avsnitt än — uppgifter visas platt.", ed_sections_select_list_hint: "Välj en lista först för att hantera dess avsnitt.", ed_show_filters: "Statusfilter", ed_show_images: "Bilder", ed_show_person_chips: "Personfilter", ed_show_tag_chips: "Taggfilter", ed_show_tile_title: "Titel i rutor", ed_show_voice: "Röstinmatning", ed_tile_help: "Rutvy:\n• Klick = slutför\n• Håll = redigera\n• Dra = ändra ordning", ed_view_mode: "Visningsläge", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Rutor",
+    voice_input: "Röstinmatning", voice_stop: "Stoppa inspelning", img_label: "Bild", img_generate: "Generera", img_regenerate: "Generera igen", img_generating: "Genererar…", img_from_media: "Från mediabibliotek", img_remove: "Ta bort bild", img_generate_failed: "Bildgenerering misslyckades: ", img_save_failed: "Det gick inte att spara bilden: ", mb_title: "Mediabibliotek", mb_loading: "Läser in…", mb_root: "Media", mb_back: "Tillbaka", mb_empty: "Inga filer", mb_error: "Fel: ",
+    my_tasks: "Mina uppgifter",
+    add_placeholder: "L\u00e4gg till ny uppgift...",
+    dialog_cancel: "Avbryt", dialog_add: "L\u00e4gg till",
+    filter_all: "Alla", filter_open: "\u00d6ppna", filter_done: "Klara", filter_due_soon: "Snart",
+    ed_show_due_soon_filter: "Snart-filter", ed_due_soon_days: "Dagar fram\u00e5t", ed_hide_overdue: "D\u00f6lj f\u00f6rsenade",
+    progress: "{0} av {1} klara",
+    empty: "Inga uppgifter",
+    drag_handle: "Dra f\u00f6r att \u00e4ndra ordning",
+    due_date: "F\u00f6rfallodatum", notes: "Anteckningar", notes_placeholder: "L\u00e4gg till anteckningar h\u00e4r",
+    sub_items: "Deluppgifter", add_sub_item: "+ L\u00e4gg till deluppgift",
+    recurrence: "Upprepning", recurrence_enabled: "Aktiverad", recurrence_every: "Var",
+    rec_hours: "Timmar", rec_days: "Dagar", rec_weeks: "Veckor", rec_months: "M\u00e5nader", rec_years: "\u00c5r",
+    rec_short_h: "t", rec_short_d: "d", rec_short_w: "v", rec_short_m: "m\u00e5n", rec_short_y: "\u00e5r",
+    priority: "Prioritet", pri_high: "H\u00f6g", pri_medium: "Medel", pri_low: "L\u00e5g",
+    ed_show_priority: "Prioriteter",
+    rec_hourly: "Varje timme", rec_daily: "Dagligen", rec_weekly: "Veckovis", rec_monthly: "M\u00e5nadsvis", rec_yearly: "\u00c5rligen",
+    rec_type_interval: "Var \u2026", rec_type_weekdays: "P\u00e5 vardagar",
+    rec_wd_0: "M\u00e5n", rec_wd_1: "Tis", rec_wd_2: "Ons", rec_wd_3: "Tor", rec_wd_4: "Fre", rec_wd_5: "L\u00f6r", rec_wd_6: "S\u00f6n",
+    assigned_to: "Tilldelad", nobody: "\u2013 Ingen \u2013",
+    delete_task: "Ta bort uppgift", delete_sub: "Ta bort",
+    ed_default_filter: "Standardfilter", ed_list: "Lista",
+    ed_title: "Titel (valfritt)", ed_title_placeholder: "Standard: listnamn",
+    ed_display: "Visning", ed_show_title: "Titel", ed_show_progress: "Framsteg",
+    ed_show_due_date: "F\u00f6rfallodatum", ed_show_notes: "Anteckningar", ed_show_recurrence: "Upprepningar",
+    ed_show_sub_items: "Deluppgifter", ed_show_person: "Personer",
+    ed_auto_delete: "Ta bort slutf\u00f6rda omedelbart", ed_compact: "Kompakt", ed_show_tags: "Taggar",
+    ed_confirm_complete: "Bekr\u00e4fta innan slutf\u00f6rande",
+    ed_show_add_due: "F\u00f6rfallodatum vid till\u00e4gg",
+    ed_max_height: "Maxh\u00f6jd (px, 0 = obegr\u00e4nsad)", ed_badge_priority: "Prioritetschips", ed_badge_progress: "F\u00f6rloppschips", ed_badge_due: "F\u00f6rfallochips", ed_badge_recurrence: "Upprepningschips", ed_badge_person: "Personchips", ed_badge_tags: "Taggchips", ed_badge_reminders: "P\u00e5minnelsechips",
+    ed_sec_defaults: "Standardv\u00e4rden",
+    ed_default_assignee: "Standardtilldelad",
+    ed_defaults_hint: "G\u00e4ller varje ny uppgift i listan \u2014 oavsett hur den skapas. \u00c4ndringar sparas direkt.", ed_defaults_saved: "Sparat", ed_defaults_load_failed: "Det gick inte att l\u00e4sa in standardv\u00e4rdena", ed_defaults_save_failed: "Det gick inte att spara",
+    confirm_complete_msg: "Markera \u201d{0}\u201d som slutf\u00f6rd?",
+    confirm_complete_ok: "Slutf\u00f6r",
+    ed_hint: "Nya listor kan skapas under Inst\u00e4llningar \u2192 Integrationer \u2192 Home Tasks.",
+    tags: "Taggar", add_tag: "+ L\u00e4gg till tagg", tag_placeholder: "Ny tagg...", remove_tag: "Ta bort", tag_suggestions_label: "Befintliga taggar", tag_no_matches: "Inga matchande taggar",
+    new_sub_item: "Ny deluppgift", remove_reminder: "Ta bort p\u00e5minnelse",
+    sort_label: "Sortera", sort_manual: "Manuell", sort_due: "F\u00f6rfallodatum",
+    sort_priority: "Prioritet", sort_title: "Titel (A\u2013\u00d6)", sort_person: "Tilldelad",
+    ed_show_sort: "Sortering", ed_default_sort: "Standardsortering",
+    reminder: "P\u00e5minnelser", rem_add: "+ L\u00e4gg till p\u00e5minnelse", rem_none: "Ingen p\u00e5minnelse",
+    rem_at_due: "Vid f\u00f6rfallotid", rem_5m: "5 min. f\u00f6re", rem_15m: "15 min. f\u00f6re",
+    rem_30m: "30 min. f\u00f6re", rem_1h: "1 timme f\u00f6re", rem_2h: "2 timmar f\u00f6re",
+    rem_1d: "1 dag f\u00f6re", rem_2d: "2 dagar f\u00f6re",
+    ed_show_reminders: "P\u00e5minnelser", ed_add_column: "L\u00e4gg till kolumn",
+    ed_move_left: "Flytta v\u00e4nster", ed_move_right: "Flytta h\u00f6ger",
+    ed_duplicate: "Duplicera kolumn", ed_delete_column: "Ta bort kolumn",
+    ed_code_editor: "Kodredigerare", ed_visual_editor: "Visuell redigerare",
+    ed_icon: "Ikon (valfritt)", ed_card_title: "Korttitel (valfritt)",
+    ed_card_title_placeholder: "Titel ovanf\u00f6r kolumner",
+    ed_sec_view: "Visning", ed_sec_display: "Konfiguration",
+    ed_sec_filters: "Filter",
+    ed_preset_assignees: "Begr\u00e4nsa till personer",
+    ed_preset_labels: "Begr\u00e4nsa till taggar",
+    ed_ms_add: "L\u00e4gg till\u2026",
+    due_time_lbl: "Tid", due_date_lbl: "Datum", rec_mode_lbl: "L\u00e4ge",
+    rec_time: "Tid", rec_end: "Slut", rec_end_never: "Aldrig", rec_end_date: "Till", rec_end_count: "X g\u00e5nger",
+    rec_end_date_lbl: "Till", rec_max_count_lbl: "Antal", rec_remaining: "{0} kvar", rec_start_date_lbl: "Fr\u00e5n",
+    rec_pattern_dom: "Dag i m\u00e5naden", rec_pattern_nth: "Nte veckodag", rec_pattern_none: "Fr\u00e5n slutf\u00f6rande",
+    rec_dom_lbl: "Dag", rec_dom_last: "Sista dagen",
+    rec_nth_lbl: "P\u00e5", rec_nth_1: "1:a", rec_nth_2: "2:a", rec_nth_3: "3:e", rec_nth_4: "4:e", rec_nth_last: "Sista",
+    rec_anniversary_lbl: "Den", rec_dd: "Dag", rec_mm: "M\u00e5nad",
+    rec_dom_short: ":a", rec_last_short: "sista",
+    rec_value_lbl: "Var", rec_unit_lbl: "Enhet", rec_wd_lbl: "Veckodag", rec_at_lbl: "Kl.",
+    rec_todoist_pattern_unsupported: "Underm\u00f6nster st\u00f6ds inte n\u00e4r intervallet \u00e4r st\u00f6rre \u00e4n 1.",
+    history: "Historik", history_created: "Skapad", history_completed: "Avklarad", history_reopened: "\u00d6ppnad igen",
+    history_reset: "Auto-\u00e5terst\u00e4lld", history_changed: "\u00e4ndrad", history_empty: "Ingen historik", hist_title: "Titel", history_disabled: "Inaktiverad",
+    ed_show_history: "Historiker", hist_by_user: "Anv\u00e4ndare",
+    ed_show_add_task: "L\u00e4gg till uppgift",
+    assigned_unknown: "Ok\u00e4nd (%s)", recurrence_readonly: "Hanteras av %s", synced_with: "Synkroniserat med %s",
+    due_today: "Idag", due_tomorrow: "Imorgon", due_yesterday: "Ig\u00e5r",
+    due_day_after_tomorrow: "\u00d6vermorgon", due_day_before_yesterday: "F\u00f6rrg\u00e5r",
+    due_in_hours: "Om {0} tim {1} min", due_in_minutes: "Om {0} min", due_in_seconds: "Nu",
+    due_ago_hours: "{0} tim {1} min sedan", due_ago_minutes: "{0} min sedan", due_ago_seconds: "Just nu",
+  },
+  fr: {
+    voice_failed: "Échec de la saisie vocale",
+    confirm_delete_section: "Supprimer cette section ? Les tâches qu'elle contient ne seront plus triées.", done_section_header: "Terminé", duplicate_task: "Dupliquer", move_task: "D\u00e9placer", move_task_msg: "D\u00e9placer \u00ab\u202f{0}\u202f\u00bb vers\u00a0:", ed_show_move: "Bouton D\u00e9placer", ed_add_section: "+ Ajouter une section", ed_ai_image_entity: "Entité IA pour la génération d'images", ed_ai_image_entity_placeholder: "ex. ai_task.openai", ed_ai_image_section: "Génération d'images par IA", ed_ai_prompt_prefix: "Préfixe d'invite (facultatif)", ed_ai_prompt_prefix_placeholder: "ex. Icône minimaliste de", ed_auto_image: "Générer l'image automatiquement", ed_delete_section: "Supprimer la section", ed_external_lists: "Externe", ed_loading: "Chargement…", ed_move_down: "Déplacer vers le bas", ed_move_up: "Déplacer vers le haut", ed_sec_sections: "Sections", ed_section_icon: "Icône", ed_section_name: "Nom", ed_section_name_prompt: "Nom de la section :", ed_sections_empty: "Aucune section pour l'instant — les tâches s'affichent à plat.", ed_sections_select_list_hint: "Sélectionnez d'abord une liste pour gérer ses sections.", ed_show_filters: "Filtre d'\u00e9tat", ed_show_images: "Images", ed_show_person_chips: "Filtre de personnes", ed_show_tag_chips: "Filtre d'\u00e9tiquettes", ed_show_tile_title: "Titre sur les tuiles", ed_show_voice: "Saisie vocale", ed_tile_help: "Vue en tuiles :\n• Clic = terminer\n• Maintenir = modifier\n• Glisser = réorganiser", ed_view_mode: "Mode d'affichage", ed_view_mode_list: "Liste", ed_view_mode_tiles: "Tuiles",
+    voice_input: "Saisie vocale", voice_stop: "Arrêter l'enregistrement", img_label: "Image", img_generate: "Générer", img_regenerate: "Régénérer", img_generating: "Génération…", img_from_media: "Depuis la médiathèque", img_remove: "Supprimer l'image", img_generate_failed: "Échec de la génération de l'image : ", img_save_failed: "Échec de l'enregistrement de l'image : ", mb_title: "Médiathèque", mb_loading: "Chargement…", mb_root: "Médias", mb_back: "Retour", mb_empty: "Aucun fichier", mb_error: "Erreur : ",
+    my_tasks: "Mes t\u00e2ches",
+    add_placeholder: "Ajouter une nouvelle t\u00e2che...",
+    dialog_cancel: "Annuler", dialog_add: "Ajouter",
+    filter_all: "Toutes", filter_open: "Ouvertes", filter_done: "Termin\u00e9es", filter_due_soon: "Bient\u00f4t",
+    ed_show_due_soon_filter: "Filtre bient\u00f4t", ed_due_soon_days: "Jours \u00e0 venir", ed_hide_overdue: "Masquer en retard",
+    progress: "{0} sur {1} termin\u00e9es",
+    empty: "Aucune t\u00e2che",
+    drag_handle: "Glisser pour r\u00e9organiser",
+    due_date: "\u00c9ch\u00e9ance", notes: "Notes", notes_placeholder: "Ajouter des notes ici",
+    sub_items: "Sous-t\u00e2ches", add_sub_item: "+ Ajouter une sous-t\u00e2che",
+    recurrence: "R\u00e9currence", recurrence_enabled: "Activ\u00e9e", recurrence_every: "Tous les",
+    rec_hours: "Heures", rec_days: "Jours", rec_weeks: "Semaines", rec_months: "Mois", rec_years: "Ann\u00e9es",
+    rec_short_h: "h", rec_short_d: "j", rec_short_w: "s", rec_short_m: "m", rec_short_y: "a",
+    priority: "Priorit\u00e9", pri_high: "Haute", pri_medium: "Moyenne", pri_low: "Basse",
+    ed_show_priority: "Priorit\u00e9s",
+    rec_hourly: "Horaire", rec_daily: "Quotidien", rec_weekly: "Hebdomadaire", rec_monthly: "Mensuel", rec_yearly: "Annuel",
+    rec_type_interval: "Tous les \u2026", rec_type_weekdays: "Les jours de semaine",
+    rec_wd_0: "Lun", rec_wd_1: "Mar", rec_wd_2: "Mer", rec_wd_3: "Jeu", rec_wd_4: "Ven", rec_wd_5: "Sam", rec_wd_6: "Dim",
+    assigned_to: "Assign\u00e9 \u00e0", nobody: "\u2013 Personne \u2013",
+    delete_task: "Supprimer la t\u00e2che", delete_sub: "Supprimer",
+    ed_default_filter: "Filtre par d\u00e9faut", ed_list: "Liste",
+    ed_title: "Titre (optionnel)", ed_title_placeholder: "Par d\u00e9faut\u00a0: nom de la liste",
+    ed_display: "Affichage", ed_show_title: "Titre", ed_show_progress: "Progression",
+    ed_show_due_date: "\u00c9ch\u00e9ances", ed_show_notes: "Notes", ed_show_recurrence: "R\u00e9currences",
+    ed_show_sub_items: "Sous-t\u00e2ches", ed_show_person: "Personnes",
+    ed_auto_delete: "Supprimer les termin\u00e9es imm\u00e9diatement", ed_compact: "Compact", ed_show_tags: "\u00c9tiquettes",
+    ed_confirm_complete: "Confirmer avant de terminer",
+    ed_show_add_due: "\u00c9ch\u00e9ance \u00e0 la cr\u00e9ation",
+    ed_max_height: "Hauteur max (px, 0 = illimit\u00e9e)", ed_badge_priority: "Puces priorit\u00e9", ed_badge_progress: "Puces progression", ed_badge_due: "Puces \u00e9ch\u00e9ance", ed_badge_recurrence: "Puces r\u00e9currence", ed_badge_person: "Puces personne", ed_badge_tags: "Puces \u00e9tiquettes", ed_badge_reminders: "Puces rappel",
+    ed_sec_defaults: "Valeurs par d\u00e9faut",
+    ed_default_assignee: "Assign\u00e9 par d\u00e9faut",
+    ed_defaults_hint: "S'applique \u00e0 chaque nouvelle t\u00e2che de cette liste, quelle que soit sa cr\u00e9ation. Les modifications sont enregistr\u00e9es imm\u00e9diatement.", ed_defaults_saved: "Enregistr\u00e9", ed_defaults_load_failed: "Impossible de charger les valeurs par d\u00e9faut", ed_defaults_save_failed: "\u00c9chec de l'enregistrement",
+    confirm_complete_msg: "Marquer \u00ab\u202f{0}\u202f\u00bb comme termin\u00e9e\u202f?",
+    confirm_complete_ok: "Terminer",
+    ed_hint: "De nouvelles listes peuvent \u00eatre cr\u00e9\u00e9es dans Param\u00e8tres \u2192 Int\u00e9grations \u2192 Home Tasks.",
+    tags: "\u00c9tiquettes", add_tag: "+ Ajouter une \u00e9tiquette", tag_placeholder: "Nouvelle \u00e9tiquette...", remove_tag: "Supprimer", tag_suggestions_label: "\u00c9tiquettes existantes", tag_no_matches: "Aucune \u00e9tiquette correspondante",
+    new_sub_item: "Nouvelle sous-t\u00e2che", remove_reminder: "Supprimer le rappel",
+    sort_label: "Trier", sort_manual: "Manuel", sort_due: "\u00c9ch\u00e9ance",
+    sort_priority: "Priorit\u00e9", sort_title: "Titre (A\u2013Z)", sort_person: "Assign\u00e9",
+    ed_show_sort: "Tri", ed_default_sort: "Tri par d\u00e9faut",
+    reminder: "Rappels", rem_add: "+ Ajouter un rappel", rem_none: "Aucun rappel",
+    rem_at_due: "\u00c0 l\u2019heure d\u2019\u00e9ch\u00e9ance", rem_5m: "5 min. avant", rem_15m: "15 min. avant",
+    rem_30m: "30 min. avant", rem_1h: "1 heure avant", rem_2h: "2 heures avant",
+    rem_1d: "1 jour avant", rem_2d: "2 jours avant",
+    ed_show_reminders: "Rappels", ed_add_column: "Ajouter une colonne",
+    ed_move_left: "D\u00e9placer \u00e0 gauche", ed_move_right: "D\u00e9placer \u00e0 droite",
+    ed_duplicate: "Dupliquer la colonne", ed_delete_column: "Supprimer la colonne",
+    ed_code_editor: "\u00c9diteur de code", ed_visual_editor: "\u00c9diteur visuel",
+    ed_icon: "Ic\u00f4ne (optionnel)", ed_card_title: "Titre de la carte (optionnel)",
+    ed_card_title_placeholder: "Titre au-dessus des colonnes",
+    ed_sec_view: "Affichage", ed_sec_display: "Configuration",
+    ed_sec_filters: "Filtres",
+    ed_preset_assignees: "Limiter aux personnes",
+    ed_preset_labels: "Limiter aux étiquettes",
+    ed_ms_add: "Ajouter…",
+    due_time_lbl: "Heure", due_date_lbl: "Date", rec_mode_lbl: "Mode",
+    rec_time: "Heure", rec_end: "Fin", rec_end_never: "Jamais", rec_end_date: "Jusqu'au", rec_end_count: "X fois",
+    rec_end_date_lbl: "Jusqu'au", rec_max_count_lbl: "Nombre", rec_remaining: "encore {0}", rec_start_date_lbl: "\u00c0 partir du",
+    rec_pattern_dom: "Jour du mois", rec_pattern_nth: "Ni\u00e8me jour", rec_pattern_none: "Depuis l'ach\u00e8vement",
+    rec_dom_lbl: "Jour", rec_dom_last: "Dernier jour",
+    rec_nth_lbl: "Le", rec_nth_1: "1er", rec_nth_2: "2e", rec_nth_3: "3e", rec_nth_4: "4e", rec_nth_last: "Dernier",
+    rec_anniversary_lbl: "Le", rec_dd: "Jour", rec_mm: "Mois",
+    rec_dom_short: "e", rec_last_short: "dernier",
+    rec_value_lbl: "Tous les", rec_unit_lbl: "Unit\u00e9", rec_wd_lbl: "Jour", rec_at_lbl: "\u00c0",
+    rec_todoist_pattern_unsupported: "Les sous-mod\u00e8les ne sont pas pris en charge si l'intervalle est sup\u00e9rieur \u00e0 1.",
+    history: "Historique", history_created: "Cr\u00e9\u00e9", history_completed: "Termin\u00e9", history_reopened: "R\u00e9ouvert",
+    history_reset: "R\u00e9initialisation auto.", history_changed: "modifi\u00e9", history_empty: "Aucun historique", hist_title: "Titre", history_disabled: "D\u00e9sactiv\u00e9",
+    ed_show_history: "Historiques", hist_by_user: "Utilisateur",
+    ed_show_add_task: "Ajouter t\u00e2che",
+    assigned_unknown: "Inconnu (%s)", recurrence_readonly: "G\u00e9r\u00e9 par %s", synced_with: "Synchronis\u00e9 avec %s",
+    due_today: "Aujourd'hui", due_tomorrow: "Demain", due_yesterday: "Hier",
+    due_day_after_tomorrow: "Apr\u00e8s-demain", due_day_before_yesterday: "Avant-hier",
+    due_in_hours: "Dans {0} h {1} min", due_in_minutes: "Dans {0} min", due_in_seconds: "Maintenant",
+    due_ago_hours: "Il y a {0} h {1} min", due_ago_minutes: "Il y a {0} min", due_ago_seconds: "\u00c0 l'instant",
+  },
+  pt: {
+    voice_failed: "Falha na entrada de voz",
+    confirm_delete_section: "Excluir esta seção? As tarefas dentro dela ficarão sem ordenação.", done_section_header: "Concluído", duplicate_task: "Duplicar", move_task: "Mover", move_task_msg: "Mover \u201c{0}\u201d para:", ed_show_move: "Bot\u00e3o Mover", ed_add_section: "+ Adicionar seção", ed_ai_image_entity: "Entidade de IA para geração de imagens", ed_ai_image_entity_placeholder: "ex. ai_task.openai", ed_ai_image_section: "Geração de imagens por IA", ed_ai_prompt_prefix: "Prefixo do prompt (opcional)", ed_ai_prompt_prefix_placeholder: "ex. Ícone minimalista de", ed_auto_image: "Gerar imagem automaticamente", ed_delete_section: "Excluir seção", ed_external_lists: "Externa", ed_loading: "Carregando…", ed_move_down: "Mover para baixo", ed_move_up: "Mover para cima", ed_sec_sections: "Seções", ed_section_icon: "Ícone", ed_section_name: "Nome", ed_section_name_prompt: "Nome da seção:", ed_sections_empty: "Nenhuma seção ainda — as tarefas serão exibidas sem agrupamento.", ed_sections_select_list_hint: "Selecione uma lista primeiro para gerenciar suas seções.", ed_show_filters: "Filtro de estado", ed_show_images: "Imagens", ed_show_person_chips: "Filtro de pessoas", ed_show_tag_chips: "Filtro de etiquetas", ed_show_tile_title: "Título nos blocos", ed_show_voice: "Entrada de voz", ed_tile_help: "Visualização em blocos:\n• Clique = concluir\n• Segurar = editar\n• Arrastar = reordenar", ed_view_mode: "Modo de exibição", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Blocos",
+    voice_input: "Entrada de voz", voice_stop: "Parar gravação", img_label: "Imagem", img_generate: "Gerar", img_regenerate: "Gerar novamente", img_generating: "Gerando…", img_from_media: "Da biblioteca de mídia", img_remove: "Remover imagem", img_generate_failed: "Falha ao gerar imagem: ", img_save_failed: "Falha ao salvar imagem: ", mb_title: "Biblioteca de mídia", mb_loading: "Carregando…", mb_root: "Mídia", mb_back: "Voltar", mb_empty: "Sem arquivos", mb_error: "Erro: ",
+    my_tasks: "Minhas tarefas",
+    add_placeholder: "Adicionar nova tarefa...",
+    dialog_cancel: "Cancelar", dialog_add: "Adicionar",
+    filter_all: "Todas", filter_open: "Abertas", filter_done: "Conclu\u00eddas", filter_due_soon: "Em breve",
+    ed_show_due_soon_filter: "Filtro em breve", ed_due_soon_days: "Dias \u00e0 frente", ed_hide_overdue: "Ocultar atrasadas",
+    progress: "{0} de {1} conclu\u00eddas",
+    empty: "Nenhuma tarefa",
+    drag_handle: "Arrastar para reordenar",
+    due_date: "Prazo", notes: "Notas", notes_placeholder: "Adicionar notas aqui",
+    sub_items: "Subtarefas", add_sub_item: "+ Adicionar subtarefa",
+    recurrence: "Recorr\u00eancia", recurrence_enabled: "Ativada", recurrence_every: "A cada",
+    rec_hours: "Horas", rec_days: "Dias", rec_weeks: "Semanas", rec_months: "Meses", rec_years: "Anos",
+    rec_short_h: "h", rec_short_d: "d", rec_short_w: "s", rec_short_m: "m", rec_short_y: "a",
+    priority: "Prioridade", pri_high: "Alta", pri_medium: "M\u00e9dia", pri_low: "Baixa",
+    ed_show_priority: "Prioridades",
+    rec_hourly: "Por hora", rec_daily: "Di\u00e1rio", rec_weekly: "Semanal", rec_monthly: "Mensal", rec_yearly: "Anual",
+    rec_type_interval: "A cada \u2026", rec_type_weekdays: "Nos dias \u00fateis",
+    rec_wd_0: "Seg", rec_wd_1: "Ter", rec_wd_2: "Qua", rec_wd_3: "Qui", rec_wd_4: "Sex", rec_wd_5: "S\u00e1b", rec_wd_6: "Dom",
+    assigned_to: "Atribu\u00eddo a", nobody: "\u2013 Ningu\u00e9m \u2013",
+    delete_task: "Excluir tarefa", delete_sub: "Excluir",
+    ed_default_filter: "Filtro padr\u00e3o", ed_list: "Lista",
+    ed_title: "T\u00edtulo (opcional)", ed_title_placeholder: "Padr\u00e3o: nome da lista",
+    ed_display: "Exibi\u00e7\u00e3o", ed_show_title: "T\u00edtulo", ed_show_progress: "Progresso",
+    ed_show_due_date: "Prazos", ed_show_notes: "Notas", ed_show_recurrence: "Recorr\u00eancias",
+    ed_show_sub_items: "Subtarefas", ed_show_person: "Pessoas",
+    ed_auto_delete: "Excluir conclu\u00eddas imediatamente", ed_compact: "Compacto", ed_show_tags: "Etiquetas",
+    ed_confirm_complete: "Confirmar antes de concluir",
+    ed_show_add_due: "Prazo ao adicionar",
+    ed_max_height: "Altura m\u00e1x. (px, 0 = ilimitada)", ed_badge_priority: "Chips de prioridade", ed_badge_progress: "Chips de progresso", ed_badge_due: "Chips de prazo", ed_badge_recurrence: "Chips de recorr\u00eancia", ed_badge_person: "Chips de pessoa", ed_badge_tags: "Chips de etiquetas", ed_badge_reminders: "Chips de lembrete",
+    ed_sec_defaults: "Padr\u00f5es",
+    ed_default_assignee: "Respons\u00e1vel padr\u00e3o",
+    ed_defaults_hint: "Aplica-se a cada nova tarefa desta lista, seja como for criada. As altera\u00e7\u00f5es s\u00e3o guardadas imediatamente.", ed_defaults_saved: "Guardado", ed_defaults_load_failed: "N\u00e3o foi poss\u00edvel carregar as predefini\u00e7\u00f5es", ed_defaults_save_failed: "Falha ao guardar",
+    confirm_complete_msg: "Marcar \u201c{0}\u201d como conclu\u00edda?",
+    confirm_complete_ok: "Concluir",
+    ed_hint: "Novas listas podem ser criadas em Configura\u00e7\u00f5es \u2192 Integra\u00e7\u00f5es \u2192 Home Tasks.",
+    tags: "Etiquetas", add_tag: "+ Adicionar etiqueta", tag_placeholder: "Nova etiqueta...", remove_tag: "Remover", tag_suggestions_label: "Etiquetas existentes", tag_no_matches: "Nenhuma etiqueta correspondente",
+    new_sub_item: "Nova subtarefa", remove_reminder: "Remover lembrete",
+    sort_label: "Ordenar", sort_manual: "Manual", sort_due: "Prazo",
+    sort_priority: "Prioridade", sort_title: "T\u00edtulo (A\u2013Z)", sort_person: "Atribu\u00eddo",
+    ed_show_sort: "Ordena\u00e7\u00e3o", ed_default_sort: "Ordena\u00e7\u00e3o padr\u00e3o",
+    reminder: "Lembretes", rem_add: "+ Adicionar lembrete", rem_none: "Sem lembrete",
+    rem_at_due: "No prazo", rem_5m: "5 min. antes", rem_15m: "15 min. antes",
+    rem_30m: "30 min. antes", rem_1h: "1 hora antes", rem_2h: "2 horas antes",
+    rem_1d: "1 dia antes", rem_2d: "2 dias antes",
+    ed_show_reminders: "Lembretes", ed_add_column: "Adicionar coluna",
+    ed_move_left: "Mover para esquerda", ed_move_right: "Mover para direita",
+    ed_duplicate: "Duplicar coluna", ed_delete_column: "Excluir coluna",
+    ed_code_editor: "Editor de c\u00f3digo", ed_visual_editor: "Editor visual",
+    ed_icon: "\u00cdcone (opcional)", ed_card_title: "T\u00edtulo do cart\u00e3o (opcional)",
+    ed_card_title_placeholder: "T\u00edtulo acima das colunas",
+    ed_sec_view: "Exibi\u00e7\u00e3o", ed_sec_display: "Configura\u00e7\u00e3o",
+    ed_sec_filters: "Filtros",
+    ed_preset_assignees: "Limitar a pessoas",
+    ed_preset_labels: "Limitar a etiquetas",
+    ed_ms_add: "Adicionar\u2026",
+    due_time_lbl: "Hora", due_date_lbl: "Data", rec_mode_lbl: "Modo",
+    rec_time: "Hora", rec_end: "Fim", rec_end_never: "Nunca", rec_end_date: "At\u00e9", rec_end_count: "X vezes",
+    rec_end_date_lbl: "At\u00e9", rec_max_count_lbl: "Quantidade", rec_remaining: "ainda {0}", rec_start_date_lbl: "De",
+    rec_pattern_dom: "Dia do m\u00eas", rec_pattern_nth: "N\u00ba dia", rec_pattern_none: "Desde a conclus\u00e3o",
+    rec_dom_lbl: "Dia", rec_dom_last: "\u00daltimo dia",
+    rec_nth_lbl: "No", rec_nth_1: "1\u00ba", rec_nth_2: "2\u00ba", rec_nth_3: "3\u00ba", rec_nth_4: "4\u00ba", rec_nth_last: "\u00daltimo",
+    rec_anniversary_lbl: "No", rec_dd: "Dia", rec_mm: "M\u00eas",
+    rec_dom_short: "\u00ba", rec_last_short: "\u00faltimo",
+    rec_value_lbl: "A cada", rec_unit_lbl: "Unidade", rec_wd_lbl: "Dia da semana", rec_at_lbl: "\u00c0s",
+    rec_todoist_pattern_unsupported: "Subpadr\u00f5es n\u00e3o s\u00e3o suportados quando o intervalo \u00e9 maior que 1.",
+    history: "Hist\u00f3rico", history_created: "Criado", history_completed: "Conclu\u00eddo", history_reopened: "Reaberto",
+    history_reset: "Reiniciado automaticamente", history_changed: "alterado", history_empty: "Sem hist\u00f3rico", hist_title: "T\u00edtulo", history_disabled: "Desativado",
+    ed_show_history: "Hist\u00f3ricos", hist_by_user: "Utilizador",
+    ed_show_add_task: "Adicionar tarefa",
+    assigned_unknown: "Desconhecido (%s)", recurrence_readonly: "Gerenciado por %s", synced_with: "Sincronizado com %s",
+    due_today: "Hoje", due_tomorrow: "Amanh\u00e3", due_yesterday: "Ontem",
+    due_day_after_tomorrow: "Depois de amanh\u00e3", due_day_before_yesterday: "Anteontem",
+    due_in_hours: "Em {0} h {1} min", due_in_minutes: "Em {0} min", due_in_seconds: "Agora",
+    due_ago_hours: "H\u00e1 {0} h {1} min", due_ago_minutes: "H\u00e1 {0} min", due_ago_seconds: "Agora mesmo",
+  },
+  es: {
+    voice_failed: "Error en la entrada de voz",
+    confirm_delete_section: "¿Eliminar esta sección? Las tareas que contiene quedarán sin ordenar.", done_section_header: "Hecho", duplicate_task: "Duplicar", move_task: "Mover", move_task_msg: "Mover \u201c{0}\u201d a:", ed_show_move: "Bot\u00f3n Mover", ed_add_section: "+ Añadir sección", ed_ai_image_entity: "Entidad de IA para la generación de imágenes", ed_ai_image_entity_placeholder: "p. ej. ai_task.openai", ed_ai_image_section: "Generación de imágenes con IA", ed_ai_prompt_prefix: "Prefijo del prompt (opcional)", ed_ai_prompt_prefix_placeholder: "p. ej. Icono minimalista de", ed_auto_image: "Generar imagen automáticamente", ed_delete_section: "Eliminar sección", ed_external_lists: "Externa", ed_loading: "Cargando…", ed_move_down: "Mover abajo", ed_move_up: "Mover arriba", ed_sec_sections: "Secciones", ed_section_icon: "Icono", ed_section_name: "Nombre", ed_section_name_prompt: "Nombre de la sección:", ed_sections_empty: "Aún no hay secciones: las tareas se mostrarán sin agrupar.", ed_sections_select_list_hint: "Selecciona primero una lista para gestionar sus secciones.", ed_show_filters: "Filtro de estado", ed_show_images: "Imágenes", ed_show_person_chips: "Filtro de personas", ed_show_tag_chips: "Filtro de etiquetas", ed_show_tile_title: "Título en mosaicos", ed_show_voice: "Entrada de voz", ed_tile_help: "Vista de mosaicos:\n• Clic = completar\n• Mantener = editar\n• Arrastrar = reordenar", ed_view_mode: "Modo de vista", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Mosaicos",
+    voice_input: "Entrada de voz", voice_stop: "Detener grabación", img_label: "Imagen", img_generate: "Generar", img_regenerate: "Regenerar", img_generating: "Generando…", img_from_media: "Desde la biblioteca multimedia", img_remove: "Eliminar imagen", img_generate_failed: "Error al generar la imagen: ", img_save_failed: "Error al guardar la imagen: ", mb_title: "Biblioteca multimedia", mb_loading: "Cargando…", mb_root: "Multimedia", mb_back: "Atrás", mb_empty: "Sin archivos", mb_error: "Error: ",
+    my_tasks: "Mis tareas",
+    add_placeholder: "A\u00f1adir nueva tarea...",
+    dialog_cancel: "Cancelar", dialog_add: "Agregar",
+    filter_all: "Todas", filter_open: "Abiertas", filter_done: "Completadas", filter_due_soon: "Pr\u00f3ximamente",
+    ed_show_due_soon_filter: "Filtro pr\u00f3ximo", ed_due_soon_days: "D\u00edas adelante", ed_hide_overdue: "Ocultar vencidas",
+    progress: "{0} de {1} completadas",
+    empty: "Sin tareas",
+    drag_handle: "Arrastrar para reordenar",
+    due_date: "Vencimiento", notes: "Notas", notes_placeholder: "A\u00f1adir notas aqu\u00ed",
+    sub_items: "Subtareas", add_sub_item: "+ A\u00f1adir subtarea",
+    recurrence: "Recurrencia", recurrence_enabled: "Activada", recurrence_every: "Cada",
+    rec_hours: "Horas", rec_days: "D\u00edas", rec_weeks: "Semanas", rec_months: "Meses", rec_years: "A\u00f1os",
+    rec_short_h: "h", rec_short_d: "d", rec_short_w: "s", rec_short_m: "m", rec_short_y: "a",
+    priority: "Prioridad", pri_high: "Alta", pri_medium: "Media", pri_low: "Baja",
+    ed_show_priority: "Prioridades",
+    rec_hourly: "Por hora", rec_daily: "Diaria", rec_weekly: "Semanal", rec_monthly: "Mensual", rec_yearly: "Anual",
+    rec_type_interval: "Cada \u2026", rec_type_weekdays: "En d\u00edas laborables",
+    rec_wd_0: "Lun", rec_wd_1: "Mar", rec_wd_2: "Mi\u00e9", rec_wd_3: "Jue", rec_wd_4: "Vie", rec_wd_5: "S\u00e1b", rec_wd_6: "Dom",
+    assigned_to: "Asignado a", nobody: "\u2013 Nadie \u2013",
+    delete_task: "Eliminar tarea", delete_sub: "Eliminar",
+    ed_default_filter: "Filtro predeterminado", ed_list: "Lista",
+    ed_title: "T\u00edtulo (opcional)", ed_title_placeholder: "Predeterminado: nombre de lista",
+    ed_display: "Visualizaci\u00f3n", ed_show_title: "T\u00edtulo", ed_show_progress: "Progreso",
+    ed_show_due_date: "Vencimientos", ed_show_notes: "Notas", ed_show_recurrence: "Recurrencias",
+    ed_show_sub_items: "Subtareas", ed_show_person: "Personas",
+    ed_auto_delete: "Eliminar completadas inmediatamente", ed_compact: "Compacto", ed_show_tags: "Etiquetas",
+    ed_confirm_complete: "Confirmar antes de completar",
+    ed_show_add_due: "Fecha l\u00edmite al a\u00f1adir",
+    ed_max_height: "Altura m\u00e1x. (px, 0 = ilimitada)", ed_badge_priority: "Chips de prioridad", ed_badge_progress: "Chips de progreso", ed_badge_due: "Chips de vencimiento", ed_badge_recurrence: "Chips de repetici\u00f3n", ed_badge_person: "Chips de persona", ed_badge_tags: "Chips de etiquetas", ed_badge_reminders: "Chips de recordatorio",
+    ed_sec_defaults: "Predeterminados",
+    ed_default_assignee: "Asignado por defecto",
+    ed_defaults_hint: "Se aplica a cada nueva tarea de esta lista, sin importar c\u00f3mo se cree. Los cambios se guardan inmediatamente.", ed_defaults_saved: "Guardado", ed_defaults_load_failed: "No se pudieron cargar los valores predeterminados", ed_defaults_save_failed: "Error al guardar",
+    confirm_complete_msg: "\u00bfMarcar \u00ab{0}\u00bb como completada?",
+    confirm_complete_ok: "Completar",
+    ed_hint: "Se pueden crear nuevas listas en Configuraci\u00f3n \u2192 Integraciones \u2192 Home Tasks.",
+    tags: "Etiquetas", add_tag: "+ A\u00f1adir etiqueta", tag_placeholder: "Nueva etiqueta...", remove_tag: "Eliminar", tag_suggestions_label: "Etiquetas existentes", tag_no_matches: "No hay etiquetas coincidentes",
+    new_sub_item: "Nueva subtarea", remove_reminder: "Eliminar recordatorio",
+    sort_label: "Ordenar", sort_manual: "Manual", sort_due: "Vencimiento",
+    sort_priority: "Prioridad", sort_title: "T\u00edtulo (A\u2013Z)", sort_person: "Asignado",
+    ed_show_sort: "Ordenaci\u00f3n", ed_default_sort: "Ordenaci\u00f3n predeterminada",
+    reminder: "Recordatorios", rem_add: "+ A\u00f1adir recordatorio", rem_none: "Sin recordatorio",
+    rem_at_due: "A la hora de vencimiento", rem_5m: "5 min. antes", rem_15m: "15 min. antes",
+    rem_30m: "30 min. antes", rem_1h: "1 hora antes", rem_2h: "2 horas antes",
+    rem_1d: "1 d\u00eda antes", rem_2d: "2 d\u00edas antes",
+    ed_show_reminders: "Recordatorios", ed_add_column: "A\u00f1adir columna",
+    ed_move_left: "Mover a la izquierda", ed_move_right: "Mover a la derecha",
+    ed_duplicate: "Duplicar columna", ed_delete_column: "Eliminar columna",
+    ed_code_editor: "Editor de c\u00f3digo", ed_visual_editor: "Editor visual",
+    ed_icon: "Icono (opcional)", ed_card_title: "T\u00edtulo de la tarjeta (opcional)",
+    ed_card_title_placeholder: "T\u00edtulo sobre las columnas",
+    ed_sec_view: "Visualizaci\u00f3n", ed_sec_display: "Configuraci\u00f3n",
+    ed_sec_filters: "Filtros",
+    ed_preset_assignees: "Limitar a personas",
+    ed_preset_labels: "Limitar a etiquetas",
+    ed_ms_add: "A\u00f1adir\u2026",
+    due_time_lbl: "Hora", due_date_lbl: "Fecha", rec_mode_lbl: "Modo",
+    rec_time: "Hora", rec_end: "Fin", rec_end_never: "Nunca", rec_end_date: "Hasta", rec_end_count: "X veces",
+    rec_end_date_lbl: "Hasta", rec_max_count_lbl: "Cantidad", rec_remaining: "a\u00fan {0}", rec_start_date_lbl: "Desde",
+    rec_pattern_dom: "D\u00eda del mes", rec_pattern_nth: "D\u00eda N\u00ba", rec_pattern_none: "Desde la finalizaci\u00f3n",
+    rec_dom_lbl: "D\u00eda", rec_dom_last: "\u00daltimo d\u00eda",
+    rec_nth_lbl: "El", rec_nth_1: "1\u00ba", rec_nth_2: "2\u00ba", rec_nth_3: "3\u00ba", rec_nth_4: "4\u00ba", rec_nth_last: "\u00daltimo",
+    rec_anniversary_lbl: "El", rec_dd: "D\u00eda", rec_mm: "Mes",
+    rec_dom_short: "\u00ba", rec_last_short: "\u00faltimo",
+    rec_value_lbl: "Cada", rec_unit_lbl: "Unidad", rec_wd_lbl: "D\u00eda", rec_at_lbl: "A las",
+    rec_todoist_pattern_unsupported: "Los subpatrones no son compatibles cuando el intervalo es mayor que 1.",
+    history: "Historial", history_created: "Creado", history_completed: "Completado", history_reopened: "Reabierto",
+    history_reset: "Restablecimiento autom.", history_changed: "modificado", history_empty: "Sin historial", hist_title: "T\u00edtulo", history_disabled: "Desactivado",
+    ed_show_history: "Historiales", hist_by_user: "Usuario",
+    ed_show_add_task: "Agregar tarea",
+    assigned_unknown: "Desconocido (%s)", recurrence_readonly: "Gestionado por %s", synced_with: "Sincronizado con %s",
+    due_today: "Hoy", due_tomorrow: "Ma\u00f1ana", due_yesterday: "Ayer",
+    due_day_after_tomorrow: "Pasado ma\u00f1ana", due_day_before_yesterday: "Anteayer",
+    due_in_hours: "En {0} h {1} min", due_in_minutes: "En {0} min", due_in_seconds: "Ahora",
+    due_ago_hours: "Hace {0} h {1} min", due_ago_minutes: "Hace {0} min", due_ago_seconds: "Ahora mismo",
+  },
+  ru: {
+    voice_failed: "Сбой голосового ввода",
+    confirm_delete_section: "Удалить этот раздел? Задачи в нём станут несортированными.", done_section_header: "Готово", duplicate_task: "Дублировать", move_task: "\u041f\u0435\u0440\u0435\u043c\u0435\u0441\u0442\u0438\u0442\u044c", move_task_msg: "\u041f\u0435\u0440\u0435\u043c\u0435\u0441\u0442\u0438\u0442\u044c \u00ab{0}\u00bb \u0432:", ed_show_move: "\u041a\u043d\u043e\u043f\u043a\u0430 \u043f\u0435\u0440\u0435\u043c\u0435\u0449\u0435\u043d\u0438\u044f", ed_add_section: "+ Добавить раздел", ed_ai_image_entity: "ИИ-сущность для генерации изображений", ed_ai_image_entity_placeholder: "напр. ai_task.openai", ed_ai_image_section: "Генерация изображений ИИ", ed_ai_prompt_prefix: "Префикс запроса (необязательно)", ed_ai_prompt_prefix_placeholder: "напр. Минималистичная иконка", ed_auto_image: "Автоматически генерировать изображение", ed_delete_section: "Удалить раздел", ed_external_lists: "Внешний", ed_loading: "Загрузка…", ed_move_down: "Переместить вниз", ed_move_up: "Переместить вверх", ed_sec_sections: "Разделы", ed_section_icon: "Значок", ed_section_name: "Имя", ed_section_name_prompt: "Название раздела:", ed_sections_empty: "Разделов пока нет — задачи отображаются списком.", ed_sections_select_list_hint: "Сначала выберите список, чтобы управлять его разделами.", ed_show_filters: "\u0424\u0438\u043b\u044c\u0442\u0440 \u0441\u0442\u0430\u0442\u0443\u0441\u0430", ed_show_images: "Изображения", ed_show_person_chips: "\u0424\u0438\u043b\u044c\u0442\u0440 \u043b\u044e\u0434\u0435\u0439", ed_show_tag_chips: "\u0424\u0438\u043b\u044c\u0442\u0440 \u0442\u0435\u0433\u043e\u0432", ed_show_tile_title: "Заголовок на плитках", ed_show_voice: "Голосовой ввод", ed_tile_help: "Режим плиток:\n• Клик = выполнить\n• Удержание = редактировать\n• Перетаскивание = изменить порядок", ed_view_mode: "Режим отображения", ed_view_mode_list: "Список", ed_view_mode_tiles: "Плитки",
+    voice_input: "Голосовой ввод", voice_stop: "Остановить запись", img_label: "Изображение", img_generate: "Сгенерировать", img_regenerate: "Сгенерировать заново", img_generating: "Генерация…", img_from_media: "Из медиатеки", img_remove: "Удалить изображение", img_generate_failed: "Не удалось сгенерировать изображение: ", img_save_failed: "Не удалось сохранить изображение: ", mb_title: "Медиатека", mb_loading: "Загрузка…", mb_root: "Медиа", mb_back: "Назад", mb_empty: "Нет файлов", mb_error: "Ошибка: ",
+    my_tasks: "\u041c\u043e\u0438 \u0437\u0430\u0434\u0430\u0447\u0438",
+    add_placeholder: "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043d\u043e\u0432\u0443\u044e \u0437\u0430\u0434\u0430\u0447\u0443...",
+    dialog_cancel: "\u041e\u0442\u043c\u0435\u043d\u0430", dialog_add: "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c",
+    filter_all: "\u0412\u0441\u0435", filter_open: "\u041e\u0442\u043a\u0440\u044b\u0442\u044b\u0435", filter_done: "\u0412\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u043d\u044b\u0435", filter_due_soon: "\u0421\u043a\u043e\u0440\u043e",
+    ed_show_due_soon_filter: "\u0424\u0438\u043b\u044c\u0442\u0440 \u0441\u043a\u043e\u0440\u043e", ed_due_soon_days: "\u0414\u043d\u0435\u0439 \u0432\u043f\u0435\u0440\u0451\u0434", ed_hide_overdue: "\u0421\u043a\u0440\u044b\u0442\u044c \u043f\u0440\u043e\u0441\u0440\u043e\u0447\u0435\u043d\u043d\u044b\u0435",
+    progress: "{0} \u0438\u0437 {1} \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u043e",
+    empty: "\u041d\u0435\u0442 \u0437\u0430\u0434\u0430\u0447",
+    drag_handle: "\u041f\u0435\u0440\u0435\u0442\u0430\u0449\u0438\u0442\u044c \u0434\u043b\u044f \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f \u043f\u043e\u0440\u044f\u0434\u043a\u0430",
+    due_date: "\u0421\u0440\u043e\u043a", notes: "\u0417\u0430\u043c\u0435\u0442\u043a\u0438", notes_placeholder: "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0437\u0430\u043c\u0435\u0442\u043a\u0438 \u0437\u0434\u0435\u0441\u044c",
+    sub_items: "\u041f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0438", add_sub_item: "+ \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443",
+    recurrence: "\u041f\u043e\u0432\u0442\u043e\u0440\u0435\u043d\u0438\u0435", recurrence_enabled: "\u0412\u043a\u043b\u044e\u0447\u0435\u043d\u043e", recurrence_every: "\u041a\u0430\u0436\u0434\u044b\u0435",
+    rec_hours: "\u0427\u0430\u0441\u044b", rec_days: "\u0414\u043d\u0438", rec_weeks: "\u041d\u0435\u0434\u0435\u043b\u0438", rec_months: "\u041c\u0435\u0441\u044f\u0446\u044b", rec_years: "Годы",
+    rec_short_h: "\u0447", rec_short_d: "\u0434", rec_short_w: "\u043d", rec_short_m: "\u043c", rec_short_y: "\u0433",
+    priority: "\u041f\u0440\u0438\u043e\u0440\u0438\u0442\u0435\u0442", pri_high: "\u0412\u044b\u0441\u043e\u043a\u0438\u0439", pri_medium: "\u0421\u0440\u0435\u0434\u043d\u0438\u0439", pri_low: "\u041d\u0438\u0437\u043a\u0438\u0439",
+    ed_show_priority: "\u041f\u0440\u0438\u043e\u0440\u0438\u0442\u0435\u0442\u044b",
+    rec_hourly: "\u0415\u0436\u0435\u0447\u0430\u0441\u043d\u043e", rec_daily: "\u0415\u0436\u0435\u0434\u043d\u0435\u0432\u043d\u043e", rec_weekly: "\u0415\u0436\u0435\u043d\u0435\u0434\u0435\u043b\u044c\u043d\u043e", rec_monthly: "\u0415\u0436\u0435\u043c\u0435\u0441\u044f\u0447\u043d\u043e", rec_yearly: "\u0415\u0436\u0435\u0433\u043e\u0434\u043d\u043e",
+    rec_type_interval: "\u041a\u0430\u0436\u0434\u044b\u0435 \u2026", rec_type_weekdays: "\u041f\u043e \u0431\u0443\u0434\u043d\u044f\u043c",
+    rec_wd_0: "\u041f\u043d", rec_wd_1: "\u0412\u0442", rec_wd_2: "\u0421\u0440", rec_wd_3: "\u0427\u0442", rec_wd_4: "\u041f\u0442", rec_wd_5: "\u0421\u0431", rec_wd_6: "\u0412\u0441",
+    assigned_to: "\u041d\u0430\u0437\u043d\u0430\u0447\u0435\u043d\u043e", nobody: "\u2013 \u041d\u0438\u043a\u0442\u043e \u2013",
+    delete_task: "\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u0437\u0430\u0434\u0430\u0447\u0443", delete_sub: "\u0423\u0434\u0430\u043b\u0438\u0442\u044c",
+    ed_default_filter: "\u0424\u0438\u043b\u044c\u0442\u0440 \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e", ed_list: "\u0421\u043f\u0438\u0441\u043e\u043a",
+    ed_title: "\u0417\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a (\u043d\u0435\u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u043e)", ed_title_placeholder: "\u041f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e: \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0441\u043f\u0438\u0441\u043a\u0430",
+    ed_display: "\u041e\u0442\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435", ed_show_title: "\u0417\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a", ed_show_progress: "\u041f\u0440\u043e\u0433\u0440\u0435\u0441\u0441",
+    ed_show_due_date: "\u0421\u0440\u043e\u043a\u0438", ed_show_notes: "\u0417\u0430\u043c\u0435\u0442\u043a\u0438", ed_show_recurrence: "\u041f\u043e\u0432\u0442\u043e\u0440\u0435\u043d\u0438\u044f",
+    ed_show_sub_items: "\u041f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0438", ed_show_person: "\u0418\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u0438",
+    ed_auto_delete: "\u0421\u0440\u0430\u0437\u0443 \u0443\u0434\u0430\u043b\u044f\u0442\u044c \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u043d\u044b\u0435", ed_compact: "\u041a\u043e\u043c\u043f\u0430\u043a\u0442\u043d\u044b\u0439", ed_show_tags: "\u0422\u0435\u0433\u0438",
+    ed_confirm_complete: "\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0430\u0442\u044c \u043f\u0435\u0440\u0435\u0434 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0438\u0435\u043c",
+    ed_show_add_due: "\u0421\u0440\u043e\u043a \u043f\u0440\u0438 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0438\u0438",
+    ed_max_height: "\u041c\u0430\u043a\u0441. \u0432\u044b\u0441\u043e\u0442\u0430 (px, 0 = \u0431\u0435\u0437 \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0438\u044f)", ed_badge_priority: "\u0427\u0438\u043f\u044b \u043f\u0440\u0438\u043e\u0440\u0438\u0442\u0435\u0442\u0430", ed_badge_progress: "\u0427\u0438\u043f\u044b \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441\u0430", ed_badge_due: "\u0427\u0438\u043f\u044b \u0441\u0440\u043e\u043a\u0430", ed_badge_recurrence: "\u0427\u0438\u043f\u044b \u043f\u043e\u0432\u0442\u043e\u0440\u0435\u043d\u0438\u044f", ed_badge_person: "\u0427\u0438\u043f\u044b \u0447\u0435\u043b\u043e\u0432\u0435\u043a\u0430", ed_badge_tags: "\u0427\u0438\u043f\u044b \u0442\u0435\u0433\u043e\u0432", ed_badge_reminders: "\u0427\u0438\u043f\u044b \u043d\u0430\u043f\u043e\u043c\u0438\u043d\u0430\u043d\u0438\u0439",
+    ed_sec_defaults: "\u0417\u043d\u0430\u0447\u0435\u043d\u0438\u044f \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e",
+    ed_default_assignee: "\u041e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0439 \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e",
+    ed_defaults_hint: "\u041f\u0440\u0438\u043c\u0435\u043d\u044f\u0435\u0442\u0441\u044f \u043a \u043a\u0430\u0436\u0434\u043e\u0439 \u043d\u043e\u0432\u043e\u0439 \u0437\u0430\u0434\u0430\u0447\u0435 \u044d\u0442\u043e\u0433\u043e \u0441\u043f\u0438\u0441\u043a\u0430. \u0418\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f \u0441\u043e\u0445\u0440\u0430\u043d\u044f\u044e\u0442\u0441\u044f \u0441\u0440\u0430\u0437\u0443.", ed_defaults_saved: "\u0421\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u043e", ed_defaults_load_failed: "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u044f \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e", ed_defaults_save_failed: "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c",
+    confirm_complete_msg: "\u041e\u0442\u043c\u0435\u0442\u0438\u0442\u044c \u00ab{0}\u00bb \u043a\u0430\u043a \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u043d\u0443\u044e?",
+    confirm_complete_ok: "\u0412\u044b\u043f\u043e\u043b\u043d\u0438\u0442\u044c",
+    ed_hint: "\u041d\u043e\u0432\u044b\u0435 \u0441\u043f\u0438\u0441\u043a\u0438 \u043c\u043e\u0436\u043d\u043e \u0441\u043e\u0437\u0434\u0430\u0442\u044c \u0432 \u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438 \u2192 \u0418\u043d\u0442\u0435\u0433\u0440\u0430\u0446\u0438\u0438 \u2192 Home Tasks.",
+    tags: "\u0422\u0435\u0433\u0438", add_tag: "+ \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0442\u0435\u0433", tag_placeholder: "\u041d\u043e\u0432\u044b\u0439 \u0442\u0435\u0433...", remove_tag: "\u0423\u0434\u0430\u043b\u0438\u0442\u044c", tag_suggestions_label: "\u0421\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u044e\u0449\u0438\u0435 \u0442\u0435\u0433\u0438", tag_no_matches: "\u041d\u0435\u0442 \u0441\u043e\u0432\u043f\u0430\u0434\u0430\u044e\u0449\u0438\u0445 \u0442\u0435\u0433\u043e\u0432",
+    new_sub_item: "\u041d\u043e\u0432\u0430\u044f \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0430", remove_reminder: "\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043d\u0430\u043f\u043e\u043c\u0438\u043d\u0430\u043d\u0438\u0435",
+    sort_label: "\u0421\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u043a\u0430", sort_manual: "\u0412\u0440\u0443\u0447\u043d\u0443\u044e", sort_due: "\u0421\u0440\u043e\u043a",
+    sort_priority: "\u041f\u0440\u0438\u043e\u0440\u0438\u0442\u0435\u0442", sort_title: "\u0417\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a (\u0410\u2013\u042f)", sort_person: "\u041d\u0430\u0437\u043d\u0430\u0447\u0435\u043d\u043e",
+    ed_show_sort: "\u0421\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u043a\u0430", ed_default_sort: "\u0421\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u043a\u0430 \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e",
+    reminder: "\u041d\u0430\u043f\u043e\u043c\u0438\u043d\u0430\u043d\u0438\u044f", rem_add: "+ \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043d\u0430\u043f\u043e\u043c\u0438\u043d\u0430\u043d\u0438\u0435", rem_none: "\u041d\u0435\u0442 \u043d\u0430\u043f\u043e\u043c\u0438\u043d\u0430\u043d\u0438\u044f",
+    rem_at_due: "\u0412 \u0441\u0440\u043e\u043a", rem_5m: "\u0417\u0430 5 \u043c\u0438\u043d.", rem_15m: "\u0417\u0430 15 \u043c\u0438\u043d.",
+    rem_30m: "\u0417\u0430 30 \u043c\u0438\u043d.", rem_1h: "\u0417\u0430 1 \u0447\u0430\u0441", rem_2h: "\u0417\u0430 2 \u0447\u0430\u0441\u0430",
+    rem_1d: "\u0417\u0430 1 \u0434\u0435\u043d\u044c", rem_2d: "\u0417\u0430 2 \u0434\u043d\u044f",
+    ed_show_reminders: "\u041d\u0430\u043f\u043e\u043c\u0438\u043d\u0430\u043d\u0438\u044f", ed_add_column: "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0441\u0442\u043e\u043b\u0431\u0435\u0446",
+    ed_move_left: "\u0412\u043b\u0435\u0432\u043e", ed_move_right: "\u0412\u043f\u0440\u0430\u0432\u043e",
+    ed_duplicate: "\u0414\u0443\u0431\u043b\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u0442\u043e\u043b\u0431\u0435\u0446", ed_delete_column: "\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u0441\u0442\u043e\u043b\u0431\u0435\u0446",
+    ed_code_editor: "\u0420\u0435\u0434\u0430\u043a\u0442\u043e\u0440 \u043a\u043e\u0434\u0430", ed_visual_editor: "\u0412\u0438\u0437\u0443\u0430\u043b\u044c\u043d\u044b\u0439 \u0440\u0435\u0434\u0430\u043a\u0442\u043e\u0440",
+    ed_icon: "\u0418\u043a\u043e\u043d\u043a\u0430 (\u043d\u0435\u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u043e)", ed_card_title: "\u0417\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438 (\u043d\u0435\u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u043e)",
+    ed_card_title_placeholder: "\u0417\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a \u043d\u0430\u0434 \u0441\u0442\u043e\u043b\u0431\u0446\u0430\u043c\u0438",
+    ed_sec_view: "\u041e\u0442\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435", ed_sec_display: "\u041a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u044f",
+    ed_sec_filters: "\u0424\u0438\u043b\u044c\u0442\u0440\u044b",
+    ed_preset_assignees: "\u041e\u0433\u0440\u0430\u043d\u0438\u0447\u0438\u0442\u044c \u043f\u043e \u043b\u044e\u0434\u044f\u043c",
+    ed_preset_labels: "\u041e\u0433\u0440\u0430\u043d\u0438\u0447\u0438\u0442\u044c \u043f\u043e \u0442\u0435\u0433\u0430\u043c",
+    ed_ms_add: "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c\u2026",
+    due_time_lbl: "\u0412\u0440\u0435\u043c\u044f", due_date_lbl: "\u0414\u0430\u0442\u0430", rec_mode_lbl: "\u0420\u0435\u0436\u0438\u043c",
+    rec_time: "\u0412\u0440\u0435\u043c\u044f", rec_end: "\u041e\u043a\u043e\u043d\u0447\u0430\u043d\u0438\u0435", rec_end_never: "\u041d\u0438\u043a\u043e\u0433\u0434\u0430", rec_end_date: "\u0414\u043e", rec_end_count: "X \u0440\u0430\u0437",
+    rec_end_date_lbl: "\u0414\u043e", rec_max_count_lbl: "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e", rec_remaining: "\u0435\u0449\u0451 {0}", rec_start_date_lbl: "\u0421",
+    rec_pattern_dom: "\u0414\u0435\u043d\u044c \u043c\u0435\u0441\u044f\u0446\u0430", rec_pattern_nth: "N-\u0439 \u0434\u0435\u043d\u044c", rec_pattern_none: "\u041e\u0442 \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044f",
+    rec_dom_lbl: "\u0414\u0435\u043d\u044c", rec_dom_last: "\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0434\u0435\u043d\u044c",
+    rec_nth_lbl: "\u0412", rec_nth_1: "1-\u0439", rec_nth_2: "2-\u0439", rec_nth_3: "3-\u0439", rec_nth_4: "4-\u0439", rec_nth_last: "\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439",
+    rec_anniversary_lbl: "\u0412", rec_dd: "\u0414\u0435\u043d\u044c", rec_mm: "\u041c\u0435\u0441\u044f\u0446",
+    rec_dom_short: "-\u0439", rec_last_short: "\u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439",
+    rec_value_lbl: "\u041a\u0430\u0436\u0434\u044b\u0435", rec_unit_lbl: "\u0415\u0434\u0438\u043d\u0438\u0446\u0430", rec_wd_lbl: "\u0414\u0435\u043d\u044c \u043d\u0435\u0434\u0435\u043b\u0438", rec_at_lbl: "\u0412",
+    rec_todoist_pattern_unsupported: "\u0421\u0443\u0431\u0448\u0430\u0431\u043b\u043e\u043d\u044b \u043d\u0435 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u044e\u0442\u0441\u044f \u043f\u0440\u0438 \u0438\u043d\u0442\u0435\u0440\u0432\u0430\u043b\u0435 \u0431\u043e\u043b\u044c\u0448\u0435 1.",
+    history: "\u0418\u0441\u0442\u043e\u0440\u0438\u044f", history_created: "\u0421\u043e\u0437\u0434\u0430\u043d\u043e", history_completed: "\u0412\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u043e", history_reopened: "\u041f\u0435\u0440\u0435\u043e\u0442\u043a\u0440\u044b\u0442\u043e",
+    history_reset: "\u0410\u0432\u0442\u043e\u0441\u0431\u0440\u043e\u0441", history_changed: "\u0438\u0437\u043c\u0435\u043d\u0435\u043d\u043e", history_empty: "\u041d\u0435\u0442 \u0438\u0441\u0442\u043e\u0440\u0438\u0438", hist_title: "\u0417\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a", history_disabled: "\u041e\u0442\u043a\u043b\u044e\u0447\u0435\u043d\u043e",
+    ed_show_history: "\u0418\u0441\u0442\u043e\u0440\u0438\u0438", hist_by_user: "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c",
+    ed_show_add_task: "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0437\u0430\u0434\u0430\u0447\u0443",
+    assigned_unknown: "\u041d\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043d\u044b\u0439 (%s)", recurrence_readonly: "\u0423\u043f\u0440\u0430\u0432\u043b\u044f\u0435\u0442\u0441\u044f %s", synced_with: "\u0421\u0438\u043d\u0445\u0440\u043e\u043d\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0441 %s",
+    due_today: "\u0421\u0435\u0433\u043e\u0434\u043d\u044f", due_tomorrow: "\u0417\u0430\u0432\u0442\u0440\u0430", due_yesterday: "\u0412\u0447\u0435\u0440\u0430",
+    due_day_after_tomorrow: "\u041f\u043e\u0441\u043b\u0435\u0437\u0430\u0432\u0442\u0440\u0430", due_day_before_yesterday: "\u041f\u043e\u0437\u0430\u0432\u0447\u0435\u0440\u0430",
+    due_in_hours: "\u0427\u0435\u0440\u0435\u0437 {0} \u0447 {1} \u043c\u0438\u043d", due_in_minutes: "\u0427\u0435\u0440\u0435\u0437 {0} \u043c\u0438\u043d", due_in_seconds: "\u0421\u0435\u0439\u0447\u0430\u0441",
+    due_ago_hours: "{0} \u0447 {1} \u043c\u0438\u043d \u043d\u0430\u0437\u0430\u0434", due_ago_minutes: "{0} \u043c\u0438\u043d \u043d\u0430\u0437\u0430\u0434", due_ago_seconds: "\u0422\u043e\u043b\u044c\u043a\u043e \u0447\u0442\u043e",
+  },
+  cs: {
+    voice_failed: "Hlasový vstup selhal",
+    confirm_delete_section: "Odstranit tuto sekci? Úkoly v ní zůstanou neseřazené.", done_section_header: "Hotovo", duplicate_task: "Duplikovat", move_task: "P\u0159esunout", move_task_msg: "P\u0159esunout \u201e{0}\u201c do:", ed_show_move: "Tla\u010d\u00edtko p\u0159esunut\u00ed", ed_add_section: "+ Přidat sekci", ed_ai_image_entity: "Entita AI pro generování obrázků", ed_ai_image_entity_placeholder: "např. ai_task.openai", ed_ai_image_section: "Generování obrázků pomocí AI", ed_ai_prompt_prefix: "Předpona promptu (volitelné)", ed_ai_prompt_prefix_placeholder: "např. Minimalistická ikona", ed_auto_image: "Automaticky generovat obrázek", ed_delete_section: "Odstranit sekci", ed_external_lists: "Externí", ed_loading: "Načítání…", ed_move_down: "Posunout dolů", ed_move_up: "Posunout nahoru", ed_sec_sections: "Sekce", ed_section_icon: "Ikona", ed_section_name: "Název", ed_section_name_prompt: "Název sekce:", ed_sections_empty: "Zatím žádné sekce — úkoly se zobrazí bez seskupení.", ed_sections_select_list_hint: "Nejprve vyberte seznam pro správu jeho sekcí.", ed_show_filters: "Filtr stavu", ed_show_images: "Obrázky", ed_show_person_chips: "Filtr osob", ed_show_tag_chips: "Filtr \u0161t\u00edtk\u016f", ed_show_tile_title: "Název na dlaždicích", ed_show_voice: "Hlasový vstup", ed_tile_help: "Zobrazení dlaždic:\n• Kliknutí = dokončit\n• Podržení = upravit\n• Přetažení = změnit pořadí", ed_view_mode: "Režim zobrazení", ed_view_mode_list: "Seznam", ed_view_mode_tiles: "Dlaždice",
+    voice_input: "Hlasový vstup", voice_stop: "Zastavit nahrávání", img_label: "Obrázek", img_generate: "Vygenerovat", img_regenerate: "Vygenerovat znovu", img_generating: "Generování…", img_from_media: "Z knihovny médií", img_remove: "Odebrat obrázek", img_generate_failed: "Generování obrázku se nezdařilo: ", img_save_failed: "Uložení obrázku se nezdařilo: ", mb_title: "Knihovna médií", mb_loading: "Načítání…", mb_root: "Média", mb_back: "Zpět", mb_empty: "Žádné soubory", mb_error: "Chyba: ",
+    my_tasks: "Moje \u00fakoly",
+    add_placeholder: "P\u0159idat nov\u00fd \u00fakol...",
+    dialog_cancel: "Zru\u0161it", dialog_add: "P\u0159idat",
+    filter_all: "V\u0161e", filter_open: "Otev\u0159en\u00e9", filter_done: "Dokon\u010den\u00e9", filter_due_soon: "Brzy",
+    ed_show_due_soon_filter: "Filtr brzy", ed_due_soon_days: "Dn\u016f dop\u0159edu", ed_hide_overdue: "Skr\u00fdt po term\u00ednu",
+    progress: "{0} z {1} dokon\u010deno",
+    empty: "\u017d\u00e1dn\u00e9 \u00fakoly",
+    drag_handle: "P\u0159et\u00e1hnout pro zm\u011bnu po\u0159ad\u00ed",
+    due_date: "Term\u00edn", notes: "Pozn\u00e1mky", notes_placeholder: "P\u0159idat pozn\u00e1mky zde",
+    sub_items: "Pod\u00fakoly", add_sub_item: "+ P\u0159idat pod\u00fakol",
+    recurrence: "Opakov\u00e1n\u00ed", recurrence_enabled: "Povoleno", recurrence_every: "Ka\u017ed\u00fd",
+    rec_hours: "Hodiny", rec_days: "Dny", rec_weeks: "T\u00fddny", rec_months: "M\u011bs\u00edce", rec_years: "Roky",
+    rec_short_h: "h", rec_short_d: "d", rec_short_w: "t", rec_short_m: "m", rec_short_y: "r",
+    priority: "Priorita", pri_high: "Vysok\u00e1", pri_medium: "St\u0159edn\u00ed", pri_low: "N\u00edzk\u00e1",
+    ed_show_priority: "Priority",
+    rec_hourly: "Hodinov\u011b", rec_daily: "Denn\u011b", rec_weekly: "T\u00fddn\u011b", rec_monthly: "M\u011bs\u00ed\u010dn\u011b", rec_yearly: "Ročně",
+    rec_type_interval: "Ka\u017ed\u00fd \u2026", rec_type_weekdays: "Ve v\u0161ední dny",
+    rec_wd_0: "Po", rec_wd_1: "\u00dat", rec_wd_2: "St", rec_wd_3: "\u010ct", rec_wd_4: "P\u00e1", rec_wd_5: "So", rec_wd_6: "Ne",
+    assigned_to: "P\u0159i\u0159azeno", nobody: "\u2013 Nikdo \u2013",
+    delete_task: "Smazat \u00fakol", delete_sub: "Smazat",
+    ed_default_filter: "V\u00fdchoz\u00ed filtr", ed_list: "Seznam",
+    ed_title: "N\u00e1zev (voliteln\u011b)", ed_title_placeholder: "V\u00fdchoz\u00ed: n\u00e1zev seznamu",
+    ed_display: "Zobrazen\u00ed", ed_show_title: "N\u00e1zev", ed_show_progress: "Pokrok",
+    ed_show_due_date: "Term\u00edny", ed_show_notes: "Pozn\u00e1mky", ed_show_recurrence: "Opakov\u00e1n\u00ed",
+    ed_show_sub_items: "Pod\u00fakoly", ed_show_person: "Osoby",
+    ed_auto_delete: "Okam\u017eit\u011b smazat dokon\u010den\u00e9", ed_compact: "Kompaktn\u00ed", ed_show_tags: "\u0160t\u00edtky",
+    ed_confirm_complete: "Potvrdit p\u0159ed dokon\u010den\u00edm",
+    ed_show_add_due: "Term\u00edn p\u0159i p\u0159id\u00e1n\u00ed",
+    ed_max_height: "Max. v\u00fd\u0161ka (px, 0 = bez limitu)", ed_badge_priority: "\u010cipy priority", ed_badge_progress: "\u010cipy pr\u016fb\u011bhu", ed_badge_due: "\u010cipy term\u00ednu", ed_badge_recurrence: "\u010cipy opakov\u00e1n\u00ed", ed_badge_person: "\u010cipy osoby", ed_badge_tags: "\u010cipy \u0161t\u00edtk\u016f", ed_badge_reminders: "\u010cipy p\u0159ipomenut\u00ed",
+    ed_sec_defaults: "V\u00fdchoz\u00ed hodnoty",
+    ed_default_assignee: "V\u00fdchoz\u00ed p\u0159i\u0159azen\u00ed",
+    ed_defaults_hint: "Plat\u00ed pro ka\u017ed\u00fd nov\u00fd \u00fakol v tomto seznamu. Zm\u011bny se ukl\u00e1daj\u00ed okam\u017eit\u011b.", ed_defaults_saved: "Ulo\u017eeno", ed_defaults_load_failed: "V\u00fdchoz\u00ed hodnoty se nepoda\u0159ilo na\u010d\u00edst", ed_defaults_save_failed: "Ulo\u017een\u00ed se nezda\u0159ilo",
+    confirm_complete_msg: "Ozna\u010dit \u201e{0}\u201c jako dokon\u010den\u00e9?",
+    confirm_complete_ok: "Dokon\u010dit",
+    ed_hint: "Nov\u00e9 seznamy lze vytvo\u0159it v Nastaven\u00ed \u2192 Integrace \u2192 Home Tasks.",
+    tags: "\u0160t\u00edtky", add_tag: "+ P\u0159idat \u0161t\u00edtek", tag_placeholder: "Nov\u00fd \u0161t\u00edtek...", remove_tag: "Odebrat", tag_suggestions_label: "Existuj\u00edc\u00ed \u0161t\u00edtky", tag_no_matches: "\u017d\u00e1dn\u00e9 odpov\u00eddaj\u00edc\u00ed \u0161t\u00edtky",
+    new_sub_item: "Nov\u00fd pod\u00fakol", remove_reminder: "Odebrat p\u0159ipom\u00ednku",
+    sort_label: "\u0158adit", sort_manual: "Ru\u010dn\u011b", sort_due: "Term\u00edn",
+    sort_priority: "Priorita", sort_title: "N\u00e1zev (A\u2013Z)", sort_person: "P\u0159i\u0159azeno",
+    ed_show_sort: "\u0158azen\u00ed", ed_default_sort: "V\u00fdchoz\u00ed \u0159azen\u00ed",
+    reminder: "P\u0159ipom\u00ednky", rem_add: "+ P\u0159idat p\u0159ipom\u00ednku", rem_none: "Bez p\u0159ipom\u00ednky",
+    rem_at_due: "V \u010das term\u00ednu", rem_5m: "5 min. p\u0159ed", rem_15m: "15 min. p\u0159ed",
+    rem_30m: "30 min. p\u0159ed", rem_1h: "1 hod. p\u0159ed", rem_2h: "2 hod. p\u0159ed",
+    rem_1d: "1 den p\u0159ed", rem_2d: "2 dny p\u0159ed",
+    ed_show_reminders: "P\u0159ipom\u00ednky", ed_add_column: "P\u0159idat sloupec",
+    ed_move_left: "P\u0159esunout vlevo", ed_move_right: "P\u0159esunout vpravo",
+    ed_duplicate: "Duplikovat sloupec", ed_delete_column: "Smazat sloupec",
+    ed_code_editor: "Editor k\u00f3du", ed_visual_editor: "Vizu\u00e1ln\u00ed editor",
+    ed_icon: "Ikona (voliteln\u011b)", ed_card_title: "N\u00e1zev karty (voliteln\u011b)",
+    ed_card_title_placeholder: "N\u00e1zev nad sloupci",
+    ed_sec_view: "Zobrazen\u00ed", ed_sec_display: "Konfigurace",
+    ed_sec_filters: "Filtry",
+    ed_preset_assignees: "Omezit na osoby",
+    ed_preset_labels: "Omezit na \u0161t\u00edtky",
+    ed_ms_add: "P\u0159idat\u2026",
+    due_time_lbl: "\u010cas", due_date_lbl: "Datum", rec_mode_lbl: "Re\u017eim",
+    rec_time: "\u010cas", rec_end: "Konec", rec_end_never: "Nikdy", rec_end_date: "Do", rec_end_count: "X kr\u00e1t",
+    rec_end_date_lbl: "Do", rec_max_count_lbl: "Po\u010det", rec_remaining: "je\u0161t\u011b {0}", rec_start_date_lbl: "Od",
+    rec_pattern_dom: "Den v m\u011bs\u00edci", rec_pattern_nth: "N-t\u00fd den", rec_pattern_none: "Od dokon\u010den\u00ed",
+    rec_dom_lbl: "Den", rec_dom_last: "Posledn\u00ed den",
+    rec_nth_lbl: "V", rec_nth_1: "1.", rec_nth_2: "2.", rec_nth_3: "3.", rec_nth_4: "4.", rec_nth_last: "Posledn\u00ed",
+    rec_anniversary_lbl: "V", rec_dd: "Den", rec_mm: "M\u011bs\u00edc",
+    rec_dom_short: ".", rec_last_short: "posledn\u00ed",
+    rec_value_lbl: "Ka\u017ed\u00fd", rec_unit_lbl: "Jednotka", rec_wd_lbl: "Den v t\u00fddnu", rec_at_lbl: "V",
+    rec_todoist_pattern_unsupported: "Podvzory nejsou podporov\u00e1ny, pokud je interval v\u011bt\u0161\u00ed ne\u017e 1.",
+    history: "Historie", history_created: "Vytvo\u0159eno", history_completed: "Dokon\u010deno", history_reopened: "Znovu otev\u0159eno",
+    history_reset: "Automaticky obnoveno", history_changed: "zm\u011bn\u011bno", history_empty: "\u017d\u00e1dn\u00e1 historie", hist_title: "N\u00e1zev", history_disabled: "Deaktivov\u00e1no",
+    ed_show_history: "Historie", hist_by_user: "U\u017eivatel",
+    ed_show_add_task: "P\u0159idat \u00fakol",
+    assigned_unknown: "Nezn\u00e1m\u00fd (%s)", recurrence_readonly: "Spravov\u00e1no %s", synced_with: "Synchronizov\u00e1no s %s",
+    due_today: "Dnes", due_tomorrow: "Z\u00edtra", due_yesterday: "V\u010dera",
+    due_day_after_tomorrow: "Poz\u00edt\u0159\u00ed", due_day_before_yesterday: "P\u0159edev\u010d\u00edrem",
+    due_in_hours: "Za {0} hod {1} min", due_in_minutes: "Za {0} min", due_in_seconds: "Nyn\u00ed",
+    due_ago_hours: "P\u0159ed {0} hod {1} min", due_ago_minutes: "P\u0159ed {0} min", due_ago_seconds: "Pr\u00e1v\u011b te\u010f",
+  },
+  da: {
+    voice_failed: "Stemmeinput mislykkedes",
+    confirm_delete_section: "Slet dette afsnit? Opgaver i det bliver usorterede.", done_section_header: "Færdig", duplicate_task: "Dupliker", move_task: "Flyt", move_task_msg: "Flyt \u201d{0}\u201d til:", ed_show_move: "Flyt-knap", ed_add_section: "+ Tilføj afsnit", ed_ai_image_entity: "AI-entitet til billedgenerering", ed_ai_image_entity_placeholder: "f.eks. ai_task.openai", ed_ai_image_section: "AI-billedgenerering", ed_ai_prompt_prefix: "Prompt-præfiks (valgfrit)", ed_ai_prompt_prefix_placeholder: "f.eks. Minimalistisk ikon af", ed_auto_image: "Generér billede automatisk", ed_delete_section: "Slet afsnit", ed_external_lists: "Ekstern", ed_loading: "Indlæser…", ed_move_down: "Flyt ned", ed_move_up: "Flyt op", ed_sec_sections: "Afsnit", ed_section_icon: "Ikon", ed_section_name: "Navn", ed_section_name_prompt: "Afsnitsnavn:", ed_sections_empty: "Ingen afsnit endnu — opgaver vises fladt.", ed_sections_select_list_hint: "Vælg først en liste for at administrere dens afsnit.", ed_show_filters: "Statusfilter", ed_show_images: "Billeder", ed_show_person_chips: "Personfilter", ed_show_tag_chips: "Tagfilter", ed_show_tile_title: "Titel i fliser", ed_show_voice: "Stemmeinput", ed_tile_help: "Flisevisning:\n• Klik = fuldfør\n• Hold = rediger\n• Træk = omarrangér", ed_view_mode: "Visningstilstand", ed_view_mode_list: "Liste", ed_view_mode_tiles: "Fliser",
+    voice_input: "Stemmeinput", voice_stop: "Stop optagelse", img_label: "Billede", img_generate: "Generér", img_regenerate: "Generér igen", img_generating: "Genererer…", img_from_media: "Fra mediebibliotek", img_remove: "Fjern billede", img_generate_failed: "Billedgenerering mislykkedes: ", img_save_failed: "Kunne ikke gemme billede: ", mb_title: "Mediebibliotek", mb_loading: "Indlæser…", mb_root: "Medier", mb_back: "Tilbage", mb_empty: "Ingen filer", mb_error: "Fejl: ",
+    my_tasks: "Mine opgaver",
+    add_placeholder: "Tilf\u00f8j ny opgave...",
+    dialog_cancel: "Annull\u00e9r", dialog_add: "Tilf\u00f8j",
+    filter_all: "Alle", filter_open: "\u00c5bne", filter_done: "F\u00e6rdige", filter_due_soon: "Snart",
+    ed_show_due_soon_filter: "Snart-filter", ed_due_soon_days: "Dage frem", ed_hide_overdue: "Skjul forfaldne",
+    progress: "{0} af {1} f\u00e6rdige",
+    empty: "Ingen opgaver",
+    drag_handle: "Tr\u00e6k for at sortere",
+    due_date: "Forfald", notes: "Noter", notes_placeholder: "Tilf\u00f8j noter her",
+    sub_items: "Delopgaver", add_sub_item: "+ Tilf\u00f8j delopgave",
+    recurrence: "Gentagelse", recurrence_enabled: "Aktiveret", recurrence_every: "Hver",
+    rec_hours: "Timer", rec_days: "Dage", rec_weeks: "Uger", rec_months: "M\u00e5neder", rec_years: "År",
+    rec_short_h: "t", rec_short_d: "d", rec_short_w: "u", rec_short_m: "md", rec_short_y: "år",
+    priority: "Prioritet", pri_high: "H\u00f8j", pri_medium: "Mellem", pri_low: "Lav",
+    ed_show_priority: "Prioriteter",
+    rec_hourly: "Hver time", rec_daily: "Dagligt", rec_weekly: "Ugentligt", rec_monthly: "M\u00e5nedligt", rec_yearly: "Årligt",
+    rec_type_interval: "Hver \u2026", rec_type_weekdays: "P\u00e5 hverdage",
+    rec_wd_0: "Man", rec_wd_1: "Tir", rec_wd_2: "Ons", rec_wd_3: "Tor", rec_wd_4: "Fre", rec_wd_5: "L\u00f8r", rec_wd_6: "S\u00f8n",
+    assigned_to: "Tildelt", nobody: "\u2013 Ingen \u2013",
+    delete_task: "Slet opgave", delete_sub: "Slet",
+    ed_default_filter: "Standardfilter", ed_list: "Liste",
+    ed_title: "Titel (valgfrit)", ed_title_placeholder: "Standard: listenavn",
+    ed_display: "Visning", ed_show_title: "Titel", ed_show_progress: "Fremgang",
+    ed_show_due_date: "Forfaldsdatoer", ed_show_notes: "Noter", ed_show_recurrence: "Gentagelser",
+    ed_show_sub_items: "Delopgaver", ed_show_person: "Personer",
+    ed_auto_delete: "Slet f\u00e6rdige \u00f8jeblikkeligt", ed_compact: "Kompakt", ed_show_tags: "Tags",
+    ed_confirm_complete: "Bekr\u00e6ft f\u00f8r fuldf\u00f8relse",
+    ed_show_add_due: "Forfaldsdato ved tilf\u00f8jelse",
+    ed_max_height: "Maks. h\u00f8jde (px, 0 = ubegr\u00e6nset)", ed_badge_priority: "Prioritetschips", ed_badge_progress: "Fremdriftschips", ed_badge_due: "Forfaldschips", ed_badge_recurrence: "Gentagelseschips", ed_badge_person: "Personchips", ed_badge_tags: "Tagchips", ed_badge_reminders: "P\u00e5mindelseschips",
+    ed_sec_defaults: "Standarder",
+    ed_default_assignee: "Standardtildelt",
+    ed_defaults_hint: "G\u00e6lder for hver ny opgave p\u00e5 listen \u2014 uanset hvordan den oprettes. \u00c6ndringer gemmes med det samme.", ed_defaults_saved: "Gemt", ed_defaults_load_failed: "Standardv\u00e6rdierne kunne ikke indl\u00e6ses", ed_defaults_save_failed: "Kunne ikke gemme",
+    confirm_complete_msg: "Mark\u00e9r \u201d{0}\u201d som fuldf\u00f8rt?",
+    confirm_complete_ok: "Fuldf\u00f8r",
+    ed_hint: "Nye lister kan oprettes under Indstillinger \u2192 Integrationer \u2192 Home Tasks.",
+    tags: "Tags", add_tag: "+ Tilf\u00f8j tag", tag_placeholder: "Nyt tag...", remove_tag: "Fjern", tag_suggestions_label: "Eksisterende tags", tag_no_matches: "Ingen matchende tags",
+    new_sub_item: "Ny delopgave", remove_reminder: "Fjern p\u00e5mindelse",
+    sort_label: "Sorter", sort_manual: "Manuel", sort_due: "Forfald",
+    sort_priority: "Prioritet", sort_title: "Titel (A\u2013Z)", sort_person: "Tildelt",
+    ed_show_sort: "Sortering", ed_default_sort: "Standardsortering",
+    reminder: "P\u00e5mindelser", rem_add: "+ Tilf\u00f8j p\u00e5mindelse", rem_none: "Ingen p\u00e5mindelse",
+    rem_at_due: "Ved forfaldstid", rem_5m: "5 min. f\u00f8r", rem_15m: "15 min. f\u00f8r",
+    rem_30m: "30 min. f\u00f8r", rem_1h: "1 time f\u00f8r", rem_2h: "2 timer f\u00f8r",
+    rem_1d: "1 dag f\u00f8r", rem_2d: "2 dage f\u00f8r",
+    ed_show_reminders: "P\u00e5mindelser", ed_add_column: "Tilf\u00f8j kolonne",
+    ed_move_left: "Flyt til venstre", ed_move_right: "Flyt til h\u00f8jre",
+    ed_duplicate: "Dupliker kolonne", ed_delete_column: "Slet kolonne",
+    ed_code_editor: "Kodeeditor", ed_visual_editor: "Visuel editor",
+    ed_icon: "Ikon (valgfrit)", ed_card_title: "Korttitel (valgfrit)",
+    ed_card_title_placeholder: "Titel over kolonner",
+    ed_sec_view: "Visning", ed_sec_display: "Konfiguration",
+    ed_sec_filters: "Filtre",
+    ed_preset_assignees: "Begræns til personer",
+    ed_preset_labels: "Begræns til tags",
+    ed_ms_add: "Tilføj…",
+    due_time_lbl: "Tid", due_date_lbl: "Dato", rec_mode_lbl: "Tilstand",
+    rec_time: "Tidspunkt", rec_end: "Slut", rec_end_never: "Aldrig", rec_end_date: "Til", rec_end_count: "X gange",
+    rec_end_date_lbl: "Til", rec_max_count_lbl: "Antal", rec_remaining: "{0} tilbage", rec_start_date_lbl: "Fra",
+    rec_pattern_dom: "Dag i m\u00e5neden", rec_pattern_nth: "Nte ugedag", rec_pattern_none: "Fra fuldf\u00f8relse",
+    rec_dom_lbl: "Dag", rec_dom_last: "Sidste dag",
+    rec_nth_lbl: "Den", rec_nth_1: "1.", rec_nth_2: "2.", rec_nth_3: "3.", rec_nth_4: "4.", rec_nth_last: "Sidste",
+    rec_anniversary_lbl: "Den", rec_dd: "Dag", rec_mm: "M\u00e5ned",
+    rec_dom_short: ".", rec_last_short: "sidste",
+    rec_value_lbl: "Hver", rec_unit_lbl: "Enhed", rec_wd_lbl: "Ugedag", rec_at_lbl: "Kl.",
+    rec_todoist_pattern_unsupported: "Underm\u00f8nstre underst\u00f8ttes ikke, n\u00e5r intervallet er st\u00f8rre end 1.",
+    history: "Historik", history_created: "Oprettet", history_completed: "F\u00e6rdiggjort", history_reopened: "\u00c5bnet igen",
+    history_reset: "Auto-nulstillet", history_changed: "\u00e6ndret", history_empty: "Ingen historik", hist_title: "Titel", history_disabled: "Deaktiveret",
+    ed_show_history: "Historikker", hist_by_user: "Bruger",
+    ed_show_add_task: "Tilf\u00f8j opgave",
+    assigned_unknown: "Ukendt (%s)", recurrence_readonly: "Styret af %s", synced_with: "Synkroniseret med %s",
+    due_today: "I dag", due_tomorrow: "I morgen", due_yesterday: "I g\u00e5r",
+    due_day_after_tomorrow: "I overmorgen", due_day_before_yesterday: "I forg\u00e5rs",
+    due_in_hours: "Om {0} t {1} min", due_in_minutes: "Om {0} min", due_in_seconds: "Nu",
+    due_ago_hours: "{0} t {1} min siden", due_ago_minutes: "{0} min siden", due_ago_seconds: "Lige nu",
+  },
+  no: {
+    voice_failed: "Taleinndata mislyktes",
+    confirm_delete_section: "Slette denne seksjonen? Oppgaver i den blir usorterte.", done_section_header: "Ferdig", duplicate_task: "Dupliser", move_task: "Flytt", move_task_msg: "Flytt \u201d{0}\u201d til:", ed_show_move: "Flytt-knapp", ed_add_section: "+ Legg til seksjon", ed_ai_image_entity: "AI-entitet for bildegenerering", ed_ai_image_entity_placeholder: "f.eks. ai_task.openai", ed_ai_image_section: "AI-bildegenerering", ed_ai_prompt_prefix: "Ledetekst-prefiks (valgfritt)", ed_ai_prompt_prefix_placeholder: "f.eks. Minimalistisk ikon av", ed_auto_image: "Generer bilde automatisk", ed_delete_section: "Slett seksjon", ed_external_lists: "Ekstern", ed_loading: "Laster…", ed_move_down: "Flytt ned", ed_move_up: "Flytt opp", ed_sec_sections: "Seksjoner", ed_section_icon: "Ikon", ed_section_name: "Navn", ed_section_name_prompt: "Seksjonsnavn:", ed_sections_empty: "Ingen seksjoner ennå — oppgaver vises flatt.", ed_sections_select_list_hint: "Velg en liste først for å administrere seksjonene.", ed_show_filters: "Statusfilter", ed_show_images: "Bilder", ed_show_person_chips: "Personfilter", ed_show_tag_chips: "Taggfilter", ed_show_tile_title: "Tittel i fliser", ed_show_voice: "Taleinndata", ed_tile_help: "Flisevisning:\n• Klikk = fullfør\n• Hold = rediger\n• Dra = endre rekkefølge", ed_view_mode: "Visningsmodus", ed_view_mode_list: "Liste", ed_view_mode_tiles: "Fliser",
+    voice_input: "Taleinndata", voice_stop: "Stopp opptak", img_label: "Bilde", img_generate: "Generer", img_regenerate: "Generer på nytt", img_generating: "Genererer…", img_from_media: "Fra mediebibliotek", img_remove: "Fjern bilde", img_generate_failed: "Bildegenerering mislyktes: ", img_save_failed: "Kunne ikke lagre bilde: ", mb_title: "Mediebibliotek", mb_loading: "Laster…", mb_root: "Medier", mb_back: "Tilbake", mb_empty: "Ingen filer", mb_error: "Feil: ",
+    my_tasks: "Mine oppgaver",
+    add_placeholder: "Legg til ny oppgave...",
+    dialog_cancel: "Avbryt", dialog_add: "Legg til",
+    filter_all: "Alle", filter_open: "\u00c5pne", filter_done: "Ferdige", filter_due_soon: "Snart",
+    ed_show_due_soon_filter: "Snart-filter", ed_due_soon_days: "Dager fremover", ed_hide_overdue: "Skjul forfalte",
+    progress: "{0} av {1} ferdige",
+    empty: "Ingen oppgaver",
+    drag_handle: "Dra for \u00e5 endre rekkefl\u00f8lge",
+    due_date: "Frist", notes: "Notater", notes_placeholder: "Legg til notater her",
+    sub_items: "Deloppgaver", add_sub_item: "+ Legg til deloppgave",
+    recurrence: "Gjentakelse", recurrence_enabled: "Aktivert", recurrence_every: "Hver",
+    rec_hours: "Timer", rec_days: "Dager", rec_weeks: "Uker", rec_months: "M\u00e5neder", rec_years: "År",
+    rec_short_h: "t", rec_short_d: "d", rec_short_w: "u", rec_short_m: "md", rec_short_y: "år",
+    priority: "Prioritet", pri_high: "H\u00f8y", pri_medium: "Middels", pri_low: "Lav",
+    ed_show_priority: "Prioriteter",
+    rec_hourly: "Hver time", rec_daily: "Daglig", rec_weekly: "Ukentlig", rec_monthly: "M\u00e5nedlig", rec_yearly: "Årlig",
+    rec_type_interval: "Hver \u2026", rec_type_weekdays: "P\u00e5 hverdager",
+    rec_wd_0: "Man", rec_wd_1: "Tir", rec_wd_2: "Ons", rec_wd_3: "Tor", rec_wd_4: "Fre", rec_wd_5: "L\u00f8r", rec_wd_6: "S\u00f8n",
+    assigned_to: "Tildelt", nobody: "\u2013 Ingen \u2013",
+    delete_task: "Slett oppgave", delete_sub: "Slett",
+    ed_default_filter: "Standardfilter", ed_list: "Liste",
+    ed_title: "Tittel (valgfritt)", ed_title_placeholder: "Standard: listenavn",
+    ed_display: "Visning", ed_show_title: "Tittel", ed_show_progress: "Fremgang",
+    ed_show_due_date: "Frister", ed_show_notes: "Notater", ed_show_recurrence: "Gjentakelser",
+    ed_show_sub_items: "Deloppgaver", ed_show_person: "Personer",
+    ed_auto_delete: "Slett ferdige umiddelbart", ed_compact: "Kompakt", ed_show_tags: "Tagger",
+    ed_confirm_complete: "Bekreft f\u00f8r fullf\u00f8ring",
+    ed_show_add_due: "Forfallsdato ved tillegg",
+    ed_max_height: "Maks. h\u00f8yde (px, 0 = ubegrenset)", ed_badge_priority: "Prioritetschips", ed_badge_progress: "Fremdriftschips", ed_badge_due: "Forfallschips", ed_badge_recurrence: "Gjentakelseschips", ed_badge_person: "Personchips", ed_badge_tags: "Taggchips", ed_badge_reminders: "P\u00e5minnelseschips",
+    ed_sec_defaults: "Standarder",
+    ed_default_assignee: "Standardtildelt",
+    ed_defaults_hint: "Gjelder hver ny oppgave i listen \u2014 uansett hvordan den opprettes. Endringer lagres umiddelbart.", ed_defaults_saved: "Lagret", ed_defaults_load_failed: "Kunne ikke laste standardverdiene", ed_defaults_save_failed: "Kunne ikke lagre",
+    confirm_complete_msg: "Merke \u00ab{0}\u00bb som fullf\u00f8rt?",
+    confirm_complete_ok: "Fullf\u00f8r",
+    ed_hint: "Nye lister kan opprettes under Innstillinger \u2192 Integrasjoner \u2192 Home Tasks.",
+    tags: "Tagger", add_tag: "+ Legg til tagg", tag_placeholder: "Ny tagg...", remove_tag: "Fjern", tag_suggestions_label: "Eksisterende tagger", tag_no_matches: "Ingen samsvarende tagger",
+    new_sub_item: "Ny deloppgave", remove_reminder: "Fjern p\u00e5minnelse",
+    sort_label: "Sorter", sort_manual: "Manuell", sort_due: "Frist",
+    sort_priority: "Prioritet", sort_title: "Tittel (A\u2013Z)", sort_person: "Tildelt",
+    ed_show_sort: "Sortering", ed_default_sort: "Standardsortering",
+    reminder: "P\u00e5minnelser", rem_add: "+ Legg til p\u00e5minnelse", rem_none: "Ingen p\u00e5minnelse",
+    rem_at_due: "Ved fristen", rem_5m: "5 min. f\u00f8r", rem_15m: "15 min. f\u00f8r",
+    rem_30m: "30 min. f\u00f8r", rem_1h: "1 time f\u00f8r", rem_2h: "2 timer f\u00f8r",
+    rem_1d: "1 dag f\u00f8r", rem_2d: "2 dager f\u00f8r",
+    ed_show_reminders: "P\u00e5minnelser", ed_add_column: "Legg til kolonne",
+    ed_move_left: "Flytt til venstre", ed_move_right: "Flytt til h\u00f8yre",
+    ed_duplicate: "Dupliser kolonne", ed_delete_column: "Slett kolonne",
+    ed_code_editor: "Kodeeditor", ed_visual_editor: "Visuell editor",
+    ed_icon: "Ikon (valgfritt)", ed_card_title: "Korttittel (valgfritt)",
+    ed_card_title_placeholder: "Tittel over kolonner",
+    ed_sec_view: "Visning", ed_sec_display: "Konfigurasjon",
+    ed_sec_filters: "Filtre",
+    ed_preset_assignees: "Begrens til personer",
+    ed_preset_labels: "Begrens til tagger",
+    ed_ms_add: "Legg til…",
+    due_time_lbl: "Tid", due_date_lbl: "Dato", rec_mode_lbl: "Modus",
+    rec_time: "Klokkeslett", rec_end: "Slutt", rec_end_never: "Aldri", rec_end_date: "Til", rec_end_count: "X ganger",
+    rec_end_date_lbl: "Til", rec_max_count_lbl: "Antall", rec_remaining: "{0} igjen", rec_start_date_lbl: "Fra",
+    rec_pattern_dom: "Dag i m\u00e5neden", rec_pattern_nth: "Nte ukedag", rec_pattern_none: "Fra fullf\u00f8ring",
+    rec_dom_lbl: "Dag", rec_dom_last: "Siste dag",
+    rec_nth_lbl: "Den", rec_nth_1: "1.", rec_nth_2: "2.", rec_nth_3: "3.", rec_nth_4: "4.", rec_nth_last: "Siste",
+    rec_anniversary_lbl: "Den", rec_dd: "Dag", rec_mm: "M\u00e5ned",
+    rec_dom_short: ".", rec_last_short: "siste",
+    rec_value_lbl: "Hver", rec_unit_lbl: "Enhet", rec_wd_lbl: "Ukedag", rec_at_lbl: "Kl.",
+    rec_todoist_pattern_unsupported: "Underm\u00f8nstre st\u00f8ttes ikke n\u00e5r intervallet er st\u00f8rre enn 1.",
+    history: "Historikk", history_created: "Opprettet", history_completed: "Fullf\u00f8rt", history_reopened: "\u00c5pnet igjen",
+    history_reset: "Auto-tilbakestilt", history_changed: "endret", history_empty: "Ingen historikk", hist_title: "Tittel", history_disabled: "Deaktivert",
+    ed_show_history: "Historikker", hist_by_user: "Bruker",
+    ed_show_add_task: "Legg til oppgave",
+    assigned_unknown: "Ukjent (%s)", recurrence_readonly: "Administrert av %s", synced_with: "Synkronisert med %s",
+    due_today: "I dag", due_tomorrow: "I morgen", due_yesterday: "I g\u00e5r",
+    due_day_after_tomorrow: "I overmorgen", due_day_before_yesterday: "I forg\u00e5rs",
+    due_in_hours: "Om {0} t {1} min", due_in_minutes: "Om {0} min", due_in_seconds: "N\u00e5",
+    due_ago_hours: "{0} t {1} min siden", due_ago_minutes: "{0} min siden", due_ago_seconds: "Akkurat n\u00e5",
+  },
+  fi: {
+    voice_failed: "Puhesyöttö epäonnistui",
+    confirm_delete_section: "Poistetaanko tämä osio? Sen tehtävät muuttuvat lajittelemattomiksi.", done_section_header: "Valmis", duplicate_task: "Monista", move_task: "Siirr\u00e4", move_task_msg: "Siirr\u00e4 \u201d{0}\u201d kohteeseen:", ed_show_move: "Siirr\u00e4-painike", ed_add_section: "+ Lisää osio", ed_ai_image_entity: "Tekoälyentiteetti kuvien luontiin", ed_ai_image_entity_placeholder: "esim. ai_task.openai", ed_ai_image_section: "Tekoälykuvien luonti", ed_ai_prompt_prefix: "Kehotteen etuliite (valinnainen)", ed_ai_prompt_prefix_placeholder: "esim. Minimalistinen kuvake", ed_auto_image: "Luo kuva automaattisesti", ed_delete_section: "Poista osio", ed_external_lists: "Ulkoinen", ed_loading: "Ladataan…", ed_move_down: "Siirrä alas", ed_move_up: "Siirrä ylös", ed_sec_sections: "Osiot", ed_section_icon: "Kuvake", ed_section_name: "Nimi", ed_section_name_prompt: "Osion nimi:", ed_sections_empty: "Ei vielä osioita — tehtävät näytetään listana.", ed_sections_select_list_hint: "Valitse ensin lista hallitaksesi sen osioita.", ed_show_filters: "Tilasuodatin", ed_show_images: "Kuvat", ed_show_person_chips: "Henkil\u00f6suodatin", ed_show_tag_chips: "Tunnistesuodatin", ed_show_tile_title: "Otsikko ruuduissa", ed_show_voice: "Puhesyöttö", ed_tile_help: "Ruutunäkymä:\n• Napsautus = valmis\n• Pidä = muokkaa\n• Vedä = järjestä uudelleen", ed_view_mode: "Näkymätila", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Ruudut",
+    voice_input: "Puhesyöttö", voice_stop: "Lopeta nauhoitus", img_label: "Kuva", img_generate: "Luo", img_regenerate: "Luo uudelleen", img_generating: "Luodaan…", img_from_media: "Mediakirjastosta", img_remove: "Poista kuva", img_generate_failed: "Kuvan luonti epäonnistui: ", img_save_failed: "Kuvan tallennus epäonnistui: ", mb_title: "Mediakirjasto", mb_loading: "Ladataan…", mb_root: "Media", mb_back: "Takaisin", mb_empty: "Ei tiedostoja", mb_error: "Virhe: ",
+    my_tasks: "Omat teht\u00e4v\u00e4t",
+    add_placeholder: "Lis\u00e4\u00e4 uusi teht\u00e4v\u00e4...",
+    dialog_cancel: "Peruuta", dialog_add: "Lis\u00e4\u00e4",
+    filter_all: "Kaikki", filter_open: "Avoimet", filter_done: "Valmiit", filter_due_soon: "Pian",
+    ed_show_due_soon_filter: "Pian-suodatin", ed_due_soon_days: "P\u00e4ivi\u00e4 eteenp\u00e4in", ed_hide_overdue: "Piilota my\u00f6h\u00e4ss\u00e4 olevat",
+    progress: "{0} / {1} valmis",
+    empty: "Ei teht\u00e4vi\u00e4",
+    drag_handle: "Vet\u00e4\u00e4 j\u00e4rjest\u00e4\u00e4ksesi",
+    due_date: "Er\u00e4p\u00e4iv\u00e4", notes: "Muistiinpanot", notes_placeholder: "Lis\u00e4\u00e4 muistiinpanoja t\u00e4h\u00e4n",
+    sub_items: "Aliteht\u00e4v\u00e4t", add_sub_item: "+ Lis\u00e4\u00e4 aliteht\u00e4v\u00e4",
+    recurrence: "Toistuvuus", recurrence_enabled: "K\u00e4yt\u00f6ss\u00e4", recurrence_every: "Joka",
+    rec_hours: "Tunnit", rec_days: "P\u00e4iv\u00e4t", rec_weeks: "Viikot", rec_months: "Kuukaudet", rec_years: "Vuodet",
+    rec_short_h: "t", rec_short_d: "p", rec_short_w: "v", rec_short_m: "kk", rec_short_y: "v",
+    priority: "Prioriteetti", pri_high: "Korkea", pri_medium: "Keskitaso", pri_low: "Matala",
+    ed_show_priority: "Prioriteetit",
+    rec_hourly: "Tunneittain", rec_daily: "P\u00e4ivitt\u00e4in", rec_weekly: "Viikoittain", rec_monthly: "Kuukausittain", rec_yearly: "Vuosittain",
+    rec_type_interval: "Joka \u2026", rec_type_weekdays: "Arkip\u00e4ivin\u00e4",
+    rec_wd_0: "Ma", rec_wd_1: "Ti", rec_wd_2: "Ke", rec_wd_3: "To", rec_wd_4: "Pe", rec_wd_5: "La", rec_wd_6: "Su",
+    assigned_to: "M\u00e4\u00e4ritetty", nobody: "\u2013 Ei ket\u00e4\u00e4n \u2013",
+    delete_task: "Poista teht\u00e4v\u00e4", delete_sub: "Poista",
+    ed_default_filter: "Oletussuodatin", ed_list: "Lista",
+    ed_title: "Otsikko (valinnainen)", ed_title_placeholder: "Oletus: listan nimi",
+    ed_display: "N\u00e4ytt\u00f6", ed_show_title: "Otsikko", ed_show_progress: "Edistyminen",
+    ed_show_due_date: "Er\u00e4p\u00e4iv\u00e4t", ed_show_notes: "Muistiinpanot", ed_show_recurrence: "Toistot",
+    ed_show_sub_items: "Aliteht\u00e4v\u00e4t", ed_show_person: "Henkil\u00f6t",
+    ed_auto_delete: "Poista valmiit v\u00e4litt\u00f6m\u00e4sti", ed_compact: "Kompakti", ed_show_tags: "Tunnisteet",
+    ed_confirm_complete: "Vahvista ennen valmiiksi merkitsemist\u00e4",
+    ed_show_add_due: "Er\u00e4p\u00e4iv\u00e4 lis\u00e4tt\u00e4ess\u00e4",
+    ed_max_height: "Enimm\u00e4iskorkeus (px, 0 = rajaton)", ed_badge_priority: "Prioriteettimerkit", ed_badge_progress: "Edistymismerkit", ed_badge_due: "Er\u00e4p\u00e4iv\u00e4merkit", ed_badge_recurrence: "Toistomerkit", ed_badge_person: "Henkil\u00f6merkit", ed_badge_tags: "Tunnistemerkit", ed_badge_reminders: "Muistutusmerkit",
+    ed_sec_defaults: "Oletukset",
+    ed_default_assignee: "Oletusvastuuhenkil\u00f6",
+    ed_defaults_hint: "Koskee jokaista listan uutta teht\u00e4v\u00e4\u00e4 luontitavasta riippumatta. Muutokset tallennetaan heti.", ed_defaults_saved: "Tallennettu", ed_defaults_load_failed: "Oletuksia ei voitu ladata", ed_defaults_save_failed: "Tallennus ep\u00e4onnistui",
+    confirm_complete_msg: "Merkit\u00e4\u00e4nk\u00f6 \u201d{0}\u201d valmiiksi?",
+    confirm_complete_ok: "Merkitse valmiiksi",
+    ed_hint: "Uusia listoja voi luoda kohdassa Asetukset \u2192 Integraatiot \u2192 Home Tasks.",
+    tags: "Tunnisteet", add_tag: "+ Lis\u00e4\u00e4 tunniste", tag_placeholder: "Uusi tunniste...", remove_tag: "Poista", tag_suggestions_label: "Olemassa olevat tunnisteet", tag_no_matches: "Ei vastaavia tunnisteita",
+    new_sub_item: "Uusi aliteht\u00e4v\u00e4", remove_reminder: "Poista muistutus",
+    sort_label: "Lajittele", sort_manual: "Manuaalinen", sort_due: "Er\u00e4p\u00e4iv\u00e4",
+    sort_priority: "Prioriteetti", sort_title: "Otsikko (A\u2013\u00d6)", sort_person: "M\u00e4\u00e4ritetty",
+    ed_show_sort: "Lajittelu", ed_default_sort: "Oletuslajittelu",
+    reminder: "Muistutukset", rem_add: "+ Lis\u00e4\u00e4 muistutus", rem_none: "Ei muistutusta",
+    rem_at_due: "Er\u00e4ajalla", rem_5m: "5 min. ennen", rem_15m: "15 min. ennen",
+    rem_30m: "30 min. ennen", rem_1h: "1 tunti ennen", rem_2h: "2 tuntia ennen",
+    rem_1d: "1 p\u00e4iv\u00e4 ennen", rem_2d: "2 p\u00e4iv\u00e4\u00e4 ennen",
+    ed_show_reminders: "Muistutukset", ed_add_column: "Lis\u00e4\u00e4 sarake",
+    ed_move_left: "Siirr\u00e4 vasemmalle", ed_move_right: "Siirr\u00e4 oikealle",
+    ed_duplicate: "Kopioi sarake", ed_delete_column: "Poista sarake",
+    ed_code_editor: "Koodieditori", ed_visual_editor: "Visuaalinen editori",
+    ed_icon: "Kuvake (valinnainen)", ed_card_title: "Kortin otsikko (valinnainen)",
+    ed_card_title_placeholder: "Otsikko sarakkeiden yl\u00e4puolella",
+    ed_sec_view: "N\u00e4ytt\u00f6", ed_sec_display: "Konfiguraatio",
+    ed_sec_filters: "Suodattimet",
+    ed_preset_assignees: "Rajaa henkil\u00f6ihin",
+    ed_preset_labels: "Rajaa tunnisteisiin",
+    ed_ms_add: "Lis\u00e4\u00e4\u2026",
+    due_time_lbl: "Aika", due_date_lbl: "P\u00e4iv\u00e4m\u00e4\u00e4r\u00e4", rec_mode_lbl: "Tila",
+    rec_time: "Aika", rec_end: "Loppu", rec_end_never: "Ei koskaan", rec_end_date: "Asti", rec_end_count: "X kertaa",
+    rec_end_date_lbl: "Asti", rec_max_count_lbl: "M\u00e4\u00e4r\u00e4", rec_remaining: "{0} j\u00e4ljell\u00e4", rec_start_date_lbl: "Alkaen",
+    rec_pattern_dom: "Kuukauden p\u00e4iv\u00e4", rec_pattern_nth: "N. viikonp\u00e4iv\u00e4", rec_pattern_none: "Valmistumisesta",
+    rec_dom_lbl: "P\u00e4iv\u00e4", rec_dom_last: "Viimeinen p\u00e4iv\u00e4",
+    rec_nth_lbl: "Numero", rec_nth_1: "1.", rec_nth_2: "2.", rec_nth_3: "3.", rec_nth_4: "4.", rec_nth_last: "Viimeinen",
+    rec_anniversary_lbl: "Pvm", rec_dd: "P\u00e4iv\u00e4", rec_mm: "Kuukausi",
+    rec_dom_short: ".", rec_last_short: "viimeinen",
+    rec_value_lbl: "Joka", rec_unit_lbl: "Yksikk\u00f6", rec_wd_lbl: "Viikonp\u00e4iv\u00e4", rec_at_lbl: "Klo",
+    rec_todoist_pattern_unsupported: "Alikaavat eiv\u00e4t ole tuettuja, kun aikav\u00e4li on suurempi kuin 1.",
+    history: "Historia", history_created: "Luotu", history_completed: "Valmis", history_reopened: "Avattu uudelleen",
+    history_reset: "Automaattinen palautus", history_changed: "muutettu", history_empty: "Ei historiaa", hist_title: "Otsikko", history_disabled: "K\u00e4yt\u00f6ss\u00e4 poistettu",
+    ed_show_history: "Historiat", hist_by_user: "K\u00e4ytt\u00e4j\u00e4",
+    ed_show_add_task: "Lis\u00e4\u00e4 teht\u00e4v\u00e4",
+    assigned_unknown: "Tuntematon (%s)", recurrence_readonly: "Hallinnoi %s", synced_with: "Synkronoitu %s kanssa",
+    due_today: "T\u00e4n\u00e4\u00e4n", due_tomorrow: "Huomenna", due_yesterday: "Eilen",
+    due_day_after_tomorrow: "Ylihuomenna", due_day_before_yesterday: "Toissap\u00e4iv\u00e4n\u00e4",
+    due_in_hours: "{0} t {1} min p\u00e4\u00e4st\u00e4", due_in_minutes: "{0} min p\u00e4\u00e4st\u00e4", due_in_seconds: "Nyt",
+    due_ago_hours: "{0} t {1} min sitten", due_ago_minutes: "{0} min sitten", due_ago_seconds: "Juuri nyt",
+  },
+  hu: {
+    voice_failed: "A hangbevitel sikertelen",
+    confirm_delete_section: "Törli ezt a szakaszt? A benne lévő feladatok rendezetlenné válnak.", done_section_header: "Kész", duplicate_task: "Másolat", move_task: "\u00c1thelyez\u00e9s", move_task_msg: "\u201e{0}\u201d \u00e1thelyez\u00e9se ide:", ed_show_move: "\u00c1thelyez\u00e9s gomb", ed_add_section: "+ Szakasz hozzáadása", ed_ai_image_entity: "MI-entitás képgeneráláshoz", ed_ai_image_entity_placeholder: "pl. ai_task.openai", ed_ai_image_section: "MI-képgenerálás", ed_ai_prompt_prefix: "Prompt előtag (opcionális)", ed_ai_prompt_prefix_placeholder: "pl. Minimalista ikon", ed_auto_image: "Kép automatikus generálása", ed_delete_section: "Szakasz törlése", ed_external_lists: "Külső", ed_loading: "Betöltés…", ed_move_down: "Mozgatás le", ed_move_up: "Mozgatás fel", ed_sec_sections: "Szakaszok", ed_section_icon: "Ikon", ed_section_name: "Név", ed_section_name_prompt: "Szakasz neve:", ed_sections_empty: "Még nincsenek szakaszok — a feladatok csoportosítás nélkül jelennek meg.", ed_sections_select_list_hint: "Először válassz egy listát a szakaszok kezeléséhez.", ed_show_filters: "\u00c1llapotsz\u0171r\u0151", ed_show_images: "Képek", ed_show_person_chips: "Szem\u00e9lysz\u0171r\u0151", ed_show_tag_chips: "C\u00edmkesz\u0171r\u0151", ed_show_tile_title: "Cím a csempéken", ed_show_voice: "Hangbevitel", ed_tile_help: "Csempenézet:\n• Kattintás = kész\n• Nyomva tartás = szerkesztés\n• Húzás = átrendezés", ed_view_mode: "Nézet mód", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Csempék",
+    voice_input: "Hangbevitel", voice_stop: "Felvétel leállítása", img_label: "Kép", img_generate: "Generálás", img_regenerate: "Újragenerálás", img_generating: "Generálás…", img_from_media: "Médiatárból", img_remove: "Kép eltávolítása", img_generate_failed: "A képgenerálás sikertelen: ", img_save_failed: "A kép mentése sikertelen: ", mb_title: "Médiatár", mb_loading: "Betöltés…", mb_root: "Média", mb_back: "Vissza", mb_empty: "Nincsenek fájlok", mb_error: "Hiba: ",
+    my_tasks: "Feladataim",
+    add_placeholder: "\u00daj feladat hozz\u00e1ad\u00e1sa...",
+    dialog_cancel: "M\u00e9gse", dialog_add: "Hozz\u00e1ad",
+    filter_all: "\u00d6sszes", filter_open: "Nyitott", filter_done: "K\u00e9sz", filter_due_soon: "Hamarosan",
+    ed_show_due_soon_filter: "Hamarosan sz\u0171r\u0151", ed_due_soon_days: "Napok el\u0151re", ed_hide_overdue: "Lej\u00e1rtak elrejt\u00e9se",
+    progress: "{0} / {1} k\u00e9sz",
+    empty: "Nincsenek feladatok",
+    drag_handle: "H\u00fazza az \u00e1trendez\u00e9shez",
+    due_date: "Hat\u00e1rid\u0151", notes: "Megjegyz\u00e9sek", notes_placeholder: "Megjegyz\u00e9sek hozz\u00e1ad\u00e1sa",
+    sub_items: "Alfeladatok", add_sub_item: "+ Alfeladat hozz\u00e1ad\u00e1sa",
+    recurrence: "Ism\u00e9tl\u00e9s", recurrence_enabled: "Enged\u00e9lyezve", recurrence_every: "Minden",
+    rec_hours: "\u00d3ra", rec_days: "Nap", rec_weeks: "H\u00e9t", rec_months: "H\u00f3nap", rec_years: "Év",
+    rec_short_h: "\u00f3", rec_short_d: "n", rec_short_w: "h", rec_short_m: "h\u00f3", rec_short_y: "év",
+    priority: "Priorit\u00e1s", pri_high: "Magas", pri_medium: "K\u00f6zepes", pri_low: "Alacsony",
+    ed_show_priority: "Priorit\u00e1sok",
+    rec_hourly: "\u00d3r\u00e1nk\u00e9nt", rec_daily: "Naponta", rec_weekly: "Hetente", rec_monthly: "Havonta", rec_yearly: "Évente",
+    rec_type_interval: "Minden \u2026", rec_type_weekdays: "Munkanapokon",
+    rec_wd_0: "H", rec_wd_1: "K", rec_wd_2: "Sze", rec_wd_3: "Cs", rec_wd_4: "P", rec_wd_5: "Szo", rec_wd_6: "V",
+    assigned_to: "Hozz\u00e1rendelve", nobody: "\u2013 Senki \u2013",
+    delete_task: "Feladat t\u00f6rl\u00e9se", delete_sub: "T\u00f6rl\u00e9s",
+    ed_default_filter: "Alap\u00e9rtelmezett sz\u0171r\u0151", ed_list: "Lista",
+    ed_title: "C\u00edm (nem k\u00f6telez\u0151)", ed_title_placeholder: "Alap\u00e9rtelmezett: lista neve",
+    ed_display: "Megjelen\u00edt\u00e9s", ed_show_title: "C\u00edm", ed_show_progress: "Halad\u00e1s",
+    ed_show_due_date: "Hat\u00e1rid\u0151k", ed_show_notes: "Megjegyz\u00e9sek", ed_show_recurrence: "Ism\u00e9tl\u00e9sek",
+    ed_show_sub_items: "Alfeladatok", ed_show_person: "Szem\u00e9lyek",
+    ed_auto_delete: "K\u00e9sz feladatok azonnali t\u00f6rl\u00e9se", ed_compact: "Kompakt", ed_show_tags: "C\u00edmk\u00e9k",
+    ed_confirm_complete: "Meger\u0151s\u00edt\u00e9s befejez\u00e9s el\u0151tt",
+    ed_show_add_due: "Hat\u00e1rid\u0151 hozz\u00e1ad\u00e1skor",
+    ed_max_height: "Max. magass\u00e1g (px, 0 = korl\u00e1tlan)", ed_badge_priority: "Priorit\u00e1s-c\u00edmk\u00e9k", ed_badge_progress: "Folyamat-c\u00edmk\u00e9k", ed_badge_due: "Hat\u00e1rid\u0151-c\u00edmk\u00e9k", ed_badge_recurrence: "Ism\u00e9tl\u00e9s-c\u00edmk\u00e9k", ed_badge_person: "Szem\u00e9ly-c\u00edmk\u00e9k", ed_badge_tags: "C\u00edmke-chipek", ed_badge_reminders: "Eml\u00e9keztet\u0151-c\u00edmk\u00e9k",
+    ed_sec_defaults: "Alap\u00e9rtelmez\u00e9sek",
+    ed_default_assignee: "Alap\u00e9rtelmezett felel\u0151s",
+    ed_defaults_hint: "A lista minden \u00faj feladat\u00e1ra \u00e9rv\u00e9nyes, b\u00e1rhogyan is j\u00f6n l\u00e9tre. A m\u00f3dos\u00edt\u00e1sok azonnal ment\u00e9sre ker\u00fclnek.", ed_defaults_saved: "Mentve", ed_defaults_load_failed: "Az alap\u00e9rtelmez\u00e9sek bet\u00f6lt\u00e9se sikertelen", ed_defaults_save_failed: "A ment\u00e9s sikertelen",
+    confirm_complete_msg: "Megjel\u00f6l\u00f6d \u201e{0}\u201d-t k\u00e9szk\u00e9nt?",
+    confirm_complete_ok: "K\u00e9sz",
+    ed_hint: "\u00daj list\u00e1k a Be\u00e1ll\u00edt\u00e1sok \u2192 Integr\u00e1ci\u00f3k \u2192 Home Tasks alatt hozhat\u00f3k l\u00e9tre.",
+    tags: "C\u00edmk\u00e9k", add_tag: "+ C\u00edmke hozz\u00e1ad\u00e1sa", tag_placeholder: "\u00daj c\u00edmke...", remove_tag: "Elt\u00e1vol\u00edt\u00e1s", tag_suggestions_label: "L\u00e9tez\u0151 c\u00edmk\u00e9k", tag_no_matches: "Nincs egyez\u0151 c\u00edmke",
+    new_sub_item: "\u00daj alfeladat", remove_reminder: "Eml\u00e9keztet\u0151 elt\u00e1vol\u00edt\u00e1sa",
+    sort_label: "Rendez\u00e9s", sort_manual: "Manu\u00e1lis", sort_due: "Hat\u00e1rid\u0151",
+    sort_priority: "Priorit\u00e1s", sort_title: "C\u00edm (A\u2013Z)", sort_person: "Hozz\u00e1rendelve",
+    ed_show_sort: "Rendez\u00e9s", ed_default_sort: "Alap\u00e9rtelmezett rendez\u00e9s",
+    reminder: "Eml\u00e9keztet\u0151k", rem_add: "+ Eml\u00e9keztet\u0151 hozz\u00e1ad\u00e1sa", rem_none: "Nincs eml\u00e9keztet\u0151",
+    rem_at_due: "A hat\u00e1rid\u0151kor", rem_5m: "5 perccel el\u0151tte", rem_15m: "15 perccel el\u0151tte",
+    rem_30m: "30 perccel el\u0151tte", rem_1h: "1 \u00f3r\u00e1val el\u0151tte", rem_2h: "2 \u00f3r\u00e1val el\u0151tte",
+    rem_1d: "1 nappal el\u0151tte", rem_2d: "2 nappal el\u0151tte",
+    ed_show_reminders: "Eml\u00e9keztet\u0151k", ed_add_column: "Oszlop hozz\u00e1ad\u00e1sa",
+    ed_move_left: "Mozgat\u00e1s balra", ed_move_right: "Mozgat\u00e1s jobbra",
+    ed_duplicate: "Oszlop duplik\u00e1l\u00e1sa", ed_delete_column: "Oszlop t\u00f6rl\u00e9se",
+    ed_code_editor: "K\u00f3dszerkeszt\u0151", ed_visual_editor: "Vizu\u00e1lis szerkeszt\u0151",
+    ed_icon: "Ikon (nem k\u00f6telez\u0151)", ed_card_title: "K\u00e1rtya c\u00edme (nem k\u00f6telez\u0151)",
+    ed_card_title_placeholder: "C\u00edm az oszlopok felett",
+    ed_sec_view: "Megjelen\u00edt\u00e9s", ed_sec_display: "Konfigur\u00e1ci\u00f3",
+    ed_sec_filters: "Sz\u0171r\u0151k",
+    ed_preset_assignees: "Korl\u00e1toz\u00e1s szem\u00e9lyekre",
+    ed_preset_labels: "Korl\u00e1toz\u00e1s c\u00edmk\u00e9kre",
+    ed_ms_add: "Hozz\u00e1ad\u00e1s\u2026",
+    due_time_lbl: "Id\u0151pont", due_date_lbl: "D\u00e1tum", rec_mode_lbl: "M\u00f3d",
+    rec_time: "Id\u0151pont", rec_end: "V\u00e9ge", rec_end_never: "Soha", rec_end_date: "Eddig", rec_end_count: "X alkalom",
+    rec_end_date_lbl: "Eddig", rec_max_count_lbl: "Darabsz\u00e1m", rec_remaining: "m\u00e9g {0}", rec_start_date_lbl: "Ett\u0151l",
+    rec_pattern_dom: "H\u00f3nap napja", rec_pattern_nth: "N-edik nap", rec_pattern_none: "Befejez\u00e9st\u0151l",
+    rec_dom_lbl: "Nap", rec_dom_last: "Utols\u00f3 nap",
+    rec_nth_lbl: "Sorsz\u00e1m", rec_nth_1: "1.", rec_nth_2: "2.", rec_nth_3: "3.", rec_nth_4: "4.", rec_nth_last: "Utols\u00f3",
+    rec_anniversary_lbl: "D\u00e1tum", rec_dd: "Nap", rec_mm: "H\u00f3nap",
+    rec_dom_short: ".", rec_last_short: "utols\u00f3",
+    rec_value_lbl: "Minden", rec_unit_lbl: "Egys\u00e9g", rec_wd_lbl: "H\u00e9t napja", rec_at_lbl: "Id\u0151pont",
+    rec_todoist_pattern_unsupported: "Az almint\u00e1zatok nem t\u00e1mogatottak, ha az id\u0151k\u00f6z nagyobb mint 1.",
+    history: "El\u0151zm\u00e9nyek", history_created: "L\u00e9trehozva", history_completed: "Teljes\u00edtve", history_reopened: "\u00dajranyitva",
+    history_reset: "Automatikus visszavonas", history_changed: "m\u00f3dos\u00edtva", history_empty: "Nincs el\u0151zm\u00e9ny", hist_title: "C\u00edm", history_disabled: "Letiltva",
+    ed_show_history: "El\u0151zm\u00e9nyek", hist_by_user: "Felhaszn\u00e1l\u00f3",
+    ed_show_add_task: "Feladat hozz\u00e1ad\u00e1sa",
+    assigned_unknown: "Ismeretlen (%s)", recurrence_readonly: "Kezeli: %s", synced_with: "Szinkroniz\u00e1lva: %s",
+    due_today: "Ma", due_tomorrow: "Holnap", due_yesterday: "Tegnap",
+    due_day_after_tomorrow: "Holnaput\u00e1n", due_day_before_yesterday: "Tegnapel\u0151tt",
+    due_in_hours: "{0} \u00f3 {1} perc m\u00falva", due_in_minutes: "{0} perc m\u00falva", due_in_seconds: "Most",
+    due_ago_hours: "{0} \u00f3 {1} perccel ezel\u0151tt", due_ago_minutes: "{0} perccel ezel\u0151tt", due_ago_seconds: "\u00c9pp most",
+  },
+  de: {
+    voice_failed: "Spracheingabe fehlgeschlagen",
+    ed_external_lists: "Extern",
+    voice_input: "Spracheingabe", voice_stop: "Aufnahme stoppen", img_label: "Bild", img_generate: "Generieren", img_regenerate: "Neu generieren", img_generating: "Generiere…", img_from_media: "Aus Mediathek", img_remove: "Bild entfernen", img_generate_failed: "Bildgenerierung fehlgeschlagen: ", img_save_failed: "Bild speichern fehlgeschlagen: ", mb_title: "Mediathek", mb_loading: "Lädt…", mb_root: "Medien", mb_back: "Zurück", mb_empty: "Keine Dateien", mb_error: "Fehler: ",
+    my_tasks: "Meine Aufgaben",
+    add_placeholder: "Neue Aufgabe hinzuf\u00fcgen...",
+    dialog_cancel: "Abbrechen", dialog_add: "Hinzuf\u00fcgen",
+    filter_all: "Alle",
+    filter_open: "Offen",
+    filter_done: "Erledigt",
+    filter_due_soon: "Bald f\u00e4llig",
+    ed_show_due_soon_filter: "Bald-f\u00e4llig-Filter",
+    ed_due_soon_days: "Tage voraus",
+    ed_hide_overdue: "\u00dcberf\u00e4llige ausblenden",
+    progress: "{0} von {1} erledigt",
+    empty: "Keine Aufgaben vorhanden",
+    drag_handle: "Verschieben",
+    due_date: "F\u00e4lligkeit",
+    notes: "Notizen",
+    notes_placeholder: "Hier kannst du Notizen hinzuf\u00fcgen",
+    sub_items: "Unteraufgaben",
+    add_sub_item: "+ Unteraufgabe hinzuf\u00fcgen",
+    recurrence: "Wiederholung",
+    recurrence_enabled: "Aktiviert",
+    recurrence_every: "Alle",
+    rec_hours: "Stunden", rec_days: "Tage", rec_weeks: "Wochen", rec_months: "Monate", rec_years: "Jahre",
+    rec_short_h: "Std.", rec_short_d: "T.", rec_short_w: "Wo.", rec_short_m: "Mon.", rec_short_y: "J.",
+    priority: "Priorit\u00e4t",
+    pri_high: "Hoch", pri_medium: "Mittel", pri_low: "Niedrig",
+    ed_show_priority: "Priorit\u00e4ten",
+    rec_hourly: "St\u00fcndl.", rec_daily: "T\u00e4glich", rec_weekly: "W\u00f6chentl.", rec_monthly: "Monatl.", rec_yearly: "J\u00e4hrl.",
+    rec_type_interval: "Alle \u2026", rec_type_weekdays: "An Wochentagen",
+    rec_wd_0: "Mo", rec_wd_1: "Di", rec_wd_2: "Mi", rec_wd_3: "Do", rec_wd_4: "Fr", rec_wd_5: "Sa", rec_wd_6: "So",
+    assigned_to: "Zugewiesen an",
+    nobody: "\u2013 Niemand \u2013",
+    delete_task: "Aufgabe l\u00f6schen",
+    duplicate_task: "Duplizieren", move_task: "Verschieben", move_task_msg: "\u201e{0}\u201c verschieben nach:", ed_show_move: "Verschieben-Button",
+    delete_sub: "L\u00f6schen",
+    ed_default_filter: "Standardfilter",
+    ed_list: "Liste",
+    ed_title: "Titel (optional)",
+    ed_title_placeholder: "Standard: Listenname",
+    ed_display: "Anzeige",
+    ed_show_title: "Titel",
+    ed_show_progress: "Fortschritt",
+    ed_show_due_date: "F\u00e4lligkeiten",
+    ed_show_notes: "Notizen",
+    ed_show_recurrence: "Wiederholungen",
+    ed_show_sub_items: "Unteraufgaben",
+    ed_show_person: "Personen",
+    ed_auto_delete: "Erledigte sofort l\u00f6schen",
+    ed_confirm_complete: "Vor dem Erledigen nachfragen",
+    ed_show_add_due: "F\u00e4lligkeit beim Anlegen",
+    ed_max_height: "Max. H\u00f6he (px, 0 = unbegrenzt)", ed_badge_priority: "Priorit\u00e4ts-Chips", ed_badge_progress: "Fortschritts-Chips", ed_badge_due: "F\u00e4lligkeits-Chips", ed_badge_recurrence: "Wiederholungs-Chips", ed_badge_person: "Personen-Chips", ed_badge_tags: "Tag-Chips", ed_badge_reminders: "Erinnerungs-Chips",
+    ed_sec_defaults: "Standardwerte",
+    ed_default_assignee: "Standard-Zust\u00e4ndige(r)",
+    ed_defaults_hint: "Gilt f\u00fcr jede neue Aufgabe dieser Liste \u2014 egal wie sie angelegt wird (Karte, Service, Sprache, Todo). \u00c4nderungen werden sofort gespeichert.", ed_defaults_saved: "Gespeichert", ed_defaults_load_failed: "Defaults konnten nicht geladen werden", ed_defaults_save_failed: "Speichern fehlgeschlagen",
+    confirm_complete_msg: "„{0}“ als erledigt markieren?",
+    confirm_complete_ok: "Erledigen",
+    ed_compact: "Kompakt",
+    ed_show_tags: "Tags",
+    ed_hint: "Neue Listen k\u00f6nnen unter Einstellungen \u2192 Integrationen \u2192 Home Tasks erstellt werden.",
+    tags: "Tags",
+    add_tag: "+ Tag hinzuf\u00fcgen",
+    tag_placeholder: "Neues Tag...",
+    remove_tag: "Entfernen",
+    tag_suggestions_label: "Vorhandene Tags",
+    tag_no_matches: "Keine passenden Tags",
+    new_sub_item: "Neue Unteraufgabe",
+    remove_reminder: "Erinnerung entfernen",
+    sort_label: "Sortierung",
+    sort_manual: "Manuell",
+    sort_due: "F\u00e4lligkeit",
+    sort_priority: "Priorit\u00e4t",
+    sort_title: "Titel (A\u2013Z)",
+    sort_person: "Zugewiesen",
+    ed_show_sort: "Sortierung",
+    ed_show_filters: "Status-Filter",
+    ed_show_tag_chips: "Tag-Filter",
+    ed_show_person_chips: "Personen-Filter",
+    ed_show_voice: "Spracheingabe",
+    ed_auto_image: "Bild automatisch generieren",
+    ed_default_sort: "Standard-Sortierung",
+    reminder: "Erinnerungen",
+    rem_add: "+ Erinnerung hinzuf\u00fcgen",
+    rem_none: "Keine Erinnerung",
+    rem_at_due: "Zur F\u00e4lligkeit",
+    rem_5m: "5 Min. vorher",
+    rem_15m: "15 Min. vorher",
+    rem_30m: "30 Min. vorher",
+    rem_1h: "1 Std. vorher",
+    rem_2h: "2 Std. vorher",
+    rem_1d: "1 Tag vorher",
+    rem_2d: "2 Tage vorher",
+    ed_show_reminders: "Erinnerungen",
+    ed_add_column: "Spalte hinzuf\u00fcgen",
+    ed_move_left: "Nach links",
+    ed_move_right: "Nach rechts",
+    ed_duplicate: "Spalte duplizieren",
+    ed_delete_column: "Spalte l\u00f6schen",
+    ed_code_editor: "Code-Editor",
+    ed_visual_editor: "Visueller Editor",
+    ed_icon: "Symbol (optional)",
+    ed_card_title: "Kartentitel (optional)",
+    ed_card_title_placeholder: "Titel \u00fcber den Spalten",
+    ed_sec_view: "Darstellung",
+    ed_sec_display: "Aufgaben-Funktionen",
+    ed_tile_help: "Kachelansicht:\n• Klicken = erledigen\n• Gedrückt halten = editieren\n• Ziehen = Position ändern",
+    due_time_lbl: "Uhrzeit",
+    due_date_lbl: "Datum",
+    rec_mode_lbl: "Modus",
+    rec_time: "Uhrzeit", rec_end: "Ende", rec_end_never: "Nie", rec_end_date: "Bis", rec_end_count: "X mal",
+    rec_end_date_lbl: "Bis", rec_max_count_lbl: "Anzahl", rec_remaining: "noch {0}", rec_start_date_lbl: "Ab",
+    rec_pattern_dom: "Tag im Monat", rec_pattern_nth: "N-ter Wochentag", rec_pattern_none: "Ab Erledigung",
+    rec_dom_lbl: "Tag", rec_dom_last: "letzten Tag",
+    rec_nth_lbl: "Am", rec_nth_1: "1.", rec_nth_2: "2.", rec_nth_3: "3.", rec_nth_4: "4.", rec_nth_last: "letzten",
+    rec_anniversary_lbl: "Am",
+    rec_dd: "Tag", rec_mm: "Monat",
+    rec_dom_short: ".", rec_last_short: "letzter",
+    rec_value_lbl: "Alle", rec_unit_lbl: "Einheit", rec_wd_lbl: "Wochentag",
+    rec_at_lbl: "Um",
+    rec_todoist_pattern_unsupported: "Untermuster sind nicht m\u00f6glich, wenn das Intervall gr\u00f6\u00dfer als 1 ist.",
+    history: "Verlauf", history_created: "Erstellt", history_completed: "Erledigt", history_reopened: "Wieder ge\u00f6ffnet",
+    history_reset: "Automatisch zur\u00fcckgesetzt", history_changed: "ge\u00e4ndert", history_empty: "Noch kein Verlauf", hist_title: "Titel", history_disabled: "Deaktiviert",
+    ed_show_history: "Verläufe", hist_by_user: "Benutzer",
+    ed_show_images: "Bilder",
+    ed_view_mode: "Ansichtsmodus", ed_view_mode_list: "Liste", ed_view_mode_tiles: "Kacheln",
+    ed_show_tile_title: "Titel in Kacheln",
+    ed_show_add_task: "Aufgabe hinzufügen",
+    assigned_unknown: "Unbekannt (%s)", recurrence_readonly: "Verwaltet von %s", synced_with: "Synchronisiert mit %s",
+    due_today: "Heute", due_tomorrow: "Morgen", due_yesterday: "Gestern",
+    due_day_after_tomorrow: "\u00dcbermorgen", due_day_before_yesterday: "Vorgestern",
+    due_in_hours: "In {0} Std {1} Min", due_in_minutes: "In {0} Min", due_in_seconds: "Jetzt",
+    due_ago_hours: "Vor {0} Std {1} Min", due_ago_minutes: "Vor {0} Min", due_ago_seconds: "Gerade eben",
+    done_section_header: "Erledigt",
+    ed_sec_sections: "Bereiche",
+    ed_section_name: "Name",
+    ed_section_icon: "Symbol",
+    ed_add_section: "+ Bereich hinzufügen",
+    ed_delete_section: "Bereich löschen",
+    ed_section_name_prompt: "Name des Bereichs:",
+    ed_sections_select_list_hint: "Erst eine Liste wählen, dann Bereiche verwalten.",
+    ed_sections_empty: "Noch keine Bereiche – Aufgaben werden flach angezeigt.",
+    ed_loading: "Lädt…",
+    ed_move_up: "Nach oben",
+    ed_move_down: "Nach unten",
+    confirm_delete_section: "Diesen Bereich wirklich löschen? Enthaltene Aufgaben werden unsortiert.",
+    ed_sec_filters: "Filter",
+    ed_preset_assignees: "Auf Personen begrenzen",
+    ed_preset_labels: "Auf Tags begrenzen",
+    ed_ms_add: "Hinzufügen…",
+    ed_ai_image_section: "KI-Bildgenerierung",
+    ed_ai_image_entity: "KI-Entität für Bildgenerierung",
+    ed_ai_image_entity_placeholder: "z.B. ai_task.openai",
+    ed_ai_prompt_prefix: "Prompt-Präfix (optional)",
+    ed_ai_prompt_prefix_placeholder: "z.B. Minimalistisches Icon von",
+  },
+};
+
+const REMINDER_OFFSETS = [
+  [0, "rem_at_due"],
+  [5, "rem_5m"],
+  [15, "rem_15m"],
+  [30, "rem_30m"],
+  [60, "rem_1h"],
+  [120, "rem_2h"],
+  [1440, "rem_1d"],
+  [2880, "rem_2d"],
+];
+
+// Reminder editing shared by the task detail sheet and the editor's Defaults
+// section (host provides _el/_t). MAX_REMINDERS mirrors the backend's
+// MAX_REMINDERS_PER_TASK.
+const MAX_REMINDERS = 5;
+const reminderOffsetOptions = (host, offset) => {
+  const opts = [];
+  let matched = false;
+  for (const [val, key] of REMINDER_OFFSETS) {
+    const opt = host._el("option", { value: String(val), textContent: host._t(key) });
+    if (val === offset) { opt.selected = true; matched = true; }
+    opts.push(opt);
+  }
+  // Offsets set via WS/service can be any 0..43200 minutes: give them their
+  // own option instead of silently displaying (and rewriting them to) the
+  // first preset.
+  if (!matched && Number.isFinite(offset)) {
+    const opt = host._el("option", { value: String(offset), textContent: offset + " min" });
+    opt.selected = true;
+    opts.push(opt);
+  }
+  return opts;
+};
+const nextFreeReminderOffset = (used) =>
+  (REMINDER_OFFSETS.find(([v]) => !used.has(v)) || REMINDER_OFFSETS[0])[0];
+
+// Person options shared by the detail sheet's assignee select and the
+// editor's Defaults section (the "nobody" entry stays with the callers).
+const personEntries = (hass) =>
+  Object.keys((hass && hass.states) || {})
+    .filter((eid) => eid.startsWith("person."))
+    .sort()
+    .map((eid) => ({
+      value: eid,
+      label: (hass.states[eid] && hass.states[eid].attributes && hass.states[eid].attributes.friendly_name) || eid,
+    }));
+
+// HA todo entity feature bits (TodoListEntityFeature) used for capability gating.
+const TODO_FEATURE = { SET_DUE_DATE: 16, SET_DUE_DATETIME: 32, SET_DESCRIPTION: 64 };
+
+// Can tasks of an external list carry a due date / a due time? `info` is an
+// entry of the get_external_lists result ({supported_features, capabilities}).
+// One definition shared by the card (add row, detail panel) and the editor so
+// the three places can't drift apart.
+function listSupportsDue(info) {
+  const features = (info && info.supported_features) || 0;
+  const caps = (info && info.capabilities) || {};
+  return !!((features & TODO_FEATURE.SET_DUE_DATE) || (features & TODO_FEATURE.SET_DUE_DATETIME) || caps.can_sync_due_time);
+}
+function listSupportsDueTime(info) {
+  const features = (info && info.supported_features) || 0;
+  return !!(features & TODO_FEATURE.SET_DUE_DATETIME);
+}
+
+class HomeTasksCard extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+    this.shadowRoot.addEventListener("focusout", () => {
+      // After focus leaves all inputs, flush any deferred render
+      requestAnimationFrame(() => {
+        if (this._pendingRender && !this.shadowRoot.activeElement) this._render();
+      });
+    });
+    this._config = { columns: [{}] };
+    this._hass = null;
+    this._lists = [];
+    this._externalLists = [];
+    // Per-column state: [{filter, sortBy, sortOpen, tagFilters, personFilters, tasks, newTaskTitle}]
+    this._columns = [];
+    this._expandedTasks = new Set();
+    this._editingTaskId = null;
+    this._editingSubTaskId = null;
+    this._draggedTaskId = null;
+    this._draggedColIdx = null;
+    this._touchClone = null;
+    this._touchStartTimer = null;
+    this._touchOffsetY = 0;
+    this._draggedSubTaskId = null;
+    this._subTouchClone = null;
+    this._subTouchStartTimer = null;
+    this._subTouchOffsetY = 0;
+    this._lastTitleClick = null;
+    this._initialized = false;
+    this._extPollTimer = null;
+    this._pendingRender = false;
+    this._styleEl = null;
+    this._justAddedTaskId = null;
+    this._addInputRect = null;
+    this._justAppearedTaskIds = null;
+    this._filterAnimPending = false;
+    // Sticky UI state for radios that don't yet have backing data.  When
+    // the user picks "Am" but hasn't entered the actual values, we don't
+    // save anything (avoids snap-back on reload), so the next render would
+    // otherwise re-derive "Ab Erledigung" from the empty data.  These maps
+    // remember the user's pick until either real data is entered (which
+    // takes over) or they pick "Ab Erledigung" (which clears the override).
+    this._weekPatternOverride = new Map();   // task.id → "on"
+    this._yearPatternOverride = new Map();   // task.id → "on"
+    this._generatingImage = new Set();       // task IDs currently generating
+    this._voiceActive = new Map();           // colIdx → cleanup function
+  }
+
+  _defaultColState() {
+    return { filter: "all", sortBy: "manual", sortOpen: false, tagFilters: new Set(), personFilters: new Set(), tasks: [], sections: [], newTaskTitle: "", newTaskDue: "", newTaskDueTime: "" };
+  }
+
+  _t(key, ...args) {
+    let lang = this._localeCode();
+    if (lang === "nb" || lang === "nn") lang = "no";
+    const str = (_TRANSLATIONS[lang] || _TRANSLATIONS.en)[key] || _TRANSLATIONS.en[key] || key;
+    return args.length ? str.replace(/\{(\d+)\}/g, (_, i) => args[i] ?? "") : str;
+  }
+
+  // After the user picks an option in a <select>, drop focus right away.
+  // Otherwise the dropdown stays "highlighted" and the very next click
+  // on a sibling control is consumed by the implicit focus transition
+  // rather than by the new control's own change handler.  Defer to the
+  // next microtask so any synchronous change handler runs first against
+  // the still-focused element.
+  _blurSelectOnChange(select) {
+    select.addEventListener("change", () => {
+      Promise.resolve().then(() => select.blur());
+    });
+  }
+
+  // Format an ordinal day-of-month in the user's language: "1." in
+  // German/most European, "1st"/"2nd"/"3rd"/"4th" in English.
+  _domOrdinal(d) {
+    const lang = this._localeCode();
+    if (lang === "en" || lang.startsWith("en-") || lang === "en_US" || lang === "en_GB") {
+      const mod100 = d % 100;
+      if (mod100 >= 11 && mod100 <= 13) return `${d}th`;
+      const last = d % 10;
+      const suffix = last === 1 ? "st" : last === 2 ? "nd" : last === 3 ? "rd" : "th";
+      return `${d}${suffix}`;
+    }
+    return `${d}.`;
+  }
+
+  setConfig(config) {
+    // Normalize old single-list format to columns format
+    // Keep HA card-level keys (type, etc.) at root, not inside column objects
+    if (config.list_id && !config.columns) {
+      const { type, columns: _c, ...colConfig } = config;
+      config = { ...(type ? { type } : {}), columns: [colConfig] };
+    }
+    if (!config.columns || !Array.isArray(config.columns) || config.columns.length === 0) {
+      config = { ...config, columns: [{}] };
+    }
+    // Strip any stray type keys from column objects (e.g. from previously broken saves)
+    config = {
+      ...config,
+      columns: config.columns.map(({ type: _t, ...col }) => col),
+    };
+
+    const prevConfig = this._config || { columns: [] };
+    this._config = config;
+
+    // Sync _columns array length
+    while (this._columns.length < config.columns.length) {
+      this._columns.push(this._defaultColState());
+    }
+    this._columns.length = config.columns.length;
+    // Clean up stale expanded/editing state when columns are removed
+    if (this._editingTaskId) {
+      const taskStillExists = this._columns.some(cs => cs.tasks?.some(t => t.id === this._editingTaskId));
+      if (!taskStillExists) this._editingTaskId = null;
+    }
+    // Clean up expanded task IDs no longer in any column
+    const allTaskIds = new Set(this._columns.flatMap(cs => (cs.tasks || []).map(t => t.id)));
+    for (const id of this._expandedTasks) {
+      if (!allTaskIds.has(id)) this._expandedTasks.delete(id);
+    }
+
+    // Reset per-column filter/sort when list or defaults change
+    for (let i = 0; i < config.columns.length; i++) {
+      const col = config.columns[i];
+      const prevCol = prevConfig.columns?.[i];
+      const colSourceChanged = col.list_id !== prevCol?.list_id || col.entity_id !== prevCol?.entity_id;
+      if (colSourceChanged || col.default_filter !== prevCol?.default_filter) {
+        this._columns[i].filter = col.default_filter || "all";
+        if (this._columns[i].filter === "due_soon" && col.show_due_soon_filter !== true) {
+          this._columns[i].filter = "all";
+        }
+        this._columns[i].tagFilters = new Set();
+        this._columns[i].personFilters = new Set();
+      }
+      if (col.show_tags === false && prevCol?.show_tags !== false) {
+        this._columns[i].tagFilters = new Set();
+      }
+      if (col.show_assigned_person === false && prevCol?.show_assigned_person !== false) {
+        this._columns[i].personFilters = new Set();
+      }
+      if (colSourceChanged || col.default_sort !== prevCol?.default_sort) {
+        this._columns[i].sortBy = col.default_sort || "manual";
+      }
+    }
+
+    if (this._initialized) {
+      this._loadAllTasks();
+    } else {
+      this._render();
+    }
+    // Config may arrive after we're already connected (editor preview);
+    // connectedCallback covers the other order. No-op when not connected.
+    this._ensureCardMod();
+  }
+
+  set hass(hass) {
+    const prev = this._hass;
+    this._hass = hass;
+    if (!this._initialized) {
+      this._initialized = true;
+      this._loadLists();
+      return;
+    }
+    // Reload when any watched entity's state object changes (new reference = entity updated).
+    // Covers both external todo entities and native-list sensor entities (for cross-device sync).
+    if (prev && hass) {
+      for (const col of this._config.columns) {
+        // --- External list: watch the todo entity directly ---
+        if (col.entity_id) {
+          if (prev.states?.[col.entity_id] !== hass.states?.[col.entity_id]) {
+            this._isBackgroundUpdate = true;
+            this._loadAllTasks().finally(() => { this._isBackgroundUpdate = false; });
+            return;
+          }
+        }
+        // --- Native list: watch its open-tasks sensor so changes on other
+        //     devices/tabs propagate here without manual refresh ---
+        if (col.list_id) {
+          const list = (this._lists || []).find(l => l.id === col.list_id);
+          const seid = list?.sensor_entity_id;
+          if (seid && prev.states?.[seid] !== hass.states?.[seid]) {
+            this._isBackgroundUpdate = true;
+            this._loadAllTasks().finally(() => { this._isBackgroundUpdate = false; });
+            return;
+          }
+        }
+      }
+    }
+    // Start/stop periodic polling for external detail changes (notes, due dates, etc.)
+    // that don't update the entity state (which is just the active item count).
+    this._syncExtPollTimer();
+  }
+
+  _syncExtPollTimer() {
+    const hasExternal = this._config.columns.some(c => c.entity_id);
+    if (hasExternal && !this._extPollTimer) {
+      this._extPollTimer = setInterval(async () => {
+        this._isBackgroundUpdate = true;
+        try { await this._loadAllTasks(); } finally { this._isBackgroundUpdate = false; }
+      }, 30000);
+    } else if (!hasExternal && this._extPollTimer) {
+      clearInterval(this._extPollTimer);
+      this._extPollTimer = null;
+    }
+  }
+
+  // --- Safe DOM helpers ---
+
+  _el(tag, attrs = {}, children = []) {
+    const el = document.createElement(tag);
+    for (const [key, val] of Object.entries(attrs)) {
+      if (key === "className") {
+        el.className = val;
+      } else if (key === "textContent") {
+        el.textContent = val;
+      } else if (key.startsWith("on")) {
+        el.addEventListener(key.slice(2).toLowerCase(), val);
+      } else if (key === "checked") {
+        el.checked = val;
+      } else if (key === "draggable") {
+        el.draggable = val;
+      } else if (key === "value") {
+        el.value = val;
+      } else if (key === "disabled") {
+        el.disabled = val;
+      } else if (key === "rows") {
+        el.rows = val;
+      } else if (key === "type") {
+        el.type = val;
+      } else if (key === "placeholder") {
+        el.placeholder = val;
+      } else if (key === "title") {
+        el.title = val;
+      } else if (key === "htmlFor") {
+        el.htmlFor = val;
+      } else if (key === "innerHTML") {
+        el.innerHTML = val;
+      } else {
+        el.setAttribute(key, val);
+      }
+    }
+    for (const child of children) {
+      if (typeof child === "string") {
+        el.appendChild(document.createTextNode(child));
+      } else if (child) {
+        el.appendChild(child);
+      }
+    }
+    return el;
+  }
+
+  _text(str) {
+    return document.createTextNode(str);
+  }
+
+  // --- Data methods ---
+
+  async _callWs(type, data = {}) {
+    if (!this._hass) return null;
+    try {
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("timeout")), 5000)
+      );
+      return await Promise.race([
+        this._hass.callWS({ type, ...data }),
+        timeout,
+      ]);
+    } catch (err) {
+      console.warn(`WS call ${type} failed:`, err.message);
+      return null;
+    }
+  }
+
+  // --- External entity routing helpers ---
+
+  /**
+   * Schedule a delayed reload for an external column.
+   * External providers have latency — the entity may not reflect changes
+   * immediately after a service call.  Callers should apply optimistic
+   * local updates first so the UI responds instantly; this method only
+   * schedules a background reload to pick up the confirmed provider state.
+   */
+  _reloadExternal() {
+    setTimeout(() => this._loadAllTasks(), 1500);
+  }
+
+  _isExternalCol(colIdx) {
+    return !!this._config.columns[colIdx]?.entity_id;
+  }
+
+  _colEntityId(colIdx) {
+    return this._config.columns[colIdx]?.entity_id;
+  }
+
+  _getExternalListInfo(colIdx) {
+    if (!this._isExternalCol(colIdx)) return null;
+    const entityId = this._colEntityId(colIdx);
+    return (this._externalLists || []).find(l => l.entity_id === entityId) || null;
+  }
+
+  // Can tasks in this column carry a due date / a due time? Native lists
+  // always; external lists per provider capability (see listSupportsDue /
+  // listSupportsDueTime at module level).
+  _colSupportsDue(colIdx) {
+    if (!this._isExternalCol(colIdx)) return true;
+    return listSupportsDue(this._getExternalListInfo(colIdx));
+  }
+
+  _colSupportsDueTime(colIdx) {
+    if (!this._isExternalCol(colIdx)) return true;
+    return listSupportsDueTime(this._getExternalListInfo(colIdx));
+  }
+
+  _colSupportedFeatures(colIdx) {
+    if (!this._isExternalCol(colIdx)) return -1; // native: all features
+    return this._getExternalListInfo(colIdx)?.supported_features ?? 0;
+  }
+
+  _colProviderType(colIdx) {
+    return this._getExternalListInfo(colIdx)?.provider_type ?? (this._isExternalCol(colIdx) ? "generic" : "native");
+  }
+
+  _colCapabilities(colIdx) {
+    return this._getExternalListInfo(colIdx)?.capabilities ?? (this._isExternalCol(colIdx) ? {} : null);
+  }
+
+  /**
+   * Route a task update to the correct backend.
+   * For native columns: single WS call to home_tasks/update_task.
+   * For external columns: routed through the backend adapter (handles
+   * provider-specific sync + overlay for unsynced fields).
+   */
+  async _updateTaskRouted(colIdx, taskId, fields) {
+    if (!this._isExternalCol(colIdx)) {
+      return this._callWs("home_tasks/update_task", {
+        list_id: this._colListId(colIdx),
+        task_id: taskId,
+        ...fields,
+      });
+    }
+
+    // External: send all fields to the backend — the adapter decides what
+    // goes to the provider API and what goes to the overlay.
+    await this._callWs("home_tasks/update_external_task", {
+      entity_id: this._colEntityId(colIdx),
+      task_uid: taskId,
+      ...fields,
+    });
+  }
+
+  async _deleteTaskCmd(colIdx, taskId) {
+    if (this._isExternalCol(colIdx)) {
+      try {
+        await this._hass.callService("todo", "remove_item", {
+          item: taskId,
+        }, { entity_id: this._colEntityId(colIdx) });
+      } catch (err) {
+        console.warn("Failed to delete external task:", err);
+        return; // Don't clean up overlay if deletion failed
+      }
+      // Clean up overlay data only on successful deletion
+      await this._callWs("home_tasks/delete_external_overlay", {
+        entity_id: this._colEntityId(colIdx),
+        task_uid: taskId,
+      });
+    } else {
+      await this._callWs("home_tasks/delete_task", {
+        list_id: this._colListId(colIdx),
+        task_id: taskId,
+      });
+    }
+  }
+
+  _showError(message) {
+    const root = this.shadowRoot;
+    if (!root) return;
+    const existing = root.querySelector(".toast-error");
+    if (existing) existing.remove();
+    const toast = this._el("div", { className: "toast-error", textContent: message });
+    root.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  }
+
+  async _loadLists() {
+    const [nativeResult, externalResult] = await Promise.all([
+      this._callWs("home_tasks/get_lists"),
+      this._callWs("home_tasks/get_external_lists"),
+    ]);
+    if (nativeResult && Array.isArray(nativeResult.lists)) {
+      this._lists = nativeResult.lists;
+    }
+    this._externalLists = (externalResult && Array.isArray(externalResult.external_lists))
+      ? externalResult.external_lists.filter(l => l.linked)
+      : [];
+
+    // Boot-window self-heal (#37 family): during HA startup this card — now
+    // served reliably from the browser cache — can initialize before the
+    // integration has registered its WS commands or loaded every store. The
+    // initial fetch then fails (null) or misses configured lists, and
+    // nothing else re-triggers it: the cross-device state watcher needs the
+    // very list metadata that just failed to load. Retry with backoff until
+    // the backend answers completely.
+    const missingConfigured = this._config.columns.some(
+      (c) => c.list_id && !this._lists.some((l) => l.id === c.list_id)
+    );
+    if (nativeResult === null || externalResult === null || missingConfigured) {
+      this._scheduleListsRetry();
+    } else {
+      this._listsRetryCount = 0;
+    }
+
+    // Auto-select first list if no column has a list configured
+    const hasAnyList = this._config.columns.some(c => c.list_id || c.entity_id);
+    if (!hasAnyList && this._lists.length > 0) {
+      const newCols = [...this._config.columns];
+      newCols[0] = { ...newCols[0], list_id: this._lists[0].id };
+      this._config = { ...this._config, columns: newCols };
+      this._columns[0].filter = newCols[0].default_filter || "all";
+    }
+    await this._loadAllTasks();
+  }
+
+  _scheduleListsRetry() {
+    // 2s → 5s → 10s → 30s, then once a minute; give up after ~5 minutes
+    // (matches the register block's watch horizon). Runs as a background
+    // update so a retry never steals focus from an input mid-typing.
+    const delays = [2000, 5000, 10000, 30000, 60000, 60000, 60000, 60000];
+    const attempt = this._listsRetryCount || 0;
+    if (attempt >= delays.length || this._listsRetryTimer) return;
+    this._listsRetryCount = attempt + 1;
+    this._listsRetryTimer = setTimeout(() => {
+      this._listsRetryTimer = null;
+      if (!this.isConnected) return;
+      this._isBackgroundUpdate = true;
+      this._loadLists().finally(() => { this._isBackgroundUpdate = false; });
+    }, delays[attempt]);
+  }
+
+  async _loadAllTasks() {
+    await Promise.all(this._config.columns.map(async (col, i) => {
+      if (col.entity_id) {
+        // External column — fetch from external entity + overlay
+        const r = await this._callWs("home_tasks/get_external_tasks", { entity_id: col.entity_id });
+        this._columns[i].tasks = r?.tasks ?? [];
+        this._columns[i].sections = r?.sections ?? [];
+      } else if (col.list_id) {
+        // Native column
+        const r = await this._callWs("home_tasks/get_tasks", { list_id: col.list_id });
+        this._columns[i].tasks = r?.tasks ?? [];
+        this._columns[i].sections = r?.sections ?? [];
+      } else {
+        this._columns[i].tasks = [];
+        this._columns[i].sections = [];
+      }
+    }));
+    this._render();
+  }
+
+  _colListId(colIdx) {
+    return this._config.columns[colIdx]?.list_id;
+  }
+
+  // Enter inside the add-row date/time inputs: _render defers rebuilds while
+  // a date/time input has focus (its segment state would be lost), which
+  // would swallow the render that shows the new task. Hand focus to the
+  // title input first (focus restore after the rebuild targets it anyway).
+  _addTaskFromDueRow(colIdx) {
+    const titleInput = this.shadowRoot.querySelector(`.add-input[data-focus-key="add_task_col_${colIdx}"]`);
+    if (titleInput) {
+      try { titleInput.focus(); } catch (_) { /* best-effort */ }
+    } else {
+      const active = this.shadowRoot.activeElement;
+      if (active && active.blur) active.blur();
+    }
+    return this._addTask(colIdx);
+  }
+
+  async _addTask(colIdx) {
+    const cs = this._columns[colIdx];
+    const title = cs.newTaskTitle.trim();
+    if (!title) return;
+    if (!this._colListId(colIdx) && !this._colEntityId(colIdx)) return;
+
+    // Capture add-input position for the entry animation
+    const addInput = this.shadowRoot.querySelector(`.add-input[data-focus-key="add_task_col_${colIdx}"]`);
+    const addInputRect = addInput ? addInput.getBoundingClientRect() : null;
+
+    // Snapshot existing task positions (they may shift when new task is inserted)
+    const before = this._captureListFlip(colIdx);
+
+    // Auto-assign: if exactly one person is active in the person filter, assign
+    // the new task to that person automatically.
+    const col = this._config.columns[colIdx];
+    let autoAssignPerson = null;
+    if (cs.personFilters.size === 1) {
+      autoAssignPerson = [...cs.personFilters][0];
+    } else if (cs.personFilters.size === 0 && col.filters?.assignees?.length === 1) {
+      autoAssignPerson = col.filters.assignees[0];
+    }
+
+    // Due date chosen in the add row (issue #38) — only when the option is
+    // on and the column supports due dates; a time without a date is ignored.
+    const addDue = (col.show_add_due === true && this._colSupportsDue(colIdx) && cs.newTaskDue) ? cs.newTaskDue : null;
+    const addDueTime = (addDue && cs.newTaskDueTime && this._colSupportsDueTime(colIdx)) ? cs.newTaskDueTime : null;
+    const resetAddDue = () => { cs.newTaskDue = ""; cs.newTaskDueTime = ""; };
+
+    let result;
+    if (this._isExternalCol(colIdx)) {
+      // Optimistic: insert a placeholder task immediately so the user
+      // sees it appear without waiting for the API round-trip.
+      const tempId = "_pending_" + Date.now();
+      cs.tasks.push({
+        id: tempId, title, completed: false, notes: "", due_date: addDue,
+        due_time: addDueTime, sort_order: cs.tasks.length, sub_items: [],
+        priority: null, tags: [], reminders: [], assigned_person: autoAssignPerson,
+        recurrence_enabled: false, _external: true,
+      });
+      cs.newTaskTitle = "";
+      resetAddDue();
+      this._justAddedTaskId = tempId;
+      this._addInputRect = addInputRect;
+      this._render();
+      this._justAddedTaskId = null;
+      this._addInputRect = null;
+      this._applyFlip(before, colIdx, 0.25);
+
+      // Send to API in background, then reload to get the real ID
+      try {
+        const payload = { entity_id: this._colEntityId(colIdx), title };
+        if (autoAssignPerson) payload.assigned_person = autoAssignPerson;
+        if (addDue) { payload.due_date = addDue; if (addDueTime) payload.due_time = addDueTime; }
+        result = await this._callWs("home_tasks/create_external_task", payload);
+      } catch (err) {
+        console.warn("Failed to create external task:", err);
+      }
+      this._reloadExternal(colIdx);
+    } else {
+      const payload = { list_id: this._colListId(colIdx), title };
+      if (autoAssignPerson) payload.assigned_person = autoAssignPerson;
+      if (addDue) { payload.due_date = addDue; if (addDueTime) payload.due_time = addDueTime; }
+      result = await this._callWs("home_tasks/add_task", payload);
+      if (result) {
+        cs.newTaskTitle = "";
+        resetAddDue();
+        this._justAddedTaskId = result.id ? String(result.id) : null;
+        this._addInputRect = addInputRect;
+        await this._loadAllTasks();
+        this._justAddedTaskId = null;
+        this._addInputRect = null;
+        this._applyFlip(before, colIdx, 0.25);
+        // C12: optionally auto-generate an AI image for the new task.
+        if (result && col.auto_generate_image && col.show_images === true
+            && this._config.image_generation?.entity_id) {
+          this._generateTaskImage(result, colIdx);
+        }
+      }
+    }
+  }
+
+  async _toggleTask(taskId, completed, colIdx) {
+    const col = this._config.columns[colIdx];
+    const cs = this._columns[colIdx];
+    const newCompleted = !completed;
+    const task = cs.tasks.find(t => t.id === taskId);
+    const hasRecurrence = task && task.recurrence_enabled && task.recurrence_unit;
+
+    // Opt-in guard against accidental taps (issue #29). Default off; the
+    // checkbox/swipe/long-press paths all funnel through here, so one
+    // prompt covers them all. On cancel, re-render to restore the checkbox
+    // the click already flipped.
+    if (newCompleted && col.confirm_complete === true) {
+      const ok = await this._confirmDialog(
+        this._t("confirm_complete_msg", task ? task.title : ""),
+        this._t("confirm_complete_ok"),
+      );
+      if (!ok) {
+        this._render();
+        return;
+      }
+    }
+
+    // auto_delete path → route through _deleteTask to reuse exit animation
+    if (newCompleted && col.auto_delete_completed && !hasRecurrence) {
+      await this._deleteTask(taskId, colIdx);
+      return;
+    }
+
+    // Snapshot all visible task positions for FLIP (completion/reopen moves the task)
+    const before = this._captureListFlip(colIdx);
+
+    if (this._isExternalCol(colIdx) && task) {
+      // Recurring tasks: providers like Todoist DON'T close a recurring task
+      // on complete — they advance the due_date to the next occurrence and
+      // leave the task open.  Rendering "completed=true" locally would make
+      // the task flash as ticked and then jump back to open on the next reload.
+      // Skip the optimistic flip and let the post-write reload show the real
+      // (advanced) state.
+      if (newCompleted && hasRecurrence) {
+        await this._updateTaskRouted(colIdx, taskId, { completed: newCompleted });
+        await this._reloadExternal(colIdx);
+        this._applyFlip(before, colIdx, 0.28);
+        return;
+      }
+
+      // Optimistic update for non-recurring external tasks: render new state
+      // immediately, then sync to provider.  External service calls have
+      // latency; the entity may not reflect the change right away.
+      task.completed = newCompleted;
+      this._render();
+      this._applyFlip(before, colIdx, 0.28);
+      await this._updateTaskRouted(colIdx, taskId, { completed: newCompleted });
+      this._reloadExternal(colIdx);
+    } else {
+      await this._updateTaskRouted(colIdx, taskId, { completed: newCompleted });
+      await this._loadAllTasks();
+      this._applyFlip(before, colIdx, 0.28);
+    }
+  }
+
+  async _updateTaskTitle(taskId, title, colIdx) {
+    if (!title.trim()) return;
+    const task = this._columns[colIdx]?.tasks?.find(t => t.id === taskId);
+    if (task) task.title = title.trim();
+    this._editingTaskId = null;
+    this._render();
+    await this._updateTaskRouted(colIdx, taskId, { title: title.trim() });
+    if (this._isExternalCol(colIdx)) this._reloadExternal(colIdx);
+  }
+
+  async _updateTaskNotes(taskId, notes, colIdx) {
+    // Optimistic local update — must happen before the await so a deferred
+    // render (triggered by focusout) picks up the user's value, not stale poll data.
+    const task = this._columns[colIdx]?.tasks?.find(t => t.id === taskId);
+    if (task) task.notes = notes;
+    await this._updateTaskRouted(colIdx, taskId, { notes });
+  }
+
+  async _updateTaskDue(taskId, dueDate, dueTime, colIdx) {
+    // Optimistic local update
+    const task = this._columns[colIdx]?.tasks?.find(t => t.id === taskId);
+    if (task) {
+      task.due_date = dueDate || null;
+      task.due_time = dueDate ? (dueTime || null) : null;
+    }
+    await this._updateTaskRouted(colIdx, taskId, {
+      due_date: dueDate || null,
+      due_time: dueDate ? (dueTime || null) : null,
+    });
+    if (this._isExternalCol(colIdx)) {
+      this._reloadExternal();
+    }
+  }
+
+  async _deleteTask(taskId, colIdx) {
+    const taskEl = this.shadowRoot.querySelector(
+      `.task[data-task-id="${CSS.escape(String(taskId))}"]`
+    );
+
+    if (taskEl) {
+      // Snapshot positions of all OTHER tasks (deleted task still occupies layout space)
+      const before = this._captureListFlip(colIdx);
+      before.delete(String(taskId)); // exclude the task being deleted
+
+      // Animate the task out
+      await new Promise(resolve => {
+        taskEl.style.transition = "opacity 0.18s ease, transform 0.18s ease";
+        taskEl.style.opacity = "0";
+        taskEl.style.transform = "scale(0.95)";
+        taskEl.addEventListener("transitionend", resolve, { once: true });
+        setTimeout(resolve, 250); // safety fallback
+      });
+
+      // Optimistic: remove locally so surviving tasks animate up immediately,
+      // without waiting for the server round-trip.
+      const cs = this._columns[colIdx];
+      if (cs?.tasks) cs.tasks = cs.tasks.filter(t => String(t.id) !== String(taskId));
+      this._expandedTasks.delete(taskId);
+      this._render();
+      this._applyFlip(before, colIdx, 0.22);
+
+      // Sync with server in the background (re-render after reload is harmless
+      // since the FLIP animation will have completed by then).
+      await this._deleteTaskCmd(colIdx, taskId);
+      await this._loadAllTasks();
+
+    } else {
+      // Fallback: task not in DOM, delete without animation
+      await this._deleteTaskCmd(colIdx, taskId);
+      this._expandedTasks.delete(taskId);
+      await this._loadAllTasks();
+    }
+  }
+
+  async _addSubTask(taskId, colIdx) {
+    const title = this._t("new_sub_item");
+    const tempId = "_pending_sub_" + Date.now();
+
+    // Optimistic: insert placeholder sub-task immediately
+    const cs = this._columns[colIdx];
+    const task = cs.tasks.find(t => t.id === taskId);
+    if (task) {
+      if (!task.sub_items) task.sub_items = [];
+      task.sub_items.push({ id: tempId, title, completed: false });
+      this._editingSubTaskId = tempId;
+      this._render();
+    }
+
+    // Send to backend in background, then swap temp ID for real ID
+    // without a full reload (which would destroy the active input).
+    let result;
+    if (this._isExternalCol(colIdx)) {
+      result = await this._callWs("home_tasks/add_external_sub_task", {
+        entity_id: this._colEntityId(colIdx),
+        task_uid: taskId,
+        title,
+      });
+    } else {
+      result = await this._callWs("home_tasks/add_sub_task", {
+        list_id: this._colListId(colIdx),
+        task_id: taskId,
+        title,
+      });
+    }
+    if (result && task) {
+      // Replace temp ID with real ID in local data — no DOM rebuild needed
+      const sub = task.sub_items.find(s => s.id === tempId);
+      if (sub) sub.id = result.id;
+      if (this._editingSubTaskId === tempId) {
+        this._editingSubTaskId = result.id;
+      }
+      // Keep DOM identifiers in sync so a later unrelated _render's
+      // focus-restore can find the element: data-focus-key on the
+      // input (format "sub_title_<id>") and data-sub-task-id on the
+      // .sub-task wrapper both carried the temp id.
+      const root = this.shadowRoot;
+      const editedInput = root?.querySelector(`[data-focus-key="sub_title_${CSS.escape(tempId)}"]`);
+      if (editedInput) editedInput.setAttribute("data-focus-key", `sub_title_${result.id}`);
+      const subEl = root?.querySelector(`.sub-task[data-sub-task-id="${CSS.escape(tempId)}"]`);
+      if (subEl) subEl.dataset.subTaskId = result.id;
+    }
+  }
+
+  async _toggleSubTask(taskId, subItemId, completed, colIdx) {
+    // Optimistic local update
+    const task = this._columns[colIdx]?.tasks?.find(t => t.id === taskId);
+    const sub = task?.sub_items?.find(s => s.id === subItemId);
+    if (sub) sub.completed = !completed;
+    this._render();
+    if (this._isExternalCol(colIdx)) {
+      await this._callWs("home_tasks/update_external_sub_task", {
+        entity_id: this._colEntityId(colIdx),
+        task_uid: taskId,
+        sub_task_id: subItemId,
+        completed: !completed,
+      });
+    } else {
+      await this._callWs("home_tasks/update_sub_task", {
+        list_id: this._colListId(colIdx),
+        task_id: taskId,
+        sub_task_id: subItemId,
+        completed: !completed,
+      });
+    }
+  }
+
+  async _updateSubTaskTitle(taskId, subItemId, title, colIdx) {
+    if (!title.trim()) return;
+    const task = this._columns[colIdx]?.tasks?.find(t => t.id === taskId);
+    const sub = task?.sub_items?.find(s => s.id === subItemId);
+    if (sub) sub.title = title.trim();
+    this._editingSubTaskId = null;
+    this._render();
+    if (this._isExternalCol(colIdx)) {
+      await this._callWs("home_tasks/update_external_sub_task", {
+        entity_id: this._colEntityId(colIdx),
+        task_uid: taskId,
+        sub_task_id: subItemId,
+        title: title.trim(),
+      });
+    } else {
+      await this._callWs("home_tasks/update_sub_task", {
+        list_id: this._colListId(colIdx),
+        task_id: taskId,
+        sub_task_id: subItemId,
+        title: title.trim(),
+      });
+    }
+  }
+
+  async _deleteSubTask(taskId, subItemId, colIdx) {
+    // Optimistic local update
+    const task = this._columns[colIdx]?.tasks?.find(t => t.id === taskId);
+    if (task?.sub_items) {
+      task.sub_items = task.sub_items.filter(s => s.id !== subItemId);
+    }
+    this._render();
+    if (this._isExternalCol(colIdx)) {
+      await this._callWs("home_tasks/delete_external_sub_task", {
+        entity_id: this._colEntityId(colIdx),
+        task_uid: taskId,
+        sub_task_id: subItemId,
+      });
+    } else {
+      await this._callWs("home_tasks/delete_sub_task", {
+        list_id: this._colListId(colIdx),
+        task_id: taskId,
+        sub_task_id: subItemId,
+      });
+    }
+  }
+
+  async _reorderSubTasks(taskId, subTaskIds, colIdx) {
+    if (this._isExternalCol(colIdx)) {
+      await this._callWs("home_tasks/reorder_external_sub_tasks", {
+        entity_id: this._colEntityId(colIdx),
+        task_uid: taskId,
+        sub_task_ids: subTaskIds,
+      });
+    } else {
+      await this._callWs("home_tasks/reorder_sub_tasks", {
+        list_id: this._colListId(colIdx),
+        task_id: taskId,
+        sub_task_ids: subTaskIds,
+      });
+    }
+    const tasks = this._columns[colIdx]?.tasks;
+    if (tasks) {
+      const task = tasks.find(t => t.id === taskId);
+      if (task && task.sub_items) {
+        const idToSub = Object.fromEntries(task.sub_items.map(s => [s.id, s]));
+        task.sub_items = subTaskIds.map(id => idToSub[id]).filter(Boolean);
+      }
+    }
+  }
+
+  // Apply pending section_id changes to tasks that crossed a section header
+  // during the drag, then persist the new order. Tasks dropped under the
+  // global Done header keep their original section_id so reactivation
+  // returns them to the right bucket.
+  async _applySectionChangesAndReorder(colIdx, sectionedOrder) {
+    const cs = this._columns[colIdx];
+    const tasksById = new Map((cs.tasks || []).map((t) => [t.id, t]));
+    const knownSectionIds = new Set((cs.sections || []).map((s) => s.id));
+    const isExternal = this._isExternalCol(colIdx);
+    const updates = [];
+    for (const { taskId, sectionId } of sectionedOrder) {
+      const task = tasksById.get(taskId);
+      if (!task) continue;
+      if (sectionId === "__done__") continue; // dropped onto Done header — leave section_id alone
+      const targetSectionId = sectionId && knownSectionIds.has(sectionId) ? sectionId : null;
+      const currentSectionId = task.section_id || null;
+      if (targetSectionId !== currentSectionId) {
+        updates.push({ taskId, section_id: targetSectionId });
+      }
+    }
+    for (const u of updates) {
+      try {
+        if (isExternal) {
+          await this._callWs("home_tasks/update_external_overlay", {
+            entity_id: this._colEntityId(colIdx),
+            task_uid: u.taskId,
+            section_id: u.section_id,
+          });
+        } else {
+          await this._callWs("home_tasks/update_task", {
+            list_id: this._colListId(colIdx),
+            task_id: u.taskId,
+            section_id: u.section_id,
+          });
+        }
+      } catch (err) {
+        this._showError(`Section update failed: ${err.message || err}`);
+      }
+    }
+    const visibleOrder = sectionedOrder.map((p) => p.taskId);
+    const fullOrder = this._mergeHiddenTasks(colIdx, visibleOrder);
+    await this._reorderTasks(fullOrder, colIdx);
+  }
+
+  async _reorderTasks(taskIds, colIdx) {
+    if (this._isExternalCol(colIdx)) {
+      // Route through backend adapter — it decides whether to use
+      // the provider API, todo/item/move, or overlay sort_order.
+      await this._callWs("home_tasks/reorder_external_tasks", {
+        entity_id: this._colEntityId(colIdx),
+        task_uids: taskIds,
+      });
+    } else {
+      const listId = this._colListId(colIdx);
+      if (!listId) return;
+      await this._callWs("home_tasks/reorder_tasks", {
+        list_id: listId,
+        task_ids: taskIds,
+      });
+    }
+    await this._loadAllTasks();
+  }
+
+  async _moveTask(srcColIdx, tgtColIdx, taskId, targetTaskIds) {
+    const srcIsExternal = this._isExternalCol(srcColIdx);
+    const tgtIsExternal = this._isExternalCol(tgtColIdx);
+
+    // Build the move command payload
+    const payload = { task_id: taskId };
+    if (srcIsExternal) {
+      payload.source_entity_id = this._colEntityId(srcColIdx);
+    } else {
+      payload.source_list_id = this._colListId(srcColIdx);
+    }
+    if (tgtIsExternal) {
+      payload.target_entity_id = this._colEntityId(tgtColIdx);
+    } else {
+      payload.target_list_id = this._colListId(tgtColIdx);
+    }
+
+    if (!payload.source_list_id && !payload.source_entity_id) {
+      this._showError("Cannot move task: source list not configured");
+      await this._loadAllTasks();
+      return;
+    }
+    if (!payload.target_list_id && !payload.target_entity_id) {
+      this._showError("Cannot move task: target list not configured");
+      await this._loadAllTasks();
+      return;
+    }
+
+    // Shared executor: fast path vs cross routing + error toast. A failed
+    // move skips the reorder and just reloads the authoritative state.
+    if (!(await this._execMove(payload))) {
+      await this._loadAllTasks();
+      if (srcIsExternal || tgtIsExternal) this._reloadExternal();
+      return;
+    }
+
+    // Reorder target list if needed
+    if (targetTaskIds.length > 0) {
+      if (tgtIsExternal) {
+        await this._callWs("home_tasks/reorder_external_tasks", {
+          entity_id: this._colEntityId(tgtColIdx),
+          task_uids: targetTaskIds,
+        });
+      } else {
+        await this._callWs("home_tasks/reorder_tasks", {
+          list_id: this._colListId(tgtColIdx),
+          task_ids: targetTaskIds,
+        });
+      }
+    }
+
+    await this._loadAllTasks();
+    // External providers need a delayed reload to pick up confirmed state
+    if (srcIsExternal || tgtIsExternal) {
+      this._reloadExternal();
+    }
+  }
+
+  // --- Filter & Sort ---
+
+  _preFilteredTasks(colIdx) {
+    const cs = this._columns[colIdx];
+    const col = this._config.columns[colIdx];
+    let tasks = cs.tasks;
+    const preAssignees = col.filters?.assignees;
+    const preLabels = col.filters?.labels;
+    if (preAssignees && preAssignees.length > 0) {
+      const set = new Set(preAssignees);
+      tasks = tasks.filter((t) => set.has(t.assigned_person));
+    }
+    if (preLabels && preLabels.length > 0) {
+      const set = new Set(preLabels);
+      tasks = tasks.filter((t) => t.tags && t.tags.some((tag) => set.has(tag)));
+    }
+    return tasks;
+  }
+
+  _filteredTasks(colIdx) {
+    const cs = this._columns[colIdx];
+    const baseTasks = this._preFilteredTasks(colIdx);
+    let tasks;
+    switch (cs.filter) {
+      case "open":
+        tasks = baseTasks.filter((t) => !t.completed);
+        break;
+      case "done":
+        tasks = baseTasks.filter((t) => t.completed);
+        break;
+      case "due_soon": {
+        const col = this._config.columns[colIdx];
+        const days = col.due_soon_days ?? 7;
+        const hideOverdue = col.hide_overdue === true;
+        tasks = baseTasks.filter((t) =>
+          !t.completed && t.due_date &&
+          ((!hideOverdue && this._isDueDateOverdue(t.due_date)) || this._isDueDateWithinDays(t.due_date, days))
+        );
+        break;
+      }
+      default:
+        tasks = baseTasks;
+    }
+    if (cs.tagFilters.size > 0) {
+      tasks = tasks.filter((t) => t.tags && t.tags.some((tag) => cs.tagFilters.has(tag)));
+    }
+    if (cs.personFilters.size > 0) {
+      tasks = tasks.filter((t) => cs.personFilters.has(t.assigned_person));
+    }
+    const cmp = this._buildSortComparator(colIdx);
+    return tasks.slice().sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      return cmp(a, b);
+    });
+  }
+
+  _buildSortComparator(colIdx) {
+    const sortBy = this._columns[colIdx].sortBy;
+    switch (sortBy) {
+      case "due": return (a, b) => {
+        const da = a.due_date ? a.due_date + "T" + (a.due_time || "00:00") : null;
+        const db = b.due_date ? b.due_date + "T" + (b.due_time || "00:00") : null;
+        if (da && db) return da < db ? -1 : da > db ? 1 : 0;
+        return da ? -1 : db ? 1 : 0;
+      };
+      case "priority": return (a, b) => {
+        const pa = a.priority ?? 0;
+        const pb = b.priority ?? 0;
+        return pb - pa;
+      };
+      case "title": return (a, b) =>
+        (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: "base" });
+      case "person": return (a, b) => {
+        const pa = a.assigned_person || "\uffff";
+        const pb = b.assigned_person || "\uffff";
+        return pa.localeCompare(pb);
+      };
+      default: return (a, b) => a.sort_order - b.sort_order;
+    }
+  }
+
+  // --- FLIP & Filter Animation Helpers ---
+
+  _applyFlip(before, colIdx, duration = 0.3) {
+    if (!before || before.size === 0) return;
+    // Guard the FLIP window: a background re-render mid-animation would wipe the
+    // transforms (intermittent missing animation). _render() defers while this
+    // is set; endFlip() clears it and flushes any deferred render afterwards.
+    this._flipActive = true;
+    const endFlip = () => {
+      this._flipActive = false;
+      if (this._pendingRender) { this._pendingRender = false; this._render(); }
+    };
+    // _render() rebuilds the shadow DOM via root.innerHTML="", but ha-card (a LitElement)
+    // commits its layout asynchronously. Reading getBoundingClientRect() synchronously
+    // after _render() returns 0 for all elements. One rAF is enough for the browser to
+    // flush the new layout before we measure positions.
+    requestAnimationFrame(() => {
+      // Pass 1: read ALL new positions first (relative to list top — no style writes yet)
+      const taskListEl = this.shadowRoot.querySelector(`.task-list[data-col-idx="${colIdx}"], .tile-grid-wrap[data-col-idx="${colIdx}"]`);
+      if (!taskListEl) { endFlip(); return; }
+      const curRect = taskListEl.getBoundingClientRect();
+      const newPositions = new Map(); // id → { top, left } relative to container
+      const elMap = new Map();        // id → element (reused in Pass 2, avoids N re-queries)
+      taskListEl.querySelectorAll(".task[data-task-id], .task-tile[data-task-id]")
+        .forEach(el => {
+          const id = el.dataset.taskId;
+          if (id && before.has(id)) {
+            const er = el.getBoundingClientRect();
+            newPositions.set(id, { top: er.top - curRect.top, left: er.left - curRect.left });
+            elMap.set(id, el);
+          }
+        });
+      // Pass 2: apply transforms — 2D so grid tiles animate their real
+      // (diagonal/horizontal) reflow, not just vertical movement.
+      const flipEls = [];
+      newPositions.forEach((np, id) => {
+        const el = elMap.get(id);
+        if (!el) return;
+        const old = before.get(id);
+        const dx = Math.round(old.left - np.left);
+        const dy = Math.round(old.top - np.top);
+        if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+        el.style.transition = "none";
+        el.style.transform = `translate(${dx}px, ${dy}px)`;
+        flipEls.push(el);
+      });
+      if (flipEls.length === 0) { endFlip(); return; }
+      flipEls[0].getBoundingClientRect(); // single reflow commits all start states
+      requestAnimationFrame(() => {
+        flipEls.forEach(el => {
+          el.style.transition = `transform ${duration}s ease`;
+          el.style.transform = "";
+          el.addEventListener("transitionend", () => {
+            el.style.transition = "";
+            el.style.transform = "";
+          }, { once: true });
+        });
+        setTimeout(endFlip, duration * 1000 + 50);
+      });
+    });
+  }
+
+  _captureListFlip(colIdx) {
+    const listEl = this.shadowRoot.querySelector(`.task-list[data-col-idx="${colIdx}"], .tile-grid-wrap[data-col-idx="${colIdx}"]`);
+    const before = new Map();
+    if (!listEl) return before;
+    // Cancel any in-progress FLIP transforms before reading — getBoundingClientRect()
+    // includes CSS transforms in its result, so a partially-animated transform would
+    // corrupt the snapshot and cause the next animation to overshoot.
+    const tasks = listEl.querySelectorAll(".task[data-task-id], .task-tile[data-task-id]");
+    tasks.forEach(el => {
+      if (el.style.transform) { el.style.transition = "none"; el.style.transform = ""; }
+    });
+    // getBoundingClientRect() here both flushes any cleared transforms (forced layout)
+    // and reads the reference top — one reflow serves both purposes.
+    const r = listEl.getBoundingClientRect();
+    tasks.forEach(el => {
+      const er = el.getBoundingClientRect();
+      before.set(el.dataset.taskId, { top: er.top - r.top, left: er.left - r.left });
+    });
+    return before;
+  }
+
+  // Slide a newly-added task in from the add-input position. Shared by list
+  // rows (.task) and tiles (.task-tile) so both views animate identically.
+  _animateTaskEntry(taskId, colIdx) {
+    const inputRect = this._addInputRect;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const idEsc = CSS.escape(String(taskId));
+        const el = this.shadowRoot.querySelector(
+          `.task-list[data-col-idx="${colIdx}"] .task[data-task-id="${idEsc}"], ` +
+          `.tile-grid-wrap[data-col-idx="${colIdx}"] .task-tile[data-task-id="${idEsc}"]`
+        );
+        if (!el) return;
+        const taskTop = el.getBoundingClientRect().top;
+        const originDy = inputRect ? (inputRect.bottom - taskTop) : -30;
+        el.style.transition = "none";
+        el.style.opacity = "0";
+        el.style.transform = `translateY(${originDy}px)`;
+        el.getBoundingClientRect(); // commit start state
+        el.style.transition = "opacity 0.25s ease, transform 0.25s ease";
+        el.style.opacity = "";
+        el.style.transform = "";
+        el.addEventListener("transitionend", () => { el.style.transition = ""; }, { once: true });
+      });
+    });
+  }
+
+  _animateFilterChange(colIdx, applyFilterFn) {
+    if (this._filterAnimPending) {
+      applyFilterFn();
+      this._render();
+      return;
+    }
+    const taskList = this.shadowRoot.querySelector(`.task-list[data-col-idx="${colIdx}"]`);
+    if (!taskList) { applyFilterFn(); this._render(); return; }
+
+    // Snapshot current visible tasks (clears ongoing transforms for accurate reading)
+    const before = this._captureListFlip(colIdx);
+    const currentIds = new Set(before.keys());
+
+    // Apply filter change to compute future set
+    applyFilterFn();
+    const futureIds = new Set(this._filteredTasks(colIdx).map(t => String(t.id)));
+
+    const disappearing = [...currentIds].filter(id => !futureIds.has(id));
+    const appearing    = [...futureIds].filter(id => !currentIds.has(id));
+
+    // Animate exit on disappearing tasks
+    disappearing.forEach(id => {
+      const el = taskList.querySelector(`.task[data-task-id="${CSS.escape(id)}"]`);
+      if (el) el.classList.add("task-anim-exit");
+    });
+
+    const delay = disappearing.length > 0 ? 175 : 0;
+    this._filterAnimPending = true;
+    setTimeout(() => {
+      this._filterAnimPending = false;
+      this._justAppearedTaskIds = new Set(appearing);
+      this._render();
+      this._justAppearedTaskIds = null;
+      this._applyFlip(before, colIdx, 0.25);
+    }, delay);
+  }
+
+  // --- Helpers ---
+
+  _getCompletedCount(colIdx) {
+    return this._columns[colIdx].tasks.filter((t) => t.completed).length;
+  }
+
+  _getSubTaskProgress(task) {
+    if (!task.sub_items || task.sub_items.length === 0) return null;
+    const done = task.sub_items.filter((s) => s.completed).length;
+    return `${done}/${task.sub_items.length}`;
+  }
+
+  _isDueDateOverdue(dueDate) {
+    if (!dueDate) return false;
+    // dueDate is "YYYY-MM-DD" in the user's local timezone. Parse it as
+    // local midnight rather than `new Date(dueDate)` which interprets
+    // date-only strings as UTC midnight (causing wrong-day classification
+    // for users west of UTC).
+    const [y, m, d] = dueDate.split("-").map(Number);
+    if (!y || !m || !d) return false;
+    const due = new Date(y, m - 1, d);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return due < today;
+  }
+
+  // Advance a Date by N days/weeks/months/years with month-end clamping:
+  // Jan 31 + 1 month must be Feb 28, not Mar 3 (bare setMonth overflows
+  // into the next month), and Feb 29 + 1 year must be Feb 28, not Mar 1.
+  // "hours" (or any unknown unit) returns the date unchanged.
+  _advanceDateClamped(from, unit, val) {
+    const next = new Date(from);
+    if (unit === "days") next.setDate(next.getDate() + val);
+    else if (unit === "weeks") next.setDate(next.getDate() + val * 7);
+    else if (unit === "months" || unit === "years") {
+      const day = next.getDate();
+      next.setDate(1); // avoid overflow while shifting month/year
+      if (unit === "months") next.setMonth(next.getMonth() + val);
+      else next.setFullYear(next.getFullYear() + val);
+      const lastDay = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+      next.setDate(Math.min(day, lastDay));
+    }
+    return next;
+  }
+
+  // In-card confirmation dialog. Browsers render window.confirm() as a
+  // detached prompt at the top of the window — this renders a modal in the
+  // card's own look instead (same shell as the media dialog). Resolves
+  // true (confirm) / false (cancel, Esc, backdrop click). Lives in the
+  // shadow root, so _render's overlay preservation keeps it open across a
+  // background refresh.
+  // Shared shell for the in-card modal dialogs (confirm, move): backdrop
+  // click, Esc, the close-race guard, and the jsdom fallbacks live here
+  // once. `body` nodes go between the message and the action row; `resolveOk`
+  // computes the OK button's resolution value; every cancel path resolves
+  // null.
+  _modalDialog({ message, okLabel, body = [], resolveOk }) {
+    return new Promise((resolve) => {
+      const dialog = document.createElement("dialog");
+      dialog.className = "ht-confirm";
+      let settled = false;
+      const finish = (val) => {
+        if (settled) return;
+        settled = true;
+        try { if (dialog.open) dialog.close(); } catch (_) { /* jsdom */ }
+        dialog.remove();
+        resolve(val);
+      };
+      const cancelBtn = this._el("button", { className: "ht-confirm-btn", textContent: this._t("dialog_cancel") });
+      const okBtn = this._el("button", { className: "ht-confirm-btn primary", textContent: okLabel });
+      cancelBtn.addEventListener("click", () => finish(null));
+      okBtn.addEventListener("click", () => finish(resolveOk()));
+      dialog.addEventListener("cancel", (e) => { e.preventDefault(); finish(null); }); // Esc
+      dialog.addEventListener("close", () => finish(null));
+      // The inner body carries the padding, so a click that lands on the
+      // <dialog> itself can only come from the backdrop.
+      dialog.addEventListener("click", (e) => { if (e.target === dialog) finish(null); });
+      dialog.appendChild(this._el("div", { className: "ht-confirm-body" }, [
+        this._el("div", { className: "ht-confirm-msg", textContent: message }),
+        ...body,
+        this._el("div", { className: "ht-confirm-actions" }, [cancelBtn, okBtn]),
+      ]));
+      this.shadowRoot.appendChild(dialog);
+      if (typeof dialog.showModal === "function") dialog.showModal();
+      else dialog.setAttribute("open", ""); // test environments without <dialog> support
+      try { okBtn.focus(); } catch (_) { /* best-effort */ }
+    });
+  }
+
+  _confirmDialog(message, okLabel) {
+    return this._modalDialog({ message, okLabel, resolveOk: () => true }).then((v) => !!v);
+  }
+
+  // Column max_height in px, or 0 when unset/invalid/non-positive.
+  _columnMaxHeight(col) {
+    const n = Number(col && col.max_height);
+    return Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
+  }
+
+  // Grow a textarea to fit its content (issue #32): reset to auto so it can
+  // also shrink, then take the scroll height plus the border (the field is
+  // box-sizing: border-box, scrollHeight excludes borders). The CSS
+  // min-height still applies. If the user dragged the resize handle — the
+  // browser then writes its own inline height that differs from ours — stop
+  // auto-sizing that element so the manual size sticks.
+  _autoGrowTextarea(el) {
+    if (!el) return;
+    if (el.style.height && el.dataset.autoH && el.style.height !== el.dataset.autoH) return;
+    el.style.height = "auto";
+    const border = Math.max(0, (el.offsetHeight || 0) - (el.clientHeight || 0));
+    const h = el.scrollHeight + border;
+    el.style.height = h + "px";
+    el.dataset.autoH = h + "px";
+  }
+
+  // Format a Date as its *local* YYYY-MM-DD calendar date. Never use
+  // toISOString() for this: it returns the UTC date, which differs from
+  // the local date for several hours each day in any non-UTC timezone.
+  _localDateStr(d) {
+    return d.getFullYear() + "-" +
+      String(d.getMonth() + 1).padStart(2, "0") + "-" +
+      String(d.getDate()).padStart(2, "0");
+  }
+
+  _isDueDateToday(dueDate) {
+    if (!dueDate) return false;
+    return dueDate === this._localDateStr(new Date());
+  }
+
+  _isDueDateWithinDays(dueDate, days) {
+    if (!dueDate) return false;
+    const [y, m, d] = dueDate.split("-").map(Number);
+    if (!y || !m || !d) return false;
+    const due = new Date(y, m - 1, d);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const future = new Date(today);
+    future.setDate(future.getDate() + days);
+    future.setHours(23, 59, 59, 999);
+    return due >= today && due <= future;
+  }
+
+  // ---- Locale helpers (issue #30) -----------------------------------
+  // HA exposes the user's profile settings on hass.locale:
+  //   language     UI language (falls back to hass.language)
+  //   date_format  "language" | "system" | "DMY" | "MDY" | "YMD"
+  //   time_format  "language" | "system" | "am_pm" | "24"
+  // "system" is the only case where the browser locale is intentionally
+  // used; everything else must follow the HA profile, not the browser.
+  _localeCode() {
+    const loc = this._hass?.locale;
+    return (loc && loc.language) || this._hass?.language || "en";
+  }
+
+  // Format an absolute timestamp (Date) per the HA profile settings.
+  // Mirrors HA frontend's format_date/format_time: the explicit numeric
+  // date formats are produced by borrowing a locale that natively uses
+  // that ordering (DMY -> en-GB, MDY -> en-US, YMD -> en-CA).
+  _fmtTimestamp(ts) {
+    const loc = this._hass?.locale || {};
+    const lang = this._localeCode();
+    const dateLang = { DMY: "en-GB", MDY: "en-US", YMD: "en-CA" }[loc.date_format]
+      || (loc.date_format === "system" ? undefined : lang);
+    const dateStr = ts.toLocaleDateString(dateLang, { day: "numeric", month: "numeric", year: "numeric" });
+    const timeOpts = { hour: "numeric", minute: "2-digit" };
+    if (loc.time_format === "am_pm") timeOpts.hour12 = true;
+    else if (loc.time_format === "24") timeOpts.hour12 = false;
+    const timeStr = ts.toLocaleTimeString(loc.time_format === "system" ? undefined : lang, timeOpts);
+    return `${dateStr}, ${timeStr}`;
+  }
+
+  _formatDueDate(dueDate, dueTime) {
+    if (!dueDate) return "";
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const target = new Date(dueDate + "T00:00:00");
+    const diffDays = Math.round((target - today) / 86400000);
+    const lang = this._localeCode();
+
+    // Near dates: relative labels
+    if (diffDays >= -2 && diffDays <= 2) {
+      if (diffDays === 0 && dueTime) {
+        // Today with time: show relative hours/minutes
+        const [h, m] = dueTime.split(":").map(Number);
+        const dueMs = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m).getTime();
+        const diffMs = dueMs - now.getTime();
+        const absDiffMs = Math.abs(diffMs);
+        const mins = Math.floor(absDiffMs / 60000);
+        const hrs = Math.floor(mins / 60);
+        const remMins = mins % 60;
+        if (diffMs >= 0) {
+          if (hrs > 0) return this._t("due_in_hours", hrs, remMins);
+          if (mins > 0) return this._t("due_in_minutes", mins);
+          return this._t("due_in_seconds");
+        } else {
+          if (hrs > 0) return this._t("due_ago_hours", hrs, remMins);
+          if (mins > 0) return this._t("due_ago_minutes", mins);
+          return this._t("due_ago_seconds");
+        }
+      }
+      const relKey = { "-2": "due_day_before_yesterday", "-1": "due_yesterday", 0: "due_today", 1: "due_tomorrow", 2: "due_day_after_tomorrow" }[diffDays];
+      return this._t(relKey);
+    }
+
+    // Further dates: "6. Apr" (de) / "Apr 6" (en-US) — day/month order
+    // follows the HA profile language via Intl instead of a hardcoded
+    // European "D. Mon" (issue #30).
+    const opts = { day: "numeric", month: "short" };
+    if (target.getFullYear() !== now.getFullYear()) opts.year = "2-digit";
+    return target.toLocaleDateString(lang, opts);
+  }
+
+  _getListName(colIdx) {
+    const col = this._config.columns[colIdx];
+    if (col.title) return col.title;
+    if (col.entity_id) {
+      const ext = (this._externalLists || []).find(l => l.entity_id === col.entity_id);
+      return ext ? ext.name : col.entity_id;
+    }
+    const list = this._lists.find((l) => l.id === col.list_id);
+    return list ? list.name : this._t("my_tasks");
+  }
+
+  // --- Render ---
+
+  _render() {
+    // Don't tear down DOM while the user is interacting — but only for
+    // background updates (polling, state changes). User-initiated renders
+    // (clicks, edits, saves) must always go through.
+    if (this._isBackgroundUpdate) {
+      // A FLIP animation is mid-flight — rebuilding now would wipe the in-flight
+      // transforms (intermittent missing animation). Defer; _applyFlip flushes.
+      if (this._flipActive) { this._pendingRender = true; return; }
+      if (this._draggedTaskId !== null || this._draggedSubTaskId !== null
+          || this._editingTaskId || this._editingSubTaskId) {
+        this._pendingRender = true;
+        return;
+      }
+      // Only defer for inputs that lose internal state on a DOM rebuild
+      // (date/time pickers, open <select>). Text/textarea rebuild fine —
+      // focus + caret are restored from focusSnap — so a background update
+      // (e.g. the user's own add, which fires a store event) must not be
+      // swallowed here, or the initiating card never reflects the change.
+      const active = this.shadowRoot?.activeElement;
+      const activeStateful = active && (
+        (active.tagName === "INPUT" &&
+          ["date", "time", "datetime-local", "month", "week"].includes(active.type)) ||
+        active.tagName === "SELECT"
+      );
+      if (activeStateful) {
+        this._pendingRender = true;
+        if (!this._deferredRenderBoundBlur) {
+          this._deferredRenderBoundBlur = active;
+          active.addEventListener("blur", () => {
+            this._deferredRenderBoundBlur = null;
+            if (this._pendingRender) this._render();
+          }, { once: true });
+        }
+        return;
+      }
+    }
+
+    // Foreground-render guard:
+    //   - <input type="date|time|...">: internal segments (day/month/year,
+    //     hour/minute) reset to the first segment on any DOM rebuild
+    //     because these inputs have no selectionStart API.
+    //   - <select>: loses its open dropdown state on DOM rebuild, so
+    //     picking an option while a background save is in flight would
+    //     snap the menu closed.
+    // In both cases the render is deferred until blur (the user leaves
+    // the field or picks an option).  Other inputs (text, number, radio,
+    // checkbox) MUST rebuild immediately — the tag autocomplete relies on
+    // a synchronous render to insert the new chip while the input is
+    // still focused.
+    const activeNow = this.shadowRoot?.activeElement;
+    const isStatefulInput = activeNow && (
+      (activeNow.tagName === "INPUT" &&
+        ["date", "time", "datetime-local", "month", "week"].includes(activeNow.type)) ||
+      activeNow.tagName === "SELECT"
+    );
+    if (isStatefulInput) {
+      this._pendingRender = true;
+      if (!this._deferredRenderBoundBlur) {
+        this._deferredRenderBoundBlur = activeNow;
+        activeNow.addEventListener("blur", () => {
+          this._deferredRenderBoundBlur = null;
+          if (this._pendingRender) this._render();
+        }, { once: true });
+      }
+      return;
+    }
+    this._pendingRender = false;
+
+    // Snapshot focus before tearing down the DOM so we can restore it
+    // after the rebuild.  A focused input marked with data-focus-key is
+    // re-queried by (taskId, key) once the new DOM is in place — this
+    // keeps the user's caret put when a save during editing triggers a
+    // foreground re-render (e.g. toggling the recurrence switch while
+    // the cursor is already in a time/date field).
+    let focusSnap = null;
+    const activeForSnap = this.shadowRoot?.activeElement;
+    if (activeForSnap && activeForSnap.dataset && activeForSnap.dataset.focusKey) {
+      const taskEl = activeForSnap.closest?.("[data-task-id]");
+      focusSnap = {
+        taskId: taskEl?.dataset?.taskId ?? null,
+        key: activeForSnap.dataset.focusKey,
+        selStart: activeForSnap.selectionStart ?? null,
+        selEnd: activeForSnap.selectionEnd ?? null,
+      };
+    }
+
+    // Remove any stale sort close handler before rebuilding DOM
+    if (this._sortCloseHandler) {
+      document.removeEventListener("click", this._sortCloseHandler);
+      this._sortCloseHandler = null;
+    }
+
+    const root = this.shadowRoot;
+    // Rebuild only what this card owns. Long-lived nodes that other code put
+    // into the shadow root stay in place, untouched: an open modal <dialog>
+    // (confirm prompt, media picker — detaching a modal dialog drops it out of
+    // the top layer and showModal() can't re-open it), the tile detail sheet
+    // + backdrop, card-mod's <card-mod> node (issue #31/#34) and error
+    // toasts. Everything else (ha-card, drag clones) is removed and rebuilt;
+    // the <style> element is reused.
+    const KEEP = ".task-detail-backdrop, .task-detail-sheet, dialog, card-mod, .toast-error";
+    this._clearTileLp(); // a rebuild removes the pressed tile → cancel its long-press
+    for (const child of [...root.children]) {
+      if (child === this._styleEl) continue;
+      if (child.matches && child.matches(KEEP)) continue;
+      child.remove();
+    }
+    // Stash for use after the rebuild
+    this._pendingFocusRestore = focusSnap;
+    this._updateFitRows();
+
+    if (!this._styleEl) {
+      this._styleEl = document.createElement("style");
+      this._styleEl.textContent = this._getStyles();
+    }
+    if (!this._styleEl.isConnected) root.insertBefore(this._styleEl, root.firstChild);
+
+    const card = this._el("ha-card", {}, [
+      this._buildCardContent(),
+    ]);
+    // Right after the style, i.e. before any kept overlay, so the sheet /
+    // backdrop / dialogs keep painting above the card (DOM order).
+    root.insertBefore(card, this._styleEl.nextSibling);
+
+    // Restore focus to the element that had it before the DOM rebuild,
+    // if it still exists in the new tree.  Fields tagged with
+    // data-focus-key are identified by (task-id, focus-key); caret
+    // position is restored when the element supports selection ranges.
+    //
+    // Defer via rAF: right after root.appendChild(card) the browser has
+    // not yet done layout, so the target's offsetHeight is still 0 and
+    // Chrome refuses to focus invisible elements.  Waiting two frames
+    // lets CSS transitions settle and makes the focus call stick.
+    const fs = this._pendingFocusRestore;
+    this._pendingFocusRestore = null;
+    if (fs && fs.key) {
+      const selector = fs.taskId
+        ? `[data-task-id="${CSS.escape(String(fs.taskId))}"] [data-focus-key="${fs.key}"]`
+        : `[data-focus-key="${fs.key}"]`;
+      const restore = () => {
+        const target = root.querySelector(selector);
+        if (target && typeof target.focus === "function") {
+          target.focus();
+          if (fs.selStart != null && typeof target.setSelectionRange === "function") {
+            try { target.setSelectionRange(fs.selStart, fs.selEnd ?? fs.selStart); } catch { /* noop */ }
+          }
+        }
+      };
+      requestAnimationFrame(() => requestAnimationFrame(restore));
+    }
+
+    // Close any open sort dropdowns on next outside click
+    if (this._columns.some(c => c.sortOpen)) {
+      this._sortCloseHandler = () => {
+        this._sortCloseHandler = null;
+        this._columns.forEach(c => { c.sortOpen = false; });
+        this._render();
+      };
+      setTimeout(() => document.addEventListener("click", this._sortCloseHandler, { once: true }), 0);
+    }
+  }
+
+  _buildCardContent() {
+    const cols = this._config.columns;
+    if (cols.length === 1) {
+      return this._buildColumn(0);
+    }
+    const children = [];
+    if (this._config.title) {
+      const titleEl = document.createElement("h1");
+      titleEl.className = "card-global-title";
+      titleEl.textContent = this._config.title;
+      children.push(titleEl);
+    }
+    children.push(this._el("div", { className: "multi-columns" }, cols.map((_, i) => this._buildColumn(i))));
+    return this._el("div", {}, children);
+  }
+
+  _buildColumn(colIdx) {
+    const col = this._config.columns[colIdx];
+    const cs = this._columns[colIdx];
+    const filteredTasks = this._filteredTasks(colIdx);
+    const completedCount = this._getCompletedCount(colIdx);
+    const totalCount = cs.tasks.length;
+    // auto_delete_completed makes the All/Open/Done set redundant, but the
+    // Due-Soon filter is still meaningful (it filters open tasks by upcoming
+    // due date). When both are on, keep a slimmed-down row with just All +
+    // Due Soon so the user can still toggle between "everything" and
+    // "due soon only".
+    const hideFilters = (col.auto_delete_completed === true && col.show_due_soon_filter !== true) || col.show_filters === false;
+
+    const header = this._buildColumnHeader(col, colIdx, completedCount, totalCount);
+    const addTask = this._buildColumnAddTask(cs, colIdx);
+    const sortBtnWrapper = (col.show_sort !== false) ? this._buildColumnSortControl(col, cs, colIdx) : null;
+    const tagChips = col.show_tag_chips === false ? null : this._buildColumnTagChips(col, cs, colIdx);
+    const personChips = col.show_person_chips === false ? null : this._buildColumnPersonChips(col, cs, colIdx);
+
+    // Sort button placement: move into first available chips row when filters are hidden
+    const sortInTagRow = hideFilters && tagChips !== null && sortBtnWrapper !== null;
+    const sortInPersonRow = hideFilters && tagChips === null && personChips !== null && sortBtnWrapper !== null;
+
+    const filters = this._buildColumnFilterRow(hideFilters, sortBtnWrapper, sortInTagRow, sortInPersonRow, colIdx);
+    const tagChipsEl = (tagChips && sortInTagRow)
+      ? this._el("div", { className: "tag-chips-row" }, [tagChips, sortBtnWrapper])
+      : tagChips;
+    const personChipsEl = (personChips && sortInPersonRow)
+      ? this._el("div", { className: "person-chips-row" }, [personChips, sortBtnWrapper])
+      : personChips;
+
+    const isTiles = col.view_mode === "tiles";
+    const taskList = isTiles
+      ? this._buildColumnTileGrid(filteredTasks, colIdx)
+      : this._buildColumnTaskList(filteredTasks, colIdx);
+    // Per-column max_height (issues #33 / #34): cap only the task body and
+    // let it scroll internally. Header, add-task row, filters and chips are
+    // siblings above it and therefore stay put. 0 / unset = unlimited.
+    const maxH = this._columnMaxHeight(col);
+    if (maxH) {
+      taskList.classList.add("scrollable");
+      taskList.style.maxHeight = `${maxH}px`;
+    }
+
+    const children = [];
+    if (header) children.push(header);
+    if (col.show_add_task !== false) children.push(addTask);
+    if (filters) children.push(filters);
+    if (tagChipsEl) children.push(tagChipsEl);
+    if (personChipsEl) children.push(personChipsEl);
+    children.push(taskList);
+
+    const className = "card-column" + (col.compact === true ? " compact" : "") + (isTiles ? " tiles-mode" : "");
+    return this._el("div", { className }, children);
+  }
+
+  _buildColumnHeader(col, colIdx, completedCount, totalCount) {
+    const showTitle = col.show_title !== false;
+    const showProgress = col.show_progress !== false;
+    const headerChildren = [];
+    if (showTitle) {
+      const titleEl = document.createElement("h1");
+      titleEl.className = "title";
+      if (col.icon) {
+        const iconEl = document.createElement("ha-icon");
+        iconEl.setAttribute("icon", col.icon);
+        iconEl.style.cssText = "--mdc-icon-size:1em;width:1em;height:1em;flex-shrink:0;";
+        titleEl.appendChild(iconEl);
+      }
+      titleEl.appendChild(document.createTextNode(this._getListName(colIdx)));
+      headerChildren.push(titleEl);
+    }
+    if (showProgress) {
+      headerChildren.push(this._el("span", {
+        className: "progress",
+        textContent: this._t("progress", completedCount, totalCount),
+      }));
+    }
+    return headerChildren.length > 0
+      ? this._el("div", { className: "header" }, headerChildren)
+      : null;
+  }
+
+  // Start voice input. colIdx identifies the column; inputEl is the <input>
+  // element to fill (list-row input or tile-dialog input). If omitted the
+  // column's newTaskTitle state is updated instead (legacy path).
+  // Voice capture needs a secure context: browser mic (getUserMedia) or the
+  // Web Speech API. Neither exists in e.g. the Home Assistant iOS app's webview
+  // or plain-HTTP contexts — hide the mic button there instead of showing a
+  // button that can only fail.
+  _voiceSupported() {
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ||
+           !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  }
+
+  _startVoiceInput(colIdx, inputEl = null) {
+    // Toggle off if already recording
+    if (this._voiceActive.has(colIdx)) {
+      this._voiceActive.get(colIdx)(); // call cleanup
+      return;
+    }
+
+    // Helper: update the visible input + column state
+    const setTranscript = (text) => {
+      const cs = this._columns[colIdx];
+      if (cs) cs.newTaskTitle = text;
+      if (inputEl) {
+        inputEl.value = text;
+      } else {
+        const inp = this.shadowRoot.querySelector(`.add-input[data-focus-key="add_task_col_${colIdx}"]`);
+        if (inp) inp.value = text;
+      }
+    };
+
+    const stopRecording = () => {
+      const cleanup = this._voiceActive.get(colIdx);
+      if (cleanup) cleanup();
+    };
+
+    // Try HA assist_pipeline first, then fall back to Web Speech API
+    this._startHAStt(colIdx, inputEl, setTranscript, stopRecording)
+      .catch((err) => {
+        console.warn("Home Tasks voice: HA Assist STT failed.", err);
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SR) {
+          this._startWebSpeech(colIdx, inputEl, setTranscript);
+        } else {
+          const reason = err && err.message ? ": " + err.message : "";
+          this._showError(this._t("voice_failed") + reason);
+        }
+      });
+  }
+
+  // Primary: HA assist_pipeline/run STT (streams raw PCM to HA's STT backend)
+  async _startHAStt(colIdx, inputEl, setTranscript) {
+    if (!this._hass || !this._hass.connection) throw new Error("no hass");
+
+    // Request microphone access early so we can fail fast if denied
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      throw new Error("mic denied: " + err.message);
+    }
+
+    // Mutable refs inside the shared cleanup closure
+    let audioRefs = null; // { audioCtx, processor }
+    let sttHandlerId = null; // HA binary handler id for routing audio frames
+    let unsub = null;
+    let cleaned = false;
+
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      if (audioRefs) {
+        try { audioRefs.processor.disconnect(); } catch (_) {}
+        try { audioRefs.audioCtx.close(); } catch (_) {}
+        // Signal end-of-audio to HA: a lone handler-id byte (empty payload).
+        try {
+          if (sttHandlerId != null) {
+            this._hass.connection.socket.send(new Uint8Array([sttHandlerId]).buffer);
+          }
+        } catch (_) {}
+        audioRefs = null;
+      }
+      if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+      if (unsub) { try { unsub(); } catch (_) {} unsub = null; }
+      this._voiceActive.delete(colIdx);
+      this._updateMicBtn(colIdx, inputEl, false);
+    };
+
+    this._voiceActive.set(colIdx, cleanup);
+    this._updateMicBtn(colIdx, inputEl, true);
+
+    // Subscribe to pipeline events
+    try {
+      unsub = await this._hass.connection.subscribeMessage(
+        (event) => {
+          if (!event || !event.type) return;
+          if (event.type === "run-start") {
+            // Capture the binary handler id needed to route audio frames.
+            sttHandlerId = event.data?.runner_data?.stt_binary_handler_id ?? null;
+          } else if (event.type === "stt-start") {
+            if (sttHandlerId == null) {
+              console.warn("HA STT: missing stt_binary_handler_id, falling back to Web Speech");
+              cleanup();
+              this._startWebSpeech(colIdx, inputEl, setTranscript);
+              return;
+            }
+            // HA is ready – stream audio, each frame prefixed with the handler id
+            audioRefs = this._streamPcmAudio(stream, cleanup, sttHandlerId);
+          } else if (event.type === "stt-end") {
+            const text = event.data?.stt_output?.text || "";
+            if (text) setTranscript(text);
+            cleanup();
+          } else if (event.type === "error") {
+            console.warn("HA STT error:", event.data);
+            cleanup();
+            // Fall back to Web Speech
+            this._startWebSpeech(colIdx, inputEl, setTranscript);
+          } else if (event.type === "run-end") {
+            cleanup();
+          }
+        },
+        {
+          type: "assist_pipeline/run",
+          start_stage: "stt",
+          end_stage: "stt",
+          input: { sample_rate: 16000 },
+        }
+      );
+    } catch (err) {
+      cleanup();
+      throw err; // triggers fallback in _startVoiceInput
+    }
+  }
+
+  // Stream PCM audio from the MediaStream to HA via binary WebSocket frames.
+  // Returns { audioCtx, processor } for the caller to store and disconnect later.
+  _streamPcmAudio(stream, onError, handlerId) {
+    const SAMPLE_RATE = 16000;
+    const BUFFER_SIZE = 4096;
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SAMPLE_RATE });
+      const source = audioCtx.createMediaStreamSource(stream);
+      const processor = audioCtx.createScriptProcessor(BUFFER_SIZE, 1, 1);
+
+      processor.onaudioprocess = (e) => {
+        const float32 = e.inputBuffer.getChannelData(0);
+        const pcm16 = new Int16Array(float32.length);
+        for (let i = 0; i < float32.length; i++) {
+          pcm16[i] = Math.max(-32768, Math.min(32767, float32[i] * 32767));
+        }
+        // HA routes binary audio by a 1-byte handler-id prefix on every frame.
+        const frame = new Uint8Array(1 + pcm16.byteLength);
+        frame[0] = handlerId;
+        frame.set(new Uint8Array(pcm16.buffer), 1);
+        try {
+          this._hass.connection.socket.send(frame.buffer);
+        } catch (err) {
+          if (onError) onError(err);
+        }
+      };
+
+      source.connect(processor);
+      processor.connect(audioCtx.destination);
+      return { audioCtx, processor };
+    } catch (err) {
+      console.warn("PCM stream setup failed:", err);
+      if (onError) onError(err);
+      return null;
+    }
+  }
+
+  // Fallback: Web Speech API (browser-native, less accurate)
+  _startWebSpeech(colIdx, inputEl, setTranscript) {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      this._updateMicBtn(colIdx, inputEl, false);
+      console.warn("Home Tasks voice: no browser speech recognition available.");
+      this._showError(this._t("voice_failed"));
+      return;
+    }
+    // Don't start if already cancelled (user toggled off)
+    if (!this._voiceActive.has(colIdx)) {
+      // Was already cleaned up; mark as active again for Web Speech
+    }
+    const recognition = new SR();
+    recognition.lang = this._config.voice_lang || "de-DE";
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 3;
+    recognition.continuous = false;
+
+    const cleanup = () => {
+      try { recognition.abort(); } catch (_) {}
+      this._voiceActive.delete(colIdx);
+      this._updateMicBtn(colIdx, inputEl, false);
+    };
+    this._voiceActive.set(colIdx, cleanup);
+    this._updateMicBtn(colIdx, inputEl, true);
+
+    recognition.onresult = (event) => {
+      const result = event.results[event.results.length - 1];
+      const transcript = result[0].transcript;
+      setTranscript(transcript);
+      if (result.isFinal) {
+        this._voiceActive.delete(colIdx);
+        this._updateMicBtn(colIdx, inputEl, false);
+      }
+    };
+    recognition.onerror = (e) => {
+      console.warn("Web Speech error:", e.error);
+      cleanup();
+    };
+    recognition.onend = () => {
+      if (this._voiceActive.has(colIdx)) cleanup();
+    };
+    try {
+      recognition.start();
+    } catch (err) {
+      cleanup();
+    }
+  }
+
+  // Update the mic button state without a full re-render.
+  // inputEl: if set, update a mic-btn inside the tile dialog; else find
+  // the column-level mic-btn via data attribute.
+  _updateMicBtn(colIdx, inputEl, recording) {
+    const MIC_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M12 15c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V6zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-2.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>`;
+    const STOP_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>`;
+
+    let btn;
+    if (inputEl) {
+      // Tile dialog mic button is a sibling of the input inside the dialog
+      btn = inputEl.closest(".tile-dialog")?.querySelector(".mic-btn");
+    } else {
+      btn = this.shadowRoot.querySelector(`.mic-btn[data-col-idx="${colIdx}"]`);
+    }
+    if (!btn) {
+      // Fall back to full re-render if button not found
+      this._render();
+      return;
+    }
+    btn.innerHTML = recording ? STOP_SVG : MIC_SVG;
+    btn.title = recording ? this._t("voice_stop") : this._t("voice_input");
+    if (recording) {
+      btn.classList.add("recording");
+    } else {
+      btn.classList.remove("recording");
+    }
+  }
+
+  _buildColumnAddTask(cs, colIdx) {
+    const col = this._config.columns[colIdx];
+    const addInput = this._el("input", {
+      type: "text",
+      className: "add-input",
+      placeholder: this._t("add_placeholder"),
+      value: cs.newTaskTitle,
+      "data-focus-key": `add_task_col_${colIdx}`,
+    });
+    addInput.addEventListener("input", (e) => { cs.newTaskTitle = e.target.value; });
+    addInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") this._addTask(colIdx);
+    });
+    const addBtn = this._el("button", { className: "add-btn", textContent: "+" });
+    addBtn.addEventListener("click", () => this._addTask(colIdx));
+
+    const children = [addInput];
+    if (col.show_voice !== false && this._voiceSupported()) {
+      const isRecording = this._voiceActive.has(colIdx);
+      const micBtn = this._el("button", {
+        className: "mic-btn" + (isRecording ? " recording" : ""),
+        title: isRecording ? this._t("voice_stop") : this._t("voice_input"),
+        "data-col-idx": String(colIdx),
+        innerHTML: isRecording
+          ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>`
+          : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M12 15c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V6zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-2.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>`,
+      });
+      micBtn.addEventListener("click", () => this._startVoiceInput(colIdx));
+      children.push(micBtn);
+    }
+    // Due date at creation (issue #38): opt-in per column. When enabled, a
+    // second row with date (+ time) inputs sits under the add-task input;
+    // leaving it empty simply creates the task without a due date.
+    const showAddDue = col.show_add_due === true && this._colSupportsDue(colIdx);
+    let dueRow = null;
+    if (showAddDue) {
+      const dateInput = this._el("input", {
+        type: "date", className: "add-due-date", value: cs.newTaskDue || "",
+        "data-focus-key": `add_due_col_${colIdx}`,
+        "aria-label": this._t("due_date_lbl"),
+      });
+      dateInput.addEventListener("change", () => { cs.newTaskDue = dateInput.value || ""; });
+      dateInput.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        cs.newTaskDue = dateInput.value || "";
+        this._addTaskFromDueRow(colIdx);
+      });
+      const rowChildren = [dateInput];
+      if (this._colSupportsDueTime(colIdx)) {
+        const timeInput = this._el("input", {
+          type: "time", className: "add-due-time", value: cs.newTaskDueTime || "",
+          "data-focus-key": `add_due_time_col_${colIdx}`,
+          "aria-label": this._t("due_time_lbl"),
+        });
+        timeInput.addEventListener("change", () => { cs.newTaskDueTime = timeInput.value || ""; });
+        timeInput.addEventListener("keydown", (e) => {
+          if (e.key !== "Enter") return;
+          e.preventDefault();
+          cs.newTaskDueTime = timeInput.value || "";
+          this._addTaskFromDueRow(colIdx);
+        });
+        rowChildren.push(timeInput);
+      }
+      dueRow = this._el("div", { className: "add-due-row" }, rowChildren);
+    }
+    children.push(addBtn);
+    const row = this._el("div", { className: "add-task" }, children);
+    // Without the option the DOM is exactly as before (single .add-task row).
+    if (!dueRow) return row;
+    return this._el("div", { className: "add-task-group" }, [row, dueRow]);
+  }
+
+  _buildColumnSortControl(col, cs, colIdx) {
+    const sortLabels = {
+      manual: this._t("sort_manual"), due: this._t("sort_due"),
+      priority: this._t("sort_priority"), title: this._t("sort_title"),
+      person: this._t("sort_person"),
+    };
+    const sortKeys = ["manual"];
+    if (col.show_due_date !== false) sortKeys.push("due");
+    if (col.show_priority !== false) sortKeys.push("priority");
+    sortKeys.push("title");
+    if (col.show_assigned_person !== false) sortKeys.push("person");
+    const effectiveSortBy = sortKeys.includes(cs.sortBy) ? cs.sortBy : "manual";
+
+    const sortDropdown = this._el("div", { className: "sort-dropdown" + (cs.sortOpen ? "" : " hidden") });
+    for (const key of sortKeys) {
+      const opt = this._el("div", {
+        className: "sort-option" + (effectiveSortBy === key ? " active" : ""),
+        textContent: sortLabels[key],
+      });
+      opt.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const before = this._captureListFlip(colIdx);
+        cs.sortBy = key;
+        cs.sortOpen = false;
+        this._render();
+        this._applyFlip(before, colIdx, 0.3);
+      });
+      sortDropdown.appendChild(opt);
+    }
+    const sortBtnWrapper = this._el("div", { className: "sort-btn-wrapper" });
+    const sortBtn = this._el("button", {
+      className: "sort-btn" + (effectiveSortBy !== "manual" ? " active" : ""),
+      textContent: "\u2191 \u2193",
+      title: sortLabels[effectiveSortBy],
+    });
+    sortBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const wasOpen = cs.sortOpen;
+      this._columns.forEach(c => { c.sortOpen = false; });
+      cs.sortOpen = !wasOpen;
+      this._render();
+    });
+    sortBtnWrapper.appendChild(sortBtn);
+    sortBtnWrapper.appendChild(sortDropdown);
+    return sortBtnWrapper;
+  }
+
+  _buildColumnTagChips(col, cs, colIdx) {
+    if (col.show_tags === false) return null;
+    const allTags = new Set();
+    const baseTasks = this._preFilteredTasks(colIdx);
+    for (const t of baseTasks) {
+      for (const tag of (t.tags || [])) allTags.add(tag);
+    }
+    // Remove preset labels — they are always applied and cannot be toggled by the user
+    for (const label of (col.filters?.labels || [])) allTags.delete(label);
+    if (allTags.size === 0) return null;
+    const chipChildren = [];
+    for (const tag of [...allTags].sort()) {
+      chipChildren.push(this._buildColumnTagChip(tag, cs, colIdx));
+    }
+    return this._el("div", { className: "tag-chips" }, chipChildren);
+  }
+
+  _buildColumnTagChip(tag, cs, colIdx) {
+    const isActive = cs.tagFilters.has(tag);
+    const chip = this._el("button", {
+      className: "tag-chip" + (isActive ? " active" : ""),
+      textContent: "#" + tag,
+      "data-tag": tag,
+    });
+    chip.addEventListener("click", () => {
+      this._animateFilterChange(colIdx, () => {
+        if (cs.tagFilters.has(tag)) cs.tagFilters.delete(tag);
+        else cs.tagFilters.add(tag);
+      });
+      // chip-pop: delay so render has completed before querying new chips
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            this.shadowRoot.querySelectorAll(`.tag-chip[data-tag="${CSS.escape(tag)}"]`)
+              .forEach(c => {
+                c.classList.add("chip-anim");
+                c.addEventListener("animationend", () => c.classList.remove("chip-anim"), { once: true });
+              });
+          });
+        });
+      }, 0);
+    });
+    return chip;
+  }
+
+  _buildColumnPersonChips(col, cs, colIdx) {
+    if (col.show_assigned_person === false) return null;
+    const assignedPersons = new Set();
+    const baseTasks = this._preFilteredTasks(colIdx);
+    for (const t of baseTasks) {
+      if (t.assigned_person) assignedPersons.add(t.assigned_person);
+    }
+    // Remove preset assignees — they are always applied and cannot be toggled by the user
+    for (const eid of (col.filters?.assignees || [])) assignedPersons.delete(eid);
+    if (assignedPersons.size === 0) return null;
+    const chipChildren = [];
+    for (const eid of [...assignedPersons].sort()) {
+      chipChildren.push(this._buildColumnPersonChip(eid, cs, colIdx));
+    }
+    return this._el("div", { className: "person-chips" }, chipChildren);
+  }
+
+  _buildColumnPersonChip(eid, cs, colIdx) {
+    const isActive = cs.personFilters.has(eid);
+    let name = eid;
+    if (this._hass && this._hass.states && this._hass.states[eid]) {
+      name = this._hass.states[eid].attributes?.friendly_name || eid;
+    }
+    const chip = this._el("button", {
+      className: "person-chip" + (isActive ? " active" : ""),
+      textContent: "\uD83D\uDC64 " + name,
+      "data-eid": eid,
+    });
+    chip.addEventListener("click", () => {
+      this._animateFilterChange(colIdx, () => {
+        if (cs.personFilters.has(eid)) cs.personFilters.delete(eid);
+        else cs.personFilters.add(eid);
+      });
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            this.shadowRoot.querySelectorAll(`.person-chip[data-eid="${CSS.escape(eid)}"]`)
+              .forEach(c => {
+                c.classList.add("chip-anim");
+                c.addEventListener("animationend", () => c.classList.remove("chip-anim"), { once: true });
+              });
+          });
+        });
+      }, 0);
+    });
+    return chip;
+  }
+
+  _buildColumnFilterRow(hideFilters, sortBtnWrapper, sortInTagRow, sortInPersonRow, colIdx) {
+    const col = this._config.columns[colIdx];
+    const autoDelete = col.auto_delete_completed === true;
+    const dueSoonEnabled = col.show_due_soon_filter === true;
+    const children = [];
+
+    if (hideFilters) {
+      // Fully suppressed (auto-delete on AND no due-soon): only the sort
+      // button may end up here, when it can't be tucked into the tag/person
+      // chip rows.
+      if (sortBtnWrapper && !sortInTagRow && !sortInPersonRow) {
+        children.push(this._el("div", { className: "filter-spacer" }));
+        children.push(sortBtnWrapper);
+      }
+    } else {
+      if (autoDelete) {
+        // Auto-delete suppresses Open/Done (Done is always empty, Open ≡ All).
+        // Keep All so the user can return after picking Due Soon.
+        children.push(this._buildFilterBtn(this._t("filter_all"), "all", colIdx));
+      } else {
+        children.push(
+          this._buildFilterBtn(this._t("filter_all"), "all", colIdx),
+          this._buildFilterBtn(this._t("filter_open"), "open", colIdx),
+          this._buildFilterBtn(this._t("filter_done"), "done", colIdx),
+        );
+      }
+      if (dueSoonEnabled) {
+        children.push(this._buildFilterBtn(this._t("filter_due_soon"), "due_soon", colIdx));
+      }
+      children.push(this._el("div", { className: "filter-spacer" }));
+      if (sortBtnWrapper) children.push(sortBtnWrapper);
+    }
+
+    return children.length > 0
+      ? this._el("div", { className: "filters" }, children)
+      : null;
+  }
+
+  _buildColumnTaskList(filteredTasks, colIdx) {
+    const cs = this._columns[colIdx];
+    const col = this._config.columns[colIdx];
+    const sections = (cs.sections || []).slice().sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+
+    const taskListChildren = [];
+    if (filteredTasks.length === 0) {
+      taskListChildren.push(
+        this._el("div", { className: "empty-state", textContent: this._t("empty") })
+      );
+    } else if (sections.length === 0) {
+      // Flat rendering — original behavior, plus optional Done header at the
+      // bottom for visual consistency when both open and completed are visible.
+      const openTasks = filteredTasks.filter((t) => !t.completed);
+      const doneTasks = filteredTasks.filter((t) => t.completed);
+      for (const task of openTasks) taskListChildren.push(this._buildTask(task, colIdx));
+      if (doneTasks.length > 0 && openTasks.length > 0) {
+        taskListChildren.push(this._buildDoneHeader(colIdx));
+        for (const task of doneTasks) {
+          if (!this._isSectionCollapsed(colIdx, "__done__")) {
+            taskListChildren.push(this._buildTask(task, colIdx));
+          }
+        }
+      } else {
+        for (const task of doneTasks) taskListChildren.push(this._buildTask(task, colIdx));
+      }
+    } else {
+      const knownIds = new Set(sections.map((s) => s.id));
+      const openTasks = filteredTasks.filter((t) => !t.completed);
+      const doneTasks = filteredTasks.filter((t) => t.completed);
+      const unsorted = openTasks.filter((t) => !t.section_id || !knownIds.has(t.section_id));
+      const bySection = new Map(sections.map((s) => [s.id, []]));
+      for (const t of openTasks) {
+        if (t.section_id && knownIds.has(t.section_id)) bySection.get(t.section_id).push(t);
+      }
+
+      // Top: unsorted, no header (flat)
+      for (const t of unsorted) taskListChildren.push(this._buildTask(t, colIdx));
+
+      // Each section in sort order — header + body wrapper (so the entire
+      // body collapses/expands as a single animated unit, including its
+      // internal flex gaps).
+      for (const section of sections) {
+        const tasksIn = bySection.get(section.id) || [];
+        const collapsed = this._isSectionCollapsed(colIdx, section.id);
+        taskListChildren.push(this._buildSectionHeader(section, colIdx, { collapsed, count: tasksIn.length }));
+        taskListChildren.push(this._buildSectionBody(section.id, tasksIn, colIdx, collapsed));
+      }
+
+      // Done at end (only if there are completed tasks)
+      if (doneTasks.length > 0) {
+        const collapsed = this._isSectionCollapsed(colIdx, "__done__");
+        taskListChildren.push(this._buildDoneHeader(colIdx, { collapsed, count: doneTasks.length }));
+        taskListChildren.push(this._buildSectionBody("__done__", doneTasks, colIdx, collapsed));
+      }
+    }
+
+    const taskList = this._el("div", {
+      className: "task-list",
+      "data-col-idx": String(colIdx),
+    }, taskListChildren);
+
+    // Allow dropping on empty column
+    taskList.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      if (!this._draggedTaskId) return;
+      const tgtColIdx = parseInt(taskList.dataset.colIdx);
+      if (tgtColIdx !== this._draggedColIdx) {
+        const draggedEl = this.shadowRoot.querySelector(`.task[data-task-id="${CSS.escape(String(this._draggedTaskId))}"]`);
+        if (draggedEl && draggedEl.parentNode !== taskList) {
+          if (draggedEl.parentElement) draggedEl.parentElement.removeChild(draggedEl);
+          taskList.appendChild(draggedEl);
+        }
+        taskList.closest(".card-column")?.classList.add("drag-target");
+      }
+    });
+    taskList.addEventListener("drop", (e) => {
+      e.preventDefault();
+      this._finishDrag();
+    });
+    return taskList;
+  }
+
+  // ── Tile / Kachel view ─────────────────────────────────────────────────────
+
+  _buildColumnTileGrid(filteredTasks, colIdx) {
+    // Open tasks first, completed after
+    const openTasks = filteredTasks.filter(t => !t.completed);
+    const doneTasks = filteredTasks.filter(t => t.completed);
+    const ordered = [...openTasks, ...doneTasks];
+
+    const tileEls = ordered.map(task => this._buildTaskTile(task, colIdx));
+
+    if (tileEls.length === 0) {
+      const empty = this._el("div", { className: "empty-state", textContent: this._t("empty") });
+      return this._el("div", { className: "tile-grid-wrap", "data-col-idx": String(colIdx) }, [empty]);
+    }
+
+    const grid = this._el("div", { className: "tile-grid-inner" }, tileEls);
+    return this._el("div", { className: "tile-grid-wrap", "data-col-idx": String(colIdx) }, [grid]);
+  }
+
+  // Derive the small WebP thumbnail URL for one of our public images
+  // (/local/home_tasks/<base>.<ext> -> <base>_thumb.webp). Other URLs unchanged.
+  _thumbUrl(url) {
+    if (!url) return url;
+    const i = url.indexOf("?");
+    const path = i === -1 ? url : url.slice(0, i);
+    const q = i === -1 ? "" : url.slice(i);
+    if (!path.startsWith("/local/home_tasks/")) return url;
+    return path.replace(/\.[^/.]+$/, "") + "_thumb.webp" + q;
+  }
+
+  _buildTaskTile(task, colIdx) {
+    const col = this._config.columns[colIdx];
+    const showImages = col.show_images === true;
+    const thumbUrl = showImages ? (task.image_url || null) : null;
+
+    const cls = [
+      "task-tile",
+      task.completed ? "completed" : "",
+      thumbUrl ? "has-image" : "",
+    ].filter(Boolean).join(" ");
+
+    const tile = this._el("div", { className: cls, "data-task-id": String(task.id), draggable: true });
+
+    // Background image (only when show_images is enabled)
+    if (thumbUrl) {
+      const small = this._thumbUrl(thumbUrl);
+      const img = this._el("img", { className: "tile-bg", src: small, alt: "", draggable: false });
+      // Fall back to the full image if the thumbnail isn't available yet.
+      if (small !== thumbUrl) img.addEventListener("error", () => { img.src = thumbUrl; }, { once: true });
+      tile.appendChild(img);
+    } else {
+      // Placeholder: first letter on gradient background
+      const placeholder = this._el("div", {
+        className: "tile-placeholder",
+        textContent: (task.title || "?").charAt(0).toUpperCase(),
+      });
+      tile.appendChild(placeholder);
+    }
+
+    // Bottom overlay: title (optional) + done badge
+    const showTitle = col.show_tile_title !== false;
+    if (showTitle || task.completed) {
+      const overlay = this._el("div", { className: "tile-overlay" });
+      if (showTitle) {
+        const titleEl = this._el("div", { className: "tile-title", textContent: task.title || "" });
+        overlay.appendChild(titleEl);
+      }
+      if (task.completed) {
+        const badge = this._el("div", { className: "tile-done-badge", textContent: "✓" });
+        overlay.appendChild(badge);
+      }
+      tile.appendChild(overlay);
+    }
+
+    // Gestures — same mechanism as list rows so both views feel identical.
+    //  • click / tap (no move) → toggle complete
+    //  • hold in place         → open detail sheet (500 ms)
+    //  • drag                  → reorder. Desktop = native HTML5 drag (the
+    //    browser ghost follows the cursor); touch = a clone that follows the
+    //    finger. Displaced tiles animate to their new slot via FLIP
+    //    (_liveMoveTile). Touch arms on a 400 ms hold so a swipe still scrolls.
+
+    // --- Mouse (pointer events for click/hold; HTML5 drag for the move) ---
+    let _mDown = null, _mDetail = false, _mDrag = false;
+    tile.addEventListener("pointerdown", (e) => {
+      if (e.pointerType !== "mouse" || e.button !== 0) return;
+      _mDown = { x: e.clientX, y: e.clientY }; _mDetail = false; _mDrag = false;
+      this._clearTileLp();
+      this._tileLpTimer = setTimeout(() => { this._tileLpTimer = null; _mDetail = true; this._openTaskDetailSheet(task, colIdx); }, 500);
+    });
+    tile.addEventListener("pointermove", (e) => {
+      if (e.pointerType !== "mouse" || !_mDown) return;
+      if (this._tileLpTimer && (Math.abs(e.clientX - _mDown.x) > 6 || Math.abs(e.clientY - _mDown.y) > 6)) this._clearTileLp();
+    });
+    tile.addEventListener("pointerup", () => { this._clearTileLp(); _mDown = null; });
+    tile.addEventListener("click", () => {
+      if (_mDetail || _mDrag) { _mDetail = false; _mDrag = false; return; }
+      this._toggleTask(task.id, task.completed, colIdx);
+    });
+    tile.addEventListener("dragstart", (e) => {
+      this._clearTileLp();
+      _mDrag = true;
+      this._draggedTileId = task.id;
+      this._draggedTileCol = colIdx;
+      this._dragPrevX = null; this._dragPrevY = null;
+      try { e.dataTransfer.effectAllowed = "move"; } catch (_) {}
+      tile.classList.add("dragging");
+    });
+    tile.addEventListener("dragend", () => this._finishTileDrag(colIdx));
+    tile.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      try { e.dataTransfer.dropEffect = "move"; } catch (_) {}
+      if (this._draggedTileId == null || this._draggedTileCol !== colIdx || String(this._draggedTileId) === String(task.id)) return;
+      const draggedEl = tile.parentNode.querySelector(`.task-tile[data-task-id="${CSS.escape(String(this._draggedTileId))}"]`);
+      this._liveMoveTile(draggedEl, tile, e.clientX, e.clientY);
+    });
+    tile.addEventListener("drop", (e) => { e.preventDefault(); this._finishTileDrag(colIdx); });
+
+    // --- Touch (tap = complete; 400 ms hold arms drag; clone follows finger) ---
+    let _t = null;
+    tile.addEventListener("touchstart", (e) => {
+      if (e.touches.length !== 1) return;
+      _t = { x: e.touches[0].clientX, y: e.touches[0].clientY, armed: false, dragging: false };
+      this._clearTileLp();
+      this._tileLpTimer = setTimeout(() => { this._tileLpTimer = null; if (_t) { _t.armed = true; tile.classList.add("armed"); } }, 400);
+    }, { passive: true });
+    tile.addEventListener("touchmove", (e) => {
+      const tt = e.touches[0];
+      if (!tt || !_t) return;
+      if (!_t.armed) {
+        if (Math.abs(tt.clientX - _t.x) > 8 || Math.abs(tt.clientY - _t.y) > 8) { this._clearTileLp(); _t = null; }
+        return;
+      }
+      e.preventDefault();
+      if (!_t.dragging) { _t.dragging = true; tile.classList.remove("armed"); this._startTileTouchDrag(tile, colIdx, tt.clientX, tt.clientY); }
+      this._moveTileTouchDrag(tt.clientX, tt.clientY);
+    }, { passive: false });
+    const _tEnd = () => {
+      this._clearTileLp();
+      if (_t && _t.dragging) this._finishTileDrag(colIdx);
+      else if (_t && _t.armed) { tile.classList.remove("armed"); this._openTaskDetailSheet(task, colIdx); }
+      else if (_t) this._toggleTask(task.id, task.completed, colIdx);
+      _t = null;
+    };
+    tile.addEventListener("touchend", _tEnd);
+    tile.addEventListener("touchcancel", _tEnd);
+
+    // Same creation animation as list rows.
+    if (this._justAddedTaskId && this._justAddedTaskId === String(task.id)) {
+      this._animateTaskEntry(task.id, colIdx);
+    }
+
+    return tile;
+  }
+
+  // Live-reorder during a tile drag. Whole-tile catch + direction gate: hovering
+  // a tile takes over its slot, but only in the pointer's travel direction; the
+  // displaced tiles then FLIP (translate x+y) to their new grid slots.
+  _liveMoveTile(draggedEl, targetEl, clientX, clientY) {
+    if (!draggedEl || !targetEl || draggedEl === targetEl) return;
+    const grid = targetEl.parentNode;
+    if (!grid) return;
+    // Direction of travel since the last event. dragover/touchmove keep firing
+    // even when the pointer is still (and an in-flight FLIP shifts tiles under
+    // it), so "no movement" must mean "no change" — that is what stops the two
+    // tiles from flickering back and forth on their own.
+    const mx = clientX - (this._dragPrevX == null ? clientX : this._dragPrevX);
+    const my = clientY - (this._dragPrevY == null ? clientY : this._dragPrevY);
+    this._dragPrevX = clientX;
+    this._dragPrevY = clientY;
+    if (Math.abs(mx) <= 1 && Math.abs(my) <= 1) return; // sub-pixel/idle: treat as no movement
+    // Whole-tile catch + direction gate: hovering anywhere on a tile takes over
+    // its slot, but only reorder in the direction the pointer is actually
+    // travelling (vertical weighted higher since it changes the whole row). This
+    // gives the full-tile catch, lets you push a tile back the way it came, and
+    // stops diagonal / row-change flicker — a swap and its reverse can't both
+    // fire while the pointer moves one way.
+    const all = [...grid.querySelectorAll(".task-tile")];
+    const draggedBefore = all.indexOf(draggedEl) < all.indexOf(targetEl);
+    if (draggedBefore !== ((my * 2 + mx) > 0)) return;
+    const ref = draggedBefore ? targetEl.nextSibling : targetEl;
+    if (ref === draggedEl || draggedEl.nextSibling === ref) return; // already there
+    const siblings = [...grid.querySelectorAll(".task-tile:not(.dragging)")];
+    const before = new Map(siblings.map(el => [el, el.getBoundingClientRect()]));
+    grid.insertBefore(draggedEl, ref);
+    siblings.forEach(el => {
+      const b = before.get(el);
+      const now = el.getBoundingClientRect();
+      const dx = (b ? b.left : now.left) - now.left;
+      const dy = (b ? b.top : now.top) - now.top;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+      el.style.transition = "none";
+      el.style.transform = `translate(${dx}px, ${dy}px)`;
+      requestAnimationFrame(() => {
+        el.style.transition = "transform 0.18s ease";
+        el.style.transform = "";
+        el.addEventListener("transitionend", () => { el.style.transition = ""; el.style.transform = ""; }, { once: true });
+      });
+    });
+  }
+
+  // Touch drag: a clone follows the finger while the real tile (dimmed) is
+  // reordered in place — same approach as the list's row touch drag.
+  _startTileTouchDrag(tile, colIdx, clientX, clientY) {
+    this._draggedTileId = tile.dataset.taskId;
+    this._draggedTileCol = colIdx;
+    this._dragPrevX = null; this._dragPrevY = null;
+    tile.classList.add("dragging");
+    const rect = tile.getBoundingClientRect();
+    const clone = tile.cloneNode(true);
+    clone.classList.remove("dragging");
+    clone.classList.add("drag-clone");
+    clone.style.cssText = `position:fixed; top:${rect.top}px; left:${rect.left}px; width:${rect.width}px; height:${rect.height}px; z-index:1000; opacity:0.92; pointer-events:none; margin:0; box-shadow:0 10px 26px rgba(0,0,0,0.4);`;
+    this.shadowRoot.appendChild(clone);
+    this._tileClone = clone;
+    this._tileCloneOffX = clientX - rect.left;
+    this._tileCloneOffY = clientY - rect.top;
+  }
+
+  _moveTileTouchDrag(clientX, clientY) {
+    if (this._tileClone) {
+      this._tileClone.style.left = `${clientX - this._tileCloneOffX}px`;
+      this._tileClone.style.top = `${clientY - this._tileCloneOffY}px`;
+      this._tileClone.style.display = "none";
+    }
+    const el = this.shadowRoot.elementFromPoint(clientX, clientY);
+    if (this._tileClone) this._tileClone.style.display = "";
+    const target = el ? el.closest(".task-tile") : null;
+    if (target && target.dataset.taskId && target.dataset.taskId !== String(this._draggedTileId) && !target.classList.contains("drag-clone")) {
+      const draggedEl = this.shadowRoot.querySelector(`.task-tile[data-task-id="${CSS.escape(String(this._draggedTileId))}"]`);
+      this._liveMoveTile(draggedEl, target, clientX, clientY);
+    }
+  }
+
+  _finishTileDrag(colIdx) {
+    const draggedId = this._draggedTileId;
+    this._draggedTileId = null;
+    this._draggedTileCol = null;
+    if (this._tileClone) { this._tileClone.remove(); this._tileClone = null; }
+    this.shadowRoot.querySelectorAll(".task-tile.dragging").forEach(el => el.classList.remove("dragging"));
+    if (draggedId == null) return;
+    const grid = this.shadowRoot.querySelector(`.tile-grid-wrap[data-col-idx="${colIdx}"] .tile-grid-inner`);
+    if (!grid) return;
+    const order = [...grid.querySelectorAll(".task-tile[data-task-id]")].map(el => el.dataset.taskId);
+    // Merge back tasks hidden by a filter (person/tag chips) so they keep their
+    // relative position — otherwise reorder_tasks renumbers only the visible
+    // subset and the hidden tasks' sort_order collides (same as the list path).
+    if (order.length > 1) this._reorderTasks(this._mergeHiddenTasks(colIdx, order), colIdx);
+  }
+
+  // Cancel a pending tile long-press (detail) timer. Centralised so a re-render
+  // (e.g. from a rapid complete/uncomplete) reliably clears it — otherwise the
+  // pressed tile gets replaced, its pointerup never fires, and the timer would
+  // pop the detail sheet open.
+  _clearTileLp() {
+    if (this._tileLpTimer) { clearTimeout(this._tileLpTimer); this._tileLpTimer = null; }
+  }
+
+  // Remove the detail sheet + backdrop immediately (no slide-out). Used by the
+  // action buttons and before opening a new sheet; the animated dismissal is the
+  // close() closure inside _openTaskDetailSheet.
+  _closeTaskDetailSheet() {
+    this.shadowRoot.querySelector(".task-detail-sheet")?.remove();
+    this.shadowRoot.querySelector(".task-detail-backdrop")?.remove();
+  }
+
+  _openTaskDetailSheet(task, colIdx) {
+    this._closeTaskDetailSheet();
+
+    const backdrop = this._el("div", { className: "task-detail-backdrop" });
+    const sheet = this._el("div", { className: "task-detail-sheet" });
+    // Match the sheet width/position to the card itself rather than spanning
+    // the full viewport width.
+    const cardRect = this.getBoundingClientRect();
+    if (cardRect.width) {
+      sheet.style.left = `${Math.round(cardRect.left)}px`;
+      sheet.style.right = "auto";
+      sheet.style.width = `${Math.round(cardRect.width)}px`;
+    }
+
+    const close = () => {
+      sheet.classList.remove("open");
+      sheet.addEventListener("transitionend", () => { sheet.remove(); backdrop.remove(); }, { once: true });
+      setTimeout(() => { sheet.remove(); backdrop.remove(); }, 350);
+    };
+
+    backdrop.addEventListener("click", close);
+
+    const handle = this._el("div", { className: "sheet-handle" });
+    const titleEl = this._el("input", { className: "sheet-title", type: "text", value: task.title });
+    titleEl.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); titleEl.blur(); } });
+    titleEl.addEventListener("change", () => {
+      const v = titleEl.value.trim();
+      if (v && v !== task.title) this._updateTaskTitle(task.id, v, colIdx);
+    });
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "sheet-close";
+    const closeIco = document.createElement("ha-icon");
+    closeIco.setAttribute("icon", "mdi:close");
+    closeIco.style.cssText = "--mdc-icon-size:20px;";
+    closeBtn.appendChild(closeIco);
+    closeBtn.addEventListener("click", close);
+    const header = this._el("div", { className: "sheet-header" }, [titleEl, closeBtn]);
+
+    const body = this._el("div", { className: "sheet-body" });
+    body.appendChild(this._buildTaskDetails(task, colIdx));
+
+    sheet.append(handle, header, body);
+    this.shadowRoot.append(backdrop, sheet);
+    requestAnimationFrame(() => requestAnimationFrame(() => sheet.classList.add("open")));
+  }
+
+  _buildFilterBtn(label, value, colIdx) {
+    const cs = this._columns[colIdx];
+    const btn = this._el("button", {
+      className: `filter-btn${cs.filter === value ? " active" : ""}`,
+      textContent: label,
+    });
+    btn.addEventListener("click", () => {
+      this._animateFilterChange(colIdx, () => { cs.filter = value; });
+    });
+    return btn;
+  }
+
+  _columnStorageKey(colIdx) {
+    const col = this._config.columns[colIdx] || {};
+    return col.list_id || col.entity_id || `col_${colIdx}`;
+  }
+
+  _isSectionCollapsed(colIdx, sectionId) {
+    try {
+      const key = `home_tasks_card:section_collapse:${this._columnStorageKey(colIdx)}:${sectionId}`;
+      return window.localStorage.getItem(key) === "1";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  _setSectionCollapsed(colIdx, sectionId, collapsed) {
+    try {
+      const key = `home_tasks_card:section_collapse:${this._columnStorageKey(colIdx)}:${sectionId}`;
+      if (collapsed) window.localStorage.setItem(key, "1");
+      else window.localStorage.removeItem(key);
+    } catch (e) {
+      /* localStorage unavailable — collapse state is session-only */
+    }
+  }
+
+  _toggleSectionCollapsed(colIdx, sectionId) {
+    const currentlyCollapsed = this._isSectionCollapsed(colIdx, sectionId);
+    if (currentlyCollapsed) {
+      // Expanding: render with .expanding class baseline (max-height: 0) so
+      // the body never flashes at full height, then animate it to its
+      // natural height.
+      this._setSectionCollapsed(colIdx, sectionId, false);
+      this._expandingSection = sectionId;
+      this._render();
+      this._expandingSection = null;
+      this._animateSectionExpand(colIdx, sectionId);
+    } else {
+      // Collapsing: animate body's max-height from current to 0, then render
+      // to drop the body's collapsed class baseline.
+      // Caret rotation: toggle header class immediately for instant feedback.
+      const header = this._findSectionHeader(colIdx, sectionId);
+      if (header) header.classList.add("collapsed");
+      this._animateSectionCollapse(colIdx, sectionId, () => {
+        this._setSectionCollapsed(colIdx, sectionId, true);
+        this._render();
+      });
+    }
+  }
+
+  _buildSectionBody(sectionId, tasks, colIdx, collapsed) {
+    let cls = "section-body";
+    if (collapsed) cls += " collapsed";
+    if (!collapsed && this._expandingSection === sectionId) cls += " expanding";
+    const body = this._el("div", { className: cls });
+    body.dataset.sectionId = sectionId;
+    for (const t of tasks) body.appendChild(this._buildTask(t, colIdx));
+    return body;
+  }
+
+  _findSectionHeader(colIdx, sectionId) {
+    return this.shadowRoot.querySelector(
+      `.task-list[data-col-idx="${CSS.escape(String(colIdx))}"] .section-header[data-section-id="${CSS.escape(String(sectionId))}"]`
+    );
+  }
+
+  _findSectionBody(colIdx, sectionId) {
+    return this.shadowRoot.querySelector(
+      `.task-list[data-col-idx="${CSS.escape(String(colIdx))}"] .section-body[data-section-id="${CSS.escape(String(sectionId))}"]`
+    );
+  }
+
+  _animateSectionCollapse(colIdx, sectionId, done) {
+    const body = this._findSectionBody(colIdx, sectionId);
+    if (!body) { done(); return; }
+    // No animation when the document isn't visible: requestAnimationFrame
+    // doesn't fire in hidden tabs / backgrounded apps, and the transition
+    // would never run. Commit the end state directly.
+    if (document.hidden) { done(); return; }
+    // Freeze current height as px so we can transition from a concrete value
+    const h = body.scrollHeight;
+    body.style.maxHeight = h + "px";
+    body.style.opacity = "1";
+    body.style.overflow = "hidden";
+    // Force layout flush before applying the transition target
+    void body.offsetHeight;
+    let finished = false;
+    const finish = (e) => {
+      if (e && e.propertyName !== "max-height") return;
+      if (finished) return;
+      finished = true;
+      body.removeEventListener("transitionend", finish);
+      body.style.transition = "";
+      body.style.maxHeight = "";
+      body.style.opacity = "";
+      body.style.overflow = "";
+      done();
+    };
+    body.addEventListener("transitionend", finish);
+    // Safety net registered *outside* the rAF: if the frame callback never
+    // runs (tab hidden mid-click, throttled WebView), the body must not
+    // stay frozen at a fixed max-height with overflow hidden — later content
+    // growth would be clipped and the next section headers would visually
+    // overlap it.
+    setTimeout(() => finish(), 320);
+    requestAnimationFrame(() => {
+      if (finished) return;
+      body.style.transition = "max-height 0.22s ease, opacity 0.18s ease";
+      body.style.maxHeight = "0";
+      body.style.opacity = "0";
+    });
+  }
+
+  _animateSectionExpand(colIdx, sectionId) {
+    // The body was rendered with .expanding (max-height:0) so there's no
+    // flash; whatever happens below, it must end up fully visible. The
+    // safety net lives outside the rAF chain for the same reason as in
+    // _animateSectionCollapse (hidden tabs never run frame callbacks).
+    let cleared = false;
+    const clear = (e) => {
+      if (e && e.propertyName !== "max-height") return;
+      if (cleared) return;
+      cleared = true;
+      const body = this._findSectionBody(colIdx, sectionId);
+      if (!body) return;
+      body.removeEventListener("transitionend", clear);
+      body.classList.remove("expanding");
+      body.style.transition = "";
+      body.style.maxHeight = "";
+      body.style.opacity = "";
+      body.style.overflow = "";
+    };
+    setTimeout(() => clear(), 360);
+    if (document.hidden) { clear(); return; }
+    // ha-card commits its layout asynchronously after _render(); waiting one
+    // rAF lets scrollHeight return the body's true natural height.
+    requestAnimationFrame(() => {
+      if (cleared) return;
+      const body = this._findSectionBody(colIdx, sectionId);
+      if (!body) return;
+      // scrollHeight ignores max-height and overflow:hidden — it returns
+      // the body's content height even while .expanding is still applied.
+      const targetH = body.scrollHeight;
+      // Swap the class baseline for inline styles, then transition.
+      body.classList.remove("expanding");
+      body.style.maxHeight = "0";
+      body.style.opacity = "0";
+      body.style.overflow = "hidden";
+      void body.offsetHeight; // commit baseline before transition
+      body.addEventListener("transitionend", clear);
+      requestAnimationFrame(() => {
+        if (cleared) return;
+        body.style.transition = "max-height 0.22s ease, opacity 0.22s ease";
+        body.style.maxHeight = targetH + "px";
+        body.style.opacity = "1";
+      });
+    });
+  }
+
+  _buildSectionHeader(section, colIdx, opts = {}) {
+    const { collapsed = false, count = 0, isDone = false } = opts;
+    let className = "section-header";
+    if (collapsed) className += " collapsed";
+    if (isDone) className += " done-header";
+    const header = this._el("div", { className });
+    header.dataset.sectionId = section.id;
+    if (section.icon) {
+      const icon = document.createElement("ha-icon");
+      icon.setAttribute("icon", section.icon);
+      header.appendChild(icon);
+    }
+    const name = this._el("span", { className: "section-name", textContent: section.name });
+    header.appendChild(name);
+    if (count > 0) {
+      header.appendChild(this._el("span", { className: "sub-badge", textContent: String(count) }));
+    }
+    const caret = document.createElement("ha-icon");
+    caret.setAttribute("icon", "mdi:chevron-down");
+    caret.className = "section-caret";
+    header.appendChild(caret);
+    header.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this._toggleSectionCollapsed(colIdx, section.id);
+    });
+    this._attachDragToSectionHeader(header, section.id, colIdx, opts.isDone === true);
+    return header;
+  }
+
+  _attachDragToSectionHeader(headerEl, sectionId, colIdx, isDoneHeader) {
+    const onEnter = () => {
+      if (!this._draggedTaskId) return;
+      headerEl.classList.add("drop-target");
+      // Spring-loaded: open a collapsed section after a short hover so
+      // the user can drop into it. Skip for the Done header.
+      if (!isDoneHeader && this._isSectionCollapsed(colIdx, sectionId)) {
+        if (this._springLoadTimer) clearTimeout(this._springLoadTimer);
+        this._springLoadOriginallyCollapsed = sectionId;
+        this._springLoadTimer = setTimeout(() => {
+          this._setSectionCollapsed(colIdx, sectionId, false);
+          this._render();
+        }, 600);
+      }
+    };
+    const onLeave = () => {
+      headerEl.classList.remove("drop-target");
+      if (this._springLoadTimer) {
+        clearTimeout(this._springLoadTimer);
+        this._springLoadTimer = null;
+      }
+    };
+    const onOver = (e) => {
+      if (!this._draggedTaskId) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = isDoneHeader ? "none" : "move";
+      headerEl.classList.add("drop-target");
+      if (isDoneHeader) return; // never reposition into Done bucket via drag
+      const draggedEl = this.shadowRoot.querySelector(`.task[data-task-id="${CSS.escape(String(this._draggedTaskId))}"]`);
+      if (!draggedEl) return;
+      // The body wrapper of this section is headerEl's next sibling. Insert
+      // the dragged element as the first child of that wrapper so it lands
+      // as the first task of the section.
+      const body = headerEl.nextElementSibling;
+      const target = body && body.classList.contains("section-body") ? body : null;
+      if (target && draggedEl.parentNode === target && draggedEl === target.firstChild) return;
+      if (target) {
+        const list = headerEl.closest(".task-list");
+        const siblings = [...list.querySelectorAll(".task:not(.dragging), .section-header, .section-body")];
+        const before = new Map(siblings.map((el) => [el, el.getBoundingClientRect().top]));
+        target.insertBefore(draggedEl, target.firstChild);
+        siblings.forEach((el) => {
+          const dy = (before.get(el) ?? el.getBoundingClientRect().top) - el.getBoundingClientRect().top;
+          if (Math.abs(dy) < 1) return;
+          el.style.transition = "none";
+          el.style.transform = `translateY(${dy}px)`;
+          requestAnimationFrame(() => {
+            el.style.transition = "transform 0.18s ease";
+            el.style.transform = "";
+            el.addEventListener("transitionend", () => {
+              el.style.transition = "";
+              el.style.transform = "";
+            }, { once: true });
+          });
+        });
+      }
+    };
+    headerEl.addEventListener("dragenter", onEnter);
+    headerEl.addEventListener("dragleave", onLeave);
+    headerEl.addEventListener("dragover", onOver);
+    headerEl.addEventListener("drop", (e) => {
+      e.preventDefault();
+      headerEl.classList.remove("drop-target");
+      this._finishDrag();
+    });
+  }
+
+  _buildDoneHeader(colIdx, opts = {}) {
+    return this._buildSectionHeader(
+      { id: "__done__", name: this._t("done_section_header"), icon: "mdi:check-circle-outline" },
+      colIdx,
+      { ...opts, isDone: true }
+    );
+  }
+
+  _buildTask(task, colIdx) {
+    const cs = this._columns[colIdx];
+    const col = this._config.columns[colIdx];
+    const isExpanded = this._expandedTasks.has(task.id);
+    const isEditing = this._editingTaskId === task.id;
+
+    let className = "task";
+    if (task.completed) className += " completed";
+
+    // draggable=false while editing OR while expanded:
+    //   - editing: the title input must accept text selection
+    //   - expanded: the details container has notes/tag/date inputs that
+    //     must accept text selection. The browser blocks ALL cursor and
+    //     text-selection inside any draggable=true ancestor, regardless
+    //     of dragstart.preventDefault() or mousedown.stopPropagation().
+    //     Users can drag a task only when it's collapsed — matching the
+    //     UX of Trello, Jira and other card-based interfaces.
+    const taskEl = this._el("div", { className, draggable: !isEditing && !isExpanded });
+    taskEl.dataset.taskId = task.id;
+
+    // --- main row: checkbox + content + [thumb] + expand button ---
+    const checkboxEl = this._buildTaskCheckbox(task, colIdx);
+    const contentChildren = this._buildTaskContentChildren(task, colIdx, isEditing);
+    const metaBadges = this._buildTaskMetaBadges(task, col, cs, colIdx);
+    if (metaBadges.length > 0) {
+      contentChildren.push(this._el("div", { className: "task-meta" }, metaBadges));
+    }
+    const contentEl = this._el("div", { className: "task-content" }, contentChildren);
+    const expandBtn = this._buildTaskExpandButton(isExpanded);
+
+    const mainRowChildren = [checkboxEl, contentEl];
+    if (task.image_url && !isEditing && col.show_images === true) {
+      const _full = task.image_url;
+      const _small = this._thumbUrl(_full);
+      const thumb = this._el("img", {
+        className: "task-thumb",
+        src: _small,
+        alt: "",
+        title: task.title,
+      });
+      if (_small !== _full) thumb.addEventListener("error", () => { thumb.src = _full; }, { once: true });
+      // Click on thumbnail expands the task to show full image
+      thumb.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (isExpanded) this._expandedTasks.delete(task.id);
+        else this._expandedTasks.add(task.id);
+        this._render();
+      });
+      mainRowChildren.push(thumb);
+    }
+    mainRowChildren.push(expandBtn);
+
+    const mainRow = this._el("div", { className: "task-main" }, mainRowChildren);
+    this._attachTaskExpandClickHandler(mainRow, task, taskEl);
+    taskEl.appendChild(mainRow);
+
+    // --- expanded details + open/close animation ---
+    if (isExpanded) {
+      const detailsEl = this._buildTaskDetails(task, colIdx);
+      taskEl.appendChild(detailsEl);
+      this._animateExpandedDetails(detailsEl, task);
+    }
+
+    this._attachDragToTask(taskEl, task.id, colIdx);
+    this._attachTaskAppearanceAnimations(task, colIdx);
+
+    return taskEl;
+  }
+
+  _buildTaskCheckbox(task, colIdx) {
+    const checkbox = this._el("input", { type: "checkbox", checked: task.completed });
+    checkbox.addEventListener("change", () => this._toggleTask(task.id, task.completed, colIdx));
+    const checkmark = this._el("span", { className: "checkmark" });
+    return this._el("label", { className: "checkbox-container" }, [checkbox, checkmark]);
+  }
+
+  _buildTaskContentChildren(task, colIdx, isEditing) {
+    const children = [];
+    // Show the title as a bordered text field whenever the task is expanded (not
+    // only on the hidden double-click) so users can see the title is editable —
+    // matching the other detail input fields.
+    if (isEditing || this._expandedTasks.has(task.id)) {
+      const editInput = this._el("input", {
+        type: "text",
+        className: "edit-title-input",
+        value: task.title,
+        "data-focus-key": "task_title",
+      });
+      // Stop mousedown from reaching the draggable taskEl — otherwise the browser's
+      // drag-detection system intercepts mousedown and prevents cursor positioning.
+      editInput.addEventListener("mousedown", (e) => { e.stopPropagation(); });
+      // Mark as actively editing on focus so a background re-render defers — else
+      // a poll mid-typing would rebuild this text input and revert the title.
+      editInput.addEventListener("focus", () => { this._editingTaskId = task.id; });
+      const saveTitle = () => {
+        this._editingTaskId = null;
+        const v = editInput.value.trim();
+        if (v && v !== task.title) this._updateTaskTitle(task.id, v, colIdx);
+        else if (!v) editInput.value = task.title;  // never store a blank title
+      };
+      editInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); saveTitle(); editInput.blur(); }
+        else if (e.key === "Escape") { this._editingTaskId = null; editInput.value = task.title; editInput.blur(); }
+      });
+      editInput.addEventListener("blur", saveTitle);
+      children.push(editInput);
+      // Only grab focus for the explicit double-click edit, not on plain expand.
+      if (isEditing) setTimeout(() => { editInput.focus(); editInput.select(); }, 0);
+    } else {
+      const titleSpan = this._el("span", { className: "task-title", textContent: task.title });
+      titleSpan.addEventListener("dblclick", (e) => {
+        e.stopPropagation();
+        this._expandedTasks.add(task.id);
+        this._editingTaskId = task.id;
+        this._render();
+      });
+      children.push(titleSpan);
+    }
+    return children;
+  }
+
+  _buildTaskExpandButton(isExpanded) {
+    const expandBtn = this._el("button", { className: "expand-btn" + (isExpanded ? " expanded" : "") });
+    const expandIcon = document.createElement("ha-icon");
+    expandIcon.setAttribute("icon", "mdi:chevron-down");
+    expandBtn.appendChild(expandIcon);
+    return expandBtn;
+  }
+
+  _buildTaskMetaBadges(task, col, cs, colIdx) {
+    const meta = [];
+    // Each chip needs BOTH switches (issue #45): the feature switch
+    // ("Task features" section, also gates the detail editor) and its
+    // display switch ("Display" section). Both default to on, so hiding a
+    // chip no longer requires disabling the feature itself.
+    if (task.priority && col.show_priority !== false && col.badge_priority !== false) {
+      meta.push(this._buildPriorityBadge(task));
+    }
+    const subProgress = this._getSubTaskProgress(task);
+    if (subProgress && (col.show_sub_tasks ?? col.show_sub_items) !== false && col.badge_progress !== false) {
+      meta.push(this._el("span", { className: "sub-badge", textContent: subProgress }));
+    }
+    if (task.due_date && col.show_due_date !== false && col.badge_due !== false) {
+      meta.push(this._buildDueDateBadge(task));
+    }
+    if (task.recurrence_enabled && col.show_recurrence !== false && col.badge_recurrence !== false) {
+      const badge = this._buildRecurrenceBadge(task);
+      if (badge) meta.push(badge);
+    }
+    if ((task.assigned_person || task.assigned_name) && col.show_assigned_person !== false && col.badge_person !== false) {
+      meta.push(this._buildAssignedPersonBadge(task, cs, colIdx));
+    }
+    if (task.tags && task.tags.length > 0 && col.show_tags !== false && col.badge_tags !== false) {
+      for (const tag of task.tags) {
+        meta.push(this._buildTagBadge(tag, cs, colIdx));
+      }
+    }
+    if (task.reminders && task.reminders.length > 0 && col.show_reminders !== false && col.badge_reminders !== false) {
+      meta.push(this._buildReminderBadge(task));
+    }
+    return meta;
+  }
+
+  _buildPriorityBadge(task) {
+    const priLabels = { 1: this._t("pri_low"), 2: this._t("pri_medium"), 3: this._t("pri_high") };
+    const priClass = { 1: "pri-low", 2: "pri-medium", 3: "pri-high" };
+    return this._el("span", {
+      className: `priority-badge ${priClass[task.priority] || ""}`,
+      textContent: priLabels[task.priority],
+    });
+  }
+
+  _buildDueDateBadge(task) {
+    let dueCls = "due-date";
+    if (this._isDueDateOverdue(task.due_date)) dueCls += " overdue";
+    else if (this._isDueDateToday(task.due_date)) dueCls += " today";
+    return this._el("span", {
+      className: dueCls,
+      textContent: this._formatDueDate(task.due_date, task.due_time),
+    });
+  }
+
+  _buildRecurrenceBadge(task) {
+    let recLabel = null;
+    const unit = task.recurrence_unit;
+    const val = task.recurrence_value || 1;
+    const unitLabels = { hours: this._t("rec_short_h"), days: this._t("rec_short_d"), weeks: this._t("rec_short_w"), months: this._t("rec_short_m"), years: this._t("rec_short_y") };
+    const singleLabels = { hours: this._t("rec_hourly"), days: this._t("rec_daily"), weeks: this._t("rec_weekly"), months: this._t("rec_monthly"), years: this._t("rec_yearly") };
+
+    if (task.recurrence_type === "weekdays" && task.recurrence_weekdays && task.recurrence_weekdays.length) {
+      // Legacy mode (pre-migration): show weekdays.
+      recLabel = task.recurrence_weekdays.map(d => this._t(`rec_wd_${d}`)).join(" ");
+    } else if (unit === "weeks" && task.recurrence_weekdays && task.recurrence_weekdays.length) {
+      // Weekly with weekday filter — "Mo Mi" or "alle 2 Wo: Mo Mi".
+      const days = task.recurrence_weekdays.map(d => this._t(`rec_wd_${d}`)).join(" ");
+      recLabel = val === 1 ? days : `${val} ${unitLabels.weeks} ${days}`;
+    } else if (unit === "months" && task.recurrence_month_pattern === "day_of_month" && task.recurrence_day_of_month != null) {
+      const dom = task.recurrence_day_of_month;
+      const dayPart = dom === "last" ? this._t("rec_last_short") : `${dom}${this._t("rec_dom_short")}`;
+      recLabel = val === 1 ? dayPart : `${dayPart} \u00b7 ${val} ${unitLabels.months}`;
+    } else if (unit === "months" && task.recurrence_month_pattern === "nth_weekday" && task.recurrence_nth_week != null && task.recurrence_weekdays && task.recurrence_weekdays.length) {
+      const nth = task.recurrence_nth_week;
+      const wdShort = this._t(`rec_wd_${task.recurrence_weekdays[0]}`);
+      const nthLbl = nth === "last" ? this._t("rec_last_short") : `${nth}.`;
+      const head = `${nthLbl} ${wdShort}`;
+      recLabel = val === 1 ? head : `${head} \u00b7 ${val} ${unitLabels.months}`;
+    } else if (unit === "years" && task.recurrence_anniversary && /^\d{2}-\d{2}$/.test(task.recurrence_anniversary)) {
+      const m = task.recurrence_anniversary.slice(0, 2);
+      const d = task.recurrence_anniversary.slice(3, 5);
+      const head = `${parseInt(d, 10)}.${parseInt(m, 10)}.`;
+      recLabel = val === 1 ? head : `${head} \u00b7 ${val} ${unitLabels.years}`;
+    } else if (unit) {
+      recLabel = val === 1 ? singleLabels[unit] : `${val} ${unitLabels[unit] || unit}`;
+    }
+    // Fallback for complex Todoist recurrence patterns
+    if (!recLabel && task._todoist_recurrence_string) {
+      recLabel = task._todoist_recurrence_string;
+    }
+    if (!recLabel) return null;
+    let badgeText = "\u21BB " + recLabel;
+    if (task.recurrence_end_type === "count" && task.recurrence_remaining_count != null) {
+      badgeText += " \u00b7 " + this._t("rec_remaining", task.recurrence_remaining_count);
+    }
+    return this._el("span", { className: "recurrence-badge", textContent: badgeText });
+  }
+
+  _buildAssignedPersonBadge(task, cs, colIdx) {
+    let personName;
+    if (task.assigned_person && this._hass && this._hass.states && this._hass.states[task.assigned_person]) {
+      const attrs = this._hass.states[task.assigned_person].attributes;
+      personName = (attrs && attrs.friendly_name) || task.assigned_person;
+    } else if (task.assigned_name) {
+      // Todoist collaborator with no HA person match
+      personName = this._t("assigned_unknown").replace("%s", task.assigned_name);
+    } else {
+      personName = task.assigned_person;
+    }
+    const isActivePerson = cs.personFilters.has(task.assigned_person);
+    const assignedBadge = this._el("span", {
+      className: "assigned-badge" + (isActivePerson ? " active" : ""),
+      textContent: "\uD83D\uDC64 " + personName,
+      "data-eid": task.assigned_person,
+    });
+    assignedBadge.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this._animateFilterChange(colIdx, () => {
+        if (cs.personFilters.has(task.assigned_person)) cs.personFilters.delete(task.assigned_person);
+        else cs.personFilters.add(task.assigned_person);
+      });
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            this.shadowRoot.querySelectorAll(`.assigned-badge[data-eid="${CSS.escape(task.assigned_person)}"]`)
+              .forEach(b => { b.classList.add("chip-anim"); b.addEventListener("animationend", () => b.classList.remove("chip-anim"), { once: true }); });
+          });
+        });
+      }, 0);
+    });
+    return assignedBadge;
+  }
+
+  _buildTagBadge(tag, cs, colIdx) {
+    const isActive = cs.tagFilters.has(tag);
+    const tagBadge = this._el("span", {
+      className: "tag-badge" + (isActive ? " active" : ""),
+      textContent: "#" + tag,
+      "data-tag": tag,
+    });
+    tagBadge.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this._animateFilterChange(colIdx, () => {
+        if (cs.tagFilters.has(tag)) cs.tagFilters.delete(tag);
+        else cs.tagFilters.add(tag);
+      });
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            this.shadowRoot.querySelectorAll(`.tag-badge[data-tag="${CSS.escape(tag)}"]`)
+              .forEach(b => { b.classList.add("chip-anim"); b.addEventListener("animationend", () => b.classList.remove("chip-anim"), { once: true }); });
+          });
+        });
+      }, 0);
+    });
+    return tagBadge;
+  }
+
+  _buildReminderBadge(task) {
+    let remText;
+    if (task.reminders.length === 1) {
+      const entry = REMINDER_OFFSETS.find(([v]) => v === task.reminders[0]);
+      remText = "\u23F0 " + (entry ? this._t(entry[1]) : task.reminders[0] + " min");
+    } else {
+      remText = "\u23F0 " + task.reminders.length;
+    }
+    return this._el("span", { className: "reminder-badge", textContent: remText });
+  }
+
+  _attachTaskExpandClickHandler(mainRow, task, taskEl) {
+    mainRow.addEventListener("click", (e) => {
+      if (e.detail > 1) return;
+      if (e.target.closest(".checkbox-container")) return;
+      if (e.target.closest(".tag-badge")) return;
+      if (e.target.closest(".assigned-badge")) return;
+      if (e.target.closest(".edit-title-input")) return;
+
+      // If an animation is in progress, skip animation and just toggle + render
+      if (this._animatingTaskIds?.has(task.id)) {
+        this._animatingTaskIds.delete(task.id);
+        if (this._expandedTasks.has(task.id)) {
+          this._expandedTasks.delete(task.id);
+        } else {
+          this._expandedTasks.add(task.id);
+        }
+        this._render();
+        return;
+      }
+
+      if (this._expandedTasks.has(task.id)) {
+        this._collapseExpandedTask(task, taskEl);
+      } else {
+        if (!this._animatingTaskIds) this._animatingTaskIds = new Set();
+        this._animatingTaskIds.add(task.id);
+        this._justExpandedTaskId = task.id;
+        this._expandedTasks.add(task.id);
+        this._render();
+        this._justExpandedTaskId = null;
+      }
+    });
+  }
+
+  _collapseExpandedTask(task, taskEl) {
+    this._expandedTasks.delete(task.id);
+    const detailsEl = taskEl.querySelector(".task-details");
+    if (!detailsEl) {
+      this._render();
+      return;
+    }
+    const h = detailsEl.offsetHeight;
+    if (!h) { this._render(); return; }
+    detailsEl.style.height = h + "px";
+    if (!this._animatingTaskIds) this._animatingTaskIds = new Set();
+    this._animatingTaskIds.add(task.id);
+    const finish = () => {
+      if (!this._animatingTaskIds?.delete(task.id)) return;
+      this._render();
+    };
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        detailsEl.style.height = "0";
+        detailsEl.addEventListener("transitionend", finish, { once: true });
+        setTimeout(finish, 300);
+      });
+    });
+  }
+
+  _animateExpandedDetails(detailsEl, task) {
+    if (this._justExpandedTaskId === task.id) {
+      // .task-details starts at height:0 (CSS default). Animate to full height.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          detailsEl.style.height = detailsEl.scrollHeight + "px";
+          detailsEl.addEventListener("transitionend", () => {
+            this._animatingTaskIds?.delete(task.id);
+            detailsEl.style.height = "auto"; // release constraint once fully open
+          }, { once: true });
+        });
+      });
+    } else {
+      // Already open (after re-render): show without animation
+      detailsEl.style.height = "auto";
+    }
+  }
+
+  _attachTaskAppearanceAnimations(task, colIdx) {
+    // Filter enter animation: task is newly appearing after a filter change
+    if (this._justAppearedTaskIds && this._justAppearedTaskIds.has(String(task.id))) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const el = this.shadowRoot.querySelector(
+            `.task-list[data-col-idx="${colIdx}"] .task[data-task-id="${CSS.escape(String(task.id))}"]`
+          );
+          if (el) {
+            el.classList.add("task-anim-enter");
+            el.addEventListener("animationend", () => el.classList.remove("task-anim-enter"), { once: true });
+          }
+        });
+      });
+    }
+
+    // Creation animation: task slides in from the add-input field position
+    if (this._justAddedTaskId && this._justAddedTaskId === String(task.id)) {
+      this._animateTaskEntry(task.id, colIdx);
+    }
+  }
+
+  _buildTaskDetails(task, colIdx) {
+    const col = this._config.columns[colIdx];
+
+    const details = [];
+    if (col.show_notes !== false) details.push(this._buildNotesSection(task, colIdx));
+    if ((col.show_sub_tasks ?? col.show_sub_items) !== false) details.push(this._buildSubTasksSection(task, colIdx));
+    if (col.show_assigned_person !== false) details.push(this._buildAssignedPersonSection(task, colIdx));
+    if (col.show_priority !== false) details.push(this._buildPrioritySection(task, colIdx));
+    if (col.show_tags !== false) details.push(this._buildTagsSection(task, colIdx));
+    if (col.show_due_date !== false) details.push(this._buildDateSection(task, colIdx));
+    if (col.show_reminders !== false) details.push(this._buildRemindersSection(task, colIdx));
+    if (col.show_recurrence !== false) details.push(this._buildRecurrenceSection(task, colIdx));
+    if (col.show_history) details.push(this._buildHistorySection(task));
+    if (!this._isExternalCol(colIdx) && col.show_images === true) details.push(this._buildImageSection(task, colIdx));
+    details.push(this._buildActionsSection(task, colIdx));
+
+    const inner = this._el("div", { className: "task-details-inner" }, details);
+    const wrapper = this._el("div", { className: "task-details" }, [inner]);
+
+    // Stop mousedown on text inputs from reaching the draggable parent task.
+    // Without this, the browser's drag detection intercepts mousedown and
+    // prevents text selection / cursor positioning inside notes, due date,
+    // tag, and reminder inputs.
+    wrapper.addEventListener("mousedown", (e) => {
+      if (this._isInteractiveTarget(e.target)) e.stopPropagation();
+    });
+
+    return wrapper;
+  }
+
+  _buildDateSection(task, colIdx) {
+    const dateInput = this._el("input", { type: "date", value: task.due_date || "" });
+    // Check if external provider supports due time (SET_DUE_DATETIME_ON_ITEM = 32)
+    const features = this._colSupportedFeatures(colIdx);
+    const supportsTime = this._colSupportsDueTime(colIdx);
+
+    const timeInput = this._el("input", { type: "time", value: task.due_time || "" });
+    if (!task.due_date) timeInput.disabled = true;
+
+    const saveDueDate = () => {
+      if (!dateInput.value) timeInput.value = "";
+      timeInput.disabled = !dateInput.value;
+      this._updateTaskDue(task.id, dateInput.value, supportsTime ? timeInput.value : "", colIdx);
+    };
+    const saveDueTime = () =>
+      this._updateTaskDue(task.id, dateInput.value, timeInput.value, colIdx);
+
+    const dateClearBtn = this._el("button", { className: "field-clear-btn", textContent: "\u00D7" });
+    const timeClearBtn = this._el("button", { className: "field-clear-btn", textContent: "\u00D7" });
+    if (!dateInput.value) dateClearBtn.style.display = "none";
+    if (!timeInput.value) timeClearBtn.style.display = "none";
+
+    dateInput.addEventListener("change", () => {
+      saveDueDate();
+      dateClearBtn.style.display = dateInput.value ? "" : "none";
+    });
+    dateInput.addEventListener("keydown", (e) => { if (e.key === "Enter") dateInput.blur(); });
+    timeInput.addEventListener("change", () => {
+      saveDueTime();
+      timeClearBtn.style.display = timeInput.value ? "" : "none";
+    });
+    timeInput.addEventListener("keydown", (e) => { if (e.key === "Enter") timeInput.blur(); });
+
+    dateClearBtn.addEventListener("click", () => {
+      dateInput.value = "";
+      timeInput.value = "";
+      timeInput.disabled = true;
+      saveDueDate();
+      dateClearBtn.style.display = "none";
+      timeClearBtn.style.display = "none";
+    });
+    timeClearBtn.addEventListener("click", () => {
+      timeInput.value = "";
+      saveDueTime();
+      timeClearBtn.style.display = "none";
+    });
+
+    const dateFieldWrap = this._el("div", { className: "field-wrap" }, [
+      dateInput,
+      this._el("span", { textContent: this._t("due_date_lbl") }),
+    ]);
+    const dateWrap = this._el("div", { className: "field-with-clear" }, [dateFieldWrap, dateClearBtn]);
+    const timeFieldWrap = this._el("div", { className: "field-wrap" }, [
+      timeInput,
+      this._el("span", { textContent: this._t("due_time_lbl") }),
+    ]);
+    const timeWrap = this._el("div", { className: "field-with-clear" }, [timeFieldWrap, timeClearBtn]);
+    if (!supportsTime) timeWrap.style.display = "none";
+    return this._el("div", { className: "detail-section" }, [
+      this._el("label", { className: "detail-label", textContent: this._t("due_date") }),
+      this._el("div", { className: "due-input-row" }, [dateWrap, timeWrap]),
+    ]);
+  }
+
+  _buildNotesSection(task, colIdx) {
+    const notesInput = this._el("textarea", {
+      placeholder: this._t("notes_placeholder"),
+      rows: 2,
+      value: task.notes || "",
+      "data-focus-key": "notes",
+    });
+    let debounceTimer;
+    const saveNotes = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
+      this._updateTaskNotes(task.id, notesInput.value, colIdx);
+    };
+    notesInput.addEventListener("input", () => {
+      this._autoGrowTextarea(notesInput);
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(saveNotes, 500);
+    });
+    // Fit to content once attached (scrollHeight is 0 while detached).
+    requestAnimationFrame(() => this._autoGrowTextarea(notesInput));
+    notesInput.addEventListener("blur", saveNotes);
+    const notesWrap = this._el("div", { className: "field-wrap no-label" }, [notesInput]);
+    return this._el("div", { className: "detail-section" }, [
+      this._el("label", { className: "detail-label", textContent: this._t("notes") }),
+      notesWrap,
+    ]);
+  }
+
+  _buildSubTasksSection(task, colIdx) {
+    const subList = this._el("div", { className: "sub-task-list" });
+    subList.dataset.taskId = task.id;
+    for (const sub of (task.sub_items || [])) {
+      subList.appendChild(this._buildSubTask(task.id, sub, colIdx));
+    }
+    subList.addEventListener("dragover", (e) => { e.preventDefault(); });
+    subList.addEventListener("drop", (e) => { e.preventDefault(); this._finishSubDrag(task.id, colIdx); });
+    const addSubBtn = this._el("button", {
+      className: "add-sub-btn",
+      textContent: this._t("add_sub_item"),
+    });
+    addSubBtn.addEventListener("click", () => this._addSubTask(task.id, colIdx));
+    return this._el("div", { className: "detail-section" }, [
+      this._el("label", { className: "detail-label", textContent: this._t("sub_items") }),
+      subList,
+      addSubBtn,
+    ]);
+  }
+
+  _buildPrioritySection(task, colIdx) {
+    const currentPriority = task.priority || null;
+    const priorityBtnRow = this._el("div", { className: "priority-btn-row" });
+    for (const [val, key] of [[1, "pri_low"], [2, "pri_medium"], [3, "pri_high"]]) {
+      const btn = this._el("button", {
+        className: `priority-btn pri-${val}${currentPriority === val ? " active" : ""}`,
+        textContent: this._t(key),
+      });
+      btn.addEventListener("click", () => {
+        const newPri = currentPriority === val ? null : val;
+        task.priority = newPri;
+        this._render();
+        this._updateTaskRouted(colIdx, task.id, { priority: newPri });
+      });
+      priorityBtnRow.appendChild(btn);
+    }
+    return this._el("div", { className: "detail-section" }, [
+      this._el("label", { className: "detail-label", textContent: this._t("priority") }),
+      priorityBtnRow,
+    ]);
+  }
+
+  _buildRecurrenceSection(task, colIdx) {
+    const recurrenceEnabled = task.recurrence_enabled || false;
+    const recurrenceValue = task.recurrence_value || 1;
+    // Default unit "days"; legacy "weekdays" mode (unmigrated overlay) is
+    // mapped to weeks+weekday-filter for UI purposes.
+    const legacyWeekdaysMode = task.recurrence_type === "weekdays";
+    const recurrenceUnit = legacyWeekdaysMode ? "weeks" : (task.recurrence_unit || "days");
+    const recurrenceWeekdays = task.recurrence_weekdays || [];
+    const recurrenceStartDate = task.recurrence_start_date || "";
+    const recurrenceTime = task.recurrence_time || "00:00";
+    const recurrenceEndType = task.recurrence_end_type === "count" ? "count" : "date";
+    const recurrenceEndDate = task.recurrence_end_date || "";
+    const recurrenceMaxCount = task.recurrence_max_count ?? null;
+    const recurrenceRemainingCount = task.recurrence_remaining_count ?? task.recurrence_max_count ?? null;
+    const recurrenceMonthPattern = task.recurrence_month_pattern || "none";
+    const recurrenceDayOfMonth = task.recurrence_day_of_month;
+    const recurrenceNthWeek = task.recurrence_nth_week;
+    const recurrenceAnniversary = task.recurrence_anniversary || "";
+
+    const recSwitch = document.createElement("ha-switch");
+    recSwitch.checked = recurrenceEnabled;
+    const recurrenceToggleRow = this._el("div", { className: "recurrence-toggle-row" }, [
+      this._el("label", { className: "detail-label", style: "margin: 0;" }, [
+        document.createTextNode(this._t("recurrence"))
+      ]),
+      recSwitch,
+    ]);
+
+    const recurrenceValueInput = this._el("input", {
+      type: "number", value: recurrenceValue,
+      "data-focus-key": "recurrence_value",
+    });
+    recurrenceValueInput.min = 1;
+    recurrenceValueInput.max = 365;
+
+    const recurrenceUnitSelect = this._el("select", {});
+    for (const opt of [
+      { value: "hours", label: this._t("rec_hours") },
+      { value: "days", label: this._t("rec_days") },
+      { value: "weeks", label: this._t("rec_weeks") },
+      { value: "months", label: this._t("rec_months") },
+      { value: "years", label: this._t("rec_years") },
+    ]) {
+      const optEl = this._el("option", { value: opt.value, textContent: opt.label });
+      if (opt.value === recurrenceUnit) optEl.selected = true;
+      recurrenceUnitSelect.appendChild(optEl);
+    }
+
+    const spinUp = this._el("button", { className: "spin-btn spin-up", textContent: "\u25b4", type: "button" });
+    const spinDown = this._el("button", { className: "spin-btn spin-down", textContent: "\u25be", type: "button" });
+    spinUp.addEventListener("click", () => {
+      const v = Math.min(365, (parseInt(recurrenceValueInput.value) || 1) + 1);
+      recurrenceValueInput.value = v;
+      recurrenceValueInput.dispatchEvent(new Event("change"));
+    });
+    spinDown.addEventListener("click", () => {
+      const v = Math.max(1, (parseInt(recurrenceValueInput.value) || 1) - 1);
+      recurrenceValueInput.value = v;
+      recurrenceValueInput.dispatchEvent(new Event("change"));
+    });
+    const recValueWrap = this._el("div", { className: "field-wrap inline" }, [
+      recurrenceValueInput,
+      this._el("span", { textContent: this._t("rec_value_lbl") }),
+      this._el("div", { className: "spin-btns" }, [spinUp, spinDown]),
+    ]);
+    const recUnitWrap = this._el("div", { className: "sel-wrap inline" }, [
+      recurrenceUnitSelect,
+      this._el("span", { textContent: this._t("rec_unit_lbl") }),
+    ]);
+    const recurrenceIntervalRow = this._el("div", { className: "recurrence-input-row" }, [recValueWrap, recUnitWrap]);
+
+    // ---- Weekly sub-section (radios: Ab Erledigung / Am + weekday filter) -
+    const _weekPatName = `rec_week_pattern_${task.id}`;
+    const weekHasFilter = (recurrenceWeekdays && recurrenceWeekdays.length > 0)
+      || this._weekPatternOverride.get(task.id) === "on";
+    const _mkWeekRadio = (val, checked) => {
+      const r = this._el("input", { type: "radio", name: _weekPatName, value: val });
+      if (checked) r.checked = true;
+      return r;
+    };
+    const weekPatNoneRadio = _mkWeekRadio("none", !weekHasFilter);
+    const weekPatOnRadio = _mkWeekRadio("on", weekHasFilter);
+    const weekPatNoneLabel = this._el("label", { className: "weekday-label" }, [
+      weekPatNoneRadio, this._el("span", { textContent: this._t("rec_pattern_none") }),
+    ]);
+    const weekPatOnLabel = this._el("label", { className: "weekday-label" }, [
+      weekPatOnRadio, this._el("span", { textContent: this._t("rec_anniversary_lbl") }),
+    ]);
+    const recurrenceWeekRadioRow = this._el("div", { className: "recurrence-radio-row" }, [
+      weekPatNoneLabel, weekPatOnLabel,
+    ]);
+    const weekdayCheckboxes = [];
+    const recurrenceWeekdayCheckboxRow = this._el("div", { className: "recurrence-weekday-row" });
+    for (let d = 0; d < 7; d++) {
+      const cb = this._el("input", { type: "checkbox", checked: recurrenceWeekdays.includes(d) });
+      const lbl = this._el("label", { className: "weekday-label" }, [
+        cb,
+        this._el("span", { textContent: this._t(`rec_wd_${d}`) }),
+      ]);
+      weekdayCheckboxes.push(cb);
+      recurrenceWeekdayCheckboxRow.appendChild(lbl);
+    }
+    const recurrenceWeekSection = this._el("div", { className: "recurrence-week-section" }, [
+      recurrenceWeekRadioRow, recurrenceWeekdayCheckboxRow,
+    ]);
+
+    // ---- Monthly sub-section (pattern picker + dom + nth/weekday) ---------
+    // Radios use the same .weekday-label pill styling as the weekday picker
+    // so both rows feel like one consistent control.
+    const _patternName = `rec_month_pattern_${task.id}`;
+    const _mkPatternRadio = (val) => {
+      const r = this._el("input", { type: "radio", name: _patternName, value: val });
+      if (recurrenceMonthPattern === val) r.checked = true;
+      return r;
+    };
+    const monthPatNoneRadio = _mkPatternRadio("none");
+    const monthPatDomRadio = _mkPatternRadio("day_of_month");
+    const monthPatNthRadio = _mkPatternRadio("nth_weekday");
+
+    // Day-of-month options: "1. Tag", "2. Tag", ..., plus "Letzter Tag".
+    // Ordinals are language-aware ("1." in German/most European, "1st"
+    // in English).  Default to day 1 so the dropdown shows a sensible
+    // value as soon as the user picks "Tag im Monat".
+    const monthDomSelect = this._el("select", {});
+    const _domEffective = recurrenceDayOfMonth ?? 1;
+    for (let d = 1; d <= 31; d++) {
+      const opt = this._el("option", {
+        value: String(d),
+        textContent: `${this._domOrdinal(d)} ${this._t("rec_dom_lbl")}`,
+      });
+      if (_domEffective === d) opt.selected = true;
+      monthDomSelect.appendChild(opt);
+    }
+    const lastOpt = this._el("option", { value: "last", textContent: this._t("rec_dom_last") });
+    if (recurrenceDayOfMonth === "last") lastOpt.selected = true;
+    monthDomSelect.appendChild(lastOpt);
+    const monthDomWrap = this._el("div", { className: "sel-wrap" }, [
+      monthDomSelect,
+      this._el("span", { textContent: this._t("rec_anniversary_lbl") }),
+    ]);
+
+    const monthNthSelect = this._el("select", {});
+    for (const [val, key] of [[1, "rec_nth_1"], [2, "rec_nth_2"], [3, "rec_nth_3"], [4, "rec_nth_4"], ["last", "rec_nth_last"]]) {
+      const opt = this._el("option", { value: String(val), textContent: this._t(key) });
+      if (recurrenceNthWeek === val) opt.selected = true;
+      monthNthSelect.appendChild(opt);
+    }
+    const monthNthWrap = this._el("div", { className: "sel-wrap" }, [
+      monthNthSelect,
+      this._el("span", { textContent: this._t("rec_nth_lbl") }),
+    ]);
+
+    // Weekday dropdown: spell out the names ("Montag, Dienstag, …") via
+    // Intl, so the user-facing text is the full word — the abbreviated
+    // forms (rec_wd_0..6) are still used elsewhere (badges, weekly
+    // checkboxes).  Our weekday convention is 0=Mon..6=Sun; 2024-01-01
+    // happens to be a Monday, which lets us index dates 1..7 directly.
+    const monthWeekdaySelect = this._el("select", {});
+    const monthWeekdayInitial = (recurrenceWeekdays && recurrenceWeekdays.length) ? recurrenceWeekdays[0] : 0;
+    const _wdLang = this._localeCode();
+    for (let d = 0; d < 7; d++) {
+      const fullName = new Date(2024, 0, d + 1).toLocaleString(_wdLang, { weekday: "long" });
+      const opt = this._el("option", { value: String(d), textContent: fullName });
+      if (d === monthWeekdayInitial) opt.selected = true;
+      monthWeekdaySelect.appendChild(opt);
+    }
+    const monthWeekdayWrap = this._el("div", { className: "sel-wrap" }, [
+      monthWeekdaySelect,
+      this._el("span", { textContent: this._t("rec_wd_lbl") }),
+    ]);
+
+    const monthPatNoneLabel = this._el("label", { className: "weekday-label" }, [
+      monthPatNoneRadio, this._el("span", { textContent: this._t("rec_pattern_none") }),
+    ]);
+    const monthPatDomLabel = this._el("label", { className: "weekday-label" }, [
+      monthPatDomRadio, this._el("span", { textContent: this._t("rec_pattern_dom") }),
+    ]);
+    const monthPatNthLabel = this._el("label", { className: "weekday-label" }, [
+      monthPatNthRadio, this._el("span", { textContent: this._t("rec_pattern_nth") }),
+    ]);
+    const recurrenceMonthRadioRow = this._el("div", { className: "recurrence-radio-row" }, [
+      monthPatNoneLabel, monthPatDomLabel, monthPatNthLabel,
+    ]);
+    // The selects appear under the radios — only one set is visible at a time.
+    const recurrenceMonthDomRow = this._el("div", { className: "recurrence-sub-row" }, [
+      monthDomWrap,
+    ]);
+    const recurrenceMonthNthRow = this._el("div", { className: "recurrence-sub-row" }, [
+      monthNthWrap, monthWeekdayWrap,
+    ]);
+    const recurrenceTodoistMonthNote = this._el("div", {
+      className: "recurrence-todoist-note",
+      textContent: this._t("rec_todoist_pattern_unsupported"),
+    });
+    recurrenceTodoistMonthNote.style.display = "none";
+    const recurrenceMonthSection = this._el("div", { className: "recurrence-month-section" }, [
+      recurrenceMonthRadioRow, recurrenceMonthDomRow, recurrenceMonthNthRow,
+      recurrenceTodoistMonthNote,
+    ]);
+
+    // ---- Yearly sub-section (radios: Ab Erledigung / Am + TT.MM) ----------
+    const _yearPatName = `rec_year_pattern_${task.id}`;
+    const yearHasAnchor = !!(recurrenceAnniversary && /^\d{2}-\d{2}$/.test(recurrenceAnniversary))
+      || this._yearPatternOverride.get(task.id) === "on";
+    const _mkYearRadio = (val, checked) => {
+      const r = this._el("input", { type: "radio", name: _yearPatName, value: val });
+      if (checked) r.checked = true;
+      return r;
+    };
+    const yearPatNoneRadio = _mkYearRadio("none", !yearHasAnchor);
+    const yearPatOnRadio = _mkYearRadio("on", yearHasAnchor);
+    const yearPatNoneLabel = this._el("label", { className: "weekday-label" }, [
+      yearPatNoneRadio, this._el("span", { textContent: this._t("rec_pattern_none") }),
+    ]);
+    const yearPatOnLabel = this._el("label", { className: "weekday-label" }, [
+      yearPatOnRadio, this._el("span", { textContent: this._t("rec_anniversary_lbl") }),
+    ]);
+    const recurrenceYearRadioRow = this._el("div", { className: "recurrence-radio-row" }, [
+      yearPatNoneLabel, yearPatOnLabel,
+    ]);
+
+    // TT input: same custom spin-btn pattern as the value/anzahl fields so
+    // the up/down arrows look consistent.  Native browser spinners are
+    // suppressed by .field-wrap.inline CSS rules.
+    const annDayInput = this._el("input", { type: "number" });
+    annDayInput.min = 1; annDayInput.max = 31; annDayInput.placeholder = "TT";
+    const annDaySpinUp = this._el("button", { className: "spin-btn spin-up", textContent: "\u25b4", type: "button" });
+    const annDaySpinDown = this._el("button", { className: "spin-btn spin-down", textContent: "\u25be", type: "button" });
+    annDaySpinUp.addEventListener("click", () => {
+      const v = Math.min(31, (parseInt(annDayInput.value) || 0) + 1);
+      annDayInput.value = v;
+      annDayInput.dispatchEvent(new Event("change"));
+    });
+    annDaySpinDown.addEventListener("click", () => {
+      const cur = parseInt(annDayInput.value);
+      const v = isNaN(cur) ? 1 : Math.max(1, cur - 1);
+      annDayInput.value = v;
+      annDayInput.dispatchEvent(new Event("change"));
+    });
+
+    // MM as a localized dropdown — Januar, Februar, ... in the user's
+    // language via Intl, so we don't need a translated month-name table.
+    const annMonthSelect = this._el("select", {});
+    const _lang = this._localeCode();
+    for (let i = 1; i <= 12; i++) {
+      const name = new Date(2024, i - 1, 1).toLocaleString(_lang, { month: "long" });
+      annMonthSelect.appendChild(this._el("option", { value: String(i), textContent: name }));
+    }
+    if (yearHasAnchor) {
+      annMonthSelect.value = String(parseInt(recurrenceAnniversary.slice(0, 2), 10));
+      annDayInput.value = parseInt(recurrenceAnniversary.slice(3, 5), 10);
+    } else {
+      // Sensible default when the user just picked "Am" — January 1st.
+      // The values are only saved once the partial-input guard sees a
+      // complete (TT+MM) pair, so showing them pre-filled is fine.
+      annDayInput.value = "1";
+      annMonthSelect.value = "1";
+    }
+    // The period rendered right after the typed number is drawn via a
+    // ::after pseudo on the wrapper (CSS).  The wrapper toggles the
+    // ``has-value`` class so the dot only shows when the input actually
+    // has a number — empty TT shouldn't read "." next to the placeholder.
+    const annDayWrap = this._el("div", { className: "field-wrap inline year-day" }, [
+      annDayInput,
+      this._el("span", { textContent: this._t("rec_dd") }),
+      this._el("div", { className: "spin-btns" }, [annDaySpinUp, annDaySpinDown]),
+    ]);
+    const _syncDotVisibility = () => {
+      const v = annDayInput.value || "";
+      annDayWrap.classList.toggle("has-value", !!v);
+      // The dot's left offset is left-padding + (digit count) * 1ch.
+      annDayWrap.style.setProperty("--day-len", String(v.length));
+    };
+    annDayInput.addEventListener("input", _syncDotVisibility);
+    annDayInput.addEventListener("change", _syncDotVisibility);
+    _syncDotVisibility();
+
+    const annMonthWrap = this._el("div", { className: "sel-wrap" }, [
+      annMonthSelect, this._el("span", { textContent: this._t("rec_mm") }),
+    ]);
+    const recurrenceTodoistYearNote = this._el("div", {
+      className: "recurrence-todoist-note",
+      textContent: this._t("rec_todoist_pattern_unsupported"),
+    });
+    recurrenceTodoistYearNote.style.display = "none";
+    const recurrenceYearInputs = this._el("div", { className: "recurrence-year-row" }, [
+      annDayWrap,
+      annMonthWrap,
+    ]);
+    const recurrenceYearRow = this._el("div", { className: "recurrence-year-section" }, [
+      recurrenceYearRadioRow, recurrenceYearInputs, recurrenceTodoistYearNote,
+    ]);
+
+    // Start date + reactivation time — now on separate rows so the time
+    // input is read as "time of each occurrence" rather than "starts at".
+    const _todayStr = this._localDateStr(new Date());
+    const recurrenceStartDateInput = this._el("input", {
+      type: "date", value: recurrenceStartDate, min: _todayStr,
+      "data-focus-key": "recurrence_start_date",
+    });
+    const recStartClearBtn = this._el("button", { className: "field-clear-btn", textContent: "\u00D7" });
+    recStartClearBtn.addEventListener("click", () => {
+      recurrenceStartDateInput.value = "";
+      saveStartDate();
+      recStartClearBtn.style.display = "none";
+    });
+    if (!recurrenceStartDate) recStartClearBtn.style.display = "none";
+    recurrenceStartDateInput.addEventListener("change", () => { recStartClearBtn.style.display = recurrenceStartDateInput.value ? "" : "none"; });
+
+    const recStartFieldWrap = this._el("div", { className: "field-wrap" }, [
+      recurrenceStartDateInput,
+      this._el("span", { textContent: this._t("rec_start_date_lbl") }),
+    ]);
+    const recurrenceStartDateWrap = this._el("div", { className: "field-with-clear" }, [recStartFieldWrap, recStartClearBtn]);
+
+    const recurrenceTimeInput = this._el("input", {
+      type: "time", value: recurrenceTime,
+      "data-focus-key": "recurrence_time",
+    });
+    const recTimeClearBtn = this._el("button", { className: "field-clear-btn", textContent: "\u00D7" });
+    recTimeClearBtn.addEventListener("click", () => {
+      recurrenceTimeInput.value = "";
+      saveRecurrenceTime();
+      recTimeClearBtn.style.display = "none";
+    });
+    if (!recurrenceTime) recTimeClearBtn.style.display = "none";
+    recurrenceTimeInput.addEventListener("change", () => { recTimeClearBtn.style.display = recurrenceTimeInput.value ? "" : "none"; });
+
+    const recTimeFieldWrap = this._el("div", { className: "field-wrap" }, [
+      recurrenceTimeInput,
+      this._el("span", { textContent: this._t("rec_at_lbl") }),
+    ]);
+    const recurrenceTimeWrap = this._el("div", { className: "field-with-clear" }, [recTimeFieldWrap, recTimeClearBtn]);
+
+    // Each on its own single-column row — the time row sits above "Beginn"
+    // so the user reads "happens at HH:MM" rather than "starts at HH:MM".
+    const recurrenceTimeRow = this._el("div", { className: "due-input-row single" }, [
+      recurrenceTimeWrap,
+    ]);
+    const recurrenceStartDateRow = this._el("div", { className: "due-input-row single" }, [
+      recurrenceStartDateWrap,
+    ]);
+
+    // End condition — two radio pills: "Bis" (date, default) and "X mal"
+    // (count, native lists only).  "Bis" with an empty date input means
+    // "no end" — same semantics as Beginn: leave it blank to never end.
+    // The "Nie" radio was dropped because the empty-date case already
+    // covers it and the extra option just added noise.
+    const caps = this._colCapabilities(colIdx);
+    const providerSupportsCount = !this._isExternalCol(colIdx) || !caps || !caps.can_sync_recurrence;
+
+    const initialEndType = (recurrenceEndType === "count" && providerSupportsCount)
+      ? "count" : "date";
+    const _endName = `rec_end_${task.id}`;
+    const _mkEndRadio = (val) => {
+      const r = this._el("input", { type: "radio", name: _endName, value: val });
+      if (initialEndType === val) r.checked = true;
+      return r;
+    };
+    const endDateRadio = _mkEndRadio("date");
+    const endCountRadio = _mkEndRadio("count");
+    const endDateLabel = this._el("label", { className: "weekday-label" }, [
+      endDateRadio, this._el("span", { textContent: this._t("rec_end_date") }),
+    ]);
+    const endCountLabel = this._el("label", { className: "weekday-label" }, [
+      endCountRadio, this._el("span", { textContent: this._t("rec_end_count") }),
+    ]);
+    const recurrenceEndRow = this._el("div", { className: "recurrence-radio-row" });
+    recurrenceEndRow.appendChild(endDateLabel);
+    if (providerSupportsCount) recurrenceEndRow.appendChild(endCountLabel);
+
+    // Compute the minimum allowed end date based on recurrence interval.
+    const _computeMinEndDate = () => {
+      const unit = recurrenceUnitSelect.value || "days";
+      const val = parseInt(recurrenceValueInput.value) || 1;
+      // Hours: multiple occurrences fit in one day, so today is a valid end
+      // date (_advanceDateClamped leaves the date unchanged for "hours").
+      return this._localDateStr(this._advanceDateClamped(new Date(), unit, val));
+    };
+    const _updateEndDateMin = () => {
+      const minEnd = _computeMinEndDate();
+      recurrenceEndDateInput.min = minEnd;
+      // If the current value is before the new min, clear it
+      if (recurrenceEndDateInput.value && recurrenceEndDateInput.value < minEnd) {
+        recurrenceEndDateInput.value = "";
+      }
+    };
+    const recurrenceEndDateInput = this._el("input", {
+      type: "date", value: recurrenceEndDate, min: _computeMinEndDate(),
+      "data-focus-key": "recurrence_end_date",
+    });
+    const recEndClearBtn = this._el("button", { className: "field-clear-btn", textContent: "\u00D7" });
+    recEndClearBtn.addEventListener("click", () => {
+      recurrenceEndDateInput.value = "";
+      saveEndCondition();
+      recEndClearBtn.style.display = "none";
+    });
+    if (!recurrenceEndDate) recEndClearBtn.style.display = "none";
+    recurrenceEndDateInput.addEventListener("change", () => { recEndClearBtn.style.display = recurrenceEndDateInput.value ? "" : "none"; });
+
+    const recEndFieldWrap = this._el("div", { className: "field-wrap" }, [
+      recurrenceEndDateInput,
+      this._el("span", { textContent: this._t("rec_end_date_lbl") }),
+    ]);
+    const recurrenceEndDateWrap = this._el("div", { className: "due-input-row single" }, [
+      this._el("div", { className: "field-with-clear" }, [recEndFieldWrap, recEndClearBtn]),
+    ]);
+
+    const recurrenceMaxCountInput = this._el("input", {
+      type: "number", value: recurrenceMaxCount !== null ? recurrenceMaxCount : "",
+      "data-focus-key": "recurrence_max_count",
+    });
+    recurrenceMaxCountInput.min = 1;
+    recurrenceMaxCountInput.max = 999;
+    const spinUp2 = this._el("button", { className: "spin-btn spin-up", textContent: "\u25b4", type: "button" });
+    const spinDown2 = this._el("button", { className: "spin-btn spin-down", textContent: "\u25be", type: "button" });
+    spinUp2.addEventListener("click", () => {
+      const v = Math.min(999, (parseInt(recurrenceMaxCountInput.value) || 1) + 1);
+      recurrenceMaxCountInput.value = v;
+      recurrenceMaxCountInput.dispatchEvent(new Event("change"));
+    });
+    spinDown2.addEventListener("click", () => {
+      const v = Math.max(1, (parseInt(recurrenceMaxCountInput.value) || 1) - 1);
+      recurrenceMaxCountInput.value = v;
+      recurrenceMaxCountInput.dispatchEvent(new Event("change"));
+    });
+    const recRemainingSpan = this._el("span", { className: "rec-remaining" });
+    if (recurrenceRemainingCount !== null) {
+      recRemainingSpan.textContent = this._t("rec_remaining", recurrenceRemainingCount);
+    }
+    const recMaxCountWrap = this._el("div", { className: "field-wrap inline" }, [
+      recurrenceMaxCountInput,
+      this._el("span", { textContent: this._t("rec_max_count_lbl") }),
+      this._el("div", { className: "spin-btns" }, [spinUp2, spinDown2]),
+    ]);
+    const recMaxCountClearBtn = this._el("button", { className: "field-clear-btn", textContent: "\u00D7" });
+    recMaxCountClearBtn.addEventListener("click", () => {
+      recurrenceMaxCountInput.value = "";
+      saveEndCondition();
+      recMaxCountClearBtn.style.display = "none";
+    });
+    if (recurrenceMaxCount === null || recurrenceMaxCount === undefined) recMaxCountClearBtn.style.display = "none";
+    recurrenceMaxCountInput.addEventListener("change", () => {
+      recMaxCountClearBtn.style.display = recurrenceMaxCountInput.value ? "" : "none";
+    });
+    const recMaxCountWithClear = this._el("div", { className: "field-with-clear" }, [recMaxCountWrap, recMaxCountClearBtn]);
+    const recurrenceCountRow = this._el("div", { className: "recurrence-input-row" }, [recMaxCountWithClear, recRemainingSpan]);
+
+    // For Todoist: hide start date + recurrence time row entirely —
+    // the due date/time fields already control when the recurrence starts.
+    const providerSyncsRecurrence = caps && caps.can_sync_recurrence;
+
+    // Todoist's natural-language parser can't model "every N months on the
+    // <pattern>" or "every N years on TT.MM" — match Todoist's web UI by
+    // hiding the pattern picker entirely whenever value > 1 + months/years
+    // on a Todoist list.  Forces the data to stay on "no pattern".
+    const todoistPatternBlocked = (unit, value) => (
+      providerSyncsRecurrence && value > 1 && (unit === "months" || unit === "years")
+    );
+
+    const applyRowVisibility = (unit, value) => {
+      recurrenceIntervalRow.style.display = "";
+      // Weekly: radios always visible when unit=weeks; the checkbox row only
+      // when "Am" is selected.
+      recurrenceWeekSection.style.display = unit === "weeks" ? "" : "none";
+      recurrenceWeekdayCheckboxRow.style.display = (unit === "weeks" && weekPatOnRadio.checked) ? "" : "none";
+      const blockMonthly = todoistPatternBlocked(unit, value);
+      recurrenceMonthSection.style.display = unit === "months" ? "" : "none";
+      recurrenceMonthRadioRow.style.display = (unit === "months" && !blockMonthly) ? "" : "none";
+      recurrenceMonthDomRow.style.display = (unit === "months" && !blockMonthly && monthPatDomRadio.checked) ? "" : "none";
+      recurrenceMonthNthRow.style.display = (unit === "months" && !blockMonthly && monthPatNthRadio.checked) ? "" : "none";
+      recurrenceTodoistMonthNote.style.display = (unit === "months" && blockMonthly) ? "" : "none";
+      recurrenceYearRow.style.display = unit === "years" ? "" : "none";
+      const blockYearly = todoistPatternBlocked(unit, value);
+      // Yearly: radios visible (when not Todoist-blocked); TT.MM only when "Am".
+      recurrenceYearRadioRow.style.display = (unit === "years" && !blockYearly) ? "" : "none";
+      recurrenceYearInputs.style.display = (unit === "years" && !blockYearly && yearPatOnRadio.checked) ? "" : "none";
+      recurrenceTodoistYearNote.style.display = (unit === "years" && blockYearly) ? "" : "none";
+      // Time row: only meaningful when the recurrence triggers on a calendar
+      // day (so hours mode hides it).  For Todoist we still show it so the
+      // user can set "happens at HH:MM".
+      const hideTime = unit === "hours";
+      recurrenceTimeRow.style.display = hideTime ? "none" : "";
+      // Start date: hidden for Todoist (due_date drives the anchor).
+      recurrenceStartDateRow.style.display = providerSyncsRecurrence ? "none" : "";
+    };
+    applyRowVisibility(recurrenceUnit, recurrenceValue);
+
+    const applyEndTypeVisibility = (endType) => {
+      recurrenceEndDateWrap.style.display = endType === "date" ? "" : "none";
+      recurrenceCountRow.style.display = endType === "count" ? "" : "none";
+    };
+    applyEndTypeVisibility(initialEndType);
+
+    const applyMonthPatternState = () => {
+      const isDom = monthPatDomRadio.checked;
+      const isNth = monthPatNthRadio.checked;
+      monthDomSelect.disabled = !recSwitch.checked || !isDom;
+      monthNthSelect.disabled = !recSwitch.checked || !isNth;
+      monthWeekdaySelect.disabled = !recSwitch.checked || !isNth;
+    };
+    const applyWeekPatternState = () => {
+      const isOn = weekPatOnRadio.checked;
+      weekdayCheckboxes.forEach(cb => { cb.disabled = !recSwitch.checked || !isOn; });
+    };
+    const applyYearPatternState = () => {
+      const isOn = yearPatOnRadio.checked;
+      const off = !recSwitch.checked || !isOn;
+      annDayInput.disabled = off;
+      annDaySpinUp.disabled = off;
+      annDaySpinDown.disabled = off;
+      annMonthSelect.disabled = off;
+    };
+
+    const applyEnabledState = (enabled) => {
+      recurrenceValueInput.disabled = !enabled;
+      recurrenceUnitSelect.disabled = !enabled;
+      spinUp.disabled = !enabled;
+      spinDown.disabled = !enabled;
+      weekPatNoneRadio.disabled = !enabled;
+      weekPatOnRadio.disabled = !enabled;
+      monthPatNoneRadio.disabled = !enabled;
+      monthPatDomRadio.disabled = !enabled;
+      monthPatNthRadio.disabled = !enabled;
+      yearPatNoneRadio.disabled = !enabled;
+      yearPatOnRadio.disabled = !enabled;
+      recurrenceStartDateInput.disabled = !enabled;
+      recurrenceTimeInput.disabled = !enabled;
+      endDateRadio.disabled = !enabled;
+      endCountRadio.disabled = !enabled;
+      recurrenceEndDateInput.disabled = !enabled;
+      recurrenceMaxCountInput.disabled = !enabled;
+      spinUp2.disabled = !enabled;
+      spinDown2.disabled = !enabled;
+      applyMonthPatternState();
+      applyWeekPatternState();
+      applyYearPatternState();
+    };
+    applyEnabledState(recurrenceEnabled);
+
+    // ---- Helpers: collect current sub-pattern fields into a payload -------
+    const _normaliseDom = () => {
+      const v = monthDomSelect.value;
+      return v === "last" ? "last" : parseInt(v, 10);
+    };
+    const _normaliseNth = () => {
+      const v = monthNthSelect.value;
+      return v === "last" ? "last" : parseInt(v, 10);
+    };
+    const _collectMonthlyFields = () => {
+      // Returns the four monthly-specific fields based on which radio is set.
+      // Unused fields are explicitly null so the backend clears stale data.
+      if (monthPatDomRadio.checked) {
+        return {
+          recurrence_month_pattern: "day_of_month",
+          recurrence_day_of_month: _normaliseDom(),
+          recurrence_nth_week: null,
+        };
+      }
+      if (monthPatNthRadio.checked) {
+        return {
+          recurrence_month_pattern: "nth_weekday",
+          recurrence_day_of_month: null,
+          recurrence_nth_week: _normaliseNth(),
+        };
+      }
+      return {
+        recurrence_month_pattern: null,
+        recurrence_day_of_month: null,
+        recurrence_nth_week: null,
+      };
+    };
+    // Returns:
+    //   "MM-DD"      → both fields filled and valid
+    //   null         → both fields empty (= clear the anchor)
+    //   undefined    → partial / invalid input — caller should NOT save yet,
+    //                  otherwise the round-trip reload wipes the user's
+    //                  half-typed value (the bug behind "TT loses on blur").
+    const _collectAnniversary = () => {
+      const dStr = annDayInput.value;
+      const mStr = annMonthSelect.value;
+      if (!dStr && !mStr) return null;
+      if (!dStr || !mStr) return undefined;
+      const d = parseInt(dStr, 10);
+      const m = parseInt(mStr, 10);
+      if (!(d >= 1 && d <= 31 && m >= 1 && m <= 12)) return undefined;
+      return `${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    };
+    const _collectWeekdaysSelected = () => weekdayCheckboxes
+      .map((cb, i) => cb.checked ? i : -1).filter(i => i >= 0);
+
+    const _activeWeekdaysForUnit = (unit) => {
+      // For weekly mode: only when "Am" is selected — the checkboxes drive it.
+      // For monthly nth-weekday mode: the single weekday picker.
+      // Otherwise: empty (we don't want stale weekday data lingering).
+      if (unit === "weeks" && weekPatOnRadio.checked) return _collectWeekdaysSelected();
+      if (unit === "months" && monthPatNthRadio.checked) {
+        return [parseInt(monthWeekdaySelect.value, 10)];
+      }
+      return [];
+    };
+
+    const saveWeekdays = () => {
+      // If the user toggled a checkbox while "Ab Erledigung" was selected,
+      // auto-flip to "Am" so the picker stays consistent (unlikely path —
+      // checkboxes are disabled in that mode — but a keyboard shortcut
+      // could still hit it).
+      if (recurrenceUnitSelect.value === "weeks" && !weekPatOnRadio.checked) {
+        const any = weekdayCheckboxes.some(cb => cb.checked);
+        if (any) {
+          weekPatOnRadio.checked = true;
+          applyRowVisibility("weeks", parseInt(recurrenceValueInput.value) || 1);
+          applyWeekPatternState();
+        }
+      }
+      _saveAndReload(this._updateTaskRouted(colIdx, task.id, {
+        recurrence_weekdays: _activeWeekdaysForUnit(recurrenceUnitSelect.value),
+      }));
+    };
+
+    const saveMonthlyPattern = () => {
+      applyRowVisibility(recurrenceUnitSelect.value, parseInt(recurrenceValueInput.value) || 1);
+      applyMonthPatternState();
+      const monthly = _collectMonthlyFields();
+      const fields = { ...monthly };
+      // Keep recurrence_weekdays in sync with the nth-weekday picker.
+      if (recurrenceUnitSelect.value === "months") {
+        fields.recurrence_weekdays = _activeWeekdaysForUnit("months");
+      }
+      _saveAndReload(this._updateTaskRouted(colIdx, task.id, fields));
+    };
+
+    const saveAnniversary = () => {
+      const ann = _collectAnniversary();
+      if (ann === undefined) return;  // partial input; wait for the second field
+      _saveAndReload(this._updateTaskRouted(colIdx, task.id, {
+        recurrence_anniversary: ann,
+      }));
+    };
+
+    const saveWeekPattern = () => {
+      applyRowVisibility(recurrenceUnitSelect.value, parseInt(recurrenceValueInput.value) || 1);
+      applyWeekPatternState();
+      if (!weekPatOnRadio.checked) {
+        // Picked "Ab Erledigung" — clear weekdays AND drop the override
+        // so a future reload renders the radio purely from data.
+        this._weekPatternOverride.delete(task.id);
+        _saveAndReload(this._updateTaskRouted(colIdx, task.id, {
+          recurrence_weekdays: [],
+        }));
+      } else {
+        // Picked "Am" without any checkboxes yet — remember the choice
+        // locally so an unrelated reload (e.g. from a still-pending
+        // saveInterval) doesn't snap the radio back to "Ab Erledigung".
+        // Once the user actually picks a weekday, saveWeekdays writes
+        // the data and the override becomes redundant.
+        this._weekPatternOverride.set(task.id, "on");
+      }
+    };
+
+    const saveYearPattern = () => {
+      applyRowVisibility(recurrenceUnitSelect.value, parseInt(recurrenceValueInput.value) || 1);
+      applyYearPatternState();
+      if (yearPatNoneRadio.checked) {
+        this._yearPatternOverride.delete(task.id);
+        _saveAndReload(this._updateTaskRouted(colIdx, task.id, {
+          recurrence_anniversary: null,
+        }));
+      } else {
+        // Same sticky-UI rule as the weekly radio.
+        this._yearPatternOverride.set(task.id, "on");
+        const ann = _collectAnniversary();
+        if (!ann) return;  // wait for the user to fill in TT and the month
+        _saveAndReload(this._updateTaskRouted(colIdx, task.id, {
+          recurrence_anniversary: ann,
+        }));
+      }
+    };
+
+    const saveInterval = () => {
+      const val = Math.max(1, Math.min(365, parseInt(recurrenceValueInput.value) || 1));
+      recurrenceValueInput.value = val;
+      const newUnit = recurrenceUnitSelect.value;
+      // Switching unit clears any sticky-UI overrides for the OTHER unit
+      // dimensions — picking "Am" under "Wochen", switching to "Jahre",
+      // then back to "Wochen" should give a fresh derivation from the
+      // saved data rather than a leftover override from the earlier
+      // session.  Same idea for Year ↔ Month transitions.
+      if (newUnit !== "weeks") this._weekPatternOverride.delete(task.id);
+      if (newUnit !== "years") this._yearPatternOverride.delete(task.id);
+      applyRowVisibility(newUnit, val);
+      // Update end-date min; auto-clear if it became invalid
+      const oldEndVal = recurrenceEndDateInput.value;
+      _updateEndDateMin();
+      const fields = {
+        recurrence_type: "interval",  // legacy "weekdays" mode is gone
+        recurrence_value: val,
+        recurrence_unit: newUnit,
+        // Re-sync weekdays so switching unit clears stale selections
+        recurrence_weekdays: _activeWeekdaysForUnit(newUnit),
+      };
+      // Sub-pattern fields: only meaningful for the active unit; clear the rest.
+      // Todoist + value > 1 also forces "no pattern" — match Todoist web UI.
+      const todoistBlocks = todoistPatternBlocked(newUnit, val);
+      if (newUnit === "months" && !todoistBlocks) {
+        Object.assign(fields, _collectMonthlyFields());
+        fields.recurrence_anniversary = null;
+      } else if (newUnit === "years" && !todoistBlocks) {
+        fields.recurrence_anniversary = _collectAnniversary();
+        fields.recurrence_month_pattern = null;
+        fields.recurrence_day_of_month = null;
+        fields.recurrence_nth_week = null;
+      } else {
+        fields.recurrence_month_pattern = null;
+        fields.recurrence_day_of_month = null;
+        fields.recurrence_nth_week = null;
+        fields.recurrence_anniversary = null;
+      }
+      // If end date was cleared because it's now invalid, tell the server
+      if (oldEndVal && !recurrenceEndDateInput.value) {
+        fields.recurrence_end_date = null;
+        fields.recurrence_end_type = "none";
+      }
+      _saveAndReload(this._updateTaskRouted(colIdx, task.id, fields));
+    };
+
+    const _saveAndReload = (promise) => {
+      // After a recurrence field is saved, make sure the local task state is
+      // refreshed so the next render shows the new value.  External columns
+      // need _reloadExternal(); native ones need _loadAllTasks() — without
+      // this, fields like recurrence_time appeared to snap back to "00:00"
+      // on re-expand until an unrelated state event rewrote the cached task.
+      //
+      // Mark the reload as a background update so _render() defers if the
+      // user has already moved focus to another field — otherwise picking
+      // an option, then clicking the next field, would tear down the DOM
+      // mid-click and the click would be lost.
+      promise?.then(async () => {
+        this._isBackgroundUpdate = true;
+        try {
+          if (this._isExternalCol(colIdx)) await this._reloadExternal();
+          else await this._loadAllTasks();
+        } finally {
+          this._isBackgroundUpdate = false;
+        }
+      });
+    };
+
+    const saveStartDate = () => {
+      _saveAndReload(this._updateTaskRouted(colIdx, task.id, {
+        recurrence_start_date: recurrenceStartDateInput.value || null,
+      }));
+    };
+
+    const saveRecurrenceTime = () => {
+      _saveAndReload(this._updateTaskRouted(colIdx, task.id, {
+        recurrence_time: recurrenceTimeInput.value || null,
+      }));
+    };
+
+    const _selectedEndType = () => endCountRadio.checked ? "count" : "date";
+    const saveEndCondition = () => {
+      const endType = _selectedEndType();
+      applyEndTypeVisibility(endType);
+      // Clamp manually entered end date to the minimum allowed
+      if (endType === "date" && recurrenceEndDateInput.value) {
+        const minEnd = _computeMinEndDate();
+        if (recurrenceEndDateInput.value < minEnd) {
+          recurrenceEndDateInput.value = minEnd;
+        }
+      }
+      // "Bis" with an empty date = no end (same idea as an empty Beginn).
+      // The radio stays on "Bis" — that's now the default — but the saved
+      // end_type is "none" so the backend doesn't try to clamp on a
+      // missing date.  Reload doesn't snap the radio back because empty
+      // "Bis" + count-not-selected → initialEndType === "date" still wins.
+      const effectiveEndType = (endType === "date" && !recurrenceEndDateInput.value) ? "none" : endType;
+      _saveAndReload(this._updateTaskRouted(colIdx, task.id, {
+        recurrence_end_type: effectiveEndType,
+        recurrence_end_date: endType === "date" ? (recurrenceEndDateInput.value || null) : null,
+        recurrence_max_count: endType === "count" ? (parseInt(recurrenceMaxCountInput.value) || null) : null,
+      }));
+    };
+
+    recSwitch.addEventListener("change", () => {
+      const enabled = recSwitch.checked;
+      applyEnabledState(enabled);
+      const newUnit = recurrenceUnitSelect.value;
+      const val = Math.max(1, Math.min(365, parseInt(recurrenceValueInput.value) || 1));
+      const endType = _selectedEndType();
+      const todoistBlocks = todoistPatternBlocked(newUnit, val);
+      const fields = {
+        recurrence_enabled: enabled,
+        recurrence_type: "interval",
+        recurrence_value: val,
+        recurrence_unit: newUnit,
+        recurrence_weekdays: _activeWeekdaysForUnit(newUnit),
+        recurrence_start_date: recurrenceStartDateInput.value || null,
+        recurrence_time: recurrenceTimeInput.value || null,
+        recurrence_end_type: endType,
+        recurrence_end_date: endType === "date" ? (recurrenceEndDateInput.value || null) : null,
+        recurrence_max_count: endType === "count" ? (parseInt(recurrenceMaxCountInput.value) || null) : null,
+        // Include current reminders — Todoist deletes them when due changes,
+        // so the backend needs to re-create them after the update.
+        reminders: task.reminders || [],
+      };
+      if (newUnit === "months" && !todoistBlocks) {
+        Object.assign(fields, _collectMonthlyFields());
+        fields.recurrence_anniversary = null;
+      } else if (newUnit === "years" && !todoistBlocks) {
+        fields.recurrence_anniversary = _collectAnniversary();
+        fields.recurrence_month_pattern = null;
+        fields.recurrence_day_of_month = null;
+        fields.recurrence_nth_week = null;
+      } else {
+        fields.recurrence_month_pattern = null;
+        fields.recurrence_day_of_month = null;
+        fields.recurrence_nth_week = null;
+        fields.recurrence_anniversary = null;
+      }
+      _saveAndReload(this._updateTaskRouted(colIdx, task.id, fields));
+    });
+
+    recurrenceValueInput.addEventListener("change", saveInterval);
+    recurrenceValueInput.addEventListener("keydown", (e) => { if (e.key === "Enter") recurrenceValueInput.blur(); });
+    const _blurAfterChange = (el) => this._blurSelectOnChange(el);
+    recurrenceUnitSelect.addEventListener("change", saveInterval);
+    _blurAfterChange(recurrenceUnitSelect);
+    weekdayCheckboxes.forEach(cb => cb.addEventListener("change", saveWeekdays));
+    [monthPatNoneRadio, monthPatDomRadio, monthPatNthRadio].forEach(r =>
+      r.addEventListener("change", saveMonthlyPattern));
+    monthDomSelect.addEventListener("change", saveMonthlyPattern);
+    monthNthSelect.addEventListener("change", saveMonthlyPattern);
+    monthWeekdaySelect.addEventListener("change", saveMonthlyPattern);
+    _blurAfterChange(monthDomSelect);
+    _blurAfterChange(monthNthSelect);
+    _blurAfterChange(monthWeekdaySelect);
+    annDayInput.addEventListener("blur", saveAnniversary);
+    annDayInput.addEventListener("keydown", (e) => { if (e.key === "Enter") annDayInput.blur(); });
+    annMonthSelect.addEventListener("change", saveAnniversary);
+    _blurAfterChange(annMonthSelect);
+    [weekPatNoneRadio, weekPatOnRadio].forEach(r =>
+      r.addEventListener("change", saveWeekPattern));
+    [yearPatNoneRadio, yearPatOnRadio].forEach(r =>
+      r.addEventListener("change", saveYearPattern));
+    [endDateRadio, endCountRadio].forEach(r =>
+      r.addEventListener("change", saveEndCondition));
+    // Use "blur" instead of "change" for the time/date inputs: type="time"
+    // fires change the moment the hour alone becomes a valid time ("20:00"),
+    // which would trigger a save + re-render and yank the focus out before
+    // the user can type the minutes.  Blur triggers on Enter (via the keydown
+    // handler below) and when the user tabs or clicks away, which is the
+    // natural commit moment.
+    recurrenceStartDateInput.addEventListener("blur", saveStartDate);
+    recurrenceStartDateInput.addEventListener("keydown", (e) => { if (e.key === "Enter") recurrenceStartDateInput.blur(); });
+    recurrenceTimeInput.addEventListener("blur", saveRecurrenceTime);
+    recurrenceTimeInput.addEventListener("keydown", (e) => { if (e.key === "Enter") recurrenceTimeInput.blur(); });
+    recurrenceEndDateInput.addEventListener("blur", saveEndCondition);
+    recurrenceEndDateInput.addEventListener("keydown", (e) => { if (e.key === "Enter") recurrenceEndDateInput.blur(); });
+    recurrenceMaxCountInput.addEventListener("change", saveEndCondition);
+    recurrenceMaxCountInput.addEventListener("keydown", (e) => { if (e.key === "Enter") recurrenceMaxCountInput.blur(); });
+
+    return this._el("div", { className: "detail-section" }, [
+      recurrenceToggleRow,
+      recurrenceIntervalRow,
+      recurrenceWeekSection,
+      recurrenceMonthSection,
+      recurrenceYearRow,
+      recurrenceTimeRow,
+      recurrenceStartDateRow,
+      recurrenceEndRow,
+      recurrenceEndDateWrap,
+      recurrenceCountRow,
+    ]);
+  }
+
+  _buildAssignedPersonSection(task, colIdx) {
+    const personSelect = this._el("select", {});
+    const noneOpt = this._el("option", { value: "", textContent: this._t("nobody") });
+    if (!task.assigned_person) noneOpt.selected = true;
+    personSelect.appendChild(noneOpt);
+    for (const { value, label } of personEntries(this._hass)) {
+      const opt = this._el("option", { value, textContent: label });
+      if (value === task.assigned_person) opt.selected = true;
+      personSelect.appendChild(opt);
+    }
+    personSelect.addEventListener("change", () => {
+      task.assigned_person = personSelect.value || null;
+      this._render();
+      this._updateTaskRouted(colIdx, task.id, { assigned_person: task.assigned_person });
+    });
+    this._blurSelectOnChange(personSelect);
+    const personWrap = this._el("div", { className: "sel-wrap no-label" }, [personSelect]);
+    return this._el("div", { className: "detail-section" }, [
+      this._el("label", { className: "detail-label", textContent: this._t("assigned_to") }),
+      personWrap,
+    ]);
+  }
+
+  _buildTagsSection(task, colIdx) {
+    const tagSectionChildren = [
+      this._el("label", { className: "detail-label", textContent: this._t("tags") }),
+    ];
+    const taskTags = task.tags || [];
+    if (taskTags.length > 0) {
+      const tagListEl = this._el("div", { className: "tag-list" });
+      for (const tag of taskTags) {
+        const removeBtn = this._el("button", {
+          className: "remove-tag-btn",
+          title: this._t("remove_tag"),
+          textContent: "\u00D7",
+        });
+        removeBtn.addEventListener("click", () => {
+          const newTags = taskTags.filter((t) => t !== tag);
+          task.tags = newTags;
+          this._render();
+          this._updateTaskRouted(colIdx, task.id, { tags: newTags });
+        });
+        tagListEl.appendChild(
+          this._el("span", { className: "tag-item" }, [
+            this._el("span", { textContent: "#" + tag }),
+            removeBtn,
+          ])
+        );
+      }
+      tagSectionChildren.push(tagListEl);
+    }
+    const tagInput = this._el("input", {
+      type: "text",
+      placeholder: this._t("tag_placeholder"),
+      "data-focus-key": "tag_input",
+      autocomplete: "off",
+    });
+    const tagInputWrap = this._el("div", { className: "field-wrap" }, [
+      tagInput,
+      this._el("span", { textContent: this._t("add_tag").replace("+ ", "") }),
+    ]);
+    const dropdown = this._el("div", {
+      className: "tag-autocomplete-dropdown",
+      role: "listbox",
+      "aria-label": this._t("tag_suggestions_label"),
+    });
+    dropdown.hidden = true;
+
+    // Popover state lives on a closure shared by the handlers below.
+    // activeIndex = -1 means "user has not navigated into the list yet",
+    // so Enter commits the raw input value instead of the first match —
+    // this lets the user type e.g. "hau" and add it as a new tag even
+    // when "haus" is in the suggestion list.
+    const state = { activeIndex: -1, items: [] };
+
+    const applyHighlight = () => {
+      for (let i = 0; i < state.items.length; i++) {
+        state.items[i].classList.toggle("highlighted", i === state.activeIndex);
+      }
+    };
+
+    const refresh = () => {
+      const q = tagInput.value.trim().toLowerCase();
+      const known = this._collectAllKnownTags();
+      const taken = new Set(task.tags || []);
+      const suggestions = known.filter(t => !taken.has(t) && (q === "" || t.startsWith(q)));
+      dropdown.innerHTML = "";
+      state.items = [];
+      state.activeIndex = -1;
+      if (suggestions.length === 0) {
+        dropdown.appendChild(this._el("div", {
+          className: "tag-autocomplete-empty",
+          textContent: this._t("tag_no_matches"),
+        }));
+        return;
+      }
+      for (const tag of suggestions) {
+        const item = this._el("div", {
+          className: "tag-autocomplete-item",
+          role: "option",
+          "data-tag": tag,
+          textContent: "#" + tag,
+        });
+        // mousedown (not click) — click would fire after the input's blur,
+        // which closes the popover before the pick can register.
+        item.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          this._addTagFromSuggestion(task, colIdx, tagInput, tag);
+        });
+        dropdown.appendChild(item);
+        state.items.push(item);
+      }
+    };
+
+    tagInput.addEventListener("focus", () => {
+      dropdown.hidden = false;
+      refresh();
+    });
+    tagInput.addEventListener("input", () => {
+      dropdown.hidden = false;
+      refresh();
+    });
+    tagInput.addEventListener("blur", () => {
+      setTimeout(() => {
+        dropdown.hidden = true;
+        state.activeIndex = -1;
+      }, 120);
+    });
+    tagInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (!dropdown.hidden) {
+          e.preventDefault();
+          dropdown.hidden = true;
+          state.activeIndex = -1;
+        }
+        return;
+      }
+      const n = state.items.length;
+      const listOpen = !dropdown.hidden && n > 0;
+      const tabForward = e.key === "Tab" && !e.shiftKey;
+      const tabBackward = e.key === "Tab" && e.shiftKey;
+      if (listOpen && (e.key === "ArrowDown" || tabForward)) {
+        e.preventDefault();
+        state.activeIndex = state.activeIndex < 0 ? 0 : (state.activeIndex + 1) % n;
+        applyHighlight();
+        state.items[state.activeIndex].scrollIntoView({ block: "nearest" });
+        return;
+      }
+      if (listOpen && (e.key === "ArrowUp" || tabBackward)) {
+        e.preventDefault();
+        state.activeIndex = state.activeIndex < 0 ? n - 1 : (state.activeIndex - 1 + n) % n;
+        applyHighlight();
+        state.items[state.activeIndex].scrollIntoView({ block: "nearest" });
+        return;
+      }
+      if (e.key === "Enter") {
+        if (listOpen && state.activeIndex >= 0) {
+          e.preventDefault();
+          const pick = state.items[state.activeIndex].dataset.tag;
+          this._addTagFromSuggestion(task, colIdx, tagInput, pick);
+        } else {
+          this._commitNewTag(task, colIdx, tagInput);
+        }
+      }
+    });
+
+    const anchor = this._el("div", { className: "tag-autocomplete-anchor" }, [
+      tagInputWrap,
+      dropdown,
+    ]);
+    tagSectionChildren.push(anchor);
+    return this._el("div", { className: "detail-section" }, tagSectionChildren);
+  }
+
+  _collectAllKnownTags() {
+    const all = new Set();
+    for (const cs of (this._columns || [])) {
+      for (const t of (cs?.tasks || [])) {
+        for (const tag of (t.tags || [])) all.add(tag);
+      }
+    }
+    return [...all].sort();
+  }
+
+  _commitNewTag(task, colIdx, tagInput) {
+    const val = tagInput.value.trim().toLowerCase();
+    const taskTags = task.tags || [];
+    if (val && !taskTags.includes(val)) {
+      const newTags = [...taskTags, val];
+      task.tags = newTags;
+      tagInput.value = "";
+      this._render();
+      this._updateTaskRouted(colIdx, task.id, { tags: newTags });
+    } else {
+      tagInput.value = "";
+    }
+  }
+
+  _addTagFromSuggestion(task, colIdx, tagInput, tag) {
+    const taskTags = task.tags || [];
+    tagInput.value = "";
+    if (taskTags.includes(tag)) return;
+    const newTags = [...taskTags, tag];
+    task.tags = newTags;
+    this._render();
+    this._updateTaskRouted(colIdx, task.id, { tags: newTags });
+  }
+
+  _buildRemindersSection(task, colIdx) {
+    const taskReminders = task.reminders || [];
+    const reminderSectionChildren = [
+      this._el("label", { className: "detail-label", textContent: this._t("reminder") }),
+    ];
+    const _rebuildReminders = (newReminders) => {
+      task.reminders = newReminders;
+      this._render();
+      this._updateTaskRouted(colIdx, task.id, { reminders: newReminders });
+    };
+    for (let ri = 0; ri < taskReminders.length; ri++) {
+      const offset = taskReminders[ri];
+      const sel = this._el("select", {});
+      for (const opt of reminderOffsetOptions(this, offset)) sel.appendChild(opt);
+      sel.addEventListener("change", () => {
+        const updated = [...taskReminders];
+        updated[ri] = parseInt(sel.value, 10);
+        _rebuildReminders(updated);
+      });
+      this._blurSelectOnChange(sel);
+      const removeBtn = this._el("button", {
+        className: "reminder-remove",
+        textContent: "\u00D7",
+        title: this._t("remove_reminder"),
+      });
+      removeBtn.addEventListener("click", () => {
+        const updated = taskReminders.filter((_, i) => i !== ri);
+        _rebuildReminders(updated);
+      });
+      const remSelWrap = this._el("div", { className: "sel-wrap" }, [
+        sel,
+        this._el("span", { textContent: this._t("reminder") }),
+      ]);
+      reminderSectionChildren.push(this._el("div", { className: "reminder-row" }, [remSelWrap, removeBtn]));
+    }
+    if (taskReminders.length < MAX_REMINDERS) {
+      const addReminderBtn = this._el("button", {
+        className: "add-reminder-btn",
+        textContent: this._t("rem_add"),
+      });
+      addReminderBtn.addEventListener("click", () => {
+        const used = new Set(taskReminders);
+        _rebuildReminders([...taskReminders, nextFreeReminderOffset(used)]);
+      });
+      reminderSectionChildren.push(addReminderBtn);
+    }
+    return this._el("div", { className: "detail-section" }, reminderSectionChildren);
+  }
+
+  _buildActionsSection(task, colIdx) {
+    const col = this._config.columns[colIdx];
+    const children = [];
+
+    // Move to another list (issue #47): opens an in-card dialog listing the
+    // possible targets and routes through the same WS commands as
+    // cross-column drag, so external lists work as source and target too.
+    const moveTargets = this._moveTargets(colIdx);
+    if (col.show_move !== false && moveTargets.length > 0) {
+      const moveBtn = this._el("button", {
+        className: "move-task-btn",
+        textContent: this._t("move_task"),
+      });
+      moveBtn.addEventListener("click", () => this._moveTaskViaDialog(task, colIdx, moveTargets));
+      children.push(moveBtn);
+    }
+
+    // Duplicate: create an identical copy (same assignee, recurrence, tags,
+    // notes, due date — everything). Native lists only.
+    if (!this._isExternalCol(colIdx)) {
+      const dupBtn = this._el("button", {
+        className: "duplicate-task-btn",
+        textContent: this._t("duplicate_task"),
+      });
+      dupBtn.addEventListener("click", () => {
+        // Close the tile detail sheet (no-op in the inline list view) so repeated
+        // clicks don't silently pile up copies behind the popup.
+        this._closeTaskDetailSheet();
+        this._duplicateTask(task, colIdx);
+      });
+      children.push(dupBtn);
+    }
+
+    const deleteBtn = this._el("button", {
+      className: "delete-task-btn",
+      textContent: this._t("delete_task"),
+    });
+    deleteBtn.addEventListener("click", () => {
+      // Close the sheet first (no-op for the inline list view) so the popup
+      // doesn't linger showing a task being deleted; synchronous so the delete's
+      // re-render can't re-attach it.
+      this._closeTaskDetailSheet();
+      this._deleteTask(task.id, colIdx);
+    });
+    children.push(deleteBtn);
+
+    return this._el("div", { className: "detail-actions" }, children);
+  }
+
+  async _duplicateTask(task, colIdx) {
+    const listId = this._colListId(colIdx);
+    const newTask = await this._callWs("home_tasks/duplicate_task", {
+      list_id: listId,
+      task_id: task.id,
+      assigned_person: task.assigned_person ?? null,
+    });
+    if (!newTask) return;
+    // Reload once — the backend placed the copy right after the source and
+    // renumbered, so we fetch the authoritative order with a single render
+    // instead of an optimistic insert + render followed by a second reload render.
+    await this._loadAllTasks();
+  }
+
+  // Possible move targets for a task in colIdx (issue #47): every native
+  // list except the source list, plus the external lists shown as other
+  // columns of this card (a cross move needs an entity_id, which the card
+  // only knows for configured columns).
+  _moveTargets(colIdx) {
+    const targets = [];
+    const srcIsExternal = this._isExternalCol(colIdx);
+    const srcListId = srcIsExternal ? null : this._colListId(colIdx);
+    for (const list of this._lists || []) {
+      if (list.id !== srcListId) targets.push({ label: list.name, list_id: list.id });
+    }
+    const srcEntityId = srcIsExternal ? this._colEntityId(colIdx) : null;
+    const seen = new Set();
+    for (let i = 0; i < (this._config.columns || []).length; i++) {
+      if (!this._isExternalCol(i)) continue;
+      const eid = this._colEntityId(i);
+      if (!eid || eid === srcEntityId || seen.has(eid)) continue;
+      seen.add(eid);
+      const st = this._hass && this._hass.states ? this._hass.states[eid] : null;
+      targets.push({ label: (st && st.attributes && st.attributes.friendly_name) || eid, entity_id: eid });
+    }
+    return targets;
+  }
+
+  async _moveTaskViaDialog(task, colIdx, targets) {
+    const choice = await this._moveDialog(task, targets);
+    if (!choice) return;
+    // Close the sheet before the move (no-op in the inline list view) so the
+    // popup doesn't linger showing a task that just left this list.
+    this._closeTaskDetailSheet();
+    const payload = { task_id: task.id };
+    if (this._isExternalCol(colIdx)) payload.source_entity_id = this._colEntityId(colIdx);
+    else payload.source_list_id = this._colListId(colIdx);
+    if (choice.entity_id) payload.target_entity_id = choice.entity_id;
+    else payload.target_list_id = choice.list_id;
+    await this._execMove(payload);
+    await this._loadAllTasks();
+    if (payload.source_entity_id || payload.target_entity_id) this._reloadExternal();
+  }
+
+  // Single move executor shared by cross-column drag & drop and the detail
+  // sheet's Move dialog: native→native goes through the move_task fast path,
+  // anything external through move_task_cross. Failures (backend errors, 5s
+  // timeout) surface as the in-card error toast instead of vanishing in
+  // _callWs's silent catch. Returns true on success.
+  async _execMove(payload) {
+    const bothNative = !!(payload.source_list_id && payload.target_list_id);
+    const msg = {
+      type: bothNative ? "home_tasks/move_task" : "home_tasks/move_task_cross",
+      ...payload,
+    };
+    try {
+      // No artificial timeout: cross moves against slow external providers
+      // legitimately take longer than any fixed budget (adapter create,
+      // per-sub-task calls, reminder sync), and a false "failed" makes users
+      // retry into duplicates. WS errors and disconnects reject on their own.
+      await this._hass.callWS(msg);
+      return true;
+    } catch (err) {
+      this._showError("Move failed: " + ((err && err.message) || err));
+      return false;
+    }
+  }
+
+  // The confirm dialog plus a target <select>; resolves with the chosen
+  // target object, or null on cancel/Esc/backdrop click.
+  _moveDialog(task, targets) {
+    const sel = this._el("select", { className: "ht-move-select" },
+      targets.map((t, i) => this._el("option", { value: String(i), textContent: t.label })));
+    return this._modalDialog({
+      message: this._t("move_task_msg", task.title),
+      okLabel: this._t("move_task"),
+      body: [sel],
+      resolveOk: () => targets[sel.value],
+    });
+  }
+
+  _buildImageSection(task, colIdx) {
+    const col = this._config.columns[colIdx];
+    const isGenerating = this._generatingImage.has(task.id);
+
+    const children = [];
+
+    // --- Show existing image ---
+    if (task.image_url) {
+      const imgWrap = this._el("div", { className: "task-image-wrap" });
+
+      const img = this._el("img", { className: "task-image", src: task.image_url, alt: task.title });
+      imgWrap.appendChild(img);
+
+      // Remove image button (×)
+      const removeBtn = this._el("button", { className: "task-image-remove", title: this._t("img_remove") });
+      removeBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
+      // Reuse _saveImageUrl(null): it clears the image, syncs cs.tasks in EVERY
+      // column from the server result, and refreshes the open sheet + all tiles
+      // (the old inline copy only patched the current column, so the same task in
+      // other columns kept showing the deleted image).
+      removeBtn.addEventListener("click", () => this._saveImageUrl(task, colIdx, null));
+      imgWrap.appendChild(removeBtn);
+      children.push(imgWrap);
+    }
+
+    // --- Action buttons row ---
+    const busy = isGenerating;
+
+    // Generate button
+    const genBtn = this._el("button", {
+      className: "generate-image-btn" + (busy ? " generating" : ""),
+      disabled: busy,
+    });
+    if (isGenerating) {
+      genBtn.innerHTML = `<span class="spinner"></span> ${this._t("img_generating")}`;
+    } else {
+      genBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="margin-right:6px;vertical-align:-3px"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-1 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>${task.image_url ? this._t("img_regenerate") : "✨ " + this._t("img_generate")}`;
+    }
+    genBtn.addEventListener("click", () => this._generateTaskImage(task, colIdx, !!task.image_url));
+    children.push(genBtn);
+
+    // "Aus Mediathek" button — opens HA's native media browser dialog
+    const selectBtn = this._el("button", {
+      className: "generate-image-btn",
+      disabled: busy,
+    });
+    selectBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="margin-right:6px;vertical-align:-3px"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/></svg>${this._t("img_from_media")}`;
+    selectBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this._openMediaPicker(task, colIdx);
+    });
+    children.push(selectBtn);
+
+    return this._el("div", { className: "detail-section detail-section--image" }, [
+      this._el("label", { className: "detail-label", textContent: this._t("img_label") }),
+      this._el("div", { className: "image-section-body" }, children),
+    ]);
+  }
+
+  async _openMediaPicker(task, colIdx) {
+    const navStack = []; // { id, title }
+
+    const dialog = document.createElement("dialog");
+    dialog.className = "mb-dialog";
+
+    const header = this._el("div", { className: "mb-header" }, [
+      this._el("span", { className: "mb-title", textContent: this._t("mb_title") }),
+    ]);
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "mb-close";
+    const closeIco = document.createElement("ha-icon");
+    closeIco.setAttribute("icon", "mdi:close");
+    closeIco.style.cssText = "--mdc-icon-size:20px;";
+    closeBtn.appendChild(closeIco);
+    closeBtn.addEventListener("click", () => { dialog.close(); dialog.remove(); });
+    header.appendChild(closeBtn);
+
+    const list = this._el("div", { className: "mb-list" });
+
+    const load = async (id) => {
+      list.innerHTML = `<div class="mb-status">${this._t("mb_loading")}</div>`;
+      try {
+        const data = await this._hass.callWS({
+          type: "media_source/browse_media",
+          media_content_id: id,
+        });
+        list.innerHTML = "";
+
+        if (navStack.length > 0) {
+          const prev = navStack[navStack.length - 1];
+          const backBtn = document.createElement("button");
+          backBtn.className = "mb-item mb-back";
+          const backIco = document.createElement("ha-icon");
+          backIco.setAttribute("icon", "mdi:arrow-left");
+          backIco.style.cssText = "--mdc-icon-size:20px;flex-shrink:0;";
+          backBtn.append(backIco, prev.title);
+          backBtn.addEventListener("click", () => { navStack.pop(); load(prev.id); });
+          list.appendChild(backBtn);
+        }
+
+        const crumb = this._el("div", { className: "mb-crumb", textContent: data.title || this._t("mb_root") });
+        list.appendChild(crumb);
+
+        const children = data.children || [];
+        const folders = children.filter(i => i.can_expand);
+        const files = children.filter(i => !i.can_expand);
+
+        const pickFile = async (item) => {
+          // Save the media-source:// id, not a resolved (signed, expiring) URL —
+          // the backend re-publishes it into the public www dir by copying the
+          // file off disk, so it loads without auth and never expires.
+          await this._saveImageUrl(task, colIdx, item.media_content_id || item.thumbnail);
+          dialog.close();
+          dialog.remove();
+        };
+
+        for (const item of folders) {
+          const row = document.createElement("button");
+          row.className = "mb-item mb-folder";
+          const ico = document.createElement("ha-icon");
+          const iconMap = { directory: "mdi:folder", image: "mdi:folder-image", music: "mdi:folder-music", video: "mdi:folder-play" };
+          ico.setAttribute("icon", iconMap[item.media_class] || "mdi:folder");
+          ico.style.cssText = "--mdc-icon-size:24px;flex-shrink:0;color:var(--secondary-text-color);";
+          row.appendChild(ico);
+          row.appendChild(this._el("span", { className: "mb-item-title", textContent: item.title }));
+          const chev = document.createElement("ha-icon");
+          chev.setAttribute("icon", "mdi:chevron-right");
+          chev.style.cssText = "--mdc-icon-size:18px;flex-shrink:0;color:var(--secondary-text-color);";
+          row.appendChild(chev);
+          row.addEventListener("click", () => { navStack.push({ id, title: data.title || this._t("mb_back") }); load(item.media_content_id); });
+          list.appendChild(row);
+        }
+
+        if (files.length > 0) {
+          const grid = this._el("div", { className: "mb-grid" });
+          for (const item of files) {
+            const cell = document.createElement("button");
+            cell.className = "mb-grid-item";
+            const isImage = item.media_class === "image" || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(item.title || "");
+            if (item.thumbnail) {
+              const img = this._el("img", { className: "mb-grid-thumb", alt: item.title });
+              this._fetchAuthThumb(item.thumbnail).then(src => { img.src = src; });
+              cell.appendChild(img);
+            } else if (isImage) {
+              // No thumbnail provided — resolve the media to a URL and preview it.
+              const img = this._el("img", { className: "mb-grid-thumb", alt: item.title });
+              cell.appendChild(img);
+              this._hass.callWS({ type: "media_source/resolve_media", media_content_id: item.media_content_id })
+                .then((r) => this._fetchAuthThumb(r.url))
+                .then((src) => { img.src = src; })
+                .catch(() => {
+                  img.remove();
+                  const ico = document.createElement("ha-icon");
+                  ico.setAttribute("icon", "mdi:image");
+                  ico.style.cssText = "--mdc-icon-size:40px;color:var(--secondary-text-color);";
+                  cell.insertBefore(ico, cell.firstChild);
+                });
+            } else {
+              const ico = document.createElement("ha-icon");
+              ico.setAttribute("icon", "mdi:image");
+              ico.style.cssText = "--mdc-icon-size:40px;color:var(--secondary-text-color);";
+              cell.appendChild(ico);
+            }
+            cell.appendChild(this._el("span", { className: "mb-grid-title", textContent: item.title }));
+            cell.addEventListener("click", () => pickFile(item));
+            grid.appendChild(cell);
+          }
+          list.appendChild(grid);
+        }
+
+        if (!data.children?.length) {
+          list.appendChild(this._el("div", { className: "mb-status", textContent: this._t("mb_empty") }));
+        }
+      } catch (e) {
+        list.innerHTML = `<div class="mb-status mb-error">${this._t("mb_error")}${e.message || e}</div>`;
+      }
+    };
+
+    dialog.append(header, list);
+    dialog.addEventListener("close", () => { dialog.remove(); this._revokeThumbCache(); });
+    this.shadowRoot.appendChild(dialog);
+    dialog.showModal();
+    await load("media-source://media_source");
+  }
+
+  // Replace a task's tile(s) in place (any column) so an image change shows
+  // without a full _render() — which would reset the page scroll ("jump").
+  _refreshTaskTileEverywhere(taskId) {
+    this.shadowRoot.querySelectorAll(`.task-tile[data-task-id="${CSS.escape(String(taskId))}"]`).forEach(el => {
+      const wrap = el.closest(".tile-grid-wrap");
+      const ci = wrap ? parseInt(wrap.dataset.colIdx, 10) : NaN;
+      if (Number.isNaN(ci)) return;
+      const cs = this._columns[ci];
+      const t = cs && cs.tasks ? cs.tasks.find(x => x.id === taskId) : null;
+      if (t) el.replaceWith(this._buildTaskTile(t, ci));
+    });
+  }
+
+  // Refresh only the image section inside an open detail sheet (so the spinner
+  // and the finished image appear without rebuilding the body or scrolling it).
+  _refreshOpenSheetImage(taskId, colIdx) {
+    const oldSec = this.shadowRoot.querySelector(".task-detail-sheet .detail-section--image");
+    if (!oldSec) return;
+    const cs = this._columns[colIdx];
+    const task = cs && cs.tasks ? cs.tasks.find(t => t.id === taskId) : null;
+    if (!task) return;
+    // Keep the sheet's scroll position steady across the swap.
+    const body = this.shadowRoot.querySelector(".task-detail-sheet .sheet-body");
+    const st = body ? body.scrollTop : 0;
+    oldSec.replaceWith(this._buildImageSection(task, colIdx));
+    if (body) body.scrollTop = st;
+  }
+
+  async _generateTaskImage(task, colIdx, force = false) {
+    const col = this._config.columns[colIdx];
+    const imgCfg = this._config.image_generation || {};
+
+    this._generatingImage.add(task.id);
+    this._refreshOpenSheetImage(task.id, colIdx);
+
+    const payload = {
+      type: "home_tasks/generate_task_image",
+      entry_id: col.list_id,
+      task_id: task.id,
+      force: force,
+    };
+    if (imgCfg.prompt_prefix) payload.prompt_prefix = imgCfg.prompt_prefix;
+    if (imgCfg.entity_id) payload.entity_id = imgCfg.entity_id;
+
+    try {
+      const result = await this._hass.callWS(payload);
+      // Update every column immediately.
+      // • Exact ID match  → full task replacement (the generating task itself).
+      // • Same title, different ID → image_url-only patch (same-title tasks in
+      //   other lists that the backend also updated — they share the image but
+      //   have their own task objects).
+      const newImageUrl = result.task?.image_url;
+      const titleKey = (task.title || "").trim().toLowerCase();
+      for (let ci = 0; ci < this._columns.length; ci++) {
+        const cs = this._columns[ci];
+        if (!cs || !cs.tasks) continue;
+        for (let i = 0; i < cs.tasks.length; i++) {
+          const t = cs.tasks[i];
+          if (t.id === task.id) {
+            cs.tasks[i] = result.task;
+          } else if (newImageUrl && titleKey && (t.title || "").trim().toLowerCase() === titleKey) {
+            cs.tasks[i] = { ...t, image_url: newImageUrl };
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Image generation failed:", err);
+      alert(this._t("img_generate_failed") + (err.message || err));
+    } finally {
+      this._generatingImage.delete(task.id);
+      this._refreshOpenSheetImage(task.id, colIdx);
+      this._refreshTaskTileEverywhere(task.id);
+    }
+  }
+
+  async _fetchAuthThumb(url) {
+    if (!url || !url.startsWith("/")) return url;
+    this._thumbCache = this._thumbCache || new Map();
+    if (this._thumbCache.has(url)) return this._thumbCache.get(url);
+    try {
+      const token = this._hass.auth?.data?.access_token;
+      if (!token) return url;
+      const resp = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      if (!resp.ok) return url;
+      const blobUrl = URL.createObjectURL(await resp.blob());
+      this._thumbCache.set(url, blobUrl);
+      return blobUrl;
+    } catch { return url; }
+  }
+
+  // Revoke + drop cached blob: thumbnail URLs (called when the media picker
+  // closes) so browsing large libraries repeatedly doesn't leak blob memory.
+  _revokeThumbCache() {
+    if (!this._thumbCache) return;
+    for (const v of this._thumbCache.values()) {
+      if (typeof v === "string" && v.startsWith("blob:")) URL.revokeObjectURL(v);
+    }
+    this._thumbCache.clear();
+  }
+
+  async _saveImageUrl(task, colIdx, url) {
+    const col = this._config.columns[colIdx];
+    try {
+      const result = await this._hass.callWS({
+        type: "home_tasks/update_task",
+        list_id: col.list_id,
+        task_id: task.id,
+        image_url: url,
+      });
+      // Update every column so the change is visible immediately everywhere.
+      for (let ci = 0; ci < this._columns.length; ci++) {
+        const cs = this._columns[ci];
+        if (!cs || !cs.tasks) continue;
+        const idx = cs.tasks.findIndex(t => t.id === task.id);
+        if (idx >= 0) cs.tasks[idx] = result;
+      }
+      // Update the open sheet + tiles in place (a full _render() would keep the
+      // old sheet DOM — showing the old image — and reset the scroll position).
+      this._refreshOpenSheetImage(task.id, colIdx);
+      this._refreshTaskTileEverywhere(task.id);
+    } catch (err) {
+      console.error("Failed to save image URL:", err);
+      alert(this._t("img_save_failed") + (err.message || err));
+    }
+  }
+
+  _buildHistorySection(task) {
+    const taskHistory = (task.history || []).slice().reverse();
+    const histContent = this._el("div", { className: "history-list" });
+    if (taskHistory.length === 0) {
+      histContent.appendChild(this._el("p", { className: "history-empty", textContent: this._t("history_empty") }));
+    } else {
+      for (const entry of taskHistory) {
+        histContent.appendChild(this._buildHistoryEntry(entry));
+      }
+    }
+    return this._el("div", { className: "detail-section" }, [
+      this._el("label", { className: "detail-label", textContent: this._t("history") }),
+      histContent,
+    ]);
+  }
+
+  _buildHistoryEntry(entry) {
+    const row = this._el("div", { className: "history-entry" });
+    const ts = new Date(entry.ts);
+    const tsStr = this._fmtTimestamp(ts);
+    const { icon, text } = this._formatHistoryEntry(entry);
+    const byLabel = entry.by && entry.by !== "recurrence"
+      ? ` \u00b7 ${entry.by === "user" ? this._t("hist_by_user") : entry.by}`
+      : "";
+    row.appendChild(this._el("span", { className: "history-icon", textContent: icon }));
+    row.appendChild(this._el("span", { className: "history-text", textContent: text + byLabel }));
+    row.appendChild(this._el("span", { className: "history-ts", textContent: tsStr }));
+    return row;
+  }
+
+  _formatHistoryEntry(entry) {
+    if (entry.action === "created") {
+      return { icon: "\u2605", text: this._t("history_created") };
+    }
+    if (entry.action === "completed") {
+      return { icon: "\u2713", text: this._t("history_completed") };
+    }
+    if (entry.action === "reopened") {
+      const text = entry.by === "recurrence" ? this._t("history_reset") : this._t("history_reopened");
+      return { icon: "\u21BA", text };
+    }
+    if (entry.action === "updated") {
+      return { icon: "\u270e", text: this._formatHistoryUpdateText(entry) };
+    }
+    return { icon: "\u2022", text: "" };
+  }
+
+  _formatHistoryUpdateText(entry) {
+    const fieldNames = {
+      title: this._t("hist_title"),
+      due_date: this._t("due_date"),
+      due_time: this._t("due_time_lbl"),
+      priority: this._t("priority"),
+      assigned_person: this._t("assigned_to"),
+      tags: this._t("tags"),
+      notes: this._t("notes"),
+      recurrence_enabled: this._t("recurrence"),
+    };
+    const lbl = fieldNames[entry.field] || entry.field;
+    if (entry.field === "recurrence_enabled") {
+      return `${lbl}: ${entry.to ? this._t("recurrence_enabled") : this._t("history_disabled")}`;
+    }
+    if (entry.from !== undefined || entry.to !== undefined) {
+      return `${lbl}: ${this._formatHistoryValue(entry.from, entry.field)} \u2192 ${this._formatHistoryValue(entry.to, entry.field)}`;
+    }
+    return `${lbl} ${this._t("history_changed")}`;
+  }
+
+  _formatHistoryValue(v, field) {
+    if (v == null) return "\u2013";
+    if (field === "priority") {
+      return [this._t("pri_low"), this._t("pri_medium"), this._t("pri_high")][v - 1] || String(v);
+    }
+    if (field === "assigned_person") {
+      return this._hass?.states?.[v]?.attributes?.friendly_name || v;
+    }
+    if (field === "tags") {
+      return Array.isArray(v) ? (v.join(", ") || "\u2013") : String(v);
+    }
+    return String(v);
+  }
+
+  _isInteractiveTarget(el) {
+    if (!el) return false;
+    const tag = el.tagName;
+    return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT"
+        || el.isContentEditable === true;
+  }
+
+  _buildSubTask(taskId, sub, colIdx) {
+    const isEditing = this._editingSubTaskId === sub.id;
+
+    const handle = this._el("span", {
+      className: "sub-drag-handle",
+      textContent: "\u2237",
+      title: this._t("drag_handle"),
+    });
+
+    const checkbox = this._el("input", { type: "checkbox", checked: sub.completed });
+    checkbox.addEventListener("change", () =>
+      this._toggleSubTask(taskId, sub.id, sub.completed, colIdx)
+    );
+    const checkmark = this._el("span", { className: "checkmark" });
+    const label = this._el("label", { className: "checkbox-container small" }, [
+      checkbox, checkmark,
+    ]);
+
+    let titleEl;
+    if (isEditing) {
+      titleEl = this._el("input", {
+        type: "text",
+        className: "edit-sub-input",
+        value: sub.title,
+        "data-focus-key": `sub_title_${sub.id}`,
+      });
+      titleEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          this._editingSubTaskId = null;  // clear BEFORE calling so blur skips
+          this._updateSubTaskTitle(taskId, sub.id, titleEl.value, colIdx);
+        } else if (e.key === "Escape") { this._editingSubTaskId = null; this._render(); }
+      });
+      titleEl.addEventListener("blur", () => {
+        if (this._editingSubTaskId === sub.id) this._updateSubTaskTitle(taskId, sub.id, titleEl.value, colIdx);
+      });
+      setTimeout(() => { titleEl.focus(); titleEl.select(); }, 0);
+    } else {
+      let subCls = "sub-title";
+      if (sub.completed) subCls += " completed";
+      titleEl = this._el("span", { className: subCls, textContent: sub.title });
+      titleEl.addEventListener("dblclick", () => {
+        this._editingSubTaskId = sub.id;
+        this._render();
+      });
+    }
+
+    const deleteBtn = this._el("button", {
+      className: "delete-sub-btn",
+      title: this._t("delete_sub"),
+      textContent: "\u00D7",
+    });
+    deleteBtn.addEventListener("click", () => this._deleteSubTask(taskId, sub.id, colIdx));
+
+    const subEl = this._el("div", { className: "sub-task" }, [handle, label, titleEl, deleteBtn]);
+    subEl.draggable = true;
+    subEl.dataset.subTaskId = sub.id;
+
+    subEl.addEventListener("dragstart", (e) => {
+      e.stopPropagation();
+      this._draggedSubTaskId = sub.id;
+      e.dataTransfer.effectAllowed = "move";
+      subEl.classList.add("dragging");
+    });
+    subEl.addEventListener("dragend", (e) => { e.stopPropagation(); this._finishSubDrag(taskId, colIdx); });
+    subEl.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = "move";
+      if (!this._draggedSubTaskId || this._draggedSubTaskId === sub.id) return;
+      const draggedEl = this.shadowRoot.querySelector(`.sub-task[data-sub-task-id="${CSS.escape(this._draggedSubTaskId)}"]`);
+      this._liveMoveSubTask(draggedEl, subEl, e.clientY);
+    });
+    subEl.addEventListener("drop", (e) => { e.preventDefault(); e.stopPropagation(); this._finishSubDrag(taskId, colIdx); });
+
+    handle.addEventListener("touchstart", (e) => {
+      e.stopPropagation();
+      if (e.touches.length !== 1) return;
+      const touch = e.touches[0];
+      this._subTouchStartTimer = setTimeout(() => {
+        this._draggedSubTaskId = sub.id;
+        subEl.classList.add("dragging");
+        const rect = subEl.getBoundingClientRect();
+        const clone = subEl.cloneNode(true);
+        clone.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;z-index:1000;opacity:0.85;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,0.3);background:var(--todo-bg,#fff);border-radius:4px;border:1px solid var(--todo-primary,#03a9f4);`;
+        this.shadowRoot.appendChild(clone);
+        this._subTouchClone = clone;
+        this._subTouchOffsetY = touch.clientY - rect.top;
+      }, 150);
+    }, { passive: true });
+
+    const onSubTouchMove = (e) => {
+      if (!this._draggedSubTaskId) {
+        clearTimeout(this._subTouchStartTimer);
+        this._subTouchStartTimer = null;
+        return;
+      }
+      e.preventDefault();
+      const touch = e.touches[0];
+      if (this._subTouchClone) this._subTouchClone.style.top = `${touch.clientY - this._subTouchOffsetY}px`;
+      if (this._subTouchClone) this._subTouchClone.style.display = "none";
+      const shadowEl = this.shadowRoot.elementFromPoint(touch.clientX, touch.clientY);
+      if (this._subTouchClone) this._subTouchClone.style.display = "";
+      const target = shadowEl?.closest(".sub-task");
+      if (target && target.dataset.subTaskId && target.dataset.subTaskId !== this._draggedSubTaskId) {
+        const draggedEl = this.shadowRoot.querySelector(`.sub-task[data-sub-task-id="${CSS.escape(this._draggedSubTaskId)}"]`);
+        this._liveMoveSubTask(draggedEl, target, touch.clientY);
+      }
+    };
+    const onSubTouchEnd = () => {
+      clearTimeout(this._subTouchStartTimer);
+      this._subTouchStartTimer = null;
+      if (this._draggedSubTaskId) this._finishSubDrag(taskId, colIdx);
+    };
+    handle.addEventListener("touchmove", onSubTouchMove, { passive: false });
+    handle.addEventListener("touchend", onSubTouchEnd);
+    handle.addEventListener("touchcancel", onSubTouchEnd);
+
+    return subEl;
+  }
+
+  // --- Drag & Drop ---
+
+  _getOrderFromDom(colIdx) {
+    const taskList = this.shadowRoot.querySelector(`.task-list[data-col-idx="${CSS.escape(String(colIdx))}"]`);
+    if (!taskList) return [];
+    return Array.from(taskList.querySelectorAll(".task")).map((el) => el.dataset.taskId);
+  }
+
+  // Walks the rendered list in order and returns [{taskId, sectionId}] pairs
+  // where sectionId is the id of the most recent section header (or null if
+  // the task sits in the unsorted top bucket / "__done__" for the Done bucket).
+  // Tasks inside a section live in a .section-body wrapper; tasks in the
+  // unsorted top bucket are direct children of the task-list.
+  _getOrderWithSectionFromDom(colIdx) {
+    const taskList = this.shadowRoot.querySelector(`.task-list[data-col-idx="${CSS.escape(String(colIdx))}"]`);
+    if (!taskList) return [];
+    const result = [];
+    let currentSection = null;
+    for (const el of taskList.children) {
+      if (el.classList.contains("section-header")) {
+        currentSection = el.dataset.sectionId || null;
+      } else if (el.classList.contains("section-body")) {
+        for (const inner of el.children) {
+          if (inner.classList.contains("task")) {
+            result.push({ taskId: inner.dataset.taskId, sectionId: currentSection });
+          }
+        }
+      } else if (el.classList.contains("task")) {
+        // Top unsorted bucket — flat children of .task-list
+        result.push({ taskId: el.dataset.taskId, sectionId: null });
+      }
+    }
+    return result;
+  }
+
+  _mergeHiddenTasks(colIdx, visibleOrder) {
+    const cs = this._columns[colIdx];
+    const filteredIds = new Set(visibleOrder);
+    const hiddenIds = cs.tasks.map((t) => t.id).filter((id) => !filteredIds.has(id));
+    const fullOrder = [...visibleOrder];
+    const origOrder = cs.tasks.map((t) => t.id);
+    for (const hid of hiddenIds) {
+      const origIdx = origOrder.indexOf(hid);
+      let insertIdx = fullOrder.length;
+      for (let i = origIdx - 1; i >= 0; i--) {
+        const prevId = origOrder[i];
+        const posInNew = fullOrder.indexOf(prevId);
+        if (posInNew !== -1) { insertIdx = posInNew + 1; break; }
+      }
+      fullOrder.splice(insertIdx, 0, hid);
+    }
+    return fullOrder;
+  }
+
+  _liveMoveTask(draggedEl, targetEl, clientY) {
+    if (!draggedEl || !targetEl || draggedEl === targetEl) return;
+    const targetList = targetEl.parentNode;
+    if (!targetList) return;
+
+    const siblings = [...targetList.querySelectorAll(".task:not(.dragging), .section-header")];
+    const before = new Map(siblings.map(el => [el, el.getBoundingClientRect().top]));
+
+    const targetRect = targetEl.getBoundingClientRect();
+    if (clientY < targetRect.top + targetRect.height / 2) {
+      targetList.insertBefore(draggedEl, targetEl);
+    } else {
+      targetList.insertBefore(draggedEl, targetEl.nextSibling);
+    }
+
+    // FLIP: animate siblings from their previous position to the new one
+    siblings.forEach(el => {
+      const dy = (before.get(el) ?? el.getBoundingClientRect().top) - el.getBoundingClientRect().top;
+      if (Math.abs(dy) < 1) return;
+      el.style.transition = "none";
+      el.style.transform = `translateY(${dy}px)`;
+      requestAnimationFrame(() => {
+        el.style.transition = "transform 0.18s ease";
+        el.style.transform = "";
+        el.addEventListener("transitionend", () => {
+          el.style.transition = "";
+          el.style.transform = "";
+        }, { once: true });
+      });
+    });
+  }
+
+  _liveMoveSubTask(draggedEl, targetEl, clientY) {
+    if (!draggedEl || !targetEl || draggedEl === targetEl) return;
+    const list = targetEl.parentNode;
+    if (!list) return;
+
+    const siblings = [...list.querySelectorAll(".sub-task:not(.dragging)")];
+    const before = new Map(siblings.map(el => [el, el.getBoundingClientRect().top]));
+
+    const r2 = targetEl.getBoundingClientRect();
+    if (clientY < r2.top + r2.height / 2) {
+      list.insertBefore(draggedEl, targetEl);
+    } else {
+      list.insertBefore(draggedEl, targetEl.nextSibling);
+    }
+
+    siblings.forEach(el => {
+      const dy = (before.get(el) ?? el.getBoundingClientRect().top) - el.getBoundingClientRect().top;
+      if (Math.abs(dy) < 1) return;
+      el.style.transition = "none";
+      el.style.transform = `translateY(${dy}px)`;
+      requestAnimationFrame(() => {
+        el.style.transition = "transform 0.18s ease";
+        el.style.transform = "";
+        el.addEventListener("transitionend", () => {
+          el.style.transition = "";
+          el.style.transform = "";
+        }, { once: true });
+      });
+    });
+  }
+
+  _finishSubDrag(taskId, colIdx) {
+    const draggedId = this._draggedSubTaskId;
+    this._draggedSubTaskId = null;
+    this.shadowRoot.querySelectorAll(".sub-task").forEach(el => el.classList.remove("dragging"));
+    if (this._subTouchClone) { this._subTouchClone.remove(); this._subTouchClone = null; }
+    if (this._subTouchStartTimer) { clearTimeout(this._subTouchStartTimer); this._subTouchStartTimer = null; }
+    if (!draggedId) return;
+    const subList = this.shadowRoot.querySelector(`.sub-task-list[data-task-id="${CSS.escape(taskId)}"]`);
+    if (!subList) return;
+    const order = [...subList.querySelectorAll(".sub-task")].map(el => el.dataset.subTaskId).filter(Boolean);
+    if (order.length > 1) this._reorderSubTasks(taskId, order, colIdx);
+  }
+
+  _finishDrag() {
+    const draggedId = this._draggedTaskId;
+    const srcColIdx = this._draggedColIdx;
+
+    // Determine which column the dragged element ended up in
+    const draggedEl = draggedId
+      ? this.shadowRoot.querySelector(`[data-task-id="${CSS.escape(String(draggedId))}"]`)
+      : null;
+    const currentTaskList = draggedEl?.closest(".task-list");
+    const tgtColIdx = currentTaskList !== null && currentTaskList !== undefined && currentTaskList.dataset.colIdx !== undefined
+      ? parseInt(currentTaskList.dataset.colIdx, 10)
+      : srcColIdx;
+
+    // Clean up
+    this._draggedTaskId = null;
+    this._draggedColIdx = null;
+    this.shadowRoot.querySelectorAll(".task").forEach((el) => {
+      el.classList.remove("dragging", "drag-over");
+    });
+    this.shadowRoot.querySelectorAll(".card-column").forEach((el) => {
+      el.classList.remove("drag-target");
+    });
+    this.shadowRoot.querySelectorAll(".section-header.drop-target").forEach((el) => {
+      el.classList.remove("drop-target");
+    });
+    if (this._springLoadTimer) {
+      clearTimeout(this._springLoadTimer);
+      this._springLoadTimer = null;
+    }
+    this._springLoadOriginallyCollapsed = null;
+    if (this._touchClone) { this._touchClone.remove(); this._touchClone = null; }
+    if (this._touchStartTimer) { clearTimeout(this._touchStartTimer); this._touchStartTimer = null; }
+
+    if (!draggedId || srcColIdx === null) return;
+
+    if (!isNaN(tgtColIdx) && tgtColIdx !== srcColIdx) {
+      // Cross-column move
+      const targetTaskIds = this._getOrderFromDom(tgtColIdx);
+      this._moveTask(srcColIdx, tgtColIdx, draggedId, targetTaskIds);
+    } else {
+      // Same-column reorder — also detect cross-section changes
+      const idx = srcColIdx ?? 0;
+      const sectionedOrder = this._getOrderWithSectionFromDom(idx);
+      if (sectionedOrder.length > 0) {
+        this._applySectionChangesAndReorder(idx, sectionedOrder);
+      }
+    }
+
+    if (this._pendingRender) this._render();
+  }
+
+  _collapseAllForDrag() {
+    if (this._expandedTasks.size === 0) return;
+    // Invalidate any in-flight expand/collapse animations
+    if (this._animatingTaskIds) this._animatingTaskIds.clear();
+    this._expandedTasks.clear();
+    const details = this.shadowRoot.querySelectorAll(".task-details");
+    // Freeze current heights as px (CSS can't transition from "auto")
+    for (const det of details) {
+      det.style.height = det.offsetHeight + "px";
+    }
+    for (const btn of this.shadowRoot.querySelectorAll(".expand-btn.expanded")) {
+      btn.classList.remove("expanded");
+    }
+    // Animate to 0 on next frame
+    requestAnimationFrame(() => {
+      for (const det of details) {
+        det.style.height = "0";
+      }
+    });
+  }
+
+  _attachDragToTask(taskEl, taskId, colIdx) {
+    // HTML5 Drag & Drop (Desktop)
+    taskEl.addEventListener("dragstart", (e) => {
+      // The whole .task is draggable=true so the browser starts a drag
+      // detection on mousedown anywhere inside it — including text inputs.
+      // Cancel the drag at the dragstart hook (which fires before any move)
+      // when the user is interacting with a text field.
+      if (this._isInteractiveTarget(e.target)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      this._draggedTaskId = taskId;
+      this._draggedColIdx = colIdx;
+      e.dataTransfer.effectAllowed = "move";
+      // Collapse all expanded tasks for a cleaner drag experience
+      this._collapseAllForDrag();
+      taskEl.classList.add("dragging");
+    });
+
+    taskEl.addEventListener("dragend", () => {
+      this._finishDrag();
+    });
+
+    taskEl.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      if (!this._draggedTaskId || this._draggedTaskId === taskId) return;
+      const draggedEl = this.shadowRoot.querySelector(`.task[data-task-id="${CSS.escape(String(this._draggedTaskId))}"]`);
+      this._liveMoveTask(draggedEl, taskEl, e.clientY);
+      // Visual feedback for cross-column target
+      const tgtList = taskEl.closest(".task-list");
+      const tgtColIdx = tgtList ? parseInt(tgtList.dataset.colIdx) : colIdx;
+      if (tgtColIdx !== this._draggedColIdx) {
+        this.shadowRoot.querySelectorAll(".card-column").forEach(el => el.classList.remove("drag-target"));
+        taskEl.closest(".card-column")?.classList.add("drag-target");
+      }
+    });
+
+    taskEl.addEventListener("drop", (e) => {
+      e.preventDefault();
+      this._finishDrag();
+    });
+
+    // Touch Events (Mobile) — long-press anywhere on the task row to drag
+    taskEl.addEventListener("touchstart", (e) => {
+      if (e.touches.length !== 1) return;
+      // Don't arm the long-press drag when the user taps a text input —
+      // they want to focus / select / scroll the field, not drag the task.
+      if (this._isInteractiveTarget(e.target)) return;
+      const touch = e.touches[0];
+      // List rows show their details inline on tap; the detail sheet is a
+      // tiles-only gesture. A long-press here only arms the drag below — opening
+      // the sheet here too fought the drag (stationary hold flashed a drag +
+      // sheet, and the trailing tap toggled expand under the sheet).
+      this._touchStartTimer = setTimeout(() => {
+        this._draggedTaskId = taskId;
+        this._draggedColIdx = colIdx;
+        // Collapse all expanded tasks for a cleaner drag experience
+        this._collapseAllForDrag();
+        taskEl = this.shadowRoot.querySelector(`.task[data-task-id="${CSS.escape(String(taskId))}"]`);
+        if (taskEl) taskEl.classList.add("dragging");
+
+        const rect = taskEl.getBoundingClientRect();
+        const clone = taskEl.cloneNode(true);
+        // Remove expanded details from clone so it shows collapsed during drag
+        const cloneDetails = clone.querySelector(".task-details");
+        if (cloneDetails) cloneDetails.remove();
+        clone.className = "task drag-clone";
+        clone.style.cssText = `
+          position: fixed; top: ${rect.top}px; left: ${rect.left}px;
+          width: ${rect.width}px; z-index: 1000; opacity: 0.85;
+          pointer-events: none;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          background: var(--todo-bg, #fff);
+          border-radius: var(--todo-radius, 8px);
+          border: 1px solid var(--todo-primary, #03a9f4);
+        `;
+        this.shadowRoot.appendChild(clone);
+        this._touchClone = clone;
+        this._touchOffsetY = touch.clientY - rect.top;
+      }, 150);
+      // (A scroll cancels the pending drag via onTouchMove below, which clears
+      // _touchStartTimer on the first move while no drag is active.)
+    }, { passive: true });
+
+    const onTouchMove = (e) => {
+      if (!this._draggedTaskId) {
+        if (this._touchStartTimer) {
+          clearTimeout(this._touchStartTimer);
+          this._touchStartTimer = null;
+        }
+        return;
+      }
+      e.preventDefault();
+      const touch = e.touches[0];
+
+      if (this._touchClone) {
+        this._touchClone.style.top = `${touch.clientY - this._touchOffsetY}px`;
+      }
+
+      if (this._touchClone) this._touchClone.style.display = "none";
+      const shadowEl = this.shadowRoot.elementFromPoint(touch.clientX, touch.clientY);
+      if (this._touchClone) this._touchClone.style.display = "";
+
+      const target = shadowEl ? shadowEl.closest(".task") : null;
+      const sectionHeader = shadowEl ? shadowEl.closest(".section-header") : null;
+      if (target && target.dataset.taskId && target.dataset.taskId !== this._draggedTaskId && !target.classList.contains("drag-clone")) {
+        const draggedEl = this.shadowRoot.querySelector(`.task[data-task-id="${CSS.escape(String(this._draggedTaskId))}"]`);
+        this._liveMoveTask(draggedEl, target, touch.clientY);
+      } else if (sectionHeader && sectionHeader.dataset.sectionId !== "__done__") {
+        const draggedEl = this.shadowRoot.querySelector(`.task[data-task-id="${CSS.escape(String(this._draggedTaskId))}"]`);
+        const body = sectionHeader.nextElementSibling;
+        if (draggedEl && body && body.classList.contains("section-body") && draggedEl.parentNode !== body) {
+          body.insertBefore(draggedEl, body.firstChild);
+        }
+      }
+    };
+
+    const onTouchEnd = () => {
+      if (this._touchStartTimer) {
+        clearTimeout(this._touchStartTimer);
+        this._touchStartTimer = null;
+      }
+      if (this._draggedTaskId) {
+        this._finishDrag();
+      }
+    };
+
+    taskEl.addEventListener("touchmove", onTouchMove, { passive: false });
+    taskEl.addEventListener("touchend", onTouchEnd);
+    taskEl.addEventListener("touchcancel", onTouchEnd);
+  }
+
+  // --- Styles ---
+
+  _getStyles() {
+    return `
+      :host {
+        --todo-primary: var(--primary-color, #03a9f4);
+        --todo-bg: var(--card-background-color, #fff);
+        --todo-text: var(--primary-text-color, #212121);
+        --todo-secondary-text: var(--secondary-text-color, #727272);
+        --todo-divider: var(--divider-color, #e0e0e0);
+        --todo-surface: var(--secondary-background-color, #f5f5f5);
+        --todo-disabled: var(--disabled-text-color, #bdbdbd);
+        --todo-error: var(--error-color, #db4437);
+        --todo-success: var(--success-color, #43a047);
+        --todo-radius: 8px;
+      }
+      ha-card { overflow: hidden; box-sizing: border-box; display: flex; flex-direction: column; }
+      ha-card > div { display: flex; flex-direction: column; min-height: 0; }
+      /* Fixed-height contract of HA's sections view (issue #33): when the
+         Layout tab sets a fixed number of rows, HA sizes the card's grid
+         cell and exposes --row-size. We then fill the cell (like core cards
+         do via ha-card { height: 100% }) but scroll only the task body, so
+         title, add-task row and filters stay put (issue #34). Detection and
+         the .fit-rows class live in _updateFitRows(). */
+      :host(.fit-rows) { display: block; height: 100%; }
+      :host(.fit-rows) ha-card { height: 100%; }
+      :host(.fit-rows) ha-card > div,
+      :host(.fit-rows) .multi-columns { flex: 1 1 auto; min-height: 0; }
+      /* .card-column is deliberately NOT in that list: inside .multi-columns
+         the flex axis is horizontal and ".multi-columns .card-column { flex: 1 }"
+         keeps the kanban columns equal-width; vertical fill comes from
+         align-items: stretch plus the column's own min-height: 0. */
+      .multi-columns { display: flex; gap: 0; align-items: stretch; }
+      .multi-columns .card-column { flex: 1; min-width: 240px; border-right: 1px solid var(--todo-divider); }
+      .multi-columns .card-column:last-child { border-right: none; }
+      @media (max-width: 600px) { .multi-columns { flex-direction: column; } .multi-columns .card-column { border-right: none; border-bottom: 1px solid var(--todo-divider); } .multi-columns .card-column:last-child { border-bottom: none; } :host(.fit-rows) .multi-columns .card-column { flex: 1 1 0%; } }
+      .card-column.drag-target { outline: 2px dashed var(--todo-primary); outline-offset: -2px; border-radius: var(--todo-radius); }
+      .card-column { padding: 16px; display: flex; flex-direction: column; min-height: 0; }
+      .header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+      .card-global-title { font-size: 1.25rem; font-weight: 500; color: var(--ha-card-header-color, var(--todo-text)); margin: 0; padding: 16px 16px 0; line-height: 1.2; }
+      .title { font-size: 1.25rem; font-weight: 500; color: var(--ha-card-header-color, var(--todo-text)); margin: 0; line-height: 1.2; display: flex; align-items: center; gap: 6px; }
+      .progress { font-size: 14px; color: var(--todo-secondary-text); }
+      .add-task { display: flex; gap: 8px; margin-bottom: 16px; }
+      .add-input {
+        flex: 1; padding: 10px 14px; border: 1px solid var(--todo-divider);
+        border-radius: var(--todo-radius); background: var(--todo-bg);
+        color: var(--todo-text); font-size: 14px; outline: none; font-family: inherit;
+      }
+      .add-input:focus { border-color: var(--todo-primary); }
+      .add-input::placeholder { color: var(--todo-disabled); }
+      .add-btn {
+        padding: 10px 20px; background: var(--todo-primary); color: #fff;
+        border: none; border-radius: var(--todo-radius); font-size: 14px;
+        font-weight: 500; cursor: pointer; white-space: nowrap; font-family: inherit;
+      }
+      .add-btn:hover { opacity: 0.9; }
+      .mic-btn {
+        flex-shrink: 0; width: 38px; height: 38px; padding: 0;
+        border: none; border-radius: var(--todo-radius);
+        background: var(--todo-primary); color: #fff;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        transition: opacity 0.2s, background 0.2s;
+      }
+      .mic-btn:hover { opacity: 0.9; }
+      /* Due-at-creation row (issue #38) */
+      .add-task-group { margin-bottom: 16px; }
+      .add-task-group .add-task { margin-bottom: 0; }
+      .add-due-row { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
+      .add-due-row input {
+        flex: 1 1 0; min-width: 0; padding: 8px 10px; font: inherit; font-size: 13px;
+        border: 1px solid var(--todo-divider); border-radius: var(--todo-radius);
+        background: transparent; color: var(--todo-text); color-scheme: light dark;
+      }
+      .add-due-row input:focus { outline: none; border-color: var(--todo-primary); }
+      .compact .add-task-group { margin-bottom: 10px; }
+      .compact .add-due-row input { padding: 5px 8px; font-size: 12px; }
+      .mic-btn svg { width: 18px; height: 18px; fill: currentColor; }
+      .mic-btn.recording {
+        background: #e53935; color: #fff;
+        animation: mic-pulse 1s ease-in-out infinite;
+      }
+      @keyframes mic-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.4); }
+        50% { box-shadow: 0 0 0 6px rgba(229, 57, 53, 0); }
+      }
+      .filters { display: flex; gap: 4px; margin-bottom: 12px; align-items: center; }
+      .filter-spacer { flex: 1; }
+      .filter-btn {
+        padding: 6px 16px; border: none; border-radius: 20px; background: transparent;
+        color: var(--todo-secondary-text); font-size: 13px; cursor: pointer;
+        font-family: inherit; transition: all 0.2s;
+      }
+      .filter-btn.active { background: var(--todo-primary); color: #fff; }
+      .filter-btn:not(.active):hover { background: var(--todo-surface); }
+      .sort-btn-wrapper { position: relative; }
+      .sort-btn {
+        padding: 5px 10px; border: 1px solid var(--todo-divider); border-radius: 20px;
+        background: transparent; color: var(--todo-secondary-text); font-size: 12px;
+        cursor: pointer; font-family: inherit; transition: all 0.2s; white-space: nowrap;
+      }
+      .sort-btn.active { border-color: var(--todo-primary); color: var(--todo-primary); }
+      .sort-btn:hover { background: var(--todo-surface); }
+      .sort-dropdown {
+        position: absolute; right: 0; top: calc(100% + 4px); z-index: 20;
+        background: var(--card-background-color, var(--todo-bg)); border: 1px solid var(--todo-divider);
+        border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 150px; overflow: hidden;
+      }
+      .sort-dropdown.hidden { display: none; }
+      .sort-option {
+        padding: 9px 14px; cursor: pointer; font-size: 13px;
+        color: var(--todo-text); transition: background 0.15s;
+      }
+      .sort-option:hover { background: var(--todo-surface); }
+      .sort-option.active { color: var(--todo-primary); font-weight: 500; }
+      .task-list { display: flex; flex-direction: column; gap: 6px; min-height: 40px; }
+      /* When the list is height-constrained (max_height / fit-rows / card-mod),
+         flex would first *shrink* its children before overflowing into the
+         scrollbar — section headers (min-height: 0) collapsed to 0px and their
+         text/icon overlapped the neighbouring task. Children must keep their
+         natural height and let the container scroll instead. */
+      .task-list > *, .tile-grid-wrap > * { flex-shrink: 0; }
+      /* max_height column option: body scrolls, chrome above stays fixed. The
+         1px inset padding keeps the focus ring / box-shadow of the first and
+         last task from being clipped by the overflow box. */
+      .task-list.scrollable, .tile-grid-wrap.scrollable,
+      :host(.fit-rows) .task-list, :host(.fit-rows) .tile-grid-wrap {
+        overflow-y: auto; overscroll-behavior: contain;
+        padding: 1px 2px 1px 1px; scrollbar-gutter: stable;
+      }
+      :host(.fit-rows) .task-list, :host(.fit-rows) .tile-grid-wrap { flex: 1 1 auto; min-height: 40px; }
+      .empty-state { text-align: center; padding: 24px; color: var(--todo-disabled); font-size: 14px; }
+      .section-header {
+        display: flex; align-items: center; gap: 6px;
+        padding: 2px 4px; min-height: 0;
+        background: transparent; border: none; border-radius: 0;
+        cursor: pointer; user-select: none;
+        font-size: 14px; font-weight: 500;
+        color: var(--todo-secondary-text);
+        transition: color 0.15s, opacity 0.15s;
+      }
+      .section-header:hover { color: var(--todo-text); }
+      .section-header.drop-target { color: var(--todo-primary); }
+      .section-header ha-icon { --mdc-icon-size: 16px; color: inherit; flex-shrink: 0; }
+      .section-header .section-name { flex: 1; min-width: 0; word-break: break-word; line-height: 1.2; }
+      .section-header .sub-badge { background: transparent; padding: 0; font-size: 11px; color: inherit; opacity: 0.8; }
+      .section-header .section-caret {
+        --mdc-icon-size: 16px; color: inherit;
+        transition: transform 0.2s; flex-shrink: 0; opacity: 0.7;
+      }
+      .section-header.collapsed .section-caret { transform: rotate(-90deg); }
+      .section-body { display: flex; flex-direction: column; gap: 6px; }
+      .section-body.collapsed,
+      .section-body.expanding { max-height: 0; opacity: 0; overflow: hidden; pointer-events: none; }
+      .section-body:empty { display: none; }
+      .task {
+        border: 1px solid var(--todo-divider); border-radius: var(--todo-radius);
+        background: rgba(var(--rgb-primary-text-color, 33, 33, 33), 0.06);
+        transition: box-shadow 0.2s, border-color 0.2s;
+      }
+      .task.dragging { opacity: 0.4; }
+      .task-main { display: flex; align-items: center; padding: 10px 12px; gap: 8px; min-height: 44px; cursor: pointer; }
+      .task-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+      .checkbox-container {
+        position: relative; display: inline-flex; align-items: center;
+        cursor: pointer; flex-shrink: 0;
+      }
+      .checkbox-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+      .checkmark {
+        height: 20px; width: 20px; border: 2px solid var(--todo-divider);
+        border-radius: 4px; transition: all 0.2s; display: flex;
+        align-items: center; justify-content: center;
+      }
+      .checkbox-container:hover .checkmark { border-color: var(--todo-primary); }
+      .checkbox-container input:checked ~ .checkmark { background: var(--todo-primary); border-color: var(--todo-primary); }
+      .checkbox-container input:checked ~ .checkmark::after {
+        content: ""; display: block; width: 5px; height: 9px;
+        border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-top: -1px;
+      }
+      .checkbox-container.small .checkmark { height: 16px; width: 16px; }
+      .checkbox-container.small input:checked ~ .checkmark::after { width: 4px; height: 7px; }
+      /* Theme hooks (issue #31): card-mod can't reach into this card's
+         shadow root, so the task title exposes CSS custom properties that
+         can be set in an HA theme. Fallbacks equal the previous fixed values. */
+      .task-title {
+        font-family: var(--ht-task-title-font-family, inherit);
+        font-size: var(--ht-task-title-font-size, 14px);
+        font-weight: var(--ht-task-title-font-weight, inherit);
+        color: var(--ht-task-title-color, var(--todo-text)); cursor: pointer;
+        line-height: 1.3; word-break: break-word;
+      }
+      .task.completed .task-title { text-decoration: line-through; color: var(--todo-disabled); }
+      .edit-title-input, .edit-sub-input {
+        flex: 1; padding: 7px 10px;
+        border: 1px solid var(--outline-color, var(--divider-color, rgba(127,127,127,0.4)));
+        border-radius: 4px; font-size: 14px;
+        background: var(--mdc-text-field-fill-color, var(--input-fill-color, var(--todo-bg)));
+        color: var(--todo-text); outline: none; font-family: inherit; min-width: 0;
+      }
+      .edit-title-input:focus, .edit-sub-input:focus { border-color: var(--todo-primary); border-width: 2px; padding: 6px 9px; }
+      .task-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+      .sub-badge {
+        font-size: 11px; padding: 2px 8px; border-radius: 10px;
+        background: var(--todo-surface); color: var(--todo-secondary-text); font-weight: 500;
+      }
+      .due-date {
+        font-size: 11px; padding: 2px 8px; border-radius: 10px;
+        background: var(--todo-surface); color: var(--todo-secondary-text);
+      }
+      .due-date.today { background: rgba(255, 152, 0, 0.15); color: var(--warning-color, #ff9800); }
+      .due-date.overdue { background: rgba(244, 67, 54, 0.15); color: var(--todo-error); font-weight: 500; }
+      .priority-badge {
+        font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+      }
+      .priority-badge.pri-high { background: rgba(244, 67, 54, 0.15); color: var(--todo-error, #f44336); }
+      .priority-badge.pri-medium { background: rgba(255, 152, 0, 0.15); color: var(--warning-color, #ff9800); }
+      .priority-badge.pri-low { background: rgba(3, 169, 244, 0.15); color: var(--info-color, #03a9f4); }
+      .priority-btn-row { display: flex; gap: 6px; }
+      .priority-btn {
+        flex: 1; padding: 5px 8px; border-radius: 4px; font-size: 12px; font-family: inherit;
+        border: 1px solid var(--todo-divider); background: var(--todo-bg);
+        color: var(--todo-secondary-text); cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s;
+      }
+      .priority-btn.pri-3.active { background: rgba(244, 67, 54, 0.2); color: var(--todo-error, #f44336); border-color: var(--todo-error, #f44336); }
+      .priority-btn.pri-2.active { background: rgba(255, 152, 0, 0.2); color: var(--warning-color, #ff9800); border-color: var(--warning-color, #ff9800); }
+      .priority-btn.pri-1.active { background: rgba(3, 169, 244, 0.2); color: var(--info-color, #03a9f4); border-color: var(--info-color, #03a9f4); }
+      .recurrence-badge {
+        font-size: 11px; padding: 2px 8px; border-radius: 10px;
+        background: rgba(3, 169, 244, 0.15); color: var(--info-color, #03a9f4);
+      }
+      .assigned-badge {
+        font-size: 11px; padding: 2px 8px; border-radius: 10px;
+        background: rgba(33, 150, 243, 0.15); color: var(--primary-color, #2196f3);
+        cursor: pointer; transition: all 0.2s;
+      }
+      .assigned-badge:hover { opacity: 0.8; }
+      .assigned-badge.active { background: var(--primary-color, #2196f3); color: #fff; }
+      .tag-badge {
+        font-size: 11px; padding: 2px 8px; border-radius: 10px;
+        background: rgba(76, 175, 80, 0.15); color: var(--success-color, #4caf50);
+        cursor: pointer; transition: all 0.2s;
+      }
+      .tag-badge:hover { opacity: 0.8; }
+      .tag-badge.active { background: var(--success-color, #4caf50); color: #fff; }
+      .reminder-badge {
+        font-size: 11px; padding: 2px 8px; border-radius: 10px;
+        background: rgba(255, 152, 0, 0.15); color: var(--warning-color, #ff9800);
+      }
+      .tag-chips { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+      .tag-chips-row { display: flex; align-items: flex-start; gap: 4px; margin-bottom: 12px; }
+      .tag-chips-row .tag-chips { flex: 1; margin-bottom: 0; }
+      .tag-chip {
+        padding: 4px 12px; border: 1px solid rgba(76, 175, 80, 0.3); border-radius: 16px;
+        background: transparent; color: var(--success-color, #4caf50); font-size: 12px;
+        cursor: pointer; font-family: inherit; transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+      }
+      .tag-chip:hover { background: rgba(76, 175, 80, 0.1); }
+      .tag-chip.active { background: var(--success-color, #4caf50); color: #fff; border-color: var(--success-color, #4caf50); }
+      @keyframes chip-pop {
+        0%   { transform: scale(0.78); }
+        55%  { transform: scale(1.16); }
+        100% { transform: scale(1); }
+      }
+      .chip-anim { animation: chip-pop 0.22s ease-out; }
+      .person-chips { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+      .person-chips-row { display: flex; align-items: flex-start; gap: 4px; margin-bottom: 12px; }
+      .person-chips-row .person-chips { flex: 1; margin-bottom: 0; }
+      .person-chip {
+        padding: 4px 12px; border: 1px solid var(--primary-color, #2196f3); border-radius: 16px;
+        background: transparent; color: var(--primary-color, #2196f3); font-size: 12px;
+        cursor: pointer; font-family: inherit; transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+      }
+      .person-chip:hover { background: var(--todo-surface); }
+      .person-chip.active { background: var(--primary-color, #2196f3); color: #fff; }
+      .tag-list { display: flex; gap: 6px; flex-wrap: wrap; }
+      .tag-item {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 2px 8px; border-radius: 10px;
+        background: rgba(76, 175, 80, 0.15); color: var(--success-color, #4caf50);
+        font-size: 12px;
+      }
+      .remove-tag-btn {
+        background: none; border: none; color: var(--success-color, #4caf50);
+        cursor: pointer; font-size: 14px; padding: 0 2px; line-height: 1; opacity: 0.7;
+      }
+      .remove-tag-btn:hover { opacity: 1; }
+      .tag-autocomplete-anchor { position: relative; width: 100%; }
+      .tag-autocomplete-dropdown {
+        position: absolute; top: calc(100% + 2px); left: 0; right: 0; z-index: 20;
+        background: var(--card-background-color, var(--todo-bg));
+        border: 1px solid var(--outline-color, var(--divider-color, rgba(255,255,255,0.12)));
+        border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-height: 240px; overflow-y: auto; padding: 4px 0;
+      }
+      .tag-autocomplete-dropdown[hidden] { display: none; }
+      .tag-autocomplete-item {
+        padding: 8px 14px; cursor: pointer; font-size: 13px;
+        color: var(--todo-text); user-select: none;
+      }
+      .tag-autocomplete-item:hover,
+      .tag-autocomplete-item.highlighted {
+        background: rgba(76, 175, 80, 0.15); color: var(--success-color, #4caf50);
+      }
+      .tag-autocomplete-empty {
+        padding: 8px 14px; font-size: 12px; font-style: italic;
+        color: var(--todo-secondary-text);
+      }
+      .recurrence-toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+      .recurrence-input-row { display: flex; align-items: flex-end; gap: 8px; }
+      .rec-remaining { font-size: 12px; color: var(--secondary-text-color); align-self: center; flex-shrink: 0; }
+      .recurrence-prefix { font-size: 13px; color: var(--todo-secondary-text); white-space: nowrap; }
+      .recurrence-weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 6px; }
+      .weekday-label {
+        display: block; font-size: 12px; color: var(--todo-secondary-text); cursor: pointer; user-select: none;
+      }
+      .weekday-label input[type="checkbox"], .weekday-label input[type="radio"] { display: none; }
+      .weekday-label span {
+        display: block; text-align: center; padding: 4px 2px; border-radius: 4px; border: 1px solid var(--todo-divider);
+        background: var(--todo-bg); transition: background 0.15s, color 0.15s;
+      }
+      .weekday-label input[type="checkbox"]:checked + span,
+      .weekday-label input[type="radio"]:checked + span {
+        background: var(--primary-color, #03a9f4); color: #fff; border-color: var(--primary-color, #03a9f4);
+      }
+      .weekday-label input[type="checkbox"]:disabled + span,
+      .weekday-label input[type="radio"]:disabled + span { opacity: 0.5; cursor: default; }
+      /* Generic radio-pill row used for the monthly pattern + end-mode toggles. */
+      .recurrence-radio-row { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; margin-top: 6px; }
+      /* Inline rows where a labeled select sits below a pill-toggle. */
+      .recurrence-sub-row { display: flex; gap: 8px; align-items: stretch; margin-top: 6px; }
+      .recurrence-sub-row .sel-wrap { flex: 1; min-width: 0; }
+      /* Yearly TT.MM input: 50/50 split between TT field and the month
+         dropdown.  Spacing under the radio row matches .recurrence-sub-row. */
+      .recurrence-year-row { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+      .recurrence-year-row > .field-wrap,
+      .recurrence-year-row > .sel-wrap { flex: 1 1 0; min-width: 0; }
+      .recurrence-year-row .field-wrap input { padding: 18px 4px 4px 8px; font-size: 13px; }
+      .recurrence-year-row .field-wrap > span { left: 8px; font-size: 10px; }
+      /* TT field special-cases: left-aligned number (matches the rest of
+         the card) with a "." rendered inside the field immediately after
+         the typed value.  We can't style the input's value content
+         directly, so we read the value's length via a CSS custom
+         property and place the dot at left = padding + len * 1ch.
+         tabular-nums keeps digit widths uniform so the offset is stable
+         when the user types or spins. */
+      .field-wrap.year-day input[type="number"] {
+        text-align: left;
+        padding-right: 30px;  /* reserve room for spin buttons */
+        font-variant-numeric: tabular-nums;
+      }
+      .field-wrap.year-day::after {
+        content: ".";
+        position: absolute;
+        left: calc(8px + var(--day-len, 1) * 1ch + 1px);
+        bottom: 6px;
+        color: var(--primary-text-color);
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+        pointer-events: none;
+      }
+      .field-wrap.year-day:not(.has-value)::after { display: none; }
+      .recurrence-todoist-note {
+        font-size: 11px; color: var(--secondary-text-color);
+        font-style: italic; margin-top: 4px;
+      }
+      .reminder-row { display: flex; gap: 6px; align-items: center; }
+      .reminder-remove {
+        background: none; border: none; color: var(--todo-secondary-text);
+        cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: 4px; line-height: 1;
+      }
+      .reminder-remove:hover { color: var(--todo-error); background: rgba(244, 67, 54, 0.15); }
+      .add-reminder-btn {
+        background: none; border: none; color: var(--warning-color, #ff9800); cursor: pointer;
+        font-size: 13px; padding: 6px 0; text-align: left; font-family: inherit;
+      }
+      .add-reminder-btn:hover { text-decoration: underline; }
+      .expand-btn {
+        background: none; border: none; color: var(--todo-secondary-text);
+        cursor: pointer; padding: 4px; border-radius: 4px;
+        display: inline-flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+      }
+      .expand-btn:hover { background: var(--todo-surface); }
+      .expand-btn ha-icon { --mdc-icon-size: 18px; transition: transform 0.2s; }
+      .expand-btn.expanded ha-icon { transform: rotate(180deg); }
+      .task-details {
+        border-top: 1px solid var(--todo-divider);
+        overflow: hidden; box-sizing: border-box;
+        height: 0; transition: height 0.25s ease;
+      }
+      .task-details-inner {
+        padding: 8px 12px 12px 12px; display: flex; flex-direction: column; gap: 12px;
+        overflow-x: hidden;
+      }
+      .detail-section { display: flex; flex-direction: column; gap: 6px; }
+      .detail-label {
+        font-size: 11px; font-weight: 600; text-transform: uppercase;
+        color: var(--todo-secondary-text); letter-spacing: 0.5px;
+      }
+      .due-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; overflow: hidden; }
+      .due-input-row .field-wrap { min-width: 0; overflow: hidden; }
+      .due-input-row .field-wrap input { padding: 18px 4px 4px 8px; font-size: 13px; }
+      .due-input-row .field-wrap input:focus { padding: 17px 3px 3px 7px; }
+      .due-input-row .field-wrap > span { left: 8px; font-size: 10px; }
+      .field-wrap input[type="date"], .field-wrap input[type="time"] { text-align: left; padding-right: 6px; max-width: 100%; -webkit-appearance: none; appearance: none; }
+      .field-wrap { position: relative; width: 100%; overflow: hidden; }
+      .due-input-row.single { grid-template-columns: 1fr; }
+      .field-wrap input, .field-wrap textarea { width: 100%; box-sizing: border-box; padding: 20px 12px 6px; height: 48px; border: 1px solid var(--outline-color, var(--divider-color, rgba(255,255,255,0.12))); border-radius: 4px; background: var(--mdc-text-field-fill-color, var(--input-fill-color, transparent)); color: var(--primary-text-color); font-size: 0.875rem; font-family: inherit; outline: none; color-scheme: light dark; }
+      .field-wrap textarea { height: auto; }
+      .field-wrap input:focus, .field-wrap textarea:focus { border: 2px solid var(--primary-color); padding: 19px 11px 5px; }
+      .field-wrap input:disabled, .field-wrap textarea:disabled { opacity: 0.4; }
+      .field-wrap textarea { resize: vertical; min-height: 60px; }
+      .field-wrap > span { position: absolute; top: 6px; left: 12px; font-size: 11px; font-weight: 400; color: var(--secondary-text-color); text-transform: none; letter-spacing: 0; pointer-events: none; }
+      .field-with-clear { display: flex; align-items: center; gap: 4px; }
+      .field-with-clear .field-wrap { flex: 1; min-width: 0; }
+      .field-clear-btn {
+        flex-shrink: 0; background: none; border: none; color: var(--secondary-text-color);
+        cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: 4px; line-height: 1;
+      }
+      .field-clear-btn:hover { color: var(--error-color, #f44336); background: rgba(244, 67, 54, 0.15); }
+      .field-wrap input:focus ~ span, .field-wrap textarea:focus ~ span { color: var(--primary-color); }
+      .field-wrap.inline { flex: 1; width: auto; }
+      .field-wrap.inline input { height: 48px; padding: 20px 8px 4px; box-sizing: border-box; }
+      .field-wrap.inline input[type="number"] { padding-right: 28px; -moz-appearance: textfield; }
+      .field-wrap.inline input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+      .field-wrap.inline > span { top: 4px; left: 8px; }
+      .spin-btns { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; }
+      .spin-btn { background: none; border: none; padding: 2px 4px; cursor: pointer; color: var(--secondary-text-color); line-height: 1; font-size: 12px; }
+      .spin-btn:hover { color: var(--primary-color); }
+      .spin-btn:disabled { opacity: 0.4; cursor: default; }
+      .sel-wrap { position: relative; width: 100%; }
+      .sel-wrap select { width: 100%; height: 48px; padding: 18px 32px 4px 12px; border: 1px solid var(--outline-color, var(--divider-color, rgba(255,255,255,0.12))); border-radius: 4px; background: var(--mdc-text-field-fill-color, var(--input-fill-color, transparent)); color: var(--primary-text-color); font-size: 0.875rem; font-family: inherit; appearance: none; -webkit-appearance: none; cursor: pointer; outline: none; box-sizing: border-box; color-scheme: light dark; }
+      .sel-wrap select:focus { border: 2px solid var(--primary-color); padding: 17px 31px 3px 11px; }
+      .sel-wrap select:disabled { opacity: 0.4; cursor: default; }
+      /* The native options panel ignores the page palette unless we set
+         these explicitly — without them HA's dark theme falls back to the
+         browser's white default. */
+      .sel-wrap select option {
+        background: var(--card-background-color, var(--ha-card-background, var(--primary-background-color, #fff)));
+        color: var(--primary-text-color);
+      }
+      .sel-wrap > span { position: absolute; top: 6px; left: 12px; font-size: 11px; font-weight: 400; color: var(--secondary-text-color); text-transform: none; letter-spacing: 0; pointer-events: none; }
+      .sel-wrap::after { content: "▾"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--secondary-text-color); font-size: 16px; line-height: 1; }
+      .sel-wrap.inline { flex: 1; width: auto; }
+      .sel-wrap.inline select { height: 48px; padding: 18px 28px 4px 10px; }
+      .sel-wrap.inline > span { top: 4px; left: 10px; font-size: 10px; }
+      .field-wrap.no-label input, .field-wrap.no-label textarea { padding: 10px 12px; }
+      .field-wrap.no-label input:focus, .field-wrap.no-label textarea:focus { padding: 9px 11px; }
+      .sel-wrap.no-label select { padding: 12px 32px 12px 12px; height: 44px; }
+      .sel-wrap.no-label select:focus { padding: 11px 31px 11px 11px; }
+      .sub-task-list { display: flex; flex-direction: column; }
+      .sub-task { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+      .sub-task.dragging { opacity: 0.4; }
+      .sub-drag-handle { cursor: grab; color: var(--todo-disabled); font-size: 14px; padding: 0 2px 0 0; user-select: none; flex-shrink: 0; }
+      .sub-drag-handle:active { cursor: grabbing; }
+      @media (pointer: coarse) { .sub-drag-handle { padding: 4px 4px 4px 0; font-size: 16px; } }
+      .sub-title {
+        flex: 1; font-size: 13px; color: var(--todo-text); cursor: default;
+        min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      }
+      .sub-title.completed { text-decoration: line-through; color: var(--todo-disabled); }
+      .delete-sub-btn {
+        background: none; border: none; color: var(--todo-disabled); cursor: pointer;
+        font-size: 16px; padding: 2px 6px; border-radius: 4px; line-height: 1; flex-shrink: 0;
+      }
+      .delete-sub-btn:hover { color: var(--todo-error); background: rgba(244, 67, 54, 0.15); }
+      .add-sub-btn {
+        background: none; border: none; color: var(--todo-primary); cursor: pointer;
+        font-size: 13px; padding: 6px 0; text-align: left; font-family: inherit;
+      }
+      .add-sub-btn:hover { text-decoration: underline; }
+      .history-list { display: flex; flex-direction: column; gap: 0; max-height: 220px; overflow-y: auto; }
+      .history-entry { display: grid; grid-template-columns: 18px 1fr auto; align-items: baseline; gap: 6px; padding: 5px 14px 5px 0; border-bottom: 1px solid var(--divider-color, rgba(128,128,128,0.15)); font-size: 12px; }
+      .history-entry:last-child { border-bottom: none; }
+      .history-icon { color: var(--secondary-text-color); text-align: center; font-size: 11px; }
+      .history-text { color: var(--primary-text-color); }
+      .history-ts { color: var(--secondary-text-color); white-space: nowrap; font-size: 11px; }
+      .history-empty { margin: 0; font-size: 12px; color: var(--secondary-text-color); }
+      .detail-actions { display: flex; justify-content: flex-end; padding-top: 4px; gap: 8px; }
+      .delete-task-btn {
+        background: none; border: 1px solid var(--todo-error); color: var(--todo-error);
+        padding: 6px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; font-family: inherit;
+      }
+      .delete-task-btn:hover { background: rgba(244, 67, 54, 0.15); }
+      .duplicate-task-btn {
+        background: none; border: 1px solid var(--todo-primary); color: var(--todo-primary);
+        padding: 6px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; font-family: inherit;
+      }
+      .duplicate-task-btn:hover { background: color-mix(in srgb, var(--todo-primary) 15%, transparent); }
+      .move-task-btn {
+        background: none; border: 1px solid var(--todo-primary); color: var(--todo-primary);
+        padding: 6px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; font-family: inherit;
+      }
+      .move-task-btn:hover { background: color-mix(in srgb, var(--todo-primary) 15%, transparent); }
+      .ht-move-select {
+        width: 100%; box-sizing: border-box; margin-top: 12px; padding: 8px 10px;
+        border: 1px solid var(--outline-color, var(--divider-color, rgba(255,255,255,0.12)));
+        border-radius: 4px; background: var(--mdc-text-field-fill-color, var(--input-fill-color, transparent));
+        color: var(--primary-text-color); font-size: 0.875rem; font-family: inherit;
+        cursor: pointer; outline: none; color-scheme: light dark;
+      }
+      /* --- Task image --- */
+      .task-thumb {
+        width: 40px; height: 40px; border-radius: 6px; object-fit: cover;
+        flex-shrink: 0; opacity: 0.88; transition: opacity 0.2s, transform 0.15s;
+        cursor: pointer; border: 1px solid var(--todo-divider);
+      }
+      .task-thumb:hover { opacity: 1; transform: scale(1.05); }
+      .task.completed .task-thumb { opacity: 0.45; }
+      .detail-section--image .image-section-body { display: flex; flex-direction: column; gap: 10px; }
+      .image-section-body { gap: 6px; }
+      .image-section-body .generate-image-btn { flex: 1; }
+      .task-image-wrap {
+        position: relative; display: inline-block; width: 100%;
+        border-radius: 8px; overflow: hidden;
+        max-height: 300px;
+      }
+      .task-image {
+        width: 100%; max-height: 300px; object-fit: contain;
+        border-radius: 8px; display: block;
+      }
+      .task-image-remove {
+        position: absolute; top: 6px; right: 6px; width: 24px; height: 24px;
+        border-radius: 50%; background: rgba(0,0,0,0.55); color: #fff;
+        border: none; font-size: 16px; line-height: 1; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s;
+      }
+      .task-image-remove:hover { background: rgba(0,0,0,0.8); }
+      .generate-image-btn {
+        display: inline-flex; align-items: center; padding: 7px 14px;
+        border: 1px solid var(--todo-primary); background: transparent;
+        color: var(--todo-primary); border-radius: var(--todo-radius);
+        font-size: 13px; cursor: pointer; font-family: inherit;
+        transition: background 0.15s, opacity 0.15s;
+      }
+      .generate-image-btn:hover:not(:disabled) { background: rgba(var(--rgb-primary-color, 33,150,243), 0.1); }
+      .generate-image-btn:disabled { opacity: 0.6; cursor: default; }
+      .generate-image-btn.generating { border-style: dashed; }
+      .spinner {
+        display: inline-block; width: 14px; height: 14px;
+        border: 2px solid currentColor; border-top-color: transparent;
+        border-radius: 50%; animation: spin 0.7s linear infinite;
+        margin-right: 6px; flex-shrink: 0;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .toast-error {
+        position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+        background: var(--todo-error, #db4437); color: #fff; padding: 10px 20px;
+        border-radius: 8px; font-size: 13px; z-index: 999; animation: fadeIn 0.3s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      }
+      @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+      /* Compact mode overrides */
+      .compact { padding: 10px; }
+      .compact .header { margin-bottom: 10px; }
+      .compact .title { font-size: 1rem; }
+      .compact .progress { font-size: 12px; }
+      .compact .add-task { margin-bottom: 10px; }
+      .compact .add-input { padding: 6px 10px; font-size: 13px; }
+      .compact .add-btn { padding: 6px 14px; font-size: 13px; }
+      .compact .mic-btn { width: 32px; height: 32px; }
+      .compact .mic-btn svg { width: 15px; height: 15px; }
+      .compact .filters { margin-bottom: 8px; }
+      .compact .filter-btn { padding: 4px 12px; font-size: 12px; }
+      .compact .tag-chips { margin-bottom: 8px; gap: 3px; }
+      .compact .tag-chips-row { margin-bottom: 8px; }
+      .compact .tag-chips-row .tag-chips { margin-bottom: 0; }
+      .compact .tag-chip { padding: 2px 8px; font-size: 11px; }
+      .compact .person-chips { margin-bottom: 8px; gap: 3px; }
+      .compact .person-chips-row { margin-bottom: 8px; }
+      .compact .person-chips-row .person-chips { margin-bottom: 0; }
+      .compact .person-chip { padding: 2px 8px; font-size: 11px; }
+      .compact .task-list { gap: 3px; }
+      .compact .task-main { padding: 6px 8px; gap: 6px; min-height: 32px; }
+      .compact .task-title { font-size: 13px; }
+      .compact .task-meta { gap: 4px; }
+      .compact .task-thumb { width: 30px; height: 30px; border-radius: 4px; }
+      .compact .sub-badge, .compact .due-date, .compact .priority-badge, .compact .recurrence-badge,
+      .compact .assigned-badge, .compact .tag-badge, .compact .reminder-badge { font-size: 10px; padding: 1px 6px; }
+      .compact .checkmark { height: 16px; width: 16px; }
+      .compact .checkbox-container input:checked ~ .checkmark::after { width: 4px; height: 7px; }
+      .compact .expand-btn { padding: 2px; }
+      .compact .expand-btn ha-icon { --mdc-icon-size: 16px; }
+      .compact .empty-state { padding: 16px; font-size: 13px; }
+      .compact .task-details-inner { padding: 8px 10px; }
+
+      /* ── Tile / Kachel view ──────────────────────────────────── */
+      .tile-grid-wrap { display: flex; flex-direction: column; gap: 12px; padding: 4px 0; }
+      .tile-grid-inner {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+      }
+      .task-tile {
+        position: relative; border-radius: 14px; overflow: hidden;
+        aspect-ratio: 1 / 1; cursor: pointer;
+        background: var(--todo-surface);
+        border: 1px solid var(--todo-divider);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        user-select: none; -webkit-user-select: none;
+        /* Stop iOS Safari from hijacking a long-press on the tile image with
+           its native "save/copy image" callout instead of our detail gesture. */
+        -webkit-touch-callout: none;
+      }
+      .task-tile:hover { transform: scale(1.04); box-shadow: 0 6px 18px rgba(0,0,0,0.15); }
+      .task-tile.selected { outline: 2.5px solid var(--todo-primary); outline-offset: 2px; }
+      .task-tile.completed { opacity: 0.50; }
+      .task-tile.dragging { opacity: 0.4; }
+      .task-tile.dragging:hover { transform: none; box-shadow: none; }
+      .task-tile.armed { transform: scale(1.08); box-shadow: 0 8px 22px rgba(0,0,0,0.28); z-index: 2; }
+      .tile-bg {
+        width: 100%; height: 100%; object-fit: cover; display: block;
+        position: absolute; inset: 0;
+        /* Decorative only: never intercept touches, never offer iOS image
+           actions / drag-save — all gestures belong to the parent tile. */
+        pointer-events: none; -webkit-touch-callout: none; -webkit-user-drag: none;
+      }
+      .tile-placeholder {
+        width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+        font-size: 2.8rem; font-weight: 700; color: var(--todo-disabled);
+        background: linear-gradient(135deg, var(--todo-surface) 0%, var(--todo-divider) 100%);
+        position: absolute; inset: 0;
+      }
+      .tile-overlay {
+        position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
+        padding: 24px 9px 9px;
+        background: linear-gradient(transparent, rgba(0,0,0,0.68));
+        display: flex; align-items: flex-end; justify-content: space-between; gap: 4px;
+      }
+      .task-tile:not(.has-image) .tile-overlay {
+        background: linear-gradient(transparent, rgba(0,0,0,0.25));
+      }
+
+      /* Task detail bottom sheet (tile long-press) */
+      .task-detail-backdrop {
+        position: fixed; inset: 0; z-index: 998;
+        background: rgba(0,0,0,0.32);
+      }
+      .task-detail-sheet {
+        position: fixed; bottom: 0; left: 0; right: 0; z-index: 999;
+        /* Composite the (possibly translucent) themed card colour over an
+           opaque page-background base so frosted-glass themes don't make the
+           popup see-through and unreadable. */
+        background-color: var(--primary-background-color, #1c1c1c);
+        background-image: linear-gradient(var(--ha-card-background, var(--card-background-color, transparent)), var(--ha-card-background, var(--card-background-color, transparent)));
+        border-radius: 16px 16px 0 0;
+        box-shadow: 0 -4px 24px rgba(0,0,0,0.28);
+        transform: translateY(100%);
+        transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+        max-height: 85vh;
+        display: flex; flex-direction: column;
+        padding-bottom: env(safe-area-inset-bottom, 0);
+      }
+      .task-detail-sheet.open { transform: translateY(0); }
+      .sheet-handle {
+        width: 40px; height: 4px; border-radius: 2px;
+        background: var(--divider-color, rgba(255,255,255,0.2));
+        margin: 10px auto 4px; flex-shrink: 0;
+      }
+      .sheet-header {
+        display: flex; align-items: center; gap: 8px;
+        padding: 8px 8px 12px 20px; flex-shrink: 0;
+        border-bottom: 1px solid var(--divider-color, rgba(255,255,255,0.08));
+      }
+      .sheet-title {
+        flex: 1; min-width: 0; font-size: 16px; font-weight: 500; color: var(--primary-text-color);
+        background: var(--mdc-text-field-fill-color, var(--input-fill-color, transparent));
+        border: 1px solid var(--outline-color, var(--divider-color, rgba(127,127,127,0.4)));
+        border-radius: 4px; outline: none; font-family: inherit; padding: 8px 12px;
+      }
+      .sheet-title:focus { border-color: var(--todo-primary); border-width: 2px; padding: 7px 11px; }
+      .sheet-close {
+        background: none; border: none; cursor: pointer; border-radius: 50%;
+        color: var(--secondary-text-color); padding: 8px; display: flex; align-items: center;
+      }
+      .sheet-close:hover { background: var(--secondary-background-color); }
+      .sheet-body { overflow-y: auto; flex: 1; padding: 12px 0 8px; }
+      .sheet-body .task-details { height: auto; border-top: none; }
+      .sheet-body .task-details-inner { padding: 0 16px 16px; }
+      .tile-title {
+        color: #fff; font-size: 12px; font-weight: 600; line-height: 1.3;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        flex: 1;
+      }
+      .task-tile:not(.has-image) .tile-title { color: var(--todo-text); text-shadow: none; }
+      .tile-done-badge {
+        color: #fff; font-weight: 700; flex-shrink: 0;
+        background: rgba(67,160,71,0.85); border-radius: 50%;
+        width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+        font-size: 11px;
+      }
+      .tiles-mode { padding: 12px; }
+
+      /* Media browser dialog */
+      dialog.mb-dialog {
+        padding: 0; border: none; border-radius: 12px;
+        width: min(480px, 95vw); max-height: 70vh;
+        background-color: var(--primary-background-color, #1c1c1c);
+        background-image: linear-gradient(var(--ha-card-background, var(--card-background-color, transparent)), var(--ha-card-background, var(--card-background-color, transparent)));
+        color: var(--primary-text-color);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.32);
+        overflow: hidden;
+      }
+      dialog.mb-dialog::backdrop { background: rgba(0,0,0,0.5); }
+      /* In-card confirmation dialog (see _confirmDialog) */
+      dialog.ht-confirm {
+        padding: 0; border: none; border-radius: 12px;
+        width: min(360px, 92vw);
+        background-color: var(--primary-background-color, #1c1c1c);
+        background-image: linear-gradient(var(--ha-card-background, var(--card-background-color, transparent)), var(--ha-card-background, var(--card-background-color, transparent)));
+        color: var(--primary-text-color);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.32);
+      }
+      dialog.ht-confirm::backdrop { background: rgba(0,0,0,0.5); }
+      .ht-confirm-body { padding: 20px; }
+      .ht-confirm-msg { font-size: 15px; line-height: 1.4; word-break: break-word; }
+      .ht-confirm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+      .ht-confirm-btn {
+        padding: 8px 16px; border-radius: 8px; font-size: 14px; font-family: inherit; cursor: pointer;
+        border: 1px solid var(--divider-color, rgba(0,0,0,0.12));
+        background: transparent; color: var(--primary-text-color);
+      }
+      .ht-confirm-btn:hover { background: var(--secondary-background-color); }
+      .ht-confirm-btn.primary {
+        background: var(--todo-primary); border-color: var(--todo-primary);
+        color: var(--text-primary-color, #fff);
+      }
+      .ht-confirm-btn.primary:hover { filter: brightness(1.08); }
+      .mb-header {
+        display: flex; align-items: center; gap: 8px;
+        padding: 16px 8px 16px 20px; flex-shrink: 0;
+        border-bottom: 1px solid var(--divider-color, rgba(0,0,0,0.12));
+      }
+      .mb-title { flex: 1; font-size: 18px; font-weight: 500; }
+      .mb-close {
+        background: none; border: none; cursor: pointer;
+        color: var(--secondary-text-color); padding: 8px; border-radius: 50%;
+        display: flex; align-items: center;
+      }
+      .mb-close:hover { background: var(--secondary-background-color); }
+      .mb-list { overflow-y: auto; max-height: calc(70vh - 64px); }
+      .mb-status { padding: 32px; text-align: center; color: var(--secondary-text-color); font-size: 14px; }
+      .mb-error { color: var(--error-color, #db4437); }
+      .mb-crumb {
+        padding: 8px 16px 4px; font-size: 11px; font-weight: 600;
+        color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: 0.6px;
+      }
+      .mb-item {
+        display: flex; align-items: center; gap: 12px;
+        width: 100%; padding: 10px 16px;
+        background: none; border: none; border-bottom: 1px solid var(--divider-color, rgba(0,0,0,0.06));
+        cursor: pointer; color: var(--primary-text-color);
+        font-family: inherit; font-size: 14px; text-align: left;
+      }
+      .mb-item:hover { background: var(--secondary-background-color, rgba(0,0,0,0.04)); }
+      .mb-back {
+        color: var(--primary-color); font-weight: 500;
+        border-bottom: 2px solid var(--divider-color, rgba(0,0,0,0.12));
+      }
+      .mb-item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .mb-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+        gap: 8px; padding: 8px;
+      }
+      .mb-grid-item {
+        display: flex; flex-direction: column; align-items: center; gap: 5px;
+        background: none; border: none; cursor: pointer; padding: 6px; border-radius: 8px;
+        font-family: inherit;
+      }
+      .mb-grid-item:hover { background: var(--secondary-background-color, rgba(0,0,0,0.06)); }
+      .mb-grid-thumb {
+        width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 6px;
+        display: block;
+      }
+      .mb-grid-title {
+        font-size: 11px; color: var(--secondary-text-color); width: 100%;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center;
+      }
+
+      /* Compact tile variant */
+      .compact .tile-grid-inner { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 7px; }
+      .compact .task-tile { border-radius: 10px; }
+      .compact .tile-title { font-size: 11px; }
+
+      @keyframes task-exit {
+        0%   { opacity: 1; transform: translateY(0); }
+        100% { opacity: 0; transform: translateY(-8px); }
+      }
+      @keyframes task-enter {
+        0%   { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      .task-anim-exit {
+        animation: task-exit 0.17s ease-out forwards;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .task-anim-enter {
+        animation: task-enter 0.22s ease-out;
+      }
+    `;
+  }
+
+  // --- Card config ---
+
+  connectedCallback() {
+    this._ensureCardMod();
+    this._updateFitRows();
+  }
+
+  // HA's sections view sets --row-size on the card's grid cell wrapper when
+  // the Layout tab uses a fixed number of rows (inherited into our shadow
+  // DOM); it is empty/"auto" otherwise and in masonry views. Toggle a host
+  // class so the CSS can switch to fill-and-scroll mode (see ha-card rules).
+  _updateFitRows() {
+    let rows = "";
+    try { rows = (getComputedStyle(this).getPropertyValue("--row-size") || "").trim(); } catch (_) { /* detached */ }
+    this.classList.toggle("fit-rows", rows !== "" && rows !== "auto");
+  }
+
+  // card-mod compatibility (issues #31 / #34). card-mod normally styles us
+  // through its hui-card hook, but on a cold page load — while this (large)
+  // module is still being fetched — HA mounts a placeholder first and
+  // card-mod's application can get lost in the swap. card-mod's developer
+  // API exists for exactly this: ask it to apply to this element ourselves.
+  // apply_card_mod reuses an existing <card-mod> node of the same type, so
+  // calling it when the hook already ran is a no-op, and the node survives
+  // our re-renders (see _render's overlay preservation).
+  _ensureCardMod() {
+    if (!(this._config && this._config.card_mod)) return;
+    if (!("customElements" in window) || !customElements.whenDefined) return;
+    // At most one pending waiter per element: when card-mod is not installed
+    // whenDefined() never settles, and every extra .then would keep this
+    // element (and its config) alive for the page lifetime.
+    if (this._cardModPending) return;
+    this._cardModPending = true;
+    customElements.whenDefined("card-mod").then((cm) => {
+      this._cardModPending = false;
+      cm = cm || customElements.get("card-mod"); // older engines resolve with undefined
+      const cur = this._config && this._config.card_mod; // always the latest config
+      if (!this.isConnected || !cur) return;
+      if (!cm || typeof cm.applyToElement !== "function") return;
+      try {
+        cm.applyToElement(this, "card", cur, { config: this._config }, true, "type-custom-home-tasks-card");
+      } catch (_) { /* never let a styling add-on break the card */ }
+    });
+  }
+
+  disconnectedCallback() {
+    if (this._sortCloseHandler) {
+      document.removeEventListener("click", this._sortCloseHandler);
+      this._sortCloseHandler = null;
+    }
+    if (this._touchStartTimer) { clearTimeout(this._touchStartTimer); this._touchStartTimer = null; }
+    if (this._subTouchStartTimer) { clearTimeout(this._subTouchStartTimer); this._subTouchStartTimer = null; }
+    if (this._extPollTimer) { clearInterval(this._extPollTimer); this._extPollTimer = null; }
+    if (this._listsRetryTimer) { clearTimeout(this._listsRetryTimer); this._listsRetryTimer = null; }
+    // Stop any active voice recording so the mic stream, AudioContext and
+    // pipeline subscription are released when the card is removed mid-recording.
+    if (this._voiceActive) {
+      for (const cleanup of this._voiceActive.values()) {
+        try { cleanup(); } catch (_) { /* best-effort */ }
+      }
+      this._voiceActive.clear();
+    }
+  }
+
+  static getConfigElement() {
+    return document.createElement("home-tasks-card-editor");
+  }
+
+  static getStubConfig() {
+    return { columns: [{}] };
+  }
+
+  getCardSize() {
+    return 3 + this._columns.reduce((sum, cs) => sum + cs.tasks.length, 0);
+  }
+
+  getLayoutOptions() {
+    return {
+      grid_columns: "full",
+      grid_min_columns: 4,
+      grid_rows: "auto",
+      grid_min_rows: 2,
+    };
+  }
+
+  // Current HA API (sections view Layout tab, 12-column grid — the legacy
+  // getLayoutOptions above speaks the old 4-column grid, HA migrates ×3).
+  // Rows default to "auto"; a fixed number makes the card fill the cell and
+  // scroll its body.
+  getGridOptions() {
+    return {
+      columns: "full",
+      min_columns: 12,
+      rows: "auto",
+      min_rows: 2,
+    };
+  }
+}
+
+/**
+ * Card Editor — uses safe DOM construction
+ */
+class HomeTasksCardEditor extends HTMLElement {
+  // "Defaults" section (issues #44 / #46): list-level default assignee and
+  // reminders, stored in the list itself so they apply to every creation
+  // path (card, service, WS, voice, todo). Loaded/saved via WS.
+  _buildDefaultsEditor(listId) {
+    const container = this._el("div", { className: "defaults-editor" });
+    const cached = this._listDefaults[listId];
+    if (cached) {
+      this._renderDefaultsInto(container, listId, cached);
+      return container;
+    }
+    container.appendChild(this._el("span", { className: "hint", textContent: this._t("ed_loading") }));
+    // Fetched once per editor session and cached like _listSections /
+    // _listMeta: the editor rebuilds its DOM on every structural change, and
+    // an uncached fetch would flash "Loading\u2026" and hit the backend each
+    // time.
+    this._hass.callWS({ type: "home_tasks/get_defaults", list_id: listId })
+      .then((r) => {
+        const d = (r && r.defaults) || {};
+        this._listDefaults[listId] = { assignee: d.assignee || null, reminders: [...(d.reminders || [])] };
+        this._renderDefaultsInto(container, listId, this._listDefaults[listId]);
+      })
+      .catch(() => {
+        // Never seed the cache with fabricated empty defaults: an editable
+        // empty state would let the very next change wipe the list's real
+        // defaults on the server. Show the failure; the next render retries.
+        container.replaceChildren(
+          this._el("span", { className: "hint", textContent: this._t("ed_defaults_load_failed") })
+        );
+      });
+    return container;
+  }
+
+  _renderDefaultsInto(container, listId, defaults) {
+    const savedFlash = this._el("span", { className: "def-saved-flash" });
+    // Partial saves with in-flight coalescing: each change sends only the
+    // field(s) it touched (the backend keeps omitted fields), and changes
+    // made while a write is in flight merge into one trailing flush.
+    let saving = false;
+    let pending = null;
+    let renderInto;
+    const flush = () => {
+      const patch = pending;
+      pending = null;
+      saving = true;
+      this._hass.callWS({ type: "home_tasks/set_defaults", list_id: listId, ...patch })
+        .then((r) => {
+          // Adopt the server-normalized state (e.g. deduped, sorted
+          // reminders) so the session cache cannot diverge from the store.
+          const d = (r && r.defaults) || {};
+          const norm = d.reminders || [];
+          const changed = (d.assignee || null) !== defaults.assignee ||
+            JSON.stringify(norm) !== JSON.stringify(defaults.reminders);
+          defaults.assignee = d.assignee || null;
+          defaults.reminders.splice(0, defaults.reminders.length, ...norm);
+          savedFlash.classList.remove("err");
+          savedFlash.textContent = "\u2713 " + this._t("ed_defaults_saved");
+          savedFlash.classList.add("show");
+          clearTimeout(savedFlash._hideT);
+          savedFlash._hideT = setTimeout(() => savedFlash.classList.remove("show"), 1500);
+          if (changed && !pending) renderInto();
+        })
+        .catch(() => {
+          // Make the failure visible (the flash stays until the next
+          // success) and drop the session cache so the next editor render
+          // refetches the server truth instead of showing unsaved state.
+          clearTimeout(savedFlash._hideT);
+          savedFlash.textContent = "\u2717 " + this._t("ed_defaults_save_failed");
+          savedFlash.classList.add("err", "show");
+          delete this._listDefaults[listId];
+        })
+        .then(() => {
+          saving = false;
+          if (pending) flush();
+        });
+    };
+    const save = (patch) => {
+      pending = { ...(pending || {}), ...patch };
+      if (!saving) flush();
+    };
+    const persons = personEntries(this._hass);
+    renderInto = () => {
+      const kids = [
+        this._el("span", { className: "hint", textContent: this._t("ed_defaults_hint") }),
+        savedFlash,
+      ];
+      const personSelect = this._el("select", { className: "editor-native-select" });
+      const noneOpt = this._el("option", { value: "", textContent: this._t("nobody") });
+      if (!defaults.assignee) noneOpt.selected = true;
+      personSelect.appendChild(noneOpt);
+      for (const { value, label } of persons) {
+        const opt = this._el("option", { value, textContent: label });
+        if (value === defaults.assignee) opt.selected = true;
+        personSelect.appendChild(opt);
+      }
+      personSelect.addEventListener("change", () => {
+        defaults.assignee = personSelect.value || null;
+        save({ assignee: defaults.assignee });
+      });
+      // Same field-wrap + floating-label pattern as makeSelect ("View mode"
+      // etc.) — sel-wrap is card CSS and doesn't exist in the editor styles.
+      kids.push(this._el("div", { className: "field-wrap" }, [
+        personSelect,
+        this._el("span", { textContent: this._t("ed_default_assignee") }),
+      ]));
+      defaults.reminders.forEach((offset, ri) => {
+        const sel = this._el("select", { className: "editor-native-select" });
+        for (const opt of reminderOffsetOptions(this, offset)) sel.appendChild(opt);
+        sel.addEventListener("change", () => {
+          defaults.reminders[ri] = parseInt(sel.value, 10);
+          save({ reminders: [...defaults.reminders] });
+        });
+        const removeBtn = this._el("button", { className: "icon-btn del", textContent: "\u00D7", title: this._t("remove_reminder"), type: "button" });
+        removeBtn.addEventListener("click", () => {
+          defaults.reminders.splice(ri, 1);
+          save({ reminders: [...defaults.reminders] });
+          renderInto();
+        });
+        kids.push(this._el("div", { className: "def-reminder-row" }, [
+          this._el("div", { className: "field-wrap" }, [sel, this._el("span", { textContent: this._t("reminder") })]),
+          removeBtn,
+        ]));
+      });
+      if (defaults.reminders.length < MAX_REMINDERS) {
+        const addBtn = this._el("button", { className: "add-section-btn", textContent: this._t("rem_add"), type: "button" });
+        addBtn.addEventListener("click", () => {
+          defaults.reminders.push(nextFreeReminderOffset(new Set(defaults.reminders)));
+          save({ reminders: [...defaults.reminders] });
+          renderInto();
+        });
+        kids.push(addBtn);
+      }
+      container.replaceChildren(...kids);
+    };
+    renderInto();
+  }
+
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+    this._config = { columns: [{}] };
+    this._hass = null;
+    this._lists = [];
+    this._externalLists = [];
+    this._listsLoaded = false;
+    this._editorTab = 0;
+    this._editorCodeMode = {};  // { tabIdx: bool }
+    this._sectionOpen = {};     // { translationKey: bool } — persists across re-renders
+    this._ignoreNextSetConfig = false; // skip the echo setConfig() call after _fireChanged
+    this._listSections = {};    // { sourceKey: [{id,name,icon,sort_order}] } — server-loaded sections
+    this._listMeta = {};        // { sourceKey: {tags:[], persons:[]} } — derived from the list's tasks
+    this._listDefaults = {};    // { listId: {assignee, reminders} } — session cache for the Defaults section
+  }
+
+  _sourceKeyForCol(col) {
+    if (!col) return null;
+    if (col.entity_id) return `ext:${col.entity_id}`;
+    if (col.list_id) return col.list_id;
+    return null;
+  }
+
+  _sectionsTargetPayload(col) {
+    if (col.entity_id) return { entity_id: col.entity_id };
+    if (col.list_id) return { list_id: col.list_id };
+    return null;
+  }
+
+  async _loadSectionsFor(col) {
+    const target = this._sectionsTargetPayload(col);
+    if (!target) return [];
+    const key = this._sourceKeyForCol(col);
+    try {
+      const r = await this._hass.callWS({ type: "home_tasks/get_sections", ...target });
+      const arr = (r && r.sections) || [];
+      this._listSections[key] = arr;
+      return arr;
+    } catch (e) {
+      this._listSections[key] = [];
+      return [];
+    }
+  }
+
+  // Fetch the column's tasks once to derive the tag + assignee-name sets used
+  // as autocomplete suggestions in the preset-filter multi-selects. Cached per
+  // source key like _listSections; missing/empty is fine (free-text entry).
+  async _loadMetaFor(col) {
+    const key = this._sourceKeyForCol(col);
+    if (!key) return { tags: [], persons: [] };
+    try {
+      let tasks = [];
+      if (col.entity_id) {
+        const r = await this._hass.callWS({ type: "home_tasks/get_external_tasks", entity_id: col.entity_id });
+        tasks = (r && r.tasks) || [];
+      } else if (col.list_id) {
+        const r = await this._hass.callWS({ type: "home_tasks/get_tasks", list_id: col.list_id });
+        tasks = (r && r.tasks) || [];
+      }
+      const tags = new Set();
+      const persons = new Set();
+      for (const t of tasks) {
+        for (const tag of (t.tags || [])) tags.add(tag);
+        if (t.assigned_person) persons.add(t.assigned_person);
+      }
+      // Persons may be stored as `person.*` entity ids — resolve each to its
+      // friendly name for display while keeping the raw value for matching.
+      const personOpts = [...persons].sort().map((v) => ({
+        value: v,
+        label: this._hass?.states?.[v]?.attributes?.friendly_name || v,
+      }));
+      this._listMeta[key] = { tags: [...tags].sort(), persons: personOpts };
+    } catch (e) {
+      this._listMeta[key] = { tags: [], persons: [] };
+    }
+    return this._listMeta[key];
+  }
+
+  async _wsCallSection(col, type, extra = {}) {
+    const target = this._sectionsTargetPayload(col);
+    if (!target) throw new Error("No list selected");
+    return this._hass.callWS({ type, ...target, ...extra });
+  }
+
+  _t(key, ...args) {
+    // Same preference order as HomeTasksCard._localeCode (separate class).
+    let lang = this._hass?.locale?.language || this._hass?.language || "en";
+    if (lang === "nb" || lang === "nn") lang = "no";
+    const str = (_TRANSLATIONS[lang] || _TRANSLATIONS.en)[key] || _TRANSLATIONS.en[key] || key;
+    return args.length ? str.replace(/\{(\d+)\}/g, (_, i) => args[i] ?? "") : str;
+  }
+
+  _el(tag, attrs = {}, children = []) {
+    const el = document.createElement(tag);
+    for (const [key, val] of Object.entries(attrs)) {
+      if (key === "className") el.className = val;
+      else if (key === "textContent") el.textContent = val;
+      else if (key === "value") el.value = val;
+      else if (key === "selected") { if (val) el.selected = true; }
+      else if (key === "placeholder") el.placeholder = val;
+      else if (key === "type") el.type = val;
+      else if (key === "id") el.id = val;
+      else if (key === "checked") el.checked = val;
+      else el.setAttribute(key, val);
+    }
+    for (const child of children) {
+      if (typeof child === "string") el.appendChild(document.createTextNode(child));
+      else if (child) el.appendChild(child);
+    }
+    return el;
+  }
+
+  setConfig(config) {
+    // Normalize old single-list format
+    // Keep HA card-level keys (type, etc.) at root, not inside column objects
+    if (config.list_id && !config.columns) {
+      const { type, columns: _c, ...colConfig } = config;
+      config = { ...(type ? { type } : {}), columns: [colConfig] };
+    }
+    if (!config.columns || !Array.isArray(config.columns) || config.columns.length === 0) {
+      config = { ...config, columns: [{}] };
+    }
+    // Strip any stray type keys from column objects
+    config = {
+      ...config,
+      columns: config.columns.map(({ type: _t, ...col }) => col),
+    };
+    this._config = { ...config };
+
+    // Clamp active tab
+    if (this._editorTab >= this._config.columns.length) {
+      this._editorTab = this._config.columns.length - 1;
+    }
+
+    // Skip re-render if this setConfig is the echo of our own _fireChanged call
+    if (this._ignoreNextSetConfig) {
+      this._ignoreNextSetConfig = false;
+      return;
+    }
+    if (this._listsLoaded) {
+      this._render();
+    }
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+    if (!this._listsLoaded) {
+      this._loadLists();
+    }
+  }
+
+  async _loadLists() {
+    try {
+      const [nativeResult, externalResult] = await Promise.all([
+        this._hass.callWS({ type: "home_tasks/get_lists" }),
+        this._hass.callWS({ type: "home_tasks/get_external_lists" }).catch(() => null),
+      ]);
+      if (nativeResult && Array.isArray(nativeResult.lists)) {
+        this._lists = nativeResult.lists;
+      }
+      this._externalLists = (externalResult && Array.isArray(externalResult.external_lists))
+        ? externalResult.external_lists.filter(l => l.linked)
+        : [];
+      this._listsLoaded = true;
+      // Auto-select first list for first column if none set
+      if (!this._config.columns[0]?.list_id && !this._config.columns[0]?.entity_id && this._lists.length > 0) {
+        const newCols = [...this._config.columns];
+        newCols[0] = { ...newCols[0], list_id: this._lists[0].id };
+        this._config = { ...this._config, columns: newCols };
+        this._fireChanged();
+      }
+      this._render();
+    } catch (e) {
+      // Integration might not be loaded yet
+    }
+  }
+
+  _clearCodeState() {
+    this._editorCodeMode = {};
+  }
+
+  _render() {
+    const root = this.shadowRoot;
+    root.innerHTML = "";
+
+    const style = document.createElement("style");
+    style.textContent = `
+      :host { display: block; }
+      .editor { display: flex; flex-direction: column; gap: 0; padding: 16px 0; }
+      .editor-card-title-row { margin-bottom: 12px; }
+      .editor-native-select {
+        width: 100%; box-sizing: border-box; padding: 8px;
+        background: var(--card-background-color); color: var(--primary-text-color);
+        border: 1px solid var(--divider-color); border-radius: 4px; font-size: 14px;
+      }
+      .editor-native-select:focus {
+        outline: none; border-color: var(--primary-color);
+      }
+      .editor-tabs-row {
+        display: flex; align-items: center;
+        border-bottom: 1px solid var(--divider-color, #e0e0e0);
+        margin-bottom: 0;
+      }
+      .editor-tabs { display: flex; gap: 0; align-items: center; flex: 1; }
+      .editor-tab {
+        min-width: 40px; height: 40px; padding: 0 14px;
+        border: none; border-bottom: 3px solid transparent;
+        background: transparent; cursor: pointer; font-size: 14px; font-weight: 500;
+        font-family: inherit; color: var(--secondary-text-color);
+        display: flex; align-items: center; justify-content: center;
+        transition: color 0.15s, border-color 0.15s;
+      }
+      .editor-tab.active { color: var(--primary-color); border-bottom: 3px solid var(--primary-color); }
+      .editor-tab:hover:not(.active) { color: var(--primary-text-color); background: var(--secondary-background-color); }
+      .editor-tab-add {
+        width: 36px; height: 36px; border-radius: 50%; border: none;
+        background: transparent; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center;
+        color: var(--secondary-text-color); flex-shrink: 0; padding: 0; margin-left: 4px;
+        transition: background 0.15s, color 0.15s;
+      }
+      .editor-tab-add:hover { background: var(--secondary-background-color); color: var(--primary-color); }
+      .editor-col-controls {
+        display: flex; gap: 0; align-items: center;
+        padding: 4px 0 8px; margin-bottom: 8px;
+        border-bottom: 1px solid var(--divider-color, #e0e0e0);
+      }
+      .icon-btn {
+        width: 36px; height: 36px; border-radius: 50%; border: none;
+        background: transparent; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center;
+        color: var(--secondary-text-color); flex-shrink: 0; padding: 0;
+        transition: background 0.15s, color 0.15s;
+      }
+      .icon-btn:hover:not(:disabled) { background: var(--secondary-background-color); }
+      .icon-btn.active { color: var(--primary-color); }
+      .icon-btn.del { color: var(--error-color, #db4437); }
+      .icon-btn:disabled { opacity: 0.3; cursor: default; }
+      .icon-btn-spacer { flex: 1; }
+      .toggle-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; }
+      .visual-editor { display: flex; flex-direction: column; gap: 8px; }
+      .field { display: flex; flex-direction: column; gap: 6px; }
+      details { border: 1px solid var(--divider-color, rgba(255,255,255,0.12)); border-radius: 8px; overflow: hidden; }
+      summary { display: flex; align-items: center; gap: 8px; padding: 12px 16px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--primary-text-color); user-select: none; list-style: none; }
+      summary::-webkit-details-marker { display: none; }
+      .sum-chevron { margin-left: auto; display: inline-flex; transition: transform 0.2s; color: var(--secondary-text-color); }
+      details[open] .sum-chevron { transform: rotate(180deg); }
+      .section-content { display: flex; flex-direction: column; gap: 16px; padding: 16px 16px; border-top: 1px solid var(--divider-color, rgba(255,255,255,0.12)); box-sizing: border-box; }
+      label { font-size: 12px; font-weight: 500; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: 0.5px; }
+      ha-textfield { width: 100%; }
+      ha-icon-picker { width: 100%; }
+      select.editor-native-select { width: 100%; padding: 10px 12px; border: 1px solid var(--input-outlined-idle-border-color, var(--divider-color, rgba(0,0,0,0.38))); border-radius: 4px; background-color: var(--input-fill-color, var(--secondary-background-color, transparent)); color: var(--primary-text-color, #212121); font-size: 1rem; font-family: var(--mdc-typography-body1-font-family, Roboto, sans-serif); cursor: pointer; box-sizing: border-box; }
+      select.editor-native-select:hover { border-color: var(--input-outlined-hover-border-color, var(--primary-text-color, rgba(0,0,0,0.87))); }
+      select.editor-native-select:focus { outline: none; border-color: var(--primary-color, #03a9f4); border-width: 2px; padding: 9px 11px; }
+      select.editor-native-select option { background-color: var(--card-background-color, var(--ha-card-background, #fff)); color: var(--primary-text-color, #212121); }
+      .hint { font-size: 12px; color: var(--secondary-text-color); font-style: italic; margin-top: 2px; }
+      .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; min-height: 40px; }
+      .toggle-label { font-size: 14px; color: var(--primary-text-color); }
+      .field-wrap { position: relative; width: 100%; }
+      .field-wrap input { width: 100%; box-sizing: border-box; padding: 20px 12px 6px; height: 48px; border: 1px solid var(--outline-color, var(--divider-color, rgba(255,255,255,0.12))); border-radius: 4px; background: var(--mdc-text-field-fill-color, var(--input-fill-color, transparent)); color: var(--primary-text-color); font-size: 0.875rem; font-family: inherit; outline: none; }
+      .field-wrap input:focus { border: 2px solid var(--primary-color); padding: 19px 11px 5px; }
+      .field-wrap input[type="number"] { padding-right: 28px; -moz-appearance: textfield; }
+      .field-wrap input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+      .field-wrap > span { position: absolute; top: 6px; left: 12px; font-size: 11px; font-weight: 400; color: var(--secondary-text-color); pointer-events: none; }
+      .field-wrap input:focus ~ span { color: var(--primary-color); }
+      .spin-btns { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; }
+      .spin-btn { background: none; border: none; padding: 2px 4px; cursor: pointer; color: var(--secondary-text-color); line-height: 1; font-size: 12px; }
+      .spin-btn:hover { color: var(--primary-color); }
+      ha-yaml-editor { display: block; }
+      .sections-editor-row { display: flex; align-items: center; gap: 6px; padding: 4px 0; }
+      .sections-editor-row .field-wrap { flex: 1 1 0; min-width: 80px; }
+      .sections-editor-row ha-icon-picker { flex: 1 1 0; min-width: 0; }
+      .icon-btn { background: none; border: 1px solid var(--divider-color, rgba(255,255,255,0.12)); border-radius: 6px; padding: 6px; cursor: pointer; color: var(--primary-text-color); display: inline-flex; align-items: center; justify-content: center; }
+      .icon-btn:hover:not(:disabled) { background: var(--secondary-background-color, rgba(0,0,0,0.05)); }
+      .icon-btn:disabled { opacity: 0.4; cursor: default; }
+      .icon-btn.del { color: var(--error-color, #db4437); }
+      .icon-btn ha-icon { --mdc-icon-size: 18px; }
+      .add-section-btn { margin-top: 8px; padding: 8px 14px; border: 1px dashed var(--primary-color); border-radius: 6px; background: transparent; color: var(--primary-color); cursor: pointer; font-family: inherit; font-size: 14px; }
+      .add-section-btn:hover { background: rgba(3,169,244,0.08); }
+      .defaults-editor { display: flex; flex-direction: column; gap: 16px; }
+      .def-reminder-row { display: flex; align-items: center; gap: 8px; }
+      .def-reminder-row .field-wrap { flex: 1; min-width: 0; }
+      .def-reminder-row .icon-btn { font-size: 18px; line-height: 1; }
+      .def-saved-flash { opacity: 0; transition: opacity 0.3s; color: var(--primary-color, #03a9f4); font-size: 12px; font-weight: 500; }
+      .def-saved-flash.show { opacity: 1; }
+      .def-saved-flash.err { color: var(--error-color, #db4437); }
+      .field-wrap select { width: 100%; box-sizing: border-box; padding: 20px 12px 6px; height: 48px; border: 1px solid var(--outline-color, var(--divider-color, rgba(255,255,255,0.12))); border-radius: 4px; background: var(--mdc-text-field-fill-color, var(--input-fill-color, transparent)); color: var(--primary-text-color); font-size: 0.875rem; font-family: inherit; outline: none; cursor: pointer; }
+      .field-wrap select:focus { border: 2px solid var(--primary-color); padding: 19px 11px 5px; }
+      .field-wrap select:focus ~ span { color: var(--primary-color); }
+      .ms-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 48px; box-sizing: border-box; padding: 20px 10px 6px; border: 1px solid var(--outline-color, var(--divider-color, rgba(255,255,255,0.12))); border-radius: 4px; background: var(--mdc-text-field-fill-color, var(--input-fill-color, transparent)); }
+      .ms-chips:focus-within { border: 2px solid var(--primary-color); padding: 19px 9px 5px; }
+      .field-wrap .ms-chips:focus-within ~ span { color: var(--primary-color); }
+      .ms-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--primary-color); color: var(--text-primary-color, #fff); border-radius: 12px; padding: 2px 4px 2px 10px; font-size: 13px; line-height: 1.7; }
+      .ms-chip-x { border: none; background: rgba(0,0,0,0.22); color: inherit; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; line-height: 1; padding: 0; }
+      .ms-chip-x:hover { background: rgba(0,0,0,0.42); }
+      .ms-input { flex: 1 1 80px; min-width: 80px; border: none; outline: none; background: transparent; color: var(--primary-text-color); font-size: 14px; font-family: inherit; padding: 4px 2px; }
+      /* Reset the generic .field-wrap input box styles (border/height/full-width) for the chip-input */
+      .field-wrap .ms-input, .field-wrap .ms-input:focus { width: auto; height: auto; padding: 4px 2px; border: none; background: transparent; }
+    `;
+    root.appendChild(style);
+
+    const cols = this._config.columns;
+    const activeTab = Math.min(this._editorTab, cols.length - 1);
+
+    // Global card title input (above tabs)
+    const cardTitleInput = document.createElement("ha-textfield");
+    cardTitleInput.label = this._t("ed_card_title");
+    cardTitleInput.placeholder = this._t("ed_card_title_placeholder");
+    cardTitleInput.value = this._config.title || "";
+    cardTitleInput.style.width = "100%";
+    cardTitleInput.addEventListener("change", (e) => {
+      this._config = { ...this._config, title: e.target.value || undefined };
+      this._fireChanged();
+    });
+    const cardTitleRow = this._el("div", { className: "editor-card-title-row" }, [cardTitleInput]);
+
+
+    // Tab bar (tabs on left, + on right)
+    const tabsEl = this._el("div", { className: "editor-tabs" });
+    for (let i = 0; i < cols.length; i++) {
+      const colName = cols[i].title ||
+        this._lists.find(l => l.id === cols[i].list_id)?.name ||
+        (cols[i].entity_id && (this._externalLists || []).find(l => l.entity_id === cols[i].entity_id)?.name) ||
+        String(i + 1);
+      const tab = this._el("button", {
+        className: "editor-tab" + (i === activeTab ? " active" : ""),
+        textContent: String(i + 1),
+        title: colName,
+      });
+      tab.addEventListener("click", () => {
+        this._editorTab = i;
+        this._render();
+      });
+      tabsEl.appendChild(tab);
+    }
+    const addTabBtn = document.createElement("button");
+    addTabBtn.className = "editor-tab-add";
+    addTabBtn.title = this._t("ed_add_column");
+    const _plusIcon = document.createElement("ha-icon");
+    _plusIcon.setAttribute("icon", "mdi:plus");
+    _plusIcon.style.setProperty("--mdc-icon-size", "20px");
+    addTabBtn.appendChild(_plusIcon);
+    addTabBtn.addEventListener("click", () => {
+      this._clearCodeState();
+      const newCols = [...cols, {}];
+      this._config = { ...this._config, columns: newCols };
+      this._editorTab = newCols.length - 1;
+      this._fireChanged();
+      this._render();
+    });
+    const tabsRow = this._el("div", { className: "editor-tabs-row" }, [tabsEl, addTabBtn]);
+
+    // Column controls using ha-icon-button
+    const isCodeMode = this._editorCodeMode[activeTab] === true;
+    const controls = this._el("div", { className: "editor-col-controls" });
+
+    const makeIconBtn = (icon, label, cls, handler, disabled = false) => {
+      const btn = document.createElement("button");
+      btn.className = "icon-btn" + (cls ? " " + cls : "");
+      btn.title = label;
+      btn.disabled = disabled;
+      const haIcon = document.createElement("ha-icon");
+      haIcon.setAttribute("icon", icon);
+      haIcon.style.setProperty("--mdc-icon-size", "20px");
+      btn.appendChild(haIcon);
+      btn.addEventListener("click", handler);
+      return btn;
+    };
+
+    controls.appendChild(makeIconBtn(
+      "mdi:code-braces",
+      isCodeMode ? this._t("ed_visual_editor") : this._t("ed_code_editor"),
+      isCodeMode ? "active" : "",
+      () => {
+        this._editorCodeMode[activeTab] = !isCodeMode;
+        this._render();
+      }
+    ));
+    const _btnSpacer = document.createElement("div");
+    _btnSpacer.className = "icon-btn-spacer";
+    controls.appendChild(_btnSpacer);
+
+    // Left/right arrows always visible; disabled when not applicable
+    controls.appendChild(makeIconBtn("mdi:arrow-left", this._t("ed_move_left"), "", () => {
+      this._clearCodeState();
+      const newCols = [...cols];
+      [newCols[activeTab - 1], newCols[activeTab]] = [newCols[activeTab], newCols[activeTab - 1]];
+      this._config = { ...this._config, columns: newCols };
+      this._editorTab = activeTab - 1;
+      this._fireChanged();
+      this._render();
+    }, cols.length < 2 || activeTab === 0));
+    controls.appendChild(makeIconBtn("mdi:arrow-right", this._t("ed_move_right"), "", () => {
+      this._clearCodeState();
+      const newCols = [...cols];
+      [newCols[activeTab], newCols[activeTab + 1]] = [newCols[activeTab + 1], newCols[activeTab]];
+      this._config = { ...this._config, columns: newCols };
+      this._editorTab = activeTab + 1;
+      this._fireChanged();
+      this._render();
+    }, cols.length < 2 || activeTab === cols.length - 1));
+
+    if (cols.length > 1) {
+      controls.appendChild(makeIconBtn("mdi:content-copy", this._t("ed_duplicate"), "", () => {
+        this._clearCodeState();
+        const newCols = [...cols];
+        newCols.splice(activeTab + 1, 0, { ...cols[activeTab] });
+        this._config = { ...this._config, columns: newCols };
+        this._editorTab = activeTab + 1;
+        this._fireChanged();
+        this._render();
+      }));
+      controls.appendChild(makeIconBtn("mdi:delete", this._t("ed_delete_column"), "del", () => {
+        this._clearCodeState();
+        const newCols = cols.filter((_, i) => i !== activeTab);
+        this._config = { ...this._config, columns: newCols };
+        this._editorTab = Math.min(activeTab, newCols.length - 1);
+        this._fireChanged();
+        this._render();
+      }));
+    }
+
+    // Tab content
+    const tabContent = isCodeMode
+      ? this._buildCodeEditor(activeTab)
+      : this._buildVisualEditor(activeTab);
+
+    const imgGenSection = this._buildImgGenSection();
+    const editor = this._el("div", { className: "editor" }, [cardTitleRow, tabsRow, controls, tabContent, imgGenSection]);
+    root.appendChild(editor);
+  }
+
+  _buildImgGenSection() {
+    const imgGen = this._config.image_generation || {};
+
+    const form = document.createElement("ha-form");
+    form.hass = this._hass;
+    form.data = { entity_id: imgGen.entity_id || "", prompt_prefix: imgGen.prompt_prefix || "" };
+    form.schema = [
+      {
+        name: "entity_id",
+        selector: { entity: { domain: ["ai_task"] } },
+      },
+      {
+        name: "prompt_prefix",
+        selector: { text: {} },
+      },
+    ];
+    form.computeLabel = (schema) =>
+      schema.name === "entity_id" ? this._t("ed_ai_image_entity")
+      : schema.name === "prompt_prefix" ? this._t("ed_ai_prompt_prefix")
+      : schema.name;
+    form.addEventListener("value-changed", (e) => {
+      const val = e.detail.value || {};
+      const merged = {};
+      if (val.entity_id) merged.entity_id = val.entity_id;
+      if (val.prompt_prefix) merged.prompt_prefix = val.prompt_prefix;
+      this._config = { ...this._config, image_generation: Object.keys(merged).length ? merged : undefined };
+      this._fireChanged();
+    });
+
+    const det = document.createElement("details");
+    det.style.marginTop = "8px"; // match the .visual-editor inter-section gap
+    if (this._sectionOpen?.imggen) det.open = true;
+    det.addEventListener("toggle", () => {
+      this._sectionOpen = { ...(this._sectionOpen || {}), imggen: det.open };
+    });
+    const sum = document.createElement("summary");
+    const ico = document.createElement("ha-icon");
+    ico.setAttribute("icon", "mdi:image-plus");
+    ico.style.cssText = "--mdc-icon-size:20px;width:20px;height:20px;flex-shrink:0;";
+    const lbl = this._el("span", { textContent: this._t("ed_ai_image_section"), style: "flex:1" });
+    const chev = document.createElement("ha-icon");
+    chev.setAttribute("icon", "mdi:chevron-down");
+    chev.className = "sum-chevron";
+    chev.style.cssText = "--mdc-icon-size:20px;width:20px;height:20px;";
+    sum.append(ico, lbl, chev);
+    det.appendChild(sum);
+    det.appendChild(this._el("div", { className: "section-content" }, [form]));
+    return det;
+  }
+
+  _buildCodeEditor(tabIdx) {
+    const col = this._config.columns[tabIdx] || {};
+    const editor = document.createElement("ha-yaml-editor");
+    editor.defaultValue = col;
+    editor.addEventListener("value-changed", (e) => {
+      const val = e.detail.value;
+      if (val !== undefined && typeof val === "object" && !Array.isArray(val)) {
+        const { type: _t, ...stripped } = val;  // strip stray type key
+        const newCols = [...this._config.columns];
+        newCols[tabIdx] = stripped;
+        this._config = { ...this._config, columns: newCols };
+        this._fireChanged();
+      }
+    });
+    return editor;
+  }
+
+  _buildVisualEditor(tabIdx) {
+    const col = this._config.columns[tabIdx] || {};
+
+    const updateCol = (updates) => {
+      const newCols = [...this._config.columns];
+      newCols[tabIdx] = { ...newCols[tabIdx], ...updates };
+      this._config = { ...this._config, columns: newCols };
+      this._fireChanged();
+    };
+
+    const makeSelect = (labelKey, options, currentVal, onChange) => {
+      const sel = document.createElement("select");
+      sel.className = "editor-native-select";
+      for (const [val, key] of options) {
+        const opt = document.createElement("option");
+        opt.value = val;
+        opt.textContent = this._t(key);
+        if (val === currentVal) opt.selected = true;
+        sel.appendChild(opt);
+      }
+      sel.addEventListener("change", () => onChange(sel.value));
+      return this._el("div", { className: "field-wrap" }, [
+        sel,
+        this._el("span", { textContent: this._t(labelKey) }),
+      ]);
+    };
+
+    // List select — native lists + linked external entities
+    const listSelect = document.createElement("select");
+    listSelect.className = "editor-native-select";
+    const currentSource = col.entity_id ? `ext:${col.entity_id}` : (col.list_id || "");
+    if (!col.list_id && !col.entity_id) {
+      const opt = document.createElement("option");
+      opt.value = ""; opt.textContent = "\u2014"; opt.selected = true;
+      listSelect.appendChild(opt);
+    }
+    // Native lists
+    for (const l of this._lists) {
+      const opt = document.createElement("option");
+      opt.value = l.id; opt.textContent = l.name;
+      if (l.id === col.list_id && !col.entity_id) opt.selected = true;
+      listSelect.appendChild(opt);
+    }
+    // External lists (linked)
+    if (this._externalLists && this._externalLists.length > 0) {
+      const optGroup = document.createElement("optgroup");
+      optGroup.label = this._t("ed_external_lists") || "External";
+      for (const el of this._externalLists) {
+        const opt = document.createElement("option");
+        opt.value = `ext:${el.entity_id}`;
+        opt.textContent = `${el.name} \u2197`;
+        if (col.entity_id === el.entity_id) opt.selected = true;
+        optGroup.appendChild(opt);
+      }
+      listSelect.appendChild(optGroup);
+    }
+    listSelect.addEventListener("change", () => {
+      const val = listSelect.value || "";
+      if (val.startsWith("ext:")) {
+        const entityId = val.slice(4);
+        // Find the external list's supported_features and adapter capabilities
+        const extList = (this._externalLists || []).find(l => l.entity_id === entityId);
+        const features = extList?.supported_features || 0;
+        const caps = extList?.capabilities || {};
+        // Auto-set visibility defaults for external lists:
+        // - Rich adapters (Todoist): enable all synced fields based on capabilities
+        // - Generic adapters: enable only fields supported by HA's todo entity interface
+        const HAS_DUE = listSupportsDue(extList);             // incl. adapters that sync due times
+        const HAS_DESC = !!(features & TODO_FEATURE.SET_DESCRIPTION);
+        updateCol({
+          entity_id: entityId,
+          list_id: undefined,
+          default_sort: "manual",
+          show_due_date: HAS_DUE,
+          show_notes: HAS_DESC || !!caps.can_sync_description,
+          show_priority: !!caps.can_sync_priority,
+          show_tags: !!caps.can_sync_labels,
+          show_sub_tasks: !!caps.can_sync_sub_items,
+          show_assigned_person: !!caps.can_sync_assignee,
+          show_reminders: HAS_DUE,
+          show_recurrence: !!caps.can_sync_recurrence,
+          show_history: false,
+        });
+        this._render();
+      } else {
+        // Native list: restore default visibility (all features ON)
+        updateCol({
+          list_id: val || undefined,
+          entity_id: undefined,
+          default_sort: "manual",
+          show_due_date: true,
+          show_notes: true,
+          show_priority: true,
+          show_tags: true,
+          show_sub_tasks: true,
+          show_assigned_person: true,
+          show_reminders: true,
+          show_recurrence: true,
+          show_history: undefined,  // default off for native too
+        });
+        this._render();
+      }
+    });
+
+    // Title input
+    const titleInput = document.createElement("ha-textfield");
+    titleInput.label = this._t("ed_title");
+    titleInput.placeholder = this._t("ed_title_placeholder");
+    titleInput.value = col.title || "";
+    titleInput.style.width = "100%";
+    titleInput.addEventListener("change", (e) => updateCol({ title: e.target.value || undefined }));
+
+    // Icon picker
+    const iconPicker = document.createElement("ha-icon-picker");
+    iconPicker.label = this._t("ed_icon");
+    iconPicker.value = col.icon || "";
+    iconPicker.addEventListener("value-changed", (e) => updateCol({ icon: e.detail.value || undefined }));
+
+    const filterOptions = [["all", "filter_all"], ["open", "filter_open"], ["done", "filter_done"]];
+    if (col.show_due_soon_filter === true) {
+      filterOptions.push(["due_soon", "filter_due_soon"]);
+    }
+    const filterField = makeSelect(
+      "ed_default_filter",
+      filterOptions,
+      col.default_filter || "all",
+      (val) => { if (val !== (col.default_filter || "all")) updateCol({ default_filter: val }); }
+    );
+
+    const sortField = makeSelect(
+      "ed_default_sort",
+      [["manual", "sort_manual"], ["due", "sort_due"], ["priority", "sort_priority"],
+       ["title", "sort_title"], ["person", "sort_person"]],
+      col.default_sort || "manual",
+      (val) => { if (val !== (col.default_sort || "manual")) updateCol({ default_sort: val }); }
+    );
+
+    // Toggle helper — uses ha-switch for native HA look
+    const makeToggle = (_id, labelKey, configKey, defaultOn = true) => {
+      const checked = defaultOn ? col[configKey] !== false : col[configKey] === true;
+      const sw = document.createElement("ha-switch");
+      sw.checked = checked;
+      sw.setAttribute("aria-label", this._t(labelKey));
+      sw.addEventListener("change", () => updateCol({ [configKey]: sw.checked }));
+      return this._el("div", { className: "toggle-row" }, [
+        this._el("span", { className: "toggle-label", textContent: this._t(labelKey) }),
+        sw,
+      ]);
+    };
+
+    const hint = this._el("span", { className: "hint", textContent: this._t("ed_hint") });
+
+    const makeSection = (sectionId, icon, titleKey, nodes, defaultOpen = true) => {
+      const det = document.createElement("details");
+      const isOpen = sectionId in this._sectionOpen ? this._sectionOpen[sectionId] : defaultOpen;
+      if (isOpen) det.open = true;
+      const sum = document.createElement("summary");
+      const ico = document.createElement("ha-icon");
+      ico.setAttribute("icon", icon);
+      ico.style.cssText = "--mdc-icon-size:20px;width:20px;height:20px;flex-shrink:0;";
+      const chevWrap = document.createElement("span");
+      chevWrap.className = "sum-chevron";
+      const chev = document.createElement("ha-icon");
+      chev.setAttribute("icon", "mdi:chevron-down");
+      chev.style.cssText = "--mdc-icon-size:20px;width:20px;height:20px;";
+      chevWrap.appendChild(chev);
+      sum.appendChild(ico);
+      sum.appendChild(document.createTextNode(this._t(titleKey)));
+      sum.appendChild(chevWrap);
+      det.appendChild(sum);
+      const content = document.createElement("div");
+      content.className = "section-content";
+      for (const n of nodes) if (n) content.appendChild(n);
+      // Zero-padding wrapper: animating max-height on the padded section-content
+      // would leave the padding visible at max-height:0. The wrapper has no
+      // padding so max-height:0 truly collapses to 0.
+      const wrap = document.createElement("div");
+      wrap.appendChild(content);
+      det.appendChild(wrap);
+
+      sum.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (det.open) {
+          // Mark closed immediately so any mid-animation re-render preserves state
+          this._sectionOpen[sectionId] = false;
+          const h = wrap.offsetHeight;
+          if (!h) { det.open = false; return; }
+          wrap.style.cssText = `overflow:hidden;max-height:${h}px;`;
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              wrap.style.transition = "max-height 0.22s ease-in";
+              wrap.style.maxHeight = "0";
+              wrap.addEventListener("transitionend", () => {
+                det.open = false;
+                wrap.style.cssText = "";
+              }, { once: true });
+            });
+          });
+        } else {
+          // Mark open immediately so any mid-animation re-render preserves state
+          this._sectionOpen[sectionId] = true;
+          det.open = true;
+          wrap.style.cssText = "overflow:hidden;max-height:0;";
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              wrap.style.transition = "max-height 0.28s ease-out";
+              wrap.style.maxHeight = "800px";
+              wrap.addEventListener("transitionend", () => {
+                wrap.style.cssText = "";
+              }, { once: true });
+            });
+          });
+        }
+      });
+
+      return det;
+    };
+
+    // Preset filters live under col.filters.{assignees,labels}. Merge against
+    // the LIVE config (not the render-time `col` snapshot) so two sequential
+    // edits don't clobber each other before the next re-render.
+    const updateFilters = (patch) => {
+      const live = this._config.columns[tabIdx] || {};
+      const filters = { ...(live.filters || {}), ...patch };
+      for (const k of Object.keys(filters)) {
+        const v = filters[k];
+        if (v == null || (Array.isArray(v) && v.length === 0)) delete filters[k];
+      }
+      updateCol({ filters: Object.keys(filters).length ? filters : undefined });
+    };
+
+    // Tag / assignee values for the multi-select autocomplete, derived from
+    // the list's tasks (lazy-loaded, cached per source key). Empty is fine \u2014
+    // the multi-select still allows free-text entry.
+    const metaKey = this._sourceKeyForCol(col);
+    if (metaKey && this._listMeta[metaKey] === undefined) {
+      this._loadMetaFor(col).then(() => this._render());
+    }
+    const meta = (metaKey && this._listMeta[metaKey]) || { tags: [], persons: [] };
+
+    // Due-soon filter toggle
+    const dueSoonToggle = (() => {
+      const sw = document.createElement("ha-switch");
+      sw.checked = col.show_due_soon_filter === true;
+      sw.setAttribute("aria-label", this._t("ed_show_due_soon_filter"));
+      sw.addEventListener("change", () => {
+        const updates = { show_due_soon_filter: sw.checked };
+        if (!sw.checked && col.default_filter === "due_soon") updates.default_filter = "all";
+        updateCol(updates);
+        this._render();
+      });
+      return this._el("div", { className: "toggle-row" }, [
+        this._el("span", { className: "toggle-label", textContent: this._t("ed_show_due_soon_filter") }),
+        sw,
+      ]);
+    })();
+
+    // Days-ahead + hide-overdue \u2014 only shown when the due-soon filter is on
+    const dueSoonDetail = col.show_due_soon_filter === true ? [(() => {
+      const daysInput = this._el("input", { type: "number", value: col.due_soon_days ?? 7 });
+      daysInput.min = 0;
+      daysInput.max = 90;
+      // 0 = "due today only"; guard the NaN case so a valid 0 isn't reset to 7.
+      const clampDays = (n) => Math.max(0, Math.min(90, Number.isNaN(n) ? 7 : n));
+      daysInput.addEventListener("change", () => {
+        const v = clampDays(parseInt(daysInput.value, 10));
+        daysInput.value = v;
+        updateCol({ due_soon_days: v });
+      });
+      const spinUp = this._el("button", { className: "spin-btn spin-up", textContent: "\u25b4", type: "button" });
+      const spinDown = this._el("button", { className: "spin-btn spin-down", textContent: "\u25be", type: "button" });
+      spinUp.addEventListener("click", () => {
+        daysInput.value = clampDays(parseInt(daysInput.value, 10)) + 1;
+        daysInput.dispatchEvent(new Event("change"));
+      });
+      spinDown.addEventListener("click", () => {
+        daysInput.value = clampDays(parseInt(daysInput.value, 10)) - 1;
+        daysInput.dispatchEvent(new Event("change"));
+      });
+      return this._el("div", { className: "field-wrap inline" }, [
+        daysInput,
+        this._el("span", { textContent: this._t("ed_due_soon_days") }),
+        this._el("div", { className: "spin-btns" }, [spinUp, spinDown]),
+      ]);
+    })(), makeToggle("hide-overdue", "ed_hide_overdue", "hide_overdue", false)] : [];
+
+    return this._el("div", { className: "visual-editor" }, [
+      this._el("div", { className: "field" }, [
+        this._el("div", { className: "field-wrap" }, [listSelect, this._el("span", { textContent: this._t("ed_list") })]),
+        hint,
+      ]),
+      makeSection("view", "mdi:eye", "ed_sec_view", [
+        this._el("div", { className: "field" }, [titleInput]),
+        this._el("div", { className: "field" }, [iconPicker]),
+        this._el("div", { className: "toggle-grid" }, [
+          makeToggle("show-title", "ed_show_title", "show_title", true),
+          makeToggle("show-progress", "ed_show_progress", "show_progress", true),
+          makeToggle("show-add-task", "ed_show_add_task", "show_add_task", true),
+          makeToggle("show-add-due", "ed_show_add_due", "show_add_due", false),
+          makeToggle("auto-delete", "ed_auto_delete", "auto_delete_completed", false),
+          makeToggle("confirm-complete", "ed_confirm_complete", "confirm_complete", false),
+          makeToggle("show-sort", "ed_show_sort", "show_sort", true),
+          makeToggle("show-filters", "ed_show_filters", "show_filters", true),
+          makeToggle("show-tag-chips", "ed_show_tag_chips", "show_tag_chips", true),
+          makeToggle("show-person-chips", "ed_show_person_chips", "show_person_chips", true),
+          makeToggle("show-voice", "ed_show_voice", "show_voice", true),
+          makeToggle("compact", "ed_compact", "compact", false),
+          makeToggle("badge-priority", "ed_badge_priority", "badge_priority", true),
+          makeToggle("badge-progress", "ed_badge_progress", "badge_progress", true),
+          makeToggle("badge-due", "ed_badge_due", "badge_due", true),
+          makeToggle("badge-recurrence", "ed_badge_recurrence", "badge_recurrence", true),
+          makeToggle("badge-person", "ed_badge_person", "badge_person", true),
+          makeToggle("badge-tags", "ed_badge_tags", "badge_tags", true),
+          makeToggle("badge-reminders", "ed_badge_reminders", "badge_reminders", true),
+          makeToggle("show-images", "ed_show_images", "show_images", false),
+          makeToggle("auto-image", "ed_auto_image", "auto_generate_image", false),
+          ...(col.view_mode === "tiles"
+            ? [makeToggle("show-tile-title", "ed_show_tile_title", "show_tile_title", true)]
+            : []),
+        ]),
+        this._el("div", { className: "field" }, [(() => {
+          // max_height (px): 0 / empty = unlimited. Caps the task body only.
+          // (Editor is its own class — don't reach for HomeTasksCard helpers here.)
+          const curMh = Number(col.max_height);
+          const mhInput = this._el("input", { type: "number", value: Number.isFinite(curMh) && curMh > 0 ? Math.round(curMh) : "" });
+          mhInput.min = 0;
+          mhInput.step = 10;
+          mhInput.placeholder = "0";
+          mhInput.addEventListener("change", () => {
+            const v = parseInt(mhInput.value, 10);
+            const valid = Number.isFinite(v) && v > 0;
+            mhInput.value = valid ? v : "";
+            // undefined drops the key on serialization (same as view_mode).
+            updateCol({ max_height: valid ? v : undefined });
+          });
+          return this._el("div", { className: "field-wrap" }, [
+            mhInput,
+            this._el("span", { textContent: this._t("ed_max_height") }),
+          ]);
+        })()]),
+        sortField,
+        makeSelect(
+          "ed_view_mode",
+          [["list", "ed_view_mode_list"], ["tiles", "ed_view_mode_tiles"]],
+          col.view_mode || "list",
+          (val) => { updateCol({ view_mode: val === "list" ? undefined : val }); this._render(); }
+        ),
+        ...(col.view_mode === "tiles"
+          ? [this._el("div", { className: "hint", textContent: this._t("ed_tile_help"), style: "white-space:pre-line" })]
+          : []),
+      ]),
+      ...(col.list_id ? [makeSection("defaults", "mdi:account-check-outline", "ed_sec_defaults", [
+        this._buildDefaultsEditor(col.list_id),
+      ], false)] : []),
+      makeSection("filters", "mdi:filter-variant", "ed_sec_filters", [
+        filterField,
+        dueSoonToggle,
+        ...dueSoonDetail,
+        this._buildMultiSelect(
+          this._t("ed_preset_assignees"),
+          col.filters?.assignees || [],
+          meta.persons,
+          (vals) => updateFilters({ assignees: vals }),
+        ),
+        this._buildMultiSelect(
+          this._t("ed_preset_labels"),
+          col.filters?.labels || [],
+          meta.tags,
+          (vals) => updateFilters({ labels: vals }),
+        ),
+      ]),
+      makeSection("config", "mdi:tune", "ed_sec_display", [
+        this._el("div", { className: "toggle-grid" }, [
+          makeToggle("show-notes", "ed_show_notes", "show_notes", true),
+          makeToggle("show-sub-tasks", "ed_show_sub_items", "show_sub_tasks", true),
+          makeToggle("show-person", "ed_show_person", "show_assigned_person", true),
+          makeToggle("show-priority", "ed_show_priority", "show_priority", true),
+          makeToggle("show-tags", "ed_show_tags", "show_tags", true),
+          makeToggle("show-due-date", "ed_show_due_date", "show_due_date", true),
+          makeToggle("show-reminders", "ed_show_reminders", "show_reminders", true),
+          makeToggle("show-recurrence", "ed_show_recurrence", "show_recurrence", true),
+          makeToggle("show-history", "ed_show_history", "show_history", false),
+          makeToggle("show-move", "ed_show_move", "show_move", true),
+        ]),
+      ], false),
+      this._buildSectionsEditor(col),
+    ]);
+  }
+
+  // Chip multi-select: removable chips for the selected values plus a text
+  // input with datalist autocomplete from `suggestions`. Free-text entry is
+  // allowed (Enter / comma / blur), so a value can be preset even when no
+  // task currently uses it. Renders fine with zero suggestions.
+  //
+  // `suggestions` items are plain strings or {value,label} objects. Chips and
+  // the datalist show the label; the stored value (e.g. a `person.*` entity
+  // id) is what the filter matches — so the editor can show "Ben" while the
+  // config keeps `person.ben`.
+  _buildMultiSelect(labelText, currentValues, suggestions, onChange) {
+    const values = Array.isArray(currentValues) ? currentValues.slice() : [];
+    const opts = (suggestions || []).map((s) =>
+      (s && typeof s === "object") ? { value: s.value, label: s.label || s.value } : { value: s, label: s });
+    const labelOf = (v) => { const o = opts.find((o) => o.value === v); return o ? o.label : v; };
+    const valueOf = (typed) => {
+      const o = opts.find((o) => o.label === typed || o.value === typed);
+      return o ? o.value : typed;
+    };
+    const dlId = "ms-dl-" + Math.random().toString(36).slice(2, 9);
+    const input = this._el("input", { className: "ms-input", type: "text", list: dlId, placeholder: this._t("ed_ms_add") });
+    const chipBox = this._el("div", { className: "ms-chips" });
+
+    const datalist = document.createElement("datalist");
+    datalist.id = dlId;
+    for (const o of opts) {
+      const opt = document.createElement("option");
+      opt.value = o.label;
+      datalist.appendChild(opt);
+    }
+
+    const renderChips = () => {
+      chipBox.innerHTML = "";
+      for (const v of values) {
+        const x = this._el("button", { className: "ms-chip-x", type: "button", textContent: "×" });
+        x.addEventListener("click", () => {
+          const i = values.indexOf(v);
+          if (i < 0) return;
+          values.splice(i, 1);
+          renderChips();
+          onChange(values.slice());
+          input.focus();
+        });
+        chipBox.appendChild(this._el("span", { className: "ms-chip" }, [
+          this._el("span", { textContent: labelOf(v) }), x,
+        ]));
+      }
+      chipBox.appendChild(input);
+    };
+
+    const addValue = (raw) => {
+      const typed = (raw || "").trim();
+      input.value = "";
+      if (!typed) return;
+      const v = valueOf(typed);
+      if (values.includes(v)) return;
+      values.push(v);
+      renderChips();
+      onChange(values.slice());
+      input.focus();
+    };
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === ",") {
+        e.preventDefault();
+        addValue(input.value);
+      } else if (e.key === "Backspace" && !input.value && values.length) {
+        values.pop();
+        renderChips();
+        onChange(values.slice());
+      }
+    });
+    input.addEventListener("blur", () => { if (input.value.trim()) addValue(input.value); });
+
+    renderChips();
+    return this._el("div", { className: "field-wrap" }, [
+      chipBox,
+      this._el("span", { textContent: labelText }),
+      datalist,
+    ]);
+  }
+
+  _buildSectionsEditor(col) {
+    const key = this._sourceKeyForCol(col);
+    const cached = key ? this._listSections[key] : null;
+    if (!key) {
+      return this._el("div", { className: "field" }, [
+        this._el("span", { className: "hint", textContent: this._t("ed_sections_select_list_hint") }),
+      ]);
+    }
+    const list = (cached || []).slice().sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+
+    // Build a collapsible <details> section using the same makeSection-style markup,
+    // but inline (we cannot reuse makeSection because it lives in the closure of
+    // _buildVisualEditor — we replicate the visual structure via the same classes).
+    const det = document.createElement("details");
+    if (this._sectionOpen.sections) det.open = true;
+    const sum = document.createElement("summary");
+    const ico = document.createElement("ha-icon");
+    ico.setAttribute("icon", "mdi:folder-multiple");
+    ico.style.cssText = "--mdc-icon-size:20px;width:20px;height:20px;flex-shrink:0;";
+    const chevWrap = document.createElement("span");
+    chevWrap.className = "sum-chevron";
+    const chev = document.createElement("ha-icon");
+    chev.setAttribute("icon", "mdi:chevron-down");
+    chev.style.cssText = "--mdc-icon-size:20px;width:20px;height:20px;";
+    chevWrap.appendChild(chev);
+    sum.appendChild(ico);
+    sum.appendChild(document.createTextNode(this._t("ed_sec_sections")));
+    sum.appendChild(chevWrap);
+    sum.addEventListener("click", () => {
+      this._sectionOpen.sections = !det.open;
+    });
+    det.appendChild(sum);
+
+    const content = document.createElement("div");
+    content.className = "section-content";
+
+    if (cached === null || cached === undefined) {
+      // Trigger lazy load — re-render once it arrives
+      this._loadSectionsFor(col).then(() => this._render());
+      content.appendChild(this._el("span", { className: "hint", textContent: this._t("ed_loading") || "…" }));
+    } else if (list.length === 0) {
+      content.appendChild(this._el("span", { className: "hint", textContent: this._t("ed_sections_empty") }));
+    }
+
+    for (let i = 0; i < list.length; i++) {
+      const section = list[i];
+      const row = this._el("div", { className: "sections-editor-row" });
+
+      const upBtn = this._el("button", { className: "icon-btn", type: "button", title: this._t("ed_move_up") || "Up" });
+      upBtn.appendChild((() => { const ic = document.createElement("ha-icon"); ic.setAttribute("icon", "mdi:arrow-up"); return ic; })());
+      upBtn.disabled = i === 0;
+      upBtn.addEventListener("click", async () => {
+        if (i === 0) return;
+        const ids = list.map((s) => s.id);
+        [ids[i - 1], ids[i]] = [ids[i], ids[i - 1]];
+        await this._wsCallSection(col, "home_tasks/reorder_sections", { section_ids: ids });
+        await this._loadSectionsFor(col);
+        this._render();
+      });
+      row.appendChild(upBtn);
+
+      const downBtn = this._el("button", { className: "icon-btn", type: "button", title: this._t("ed_move_down") || "Down" });
+      downBtn.appendChild((() => { const ic = document.createElement("ha-icon"); ic.setAttribute("icon", "mdi:arrow-down"); return ic; })());
+      downBtn.disabled = i === list.length - 1;
+      downBtn.addEventListener("click", async () => {
+        if (i === list.length - 1) return;
+        const ids = list.map((s) => s.id);
+        [ids[i], ids[i + 1]] = [ids[i + 1], ids[i]];
+        await this._wsCallSection(col, "home_tasks/reorder_sections", { section_ids: ids });
+        await this._loadSectionsFor(col);
+        this._render();
+      });
+      row.appendChild(downBtn);
+
+      const nameInput = this._el("input", { type: "text", autocomplete: "off" });
+      nameInput.value = section.name;
+      nameInput.addEventListener("change", async (e) => {
+        const newName = (e.target.value || "").trim();
+        if (!newName || newName === section.name) {
+          e.target.value = section.name;
+          return;
+        }
+        await this._wsCallSection(col, "home_tasks/update_section", { section_id: section.id, name: newName });
+        await this._loadSectionsFor(col);
+        this._render();
+      });
+      const nameWrap = this._el("div", { className: "field-wrap" }, [
+        nameInput,
+        this._el("span", { textContent: this._t("ed_section_name") }),
+      ]);
+      row.appendChild(nameWrap);
+
+      const iconPicker = document.createElement("ha-icon-picker");
+      iconPicker.label = this._t("ed_section_icon");
+      iconPicker.value = section.icon || "";
+      iconPicker.addEventListener("value-changed", async (e) => {
+        const newIcon = e.detail.value || null;
+        await this._wsCallSection(col, "home_tasks/update_section", { section_id: section.id, icon: newIcon });
+        await this._loadSectionsFor(col);
+        this._render();
+      });
+      row.appendChild(iconPicker);
+
+      const delBtn = this._el("button", { className: "icon-btn del", type: "button", title: this._t("ed_delete_section") });
+      delBtn.appendChild((() => { const ic = document.createElement("ha-icon"); ic.setAttribute("icon", "mdi:delete"); return ic; })());
+      delBtn.addEventListener("click", async () => {
+        if (!window.confirm(this._t("confirm_delete_section"))) return;
+        await this._wsCallSection(col, "home_tasks/delete_section", { section_id: section.id });
+        await this._loadSectionsFor(col);
+        this._render();
+      });
+      row.appendChild(delBtn);
+
+      content.appendChild(row);
+    }
+
+    if (cached !== null && cached !== undefined) {
+      const addBtn = this._el("button", { className: "add-section-btn", type: "button", textContent: this._t("ed_add_section") });
+      addBtn.addEventListener("click", async () => {
+        const name = window.prompt(this._t("ed_section_name_prompt"));
+        if (!name || !name.trim()) return;
+        try {
+          await this._wsCallSection(col, "home_tasks/add_section", { name: name.trim() });
+          await this._loadSectionsFor(col);
+          this._render();
+        } catch (err) {
+          window.alert(err.message || String(err));
+        }
+      });
+      content.appendChild(addBtn);
+    }
+
+    const wrap = document.createElement("div");
+    wrap.appendChild(content);
+    det.appendChild(wrap);
+    return det;
+  }
+
+  _fireChanged() {
+    // Flag so the immediate echo setConfig() from HA is ignored (no re-render).
+    this._ignoreNextSetConfig = true;
+    this.dispatchEvent(new CustomEvent("config-changed", {
+      detail: { config: this._config },
+      bubbles: true,
+      composed: true,
+    }));
+  }
+}
+
+// Register elements — wait for HA's scoped custom element registry polyfill
+// before calling customElements.define. The polyfill replaces the native
+// define() with a JS wrapper; we detect this to avoid registering too early
+// (which puts the element in the native registry where the polyfill can't
+// find it, causing "Custom element not found" in Firefox/Safari/iPad).
+const _htRegister = () => {
+  try { customElements.define("home-tasks-card", HomeTasksCard); } catch(_) {}
+  try { customElements.define("home-tasks-card-editor", HomeTasksCardEditor); } catch(_) {}
+};
+
+const _htIsPolyfillReady = () =>
+  !customElements.define.toString().includes("[native code]");
+
+// Flat poll: 50ms ticks for 10s, then a native fallback registration plus
+// 1s ticks for up to ~5 min. If the polyfill installs after the native
+// fallback, the elements are registered again through the wrapped define and
+// the result is verified: when the polyfill build refuses names already in
+// the native registry (the scoped-registry polyfill does), a one-time
+// reload — guarded per tab so it can never loop — is the only way to get the
+// card into the scoped registry (#37).
+// Reload only when it cannot destroy user work: once per tab (sessionStorage
+// guard), and deferred while the user is typing anywhere on the page
+// (dashboard edit mode, another card's dialog) — retried every 30s while busy.
+const _htSafeReload = (attemptsLeft) => {
+  try {
+    if (sessionStorage.getItem("ht-poly-reload")) return;
+  } catch (_) { return; /* sandboxed storage — stay registered natively */ }
+  let active = document.activeElement;
+  while (active && active.shadowRoot && active.shadowRoot.activeElement) {
+    active = active.shadowRoot.activeElement;
+  }
+  const busy = !!active && (active.isContentEditable ||
+    ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName));
+  if (busy) {
+    if (attemptsLeft > 0) setTimeout(() => _htSafeReload(attemptsLeft - 1), 30000);
+    return;
+  }
+  try { sessionStorage.setItem("ht-poly-reload", "1"); } catch (_) { return; }
+  location.reload();
+};
+
+let _htTicks = 0;
+const _htTick = () => {
+  if (_htIsPolyfillReady()) {
+    _htRegister();
+    // >= 200: _htTicks sticks at exactly 200 after the native-fallback tick,
+    // and a polyfill arriving in that very window is the most likely "slow
+    // polyfill" timing — it must still get the verified heal.
+    if (_htTicks >= 200 && !customElements.get("home-tasks-card")) {
+      _htSafeReload(10);
+    } else {
+      try { sessionStorage.removeItem("ht-poly-reload"); } catch (_) { /* ignore */ }
+    }
+    return;
+  }
+  _htTicks++;
+  if (_htTicks === 200) _htRegister(); // 10s: polyfill-free fallback (native registry)
+  if (_htTicks >= 500) return;         // stop watching after ~5 min
+  setTimeout(_htTick, _htTicks < 200 ? 50 : 1000);
+};
+_htTick();
+
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: "home-tasks-card",
+  name: "Home Tasks",
+  description: "A feature-rich todo list with drag & drop, sub-tasks, notes, and due dates.",
+  preview: true,
+});

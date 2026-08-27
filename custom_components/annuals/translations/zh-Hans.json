@@ -1,0 +1,451 @@
+{
+    "title": "Annuals",
+    "selector": {
+        "holiday_span": {
+            "options": {
+                "start": "开始",
+                "end": "结束",
+                "day": "第{day}天"
+            }
+        },
+        "holiday_breaks": {
+            "options": {
+                "note": "像学校假期这样的多日假期会还原为完整假期——请在下方选择要导入其中的哪些部分。"
+            }
+        },
+        "event_type": {
+            "options": {
+                "birthday": "生日",
+                "anniversary": "纪念日",
+                "name_day": "命名日",
+                "wedding_anniversary": "结婚纪念日",
+                "memorial": "忌日",
+                "pet_birthday": "宠物生日",
+                "work_anniversary": "工作纪念日",
+                "custom": "自定义",
+                "one_time": "单次事件",
+                "holiday": "节假日"
+            }
+        },
+        "month": {
+            "options": {
+                "1": "一月",
+                "2": "二月",
+                "3": "三月",
+                "4": "四月",
+                "5": "五月",
+                "6": "六月",
+                "7": "七月",
+                "8": "八月",
+                "9": "九月",
+                "10": "十月",
+                "11": "十一月",
+                "12": "十二月"
+            }
+        },
+        "holiday_category": {
+            "options": {
+                "public": "法定节假日",
+                "bank": "银行假日",
+                "government": "政府机构假日",
+                "school": "学校假期",
+                "optional": "可选假日",
+                "unofficial": "非正式假日",
+                "half_day": "半天假",
+                "armed_forces": "军队假日",
+                "workday": "工作日",
+                "catholic": "天主教",
+                "christian": "基督教",
+                "orthodox": "东正教",
+                "hebrew": "犹太教",
+                "islamic": "伊斯兰教",
+                "hindu": "印度教",
+                "buddhist": "佛教",
+                "de_facto": "事实上",
+                "protestant": "新教",
+                "sabian": "萨比教",
+                "yazidi": "雅兹迪教",
+                "albanian": "阿尔巴尼亚",
+                "armenian": "亚美尼亚",
+                "bosnian": "波斯尼亚",
+                "roma": "罗姆",
+                "serbian": "塞尔维亚",
+                "turkish": "土耳其",
+                "vlach": "弗拉赫"
+            }
+        }
+    },
+    "config": {
+        "step": {
+            "user": {
+                "title": "添加事件",
+                "description": "每个事件都会创建独立的条目，之后可以在“设置 → 设备与服务”中通过搜索名称找到并编辑。",
+                "data": {
+                    "name": "姓名",
+                    "last_name": "姓氏（可选）",
+                    "type": "事件类型",
+                    "day": "日",
+                    "month": "月",
+                    "year": "年份（未知可留空；单次事件必填）",
+                    "end_date": "结束日期（仅限一次性事件，可选——设置后即成为多日事件）",
+                    "icon": "自定义图标（可选）",
+                    "vip": "VIP Annual"
+                }
+            },
+            "reconfigure": {
+                "title": "编辑事件",
+                "description": "修改下方任意字段并提交以更新此事件。",
+                "data": {
+                    "name": "姓名",
+                    "last_name": "姓氏（可选）",
+                    "type": "事件类型",
+                    "day": "日",
+                    "month": "月",
+                    "year": "年份（未知可留空；单次事件必填）",
+                    "end_date": "结束日期（仅限一次性事件，可选——设置后即成为多日事件）",
+                    "icon": "自定义图标（可选）",
+                    "vip": "VIP Annual"
+                }
+            }
+        },
+        "error": {
+            "name_required": "请输入姓名。",
+            "end_date_one_time_only": "只有一次性事件才能设置结束日期。",
+            "end_date_before_start": "结束日期必须晚于开始日期。",
+            "invalid_date": "此日/月/年组合不是有效日期。",
+            "year_required": "单次事件必须填写年份。"
+        },
+        "abort": {
+            "hub_not_configurable": "Annuals 中心没有自身设置 —— 它只保存共享日历。",
+            "already_configured": "Annuals 中心已存在。",
+            "invalid_import_row": "此行无法导入。"
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "编辑事件",
+                "description": "修改下方任意字段并提交以更新此事件。",
+                "data": {
+                    "name": "姓名",
+                    "last_name": "姓氏（可选）",
+                    "type": "事件类型",
+                    "day": "日",
+                    "month": "月",
+                    "year": "年份（未知可留空；单次事件必填）",
+                    "end_date": "结束日期（仅限一次性事件，可选——设置后即成为多日事件）",
+                    "icon": "自定义图标（可选）",
+                    "vip": "VIP Annual"
+                }
+            },
+            "import_csv": {
+                "title": "从 CSV 导入事件",
+                "description": "列：name、type、day、month、year（可选，单次事件必填）、icon（可选）、vip（可选）、last_name（可选）。“type”必须是以下英文键之一：birthday、anniversary、name_day、wedding_anniversary、memorial、pet_birthday、work_anniversary、custom、one_time（始终使用英文，与语言设置无关）。“vip”接受 1/true/yes/y/x（不区分大小写）；留空或省略该列表示非 VIP 事件。即使某个值为空，也要保留该列 —— 缺少末尾逗号会导致后面的值向左移位。无效行会被跳过并记录到日志中。\n\n示例：\n```\nname,type,day,month,year,icon,vip,last_name\nAnna,birthday,12,4,1988,,,Miller\nMax,pet_birthday,3,9,2020,mdi:dog,,\nTest Custom,custom,1,1,,mdi:test-tube,1,\n家庭度假,one_time,15,7,2026,mdi:airplane,,\n```",
+                "data": {
+                    "csv_file": "CSV 文件"
+                }
+            },
+            "import_ics": {
+                "title": "从 ICS 日历导入事件",
+                "description": "上传一个 .ics 日历文件 —— 通常是导出的日历。仅读取全天、非重复覆盖的条目；带时间的事件会被跳过。接下来的步骤中，你可以在导入前检查并更正建议的姓名拆分（并一次性为所有条目互换名字/姓氏）。",
+                "data": {
+                    "ics_file": "ICS 文件"
+                }
+            },
+            "import_vcard_menu": {
+                "title": "从 vCard 导入事件",
+                "description": "联系人的生日与其他日期（纪念日、自定义日期）走不同的分支，因为只有生日在整批中共用同一个事件类型 —— 其他每个日期都会在审核时单独指定类型。",
+                "menu_options": {
+                    "import_vcard": "导入生日",
+                    "import_vcard_other_dates": "导入其他日期（纪念日等）"
+                }
+            },
+            "import_vcard": {
+                "title": "从 vCard 导入生日",
+                "description": "上传一个 .vcf 文件 —— 通常是导出的联系人。仅读取设置了生日的条目。姓名来自联系人的结构化姓名字段，而非猜测；未设置年份的生日（vCard 自身表达此意的方式）会保留为未知，而不会被臆造。接下来的步骤中，你可以检查并更正所有内容（并一次性为所有条目互换名字/姓氏），然后再导入。",
+                "data": {
+                    "vcard_file": "vCard 文件"
+                }
+            },
+            "import_vcard_other_dates": {
+                "title": "从 vCard 导入其他日期",
+                "description": "上传一个 .vcf 文件。读取除生日以外的所有日期：标准的“纪念日”字段，以及你的通讯录应用允许为每个联系人添加的任何自定义标签日期（例如“纪念日”“其他”或你自己输入的标签）。与生日不同，这些日期并非同一类事件 —— 接下来的步骤会逐一显示每个日期检测到的标签作为参考，供你分别审核并指定正确的事件类型。",
+                "data": {
+                    "vcard_file": "vCard 文件"
+                }
+            },
+            "import_options": {
+                "title": "从 {source_label} 导入 - 设置",
+                "description": "这些设置将应用于文件中找到的每个条目。接下来你可以检查并编辑各个条目。",
+                "data": {
+                    "swap_names": "为所有条目互换名字/姓氏",
+                    "use_description_year": "如果在条目描述中找到年份（例如“geb. 1985”），则使用该年份而非起始日期中的年份",
+                    "type": "事件类型"
+                }
+            },
+            "import_review": {
+                "title": "从 {source_label} 导入 - 审核（{page}/{total_pages}）",
+                "description": "{legend}\n\n请检查下方建议的姓名拆分并更正任何错误 —— 生日本身也可编辑 —— 或取消勾选某条目以将其完全排除。可能的重复项会标出其现有条目的名称；不勾选“创建为新条目”将更新该现有条目，而不是新增一条。此处的字段标签始终以英文显示，与你的语言设置无关。",
+                "data": {
+                    "go_back": "返回上一页"
+                }
+            },
+            "remove_ics_imports": {
+                "title": "删除通过 ICS 导入的事件",
+                "description": "此前的 ICS 导入创建了 {count} 个事件。点击“确定”删除全部 —— ICS 导入仅更新（而非创建）的条目不受影响，手动添加、CSV 或 vCard 导入的事件也不受影响。"
+            },
+            "remove_vcard_imports": {
+                "title": "删除通过 vCard 导入的事件",
+                "description": "此前的 vCard 导入创建了 {count} 个事件。点击“确定”删除全部 —— vCard 导入仅更新（而非创建）的条目不受影响，手动添加、CSV 或 ICS 导入的事件也不受影响。"
+            },
+            "holiday_menu": {
+                "title": "节日",
+                "description": "**{name}**\n\n{type} · {date} · {region} · {category}",
+                "menu_options": {
+                    "holiday_settings": "⚙️ 设置",
+                    "holiday_names": "🌐 名称与翻译"
+                }
+            },
+            "holiday_settings": {
+                "title": "节日设置",
+                "description": "**{name}**\n\n{type} · {date} · {region} · {category}\n\n日期、类型和地区来自节日数据库，无法在此修改。",
+                "data": {
+                    "icon": "图标"
+                }
+            },
+            "holiday_names": {
+                "title": "名称与翻译",
+                "description": "**{name}**\n\n{type} · {date} · {region} · {category}\n\n选择你要为该节日填写名称的语言。",
+                "data": {
+                    "language": "语言"
+                }
+            },
+            "holiday_name_edit": {
+                "title": "节日名称",
+                "description": "{language}\n\n**{name}**\n\n{type} · {date} · {region} · {category}\n\n已预填当前显示的名称。留空则恢复使用节日数据库。",
+                "data": {
+                    "name": "名称"
+                }
+            },
+            "holiday_translations": {
+                "title": "🌐 Holiday translations",
+                "description": "Export and import the holiday names you wrote yourself.",
+                "menu_options": {
+                    "export_translations": "📤 Export translations",
+                    "import_translations": "📥 Import translations"
+                }
+            },
+            "import_translations": {
+                "title": "Import translations",
+                "description": "Upload a translations CSV. Columns: `country,subdivision,category,holiday_key,observed,language,name`. Rows are matched onto holidays by country, subdivision, category, holiday key and observed flag - not by entry id, so a file exported before re-importing a country still applies. Rows whose holiday isn't present are skipped and counted.",
+                "data": {
+                    "csv_file": "CSV"
+                }
+            },
+            "hub_menu": {
+                "title": "Annuals 设置",
+                "menu_options": {
+                    "annual_settings": "{icon_annual_settings} Annual 设置",
+                    "import_events": "{icon_import_events} 导入事件",
+                    "export_csv": "{icon_export_csv} 将事件导出为 CSV",
+                    "holiday_translations": "{icon_holiday_translations} Holiday translations",
+                    "remove_events": "{icon_remove_events} 删除事件",
+                    "delete_all": "{icon_delete_all} 删除所有 Annuals 数据"
+                }
+            },
+            "import_events": {
+                "title": "导入事件",
+                "description": "选择要导入的来源。",
+                "menu_options": {
+                    "import_csv": "CSV",
+                    "import_ics": "ICS 日历",
+                    "import_vcard_menu": "vCard",
+                    "import_holidays": "节假日"
+                }
+            },
+            "remove_events": {
+                "title": "删除事件",
+                "description": "选择要删除的此前导入的事件类型。",
+                "menu_options": {
+                    "remove_ics_imports": "ICS 导入",
+                    "remove_vcard_imports": "vCard 导入",
+                    "remove_holidays": "节假日"
+                }
+            },
+            "import_holidays": {
+                "title": "导入节假日",
+                "description": "选择一个国家/地区，将其节假日导入为事件。之后为同一国家/地区（和细分地区）重新运行此操作会更新现有条目，而不是重复创建 —— 如果该国家/地区新增节假日，可以放心重复导入。",
+                "data": {
+                    "country": "国家/地区"
+                }
+            },
+            "import_holidays_options": {
+                "title": "导入节假日 - {country}",
+                "description": "细分地区留空则仅导入全国性节假日 —— 选择州/省会额外添加其地区性节假日。类别和语言取决于该国家/地区的节假日数据提供的内容。{breaks}",
+                "data": {
+                    "include_actual": "导入实际日期",
+                    "include_observed": "导入顺延（调休）日期",
+                    "break_start": "导入假期的第一天",
+                    "break_end": "导入假期的最后一天",
+                    "break_days": "导入假期的每一天",
+                    "subdivision": "细分地区（州/省，可选）",
+                    "categories": "类别",
+                    "language": "节假日名称的语言"
+                },
+                "data_description": {
+                    "break_start": "学校假期只登记上学日，因此假期实际开始得更早——这里会向前推算周末和相邻的公共假日，直到真正放假的第一天。",
+                    "break_end": "反方向同理：最后一个休息日，而不是登记的最后一天。",
+                    "break_days": "假期的每一天各生成一个事件。仅暑假就会超过四十个。",
+                    "include_observed": "该国家/地区的节假日在落在周末时有时会顺延到附近的工作日（例如提前到之前的周五或顺延到之后的周一）—— 也将该顺延日期作为独立事件导入。"
+                }
+            },
+            "remove_holidays": {
+                "title": "删除已导入的节假日",
+                "description": "当前已导入 {total} 个节假日事件。勾选下方复选框可删除全部，或不勾选并改为选择一个批次。手动添加的事件不会受到影响。",
+                "data": {
+                    "remove_all": "删除所有已导入的节假日",
+                    "batch": "要删除的批次"
+                }
+            },
+            "annual_settings": {
+                "title": "Annual 设置",
+                "sections": {
+                    "important_events": {
+                        "name": "❗ 重要事件",
+                        "description": "用逗号分隔的周年数字，事件达到该周年数时会自动被标记为“Important”，例如“18,21,30,40,50”。留空该类型的字段可禁用此功能。",
+                        "data": {
+                            "important_thresholds_birthday": "生日",
+                            "important_thresholds_anniversary": "纪念日",
+                            "important_thresholds_name_day": "命名日",
+                            "important_thresholds_wedding_anniversary": "结婚纪念日",
+                            "important_thresholds_memorial": "忌日",
+                            "important_thresholds_pet_birthday": "宠物生日",
+                            "important_thresholds_work_anniversary": "工作纪念日",
+                            "important_thresholds_custom": "自定义"
+                        }
+                    },
+                    "todo": {
+                        "name": "📍 待办列表",
+                        "description": "这些列表中未完成的条目会标记事件：每个事件传感器随后会带有一个“todo”属性——只要有至少一个仍未完成的条目与之匹配即为 true，否则为 false——可用于你自己的自动化、模板和仪表板。匹配先按到期日期，再看条目文本是否提到该事件（全名、名字、类型、第几次）；若某个条目同样适合两个事件，则不会被分配。留空即关闭此功能。这与仪表板卡片中的同名设置相互独立。",
+                        "data": {
+                            "todo_lists": "待办列表"
+                        }
+                    }
+                }
+            },
+            "delete_all": {
+                "title": "删除所有 Annuals 数据",
+                "description": "此操作将永久删除全部 {count} 个事件、共享日历以及 Annuals 中心本身 —— 整个集成及其创建的所有内容。此操作无法撤销。点击“确定”确认。"
+            }
+        },
+        "error": {
+            "name_required": "请输入姓名。",
+            "end_date_one_time_only": "只有一次性事件才能设置结束日期。",
+            "end_date_before_start": "结束日期必须晚于开始日期。",
+            "invalid_date": "此日/月/年组合不是有效日期。",
+            "year_required": "单次事件必须填写年份。",
+            "invalid_csv": "无法将此文件读取为 CSV。请检查编码和格式。",
+            "no_valid_rows": "此文件中未找到有效行。请查看日志了解被跳过行的详情。",
+            "invalid_ics": "无法将此文件读取为 ICS 日历。请检查格式。",
+            "no_valid_entries": "此文件中未找到可用的全天条目。请查看日志了解被跳过条目的详情。",
+            "invalid_vcard": "无法将此文件读取为 vCard。请检查格式。",
+            "no_valid_vcard_entries": "此文件中未找到包含可用生日的联系人。请查看日志了解被跳过条目的详情。",
+            "no_valid_vcard_dates": "此文件中未找到除生日外的纪念日或其他日期。请查看日志了解被跳过条目的详情。",
+            "no_batch_selected": "请勾选“删除所有已导入的节假日”，或选择一个批次。"
+        },
+        "abort": {
+            "translations_exported": "已导出 {count} 条翻译。[下载 annuals_holiday_translations.csv]({url})（按住 Ctrl/Cmd 点击以下载 - 普通点击在此处无效）\n\n或复制下方的 CSV：\n\n```\n{csv}\n```",
+            "translations_imported": "{updated} holiday(s) updated, {skipped} row(s) skipped.",
+            "no_translations_to_export": "No holiday names have been written yet - there is nothing to export.",
+            "hub_not_configurable": "Annuals 中心没有自身设置 —— 它只保存共享日历。",
+            "import_started": "导入已开始：{created} 个事件已加入队列，{skipped} 行被跳过（详情见日志）。",
+            "ics_import_started": "导入已开始：已创建 {created} 个事件，更新 {updated} 个，跳过或排除 {skipped} 个条目。",
+            "csv_exported": "已导出 {count} 个事件。[下载 annuals_export.csv]({url})（按住 Ctrl/Cmd 点击以下载 - 普通点击在此处无效）\n\n或复制下方的 CSV：\n\n```\n{csv}\n```",
+            "no_events_to_export": "还没有可导出的事件。",
+            "deleted_all": "所有 Annuals 事件、日历及中心均已删除。",
+            "holiday_import_started": "导入已开始：{count} 个节假日事件已加入 {country} 的队列（新增 {new} 个，更新 {updated} 个）。",
+            "no_holidays_imported": "尚未导入任何节假日。",
+            "holidays_removed": "已删除 {count} 个节假日事件。",
+            "no_ics_imports": "未找到通过 ICS 导入创建的事件。",
+            "ics_imports_removed": "已删除 {count} 个通过 ICS 导入的事件。",
+            "no_vcard_imports": "未找到通过 vCard 导入创建的事件。",
+            "vcard_imports_removed": "已删除 {count} 个通过 vCard 导入的事件。"
+        }
+    },
+    "entity": {
+        "sensor": {
+            "birthday": {
+                "name": "{name}的生日",
+                "unit_of_measurement": "天"
+            },
+            "anniversary": {
+                "name": "{name}的纪念日",
+                "unit_of_measurement": "天"
+            },
+            "name_day": {
+                "name": "{name}的命名日",
+                "unit_of_measurement": "天"
+            },
+            "wedding_anniversary": {
+                "name": "{name}的结婚纪念日",
+                "unit_of_measurement": "天"
+            },
+            "memorial": {
+                "name": "{name}的忌日",
+                "unit_of_measurement": "天"
+            },
+            "pet_birthday": {
+                "name": "{name}的生日",
+                "unit_of_measurement": "天"
+            },
+            "work_anniversary": {
+                "name": "{name}的工作纪念日",
+                "unit_of_measurement": "天"
+            },
+            "custom": {
+                "name": "{name}",
+                "unit_of_measurement": "天"
+            },
+            "one_time": {
+                "name": "{name}",
+                "unit_of_measurement": "天"
+            },
+            "holiday": {
+                "name": "{name}",
+                "unit_of_measurement": "天"
+            }
+        },
+        "calendar": {
+            "birthday": {
+                "name": "生日"
+            },
+            "anniversary": {
+                "name": "纪念日"
+            },
+            "name_day": {
+                "name": "命名日"
+            },
+            "wedding_anniversary": {
+                "name": "结婚纪念日"
+            },
+            "memorial": {
+                "name": "忌日"
+            },
+            "pet_birthday": {
+                "name": "宠物生日"
+            },
+            "work_anniversary": {
+                "name": "工作纪念日"
+            },
+            "custom": {
+                "name": "自定义事件"
+            },
+            "one_time": {
+                "name": "单次事件"
+            },
+            "holiday": {
+                "name": "节假日"
+            }
+        }
+    }
+}

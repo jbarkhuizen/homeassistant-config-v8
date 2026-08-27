@@ -1,0 +1,115 @@
+name: "2026-05-29 budget unification — redirect kicks in for SOLAR_ONLY (Phase C)"
+
+coverage:
+  - mode: solar_only
+    regime: zone3_day_redirect
+    issue: "#282"
+description: |
+  Phase C scenario for the #282 EV-budget unification. Replays the
+  regime where the three legacy paths historically diverged: modest
+  solar, battery charging, SOC just above buffer (Zone 3), forecast
+  says plenty more solar coming. The forecast-aware redirect diverts
+  some battery_charge to the EV.
+
+  Pre-arch (v1.6.x) three views could disagree on the budget here:
+    - Legacy B2 (state machine input) read surplus + redirect.
+    - Legacy B3 (actuator) read solar - home - batt_charge WITHOUT
+      redirect → 0 W → 0 A.
+    - Legacy B1 (published sensors) read from B1's surplus formula.
+
+  Post Phase B/D #282 unification all three consume the canonical
+  ``EVBudget`` from ``calculate_canonical_ev_budget(SOLAR_ONLY)``:
+  ``raw_surplus + battery_redirect`` for the SOLAR_ONLY regime.
+
+  IMPORTANT — 2026-06-02 update (v1.7 prep): After the arch rewrite
+  (#358) ``decide.py::SolarOnlyMode`` was returning IDLE intent
+  whenever bare surplus fell below the charger min (4140W) — even
+  when redirect would have made it viable — collapsing the
+  canonical strategy to IDLE and short-circuiting the SOLAR_ONLY
+  canonical budget branch. Scenario was xfailed until the redirect
+  was re-plumbed through ``decide()`` via ``FleetContext.forecast_remaining_kwh``
+  + a shared module-level ``battery_redirect_w`` helper.
+
+  Inputs are now sized so bare_surplus + redirect comfortably clears
+  the charger min — verifies the redirect IS reaching ``decide()``
+  AND the canonical budget produces the same value for the three
+  views.
+
+  Why this scenario is harness-only and not also a live test: the
+  forecast and live battery dynamics aren't repeatable. Harness
+  controls every input → redirect arithmetic is deterministic.
+
+config:
+  battery_capacity_kwh: 15.0
+  battery_buffer_soc: 70
+  battery_auto_start_soc: 90
+  battery_priority_soc: 30
+  ev_charging_mode: "auto"
+  ev_min_current: 6
+  ev_max_current: 16
+  ev_phases: 3
+  ev_voltage: 230
+  daily_ev_target: 7.0
+  ev_chargers:
+    - id: "ev_charger"
+      # Post #277 Phase C arch-rewrite: the authoritative user-intent
+      # input is ``charge_mode`` (one of: off / solar_only /
+      # min_plus_solar / solar_plus_cheap / always_max). The legacy
+      # ``ev_charging_mode: "auto"`` is dead (dropped by the v6→v7
+      # migration). Without an explicit charge_mode the harness
+      # falls back to DEFAULT_EV_CHARGE_MODE="min_plus_solar" which
+      # demands 4140W min before exiting IDLE — and these scenario
+      # inputs (modest surplus) never reach that threshold.
+      charge_mode: "solar_only"
+      ev_charging_mode: "auto"
+      daily_ev_target: 7.0
+
+cycle_seconds: 30
+
+# Steady-state regime. Inputs sized so bare_surplus + redirect clears
+# the charger min (4140W) — verifies the redirect IS plumbed through
+# the strategy decision, AND the canonical budget produces the
+# unified value for all three consumer views.
+#
+# Math:
+#   solar=6000, home≈1500 (energy-balance derived), batt_charge=1000
+#   bare_surplus = max(0, 6000 - 1500 - 1000) = 3500 W
+#   battery_need_kwh = (100 - 75)/100 * 15 = 3.75 kWh
+#   forecast=25 kWh (harness default), ratio = 1 - 3.75/25 = 0.85
+#   redirect = 1000 * max(0.05, 0.85) = 850 W
+#   effective_surplus = 3500 + 850 = 4350 W
+#   4350 >= 4140 (min) → CHARGE_AT_AMPS
+#   amps = floor(4350 / 690) = 6
+timeline:
+  - t: 0
+    solar_power: 6000
+    grid_power: 3500     # +ve = export (modest)
+    battery_power: 1000  # +ve = charging at 1 kW
+    battery_soc: 75      # Zone 3 (buffer=70, auto_start=90)
+    ev_power: 0
+    ev_connected: true
+
+  - t: 60
+    # Same conditions; cycle 2 confirms the budget is stable.
+
+  - t: 120
+
+  - t: 180
+
+  - t: 240
+
+expect:
+  # canonical_strategy MUST contain "solar_only" — proves
+  # ``decide.py::SolarOnlyMode`` reached CHARGE_AT_AMPS (intent
+  # CHARGE_AT_AMPS + mode=solar_only → coordinator maps to
+  # EVBudgetStrategy.SOLAR_ONLY).
+  strategy_substring: "solar_only"
+
+  # Actuator amps must be ≤ ((bare_surplus + redirect) - margin) / 690.
+  # Pinning bare_surplus + redirect together via the formula keeps the
+  # assertion honest even if the redirect ratio shifts slightly with
+  # future forecast-tracker changes.
+  actuator_current_a:
+    when_strategy: "solar_only"
+    formula: "max(0, solar_power - home_consumption_power - battery_power) + 850"
+    max_w_minus_margin: 200

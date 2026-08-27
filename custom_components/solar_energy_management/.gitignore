@@ -1,0 +1,133 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+!dashboard/card/dist/
+build/
+
+# Backups
+*.backup
+*.bak
+*~
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+current_battery_analysis.json
+winter_data.json
+*.json.bak
+
+# Test outputs
+test_*.txt
+*_debug_output.txt
+
+# Recreation/migration artifacts
+recreation/
+extract_*.py
+backfill_*.py
+*_recreation*.py
+cleanup_*.py
+standalone_*.py
+fix_*.py
+find_*.py
+sankey_diagnostic.py
+trigger_*.py
+update_*.py
+
+# Debug scripts
+debug_*.sh
+debug_*.py
+*_debug.py
+# Ignore root-level test scripts (not tests/ directory)
+/test_*.py
+
+# Service call test files
+service_call_*.yaml
+trigger_*.yaml
+*_test*.yaml
+
+# Temporary dashboard files
+dashboard_temp/
+*_improved.yaml
+sankey_*.yaml
+
+# Documentation artifacts
+*.zip
+*.sh
+# Exception: live integration tests need their bash scripts tracked (#282).
+!tests/live/*.sh
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude settings (keep local only) — exclude contents, not the dir itself,
+# so we can re-include the shared, version-controlled workflows below.
+.claude/*
+!.claude/workflows/
+CLAUDE.md
+
+# Ruflo / Agent databases (local only, not for distribution)
+ruvector.db
+agentdb.rvf
+agentdb.rvf.lock
+.claude-flow/
+dashboard/card/ruvector.db
+dashboard/card/.claude-flow/
+
+# GStack browser data
+.gstack/
+
+# Temporary image assets (not for distribution)
+dashboard/card/sem-solar-diagram-bg*.png
+dashboard/card/sem-system-diagram-v2-card.js
+
+# Logo source assets (large files, only sized outputs in root)
+logo/
+
+# Development/Utility folders (not needed for module runtime)
+migration/
+deployment/
+run_tests.sh
+n8n_workflow_improved.json
+
+# Local deploy scripts (not for distribution)
+deploy-test.sh
+deploy-prod.sh
+
+# MCP configuration
+.mcp.json
+
+# Node/Playwright (local testing)
+node_modules/
+node_modules
+# (the bare form also ignores a node_modules *symlink* used locally for builds)
+package-lock.json
+package.json
+
+# pytest local config
+pytest.ini
+requirements_test.txt
+
+# Sync script (legacy, no longer needed)
+scripts/sync_to_community.py
+
+# Temporary screenshots
+tmp/
+stats/
+graphify-out/

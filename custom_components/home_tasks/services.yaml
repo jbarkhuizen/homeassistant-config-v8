@@ -1,0 +1,234 @@
+add_task:
+  name: Add Task
+  description: Create a new task in a task list.
+  fields:
+    list_name:
+      name: List Name
+      description: The name of the task list.
+      example: "Shopping List"
+      selector:
+        text:
+    entry_id:
+      name: Entry ID
+      description: The config entry ID of the list (alternative to list name).
+      selector:
+        text:
+    title:
+      name: Title
+      description: The task title.
+      required: true
+      example: "Buy milk"
+      selector:
+        text:
+    assigned_person:
+      name: Assigned Person
+      description: Person entity to assign (e.g. person.john).
+      selector:
+        entity:
+          domain: person
+    due_date:
+      name: Due Date
+      description: Due date in YYYY-MM-DD format.
+      selector:
+        date:
+    due_time:
+      name: Due Time
+      description: Due time in HH:MM format (only used together with due_date).
+      selector:
+        time:
+    tags:
+      name: Tags
+      description: Comma-separated list of tags (e.g. "kitchen,daily").
+      selector:
+        text:
+    reminders:
+      name: Reminders
+      description: Comma-separated minute offsets before the due moment (0 = at due time), e.g. "0,60,1440".
+      selector:
+        text:
+
+update_task:
+  name: Update Task
+  description: Update fields of an existing task (found by ID or title).
+  fields:
+    list_name:
+      name: List Name
+      description: The name of the task list.
+      example: "Shopping List"
+      selector:
+        text:
+    entry_id:
+      name: Entry ID
+      description: The config entry ID of the list (alternative to list name).
+      selector:
+        text:
+    task_id:
+      name: Task ID
+      description: The ID of the task to update.
+      selector:
+        text:
+    task_title:
+      name: Task Title
+      description: The title of the task to update (alternative to task_id; open tasks win on duplicates).
+      selector:
+        text:
+    title:
+      name: New Title
+      description: New task title.
+      selector:
+        text:
+    due_date:
+      name: Due Date
+      description: Due date in YYYY-MM-DD format.
+      selector:
+        date:
+    due_time:
+      name: Due Time
+      description: Due time in HH:MM format.
+      selector:
+        time:
+    notes:
+      name: Notes
+      description: Task notes.
+      selector:
+        text:
+          multiline: true
+    assigned_person:
+      name: Assigned Person
+      description: Person entity to assign (e.g. person.john).
+      selector:
+        entity:
+          domain: person
+    priority:
+      name: Priority
+      description: 1 (low), 2 (medium) or 3 (high).
+      selector:
+        number:
+          min: 1
+          max: 3
+    tags:
+      name: Tags
+      description: Comma-separated list of tags — replaces the task's tags.
+      selector:
+        text:
+    reminders:
+      name: Reminders
+      description: Comma-separated minute offsets before the due moment (0 = at due time) — replaces the task's reminders.
+      selector:
+        text:
+
+complete_task:
+  name: Complete Task
+  description: >-
+    Mark a task as completed. Provide task_title or task_id for a single task,
+    or tag to complete all open tasks with that tag.
+  fields:
+    list_name:
+      name: List Name
+      description: The name of the task list.
+      selector:
+        text:
+    entry_id:
+      name: Entry ID
+      description: The config entry ID of the list (alternative to list name).
+      selector:
+        text:
+    task_title:
+      name: Task Title
+      description: Title of the task to complete.
+      selector:
+        text:
+    task_id:
+      name: Task ID
+      description: UUID of the task (alternative to task title).
+      selector:
+        text:
+    tag:
+      name: Tag
+      description: >-
+        Complete all open tasks with this tag. Alternative to task_title/task_id.
+      selector:
+        text:
+
+assign_task:
+  name: Assign Task
+  description: Assign a person to a task.
+  fields:
+    list_name:
+      name: List Name
+      description: The name of the task list.
+      selector:
+        text:
+    entry_id:
+      name: Entry ID
+      description: The config entry ID of the list (alternative to list name).
+      selector:
+        text:
+    task_title:
+      name: Task Title
+      description: Title of the task.
+      selector:
+        text:
+    task_id:
+      name: Task ID
+      description: UUID of the task (alternative to task title).
+      selector:
+        text:
+    person:
+      name: Person
+      description: Person entity to assign.
+      required: true
+      selector:
+        entity:
+          domain: person
+
+reopen_task:
+  name: Reopen Task
+  description: >-
+    Reopen a completed task. Provide task_title or task_id to reopen a single
+    task, or assigned_person to reopen all completed tasks for that person.
+  fields:
+    list_name:
+      name: List Name
+      description: The name of the task list.
+      selector:
+        text:
+    entry_id:
+      name: Entry ID
+      description: The config entry ID of the list (alternative to list name).
+      selector:
+        text:
+    task_title:
+      name: Task Title
+      description: Title of the task to reopen.
+      selector:
+        text:
+    task_id:
+      name: Task ID
+      description: UUID of the task to reopen (alternative to task title).
+      selector:
+        text:
+    assigned_person:
+      name: Assigned Person
+      description: >-
+        Person entity. If provided without task_title/task_id, all completed
+        tasks assigned to this person will be reopened.
+      selector:
+        entity:
+          domain: person
+    tag:
+      name: Tag
+      description: >-
+        Reopen all completed tasks with this tag. Can be combined with
+        assigned_person to narrow the selection.
+      selector:
+        text:
+    tags:
+      name: Tags (ALL must match)
+      description: >-
+        Comma-separated list of tags. Only tasks that carry ALL specified tags
+        are reopened (AND-logic). Supersedes the single `tag` field when both
+        are provided. Can be combined with assigned_person.
+        Example: "fussball_mittag, ferien_ja"
+      selector:
+        text:

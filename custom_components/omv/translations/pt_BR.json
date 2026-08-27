@@ -1,0 +1,339 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Conectar ao OpenMediaVault",
+        "data": {
+          "host": "Host",
+          "username": "Usuario",
+          "password": "Senha",
+          "port": "Porta",
+          "ssl": "Usar SSL",
+          "verify_ssl": "Verificar certificado SSL"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Credenciais invalidas",
+      "cannot_connect": "Nao foi possivel conectar ao OMV",
+      "unknown": "Erro desconhecido"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Intervalo de varredura (segundos)",
+          "smart_interval": "Intervalo de consulta SMART (segundos)",
+          "smart_polling_disabled": "Desativar consulta SMART",
+          "selected_disks": "Discos selecionados",
+          "selected_filesystems": "Sistemas de arquivos selecionados",
+          "selected_services": "Serviços selecionados",
+          "selected_network_interfaces": "Interfaces de rede selecionadas",
+          "selected_raids": "RAIDs selecionados",
+          "selected_zfs_pools": "Pools ZFS selecionados",
+          "selected_compose_projects": "Projetos Compose selecionados",
+          "selected_containers": "Containers selecionados",
+          "selected_vms": "VMs selecionadas",
+          "selected_cron_jobs": "Tarefas cron com botão de acionamento"
+        },
+        "data_description": {
+          "smart_interval": "Com que frequência os dados SMART (status, atributos, temperatura do disco) são lidos. Ler SMART desperta os discos do modo de espera, portanto um valor maior permite que os discos desliguem para economizar energia. Padrão: o intervalo de varredura.",
+          "smart_polling_disabled": "Quando ativado, o SMART nunca é consultado. Os discos não são despertados por esta integração, mas as entidades de status SMART, atributos SMART e temperatura do disco ficam indisponíveis.",
+          "selected_cron_jobs": "Cria um botão para cada tarefa cron definida pelo usuário selecionada. Aviso: pressionar esse botão executa o comando shell arbitrário da tarefa no NAS. Padrão: nenhuma."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "cpu_utilization": {
+        "name": "Utilizacao da CPU"
+      },
+      "memory_usage": {
+        "name": "Uso de memoria"
+      },
+      "memory_total": {
+        "name": "Memoria total"
+      },
+      "memory_used": {
+        "name": "Memoria usada"
+      },
+      "cpu_temperature": {
+        "name": "Temperatura da CPU"
+      },
+      "uptime": {
+        "name": "Tempo de atividade"
+      },
+      "available_package_updates": {
+        "name": "Atualizacoes de pacotes disponiveis"
+      },
+      "load_average_1min": {
+        "name": "Carga media (1 min)"
+      },
+      "load_average_5min": {
+        "name": "Carga media (5 min)"
+      },
+      "load_average_15min": {
+        "name": "Carga media (15 min)"
+      },
+      "docker_container_total": {
+        "name": "Total de containers Docker"
+      },
+      "docker_container_running": {
+        "name": "Containers Docker em execucao"
+      },
+      "docker_container_not_running": {
+        "name": "Containers Docker parados"
+      },
+      "compose_project_status": {
+        "name": "status de {resource}"
+      },
+      "compose_project_total": {
+        "name": "{resource} containers no total"
+      },
+      "compose_project_running": {
+        "name": "{resource} containers em execucao"
+      },
+      "compose_project_not_running": {
+        "name": "{resource} containers parados"
+      },
+      "container_state": {
+        "name": "estado de {resource}"
+      },
+      "container_status_detail": {
+        "name": "detalhe do status de {resource}"
+      },
+      "container_created_at": {
+        "name": "{resource} criado em"
+      },
+      "container_started_at": {
+        "name": "{resource} iniciado em"
+      },
+      "container_version": {
+        "name": "versão de {resource}"
+      },
+      "container_volume_size": {
+        "name": "tamanho do volume {resource}"
+      },
+      "disk_temperature": {
+        "name": "Temperatura"
+      },
+      "disk_used_percent": {
+        "name": "{resource} usado %"
+      },
+      "disk_free_percent": {
+        "name": "{resource} livre %"
+      },
+      "disk_used_size": {
+        "name": "{resource} tamanho usado"
+      },
+      "disk_free_size": {
+        "name": "{resource} tamanho livre"
+      },
+      "disk_total_size": {
+        "name": "{resource} tamanho total"
+      },
+      "filesystem_used_percent": {
+        "name": "{resource} usado %"
+      },
+      "filesystem_free_percent": {
+        "name": "{resource} livre %"
+      },
+      "filesystem_used_size": {
+        "name": "{resource} tamanho usado"
+      },
+      "filesystem_free_size": {
+        "name": "{resource} tamanho livre"
+      },
+      "filesystem_total_size": {
+        "name": "{resource} tamanho total"
+      },
+      "network_tx": {
+        "name": "{resource} TX"
+      },
+      "network_rx": {
+        "name": "{resource} RX"
+      },
+      "raid": {
+        "name": "saude do RAID {resource}"
+      },
+      "zfs_pool": {
+        "name": "pool ZFS {resource}"
+      },
+      "zfs_pool_last_scrub": {
+        "name": "{resource} último scrub"
+      },
+      "zfs_pool_dataset_count": {
+        "name": "{resource} datasets"
+      },
+      "zfs_pool_snapshot_count": {
+        "name": "{resource} snapshots"
+      },
+      "disk_smart_status": {
+        "name": "Status SMART"
+      },
+      "vm_state": {
+        "name": "estado de {resource}"
+      },
+      "ups_battery_charge": {
+        "name": "Carga da bateria do nobreak"
+      },
+      "ups_battery_runtime": {
+        "name": "Autonomia da bateria do nobreak"
+      },
+      "ups_load": {
+        "name": "Carga do nobreak"
+      },
+      "zfs_dataset_used": {
+        "name": "{resource} usado"
+      }
+    },
+    "binary_sensor": {
+      "update_available": {
+        "name": "Atualizacao disponivel"
+      },
+      "reboot_required": {
+        "name": "Reinicializacao necessaria"
+      },
+      "service": {
+        "name": "servico {resource}"
+      },
+      "disk_bad_sectors": {
+        "name": "setores defeituosos {resource}"
+      },
+      "disk_crc_errors": {
+        "name": "erros de CRC {resource}"
+      },
+      "vm_running": {
+        "name": "{resource} em execucao"
+      },
+      "ups_on_battery": {
+        "name": "Nobreak na bateria"
+      },
+      "rsync_job_enabled": {
+        "name": "rsync {resource} habilitado"
+      },
+      "zfs_pool_scrub_active": {
+        "name": "{resource} scrub ativo"
+      }
+    },
+    "update": {
+      "omv_system_update": {
+        "name": "Atualização do sistema"
+      }
+    },
+    "button": {
+      "reboot": {
+        "name": "Reiniciar"
+      },
+      "shutdown": {
+        "name": "Desligar"
+      },
+      "compose_up": {
+        "name": "compose up"
+      },
+      "compose_down": {
+        "name": "compose down"
+      },
+      "compose_start": {
+        "name": "Start"
+      },
+      "compose_stop": {
+        "name": "Stop"
+      },
+      "compose_pull": {
+        "name": "Pull"
+      },
+      "compose_image_prune": {
+        "name": "docker image prune"
+      },
+      "compose_container_prune": {
+        "name": "docker container prune"
+      },
+      "container_restart": {
+        "name": "Reiniciar"
+      },
+      "vm_restart": {
+        "name": "Reiniciar"
+      },
+      "rsync_run": {
+        "name": "Executar rsync {name}"
+      },
+      "cron_run": {
+        "name": "Executar cron {name}"
+      },
+      "zfs_scrub": {
+        "name": "Executar scrub em {name}"
+      },
+      "standby": {
+        "name": "Espera"
+      },
+      "wake_on_lan": {
+        "name": "Wake on LAN {interface}"
+      }
+    }
+  },
+  "services": {
+    "container_command": {
+      "name": "Comando de contêiner",
+      "description": "Executa um comando em um contêiner Docker gerenciado pelo plugin compose do OMV.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Instância OMV",
+          "description": "Entrada de configuração de destino. Opcional quando apenas uma instância OMV está configurada."
+        },
+        "container": {
+          "name": "Contêiner",
+          "description": "Nome ou id do contêiner."
+        },
+        "command": {
+          "name": "Comando",
+          "description": "Comando a executar no contêiner."
+        }
+      }
+    },
+    "compose_command": {
+      "name": "Comando de projeto compose",
+      "description": "Executa um comando em um projeto Docker compose gerenciado pelo plugin compose do OMV.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Instância OMV",
+          "description": "Entrada de configuração de destino. Opcional quando apenas uma instância OMV está configurada."
+        },
+        "project": {
+          "name": "Projeto",
+          "description": "Nome ou uuid do projeto compose."
+        },
+        "command": {
+          "name": "Comando",
+          "description": "Comando a executar no projeto."
+        }
+      }
+    },
+    "apply_config": {
+      "name": "Aplicar configuração",
+      "description": "Aplica alterações de configuração pendentes do OpenMediaVault.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Instância OMV",
+          "description": "Entrada de configuração de destino. Opcional quando apenas uma instância OMV está configurada."
+        }
+      }
+    },
+    "run_rsync_job": {
+      "name": "Executar trabalho rsync",
+      "description": "Inicia um trabalho rsync configurado do OpenMediaVault (fire-and-forget).",
+      "fields": {
+        "config_entry_id": {
+          "name": "Instância OMV",
+          "description": "Entrada de configuração de destino. Opcional quando apenas uma instância OMV está configurada."
+        },
+        "job": {
+          "name": "Trabalho",
+          "description": "Nome ou uuid do trabalho rsync."
+        }
+      }
+    }
+  }
+}
