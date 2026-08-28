@@ -11,6 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from .const import CONF_UPDATE_TRACKING_DISABLED
 from .coordinator import OMVDataUpdateCoordinator
 from .entity import OMVEntity, build_host_object_id
 from .exceptions import OMVConnectionError
@@ -29,8 +30,11 @@ def get_expected_update_unique_ids(entry: ConfigEntry) -> set[str]:
         entry: The config entry.
 
     Returns:
-        Set of unique ID strings for all update entities.
+        Set of unique ID strings for all update entities, or an empty set
+        when ``CONF_UPDATE_TRACKING_DISABLED`` is set (Issue #66).
     """
+    if entry.options.get(CONF_UPDATE_TRACKING_DISABLED, False):
+        return set()
     return {f"{entry.entry_id}-omv_system_update"}
 
 
@@ -277,10 +281,19 @@ class OMVUpdateEntity(OMVEntity, UpdateEntity):
         install as failed.  If *filename* is not a string the call is silently
         skipped (defensive guard for unexpected RPC responses).
 
-        OMV deletes the bgproc status file as soon as the process completes.
-        Any subsequent Exec.isRunning call then returns HTTP 500 because the
-        file no longer exists.  HTTP 500 is therefore treated as "process
-        finished successfully" rather than a real connection error.
+        OMV deletes the bgproc status file as soon as the process completes,
+        whether it succeeded or failed. Any subsequent Exec.isRunning call
+        then returns HTTP 500 because the file no longer exists. A bare
+        HTTP 500 is therefore normally treated as "process finished" rather
+        than a real connection error.
+
+        However, when the underlying command itself failed (e.g. apt-get
+        exiting non-zero), OMV's 500 response body still carries the actual
+        error message ("Failed to execute command ... with exit code ...").
+        That case must NOT be swallowed as success — it is re-raised so the
+        real failure (e.g. a broken dpkg state requiring manual
+        `dpkg --configure -a` on the host) surfaces to HA instead of the
+        install silently completing with nothing actually upgraded.
 
         Args:
             filename: The bgproc status filename returned by an OMV execBgProc
@@ -295,7 +308,7 @@ class OMVUpdateEntity(OMVEntity, UpdateEntity):
                     "Exec", "isRunning", {"filename": filename}, max_retries=0
                 )
             except OMVConnectionError as err:
-                if "HTTP 500" in str(err):
+                if "HTTP 500" in str(err) and "Failed to execute command" not in str(err):
                     # OMV deletes the bgproc status file once the process
                     # completes; the next Exec.isRunning call then returns
                     # HTTP 500 because the file is gone — treat as done.

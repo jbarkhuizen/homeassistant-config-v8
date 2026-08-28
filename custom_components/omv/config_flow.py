@@ -28,6 +28,7 @@ from homeassistant.helpers import selector
 
 from . import session_handoff, totp
 from .const import (
+    CONF_MAX_CONSECUTIVE_FAILURES,
     CONF_REBOOT_REPAIR_DISABLED,
     CONF_SCAN_INTERVAL,
     CONF_SELECTED_COMPOSE_PROJECTS,
@@ -43,6 +44,8 @@ from .const import (
     CONF_SMART_INTERVAL,
     CONF_SMART_POLLING_DISABLED,
     CONF_TOTP_SECRET,
+    CONF_UPDATE_TRACKING_DISABLED,
+    DEFAULT_MAX_CONSECUTIVE_FAILURES,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_SSL,
@@ -384,6 +387,10 @@ class OMVOptionsFlow(OptionsFlow):
                     default=self._entry.options.get(CONF_REBOOT_REPAIR_DISABLED, False),
                 ): bool,
                 vol.Optional(
+                    CONF_UPDATE_TRACKING_DISABLED,
+                    default=self._entry.options.get(CONF_UPDATE_TRACKING_DISABLED, False),
+                ): bool,
+                vol.Optional(
                     CONF_SMART_INTERVAL,
                     default=self._entry.options.get(
                         CONF_SMART_INTERVAL,
@@ -394,6 +401,13 @@ class OMVOptionsFlow(OptionsFlow):
                     CONF_SMART_POLLING_DISABLED,
                     default=self._entry.options.get(CONF_SMART_POLLING_DISABLED, False),
                 ): bool,
+                vol.Optional(
+                    CONF_MAX_CONSECUTIVE_FAILURES,
+                    default=self._entry.options.get(
+                        CONF_MAX_CONSECUTIVE_FAILURES,
+                        DEFAULT_MAX_CONSECUTIVE_FAILURES,
+                    ),
+                ): vol.All(int, vol.Range(min=1, max=1000)),
                 vol.Optional(
                     CONF_SELECTED_DISKS,
                     default=self._default_selection(

@@ -36,6 +36,19 @@ add_task:
       description: Due time in HH:MM format (only used together with due_date).
       selector:
         time:
+    notes:
+      name: Notes
+      description: Task notes.
+      selector:
+        text:
+          multiline: true
+    priority:
+      name: Priority
+      description: 1 (low), 2 (medium) or 3 (high).
+      selector:
+        number:
+          min: 1
+          max: 3
     tags:
       name: Tags
       description: Comma-separated list of tags (e.g. "kitchen,daily").
@@ -116,6 +129,56 @@ update_task:
       description: Comma-separated minute offsets before the due moment (0 = at due time) — replaces the task's reminders.
       selector:
         text:
+
+move_task:
+  name: Move Task
+  description: >-
+    Move a task to another list — same as the card's Move button. Target is
+    either a native list (target_list_name / target_entry_id) or a linked
+    external todo entity (target_entity_id).
+  fields:
+    list_name:
+      name: List Name
+      description: The name of the source list.
+      selector:
+        text:
+    entry_id:
+      name: Entry ID
+      description: The config entry ID of the source list (alternative to list name).
+      selector:
+        text:
+    source_entity_id:
+      name: Source Entity
+      description: Linked external todo entity to move the task out of (requires task_id).
+      selector:
+        entity:
+          domain: todo
+    task_title:
+      name: Task Title
+      description: Title of the task to move (alternative to task_id).
+      selector:
+        text:
+    task_id:
+      name: Task ID
+      description: UUID of the task to move.
+      selector:
+        text:
+    target_list_name:
+      name: Target List Name
+      description: Name of the native list to move the task into.
+      selector:
+        text:
+    target_entry_id:
+      name: Target Entry ID
+      description: Config entry ID of the native target list.
+      selector:
+        text:
+    target_entity_id:
+      name: Target Entity
+      description: Linked external todo entity to move the task into.
+      selector:
+        entity:
+          domain: todo
 
 complete_task:
   name: Complete Task
