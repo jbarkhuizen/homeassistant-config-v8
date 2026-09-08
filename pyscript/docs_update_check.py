@@ -19,9 +19,9 @@ async def docs_update_check():
     Export current entity state and compare with documentation
     Returns a report dictionary with change detection
     """
-    
+
     log.info("[DOCS UPDATE] Starting comparison of current vs documented entity state")
-    
+
     # DOCUMENTED BASELINE (from HA_COMPREHENSIVE_ENTITY_REFERENCE_V1_0_LIVING.md)
     documented = {
         "total_entities": 3426,
@@ -38,7 +38,7 @@ async def docs_update_check():
         "automation_entities": 97,
         "select_entities": 59,
     }
-    
+
     # GET CURRENT STATE FROM HOME ASSISTANT
     current = {
         "timestamp": datetime.now().isoformat(),
@@ -54,11 +54,11 @@ async def docs_update_check():
         "select_entities": len([e for e in hass.states.all() if e.entity_id.startswith("select.")]),
         "automation_entities": len([e for e in hass.states.all() if e.entity_id.startswith("automation.")]),
     }
-    
+
     # CALCULATE CHANGES
     changes = {}
     changes_detected = False
-    
+
     for key in documented:
         if key in current:
             delta = current[key] - documented[key]
@@ -69,55 +69,55 @@ async def docs_update_check():
                 "delta": delta,
                 "delta_pct": delta_pct,
             }
-            
+
             # Flag significant changes (>5% or >10 entities)
             if abs(delta) > 10 or abs(delta_pct) > 5:
                 changes_detected = True
-    
+
     # UNAVAILABLE ENTITY DETAILS
     unavailable_percent = (current["unavailable_entities"] / current["total_entities"] * 100) if current["total_entities"] > 0 else 0
     unavailable_delta = current["unavailable_entities"] - documented["unavailable_entities"]
     unavailable_improved = unavailable_delta < 0
-    
+
     # GENERATE SUMMARY
     summary_lines = []
-    
+
     # Total entities
     if changes["total_entities"]["delta"] != 0:
         summary_lines.append(f"Total Entities: {current['total_entities']} (was {documented['total_entities']}, {changes['total_entities']['delta']:+d})")
     else:
-        summary_lines.append(f"Total Entities: {current['total_entities']} ✓ (stable)")
-    
+        summary_lines.append(f"Total Entities: {current['total_entities']} - (stable)")
+
     # Unavailable entities
     if unavailable_improved:
-        summary_lines.append(f"Unavailable: {current['unavailable_entities']} ({unavailable_percent:.1f}%) ✅ Improved by {abs(unavailable_delta)}")
+        summary_lines.append(f"Unavailable: {current['unavailable_entities']} ({unavailable_percent:.1f}%) Improved by {abs(unavailable_delta)}")
     elif unavailable_delta > 0:
-        summary_lines.append(f"Unavailable: {current['unavailable_entities']} ({unavailable_percent:.1f}%) ⚠️ Increased by {unavailable_delta}")
+        summary_lines.append(f"Unavailable: {current['unavailable_entities']} ({unavailable_percent:.1f}%) Increased by {unavailable_delta}")
     else:
-        summary_lines.append(f"Unavailable: {current['unavailable_entities']} ({unavailable_percent:.1f}%) ✓ (stable)")
-    
+        summary_lines.append(f"Unavailable: {current['unavailable_entities']} ({unavailable_percent:.1f}%) - (stable)")
+
     # Major domain changes
     domain_changes = []
     for domain in ["sensor_entities", "switch_entities", "number_entities", "binary_sensor_entities"]:
         if domain in changes and changes[domain]["delta"] != 0:
             domain_name = domain.replace("_entities", "").title()
             delta_display = f"{changes[domain]['delta']:+d}"
-            domain_changes.append(f"  • {domain_name}: {changes[domain]['current']} ({delta_display})")
-    
+            domain_changes.append(f"  - {domain_name}: {changes[domain]['current']} ({delta_display})")
+
     if domain_changes:
         summary_lines.append("Domain Changes:")
         summary_lines.extend(domain_changes)
-    
+
     # Compile full summary
     summary = "\n".join(summary_lines)
     summary_short = summary_lines[0] if summary_lines else "No data"
-    
+
     # Count actual automations in config
-        automation_delta = current["automation_entities"] - documented["automations"]
-        
+    automation_delta = current["automation_entities"] - documented["automations"]
+
     # Build report
     report = {
-        "status": "✅ Complete" if not changes_detected else "⚠️ Changes Detected",
+        "status": "Complete" if not changes_detected else "Changes Detected",
         "changes_detected": changes_detected,
         "timestamp": current["timestamp"],
         "summary": summary,
@@ -135,11 +135,11 @@ async def docs_update_check():
         "template_changes": "0 (needs manual check)",
         "changes_summary": json.dumps(changes, default=str),
     }
-    
+
     # Log results
     log.info(f"[DOCS UPDATE] Comparison complete: {report['status']}")
     log.info(f"[DOCS UPDATE] Total entities: {current['total_entities']} (documented: {documented['total_entities']})")
     log.info(f"[DOCS UPDATE] Unavailable: {current['unavailable_entities']} ({unavailable_percent:.1f}%)")
     log.info(f"[DOCS UPDATE] Changes detected: {changes_detected}")
-    
+
     return report

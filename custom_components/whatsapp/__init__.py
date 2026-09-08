@@ -125,6 +125,19 @@ _SERVICES = [
     "reset_auto_responder_seen",
 ]
 
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(hass: HomeAssistant, _config: dict[str, Any]) -> bool:
+    """Set up the WhatsApp component and register services early.
+
+    Registering services in async_setup ensures that whatsapp.* actions
+    are already known to Home Assistant before automations load and validate,
+    preventing spurious 'service_not_found' repairs during startup.
+    """
+    await async_setup_services(hass)
+    return True
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the WhatsApp integration from a config entry.
@@ -276,6 +289,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 clean_sender = full_sender.split("@")[0]
 
         data["sender_number"] = clean_sender
+        data["person_number"] = clean_sender
 
         # Self-message handling (fromMe)
         raw_msg = data.get("raw", {})
@@ -298,18 +312,39 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         is_ha_echo = client.was_sent_by_ha(incoming_msg_id)
 
         if from_me:
+            # Determine sender number for sent message (my own number / account number)
+            my_number = client.stats.get("my_number") or ""
+            my_sender_number = (
+                my_number.split("@")[0].split(":")[0] if my_number else "me"
+            )
+            # Determine recipient number (prefer sender_number if provided by gateway, otherwise extract digits)
+            raw_sender_number = data.get("sender_number")
+            if (
+                raw_sender_number
+                and not str(raw_sender_number).startswith("1576")
+                and "@lid" not in str(raw_sender_number)
+            ):
+                recipient_num = str(raw_sender_number)
+            elif "@s.whatsapp.net" in remote_id:
+                recipient_num = remote_id.split("@")[0].split(":")[0]
+            elif "@lid" in remote_id:
+                recipient_num = (
+                    data.get("sender_number") or remote_id.split("@")[0].split(":")[0]
+                )
+            elif "@g.us" in remote_id:
+                recipient_num = remote_id.split("@")[0].split(":")[0]
+            else:
+                recipient_num = remote_id
+
             # Fire dedicated whatsapp_message_sent event with rich metadata (Issue #94)
             sent_data = {
                 **data,
                 "from": "me",
                 "to": remote_id,
                 "sender": "me",
+                "sender_number": my_sender_number,
                 "recipient": remote_id,
-                "recipient_number": (
-                    remote_id.split("@")[0]
-                    if ("@s.whatsapp.net" in remote_id or "@lid" in remote_id)
-                    else remote_id
-                ),
+                "recipient_number": recipient_num,
                 "is_group": is_group,
                 "entry_id": entry.entry_id,
                 "session_id": session_id,
@@ -339,6 +374,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     "as self_messages option is disabled"
                 )
                 return
+
+            # When self_messages is enabled, ensure the received event's sender fields
+            # reflect 'me' (own account) rather than the recipient's phone number
+            data["from"] = "me"
+            data["sender"] = "me"
+            data["sender_number"] = my_sender_number
+            data["person_number"] = my_sender_number
+            data["recipient"] = remote_id
+            data["recipient_number"] = recipient_num
 
         # If incoming non-fromMe message was somehow flagged as sent by HA, drop it
         if is_ha_echo:
@@ -526,6 +570,9 @@ def get_client_for_account(
 
 async def async_setup_services(hass: HomeAssistant) -> None:
     """Set up global WhatsApp services."""
+    global _SERVICES_REGISTERED
+    if _SERVICES_REGISTERED:
+        return
 
     async def _handle_service(call: ServiceCall) -> Any:
         """General service handler for routing."""
@@ -1493,7 +1540,6 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         schema=vol.Schema(s_account),
     )
 
-    global _SERVICES_REGISTERED
     _SERVICES_REGISTERED = True
 
 
@@ -1515,6 +1561,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     Returns:
         ``True`` if unloading succeeded, ``False`` otherwise.
     """
+    global _SERVICES_REGISTERED
+
     data = hass.data[DOMAIN][entry.entry_id]
     client: WhatsAppApiClient = data["client"]
     await client.close()
@@ -1529,7 +1577,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 hass.services.async_remove(DOMAIN, service)
         hass.data.pop(DOMAIN)
 
-        global _SERVICES_REGISTERED
         _SERVICES_REGISTERED = False
 
     return bool(unload_ok)

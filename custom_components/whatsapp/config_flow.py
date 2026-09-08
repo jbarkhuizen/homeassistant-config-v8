@@ -609,7 +609,36 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
             try:
                 assert self.client is not None
+                # If already connected, finish setup immediately
+                stats = await self.client.get_stats()
+                status = await self.client.get_status()
+                if (
+                    stats.get("connected")
+                    or status.get("connected")
+                    or await self.client.connect()
+                ):
+                    my_number = (
+                        stats.get("my_number")
+                        or status.get("user", {}).get("id", "").split(":")[0]
+                    )
+                    if my_number:
+                        await self.async_set_unique_id(my_number)
+                    else:
+                        await self.async_set_unique_id(self.session_id)
+                    return await self.async_create_flow_entry(my_number)
+
                 code = await self.client.request_pairing_code(clean_phone)
+                if not code and (
+                    await self.client.is_connected() or await self.client.connect()
+                ):
+                    stats = await self.client.get_stats()
+                    my_number = stats.get("my_number")
+                    if my_number:
+                        await self.async_set_unique_id(my_number)
+                    else:
+                        await self.async_set_unique_id(self.session_id)
+                    return await self.async_create_flow_entry(my_number)
+
                 self.pairing_code = code
                 return await self.async_step_show_pairing_code()
             except Exception as e:
@@ -634,23 +663,43 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         if user_input is not None:
             try:
                 assert self.client is not None
-                connected = await self.client.connect()
-                if connected:
+                connected = False
+                my_number = None
+
+                # Retry up to 15s to allow Baileys auth handshake to settle
+                for _ in range(15):
                     stats = await self.client.get_stats()
-                    my_number = stats.get("my_number")
+                    status = await self.client.get_status()
+                    connected = bool(
+                        stats.get("connected")
+                        or status.get("connected")
+                        or await self.client.connect()
+                    )
+                    my_number = (
+                        stats.get("my_number")
+                        or status.get("user", {}).get("id", "").split(":")[0]
+                    )
+                    if connected and my_number:
+                        break
+                    await asyncio.sleep(1)
+
+                if connected:
                     if my_number:
                         await self.async_set_unique_id(my_number)
+                    else:
+                        await self.async_set_unique_id(self.session_id)
                     return await self.async_create_flow_entry(my_number)
-            except Exception:
-                pass
+            except Exception as e:
+                _LOGGER.debug("Error verifying phone pairing connection: %s", e)
             errors["base"] = "connection_error"
+
+        raw_code = getattr(self, "pairing_code", "N/A")
+        clean_code = raw_code if raw_code and raw_code != "****" else "N/A"
 
         return self.async_show_form(
             step_id="show_pairing_code",
             data_schema=vol.Schema({}),
-            description_placeholders={
-                "pairing_code": getattr(self, "pairing_code", "N/A")
-            },
+            description_placeholders={"pairing_code": clean_code},
             errors=errors if errors else None,
         )
 
@@ -1032,8 +1081,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):  # type: ignore[misc]
                 ): vol.All(int, vol.Range(min=0, max=10)),
                 vol.Optional(
                     CONF_WHITELIST,
-                    default=self._config_entry.options.get(CONF_WHITELIST, ""),
-                ): str,
+                    description={
+                        "suggested_value": self._config_entry.options.get(
+                            CONF_WHITELIST, ""
+                        )
+                    },
+                ): vol.Any(None, str),
                 vol.Optional(
                     CONF_SELF_MESSAGES,
                     default=self._config_entry.options.get(CONF_SELF_MESSAGES, False),
@@ -1134,6 +1187,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):  # type: ignore[misc]
 
             # Always remove ephemeral reset_session option
             user_input.pop("reset_session", None)
+
+            # Ensure whitelist is stored cleanly (empty string if cleared/None)
+            if CONF_WHITELIST in user_input:
+                user_input[CONF_WHITELIST] = (user_input[CONF_WHITELIST] or "").strip()
+            else:
+                user_input[CONF_WHITELIST] = ""
+
             return self.async_create_entry(title="", data=user_input)
 
         return self.async_show_form(

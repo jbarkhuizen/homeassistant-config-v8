@@ -122,6 +122,12 @@ CONF_REQUESTY_MODEL = "requesty_model"
 CONF_REQUESTY_REASONING_MAX_TOKENS = "requesty_reasoning_max_tokens"
 CONF_REQUESTY_TEMPERATURE = "requesty_temperature"
 
+# MiniMax
+CONF_MINIMAX_API_KEY = "minimax_api_key"
+CONF_MINIMAX_MODEL = "minimax_model"
+CONF_MINIMAX_BASE_URL = "minimax_base_url"
+CONF_MINIMAX_TEMPERATURE = "minimax_temperature"
+
 # Generic OpenAI
 CONF_GENERIC_OPENAI_ENDPOINT = "generic_openai_api_endpoint"
 CONF_GENERIC_OPENAI_API_KEY = "generic_openai_api_key"
@@ -143,8 +149,8 @@ DEFAULT_MODELS = {
     "OpenAI": "gpt-5.4-mini",
     "OpenAI Azure": "gpt-5.4-mini",
     "Anthropic": "claude-sonnet-4-6",
-    "Google": "gemini-2.5-flash",
-    "Groq": "llama-3.3-70b-versatile",
+    "Google": "gemini-3.5-flash",
+    "Groq": "openai/gpt-oss-120b",
     "LocalAI": "llama3",
     "Ollama": "llama3.1",
     "Custom OpenAI": "gpt-4o-mini",
@@ -152,6 +158,7 @@ DEFAULT_MODELS = {
     "Perplexity AI": "sonar",
     "OpenRouter": "openai/gpt-5.4-mini",
     "Requesty": "openai/gpt-4o-mini",
+    "MiniMax": "MiniMax-M3",
     "Generic OpenAI": "gpt-4o-mini",
     "LiteLLM": "openai/gpt-4o-mini",
 }
@@ -187,6 +194,10 @@ ENDPOINT_MISTRAL = "https://api.mistral.ai/v1/chat/completions"
 ENDPOINT_PERPLEXITY = "https://api.perplexity.ai/chat/completions"
 ENDPOINT_OPENROUTER = "https://openrouter.ai/api/v1/chat/completions"
 ENDPOINT_REQUESTY = "https://router.requesty.ai/v1/chat/completions"
+MINIMAX_BASE_URLS = [
+    "https://api.minimax.io/v1",
+    "https://api.minimaxi.com/v1",
+]
 
 
 # ─────────────────────────────────────────────────────────────

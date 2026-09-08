@@ -3,20 +3,27 @@ from __future__ import annotations
 
 import logging
 from collections import deque
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 from dataclasses import dataclass
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
 from .types import FleetEvPower, PowerReadings
+from .charger_adapters.status_enum import (
+    classify_charger_status,
+    is_cable_present,
+)
 from .sign_audit import CounterCorrelationAudit, SplitSensorExclusivityAudit
 from .units import (
     energy_state_to_kwh,
     is_energy_unit,
     normalize_unit,
     power_state_to_watts,
+    temperature_state_to_celsius,
 )
+
+from ..utils.log_gate import log_on_change
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,6 +45,76 @@ _CYCLES_UNSET = object()  # cache sentinel distinct from a None result
 # comparable answers (#638 finding #3).
 _SOC_NAME_KEYWORDS = ("soc", "state_of_charge", "batterieladung",
                       "battery_level", "charge_level")
+
+# #743 — export-limit entity autodetection. The curtailment probe's
+# physics signature is brand-agnostic; brands that PUBLISH their export
+# limit sharpen it (True fast-tracks the probe, False suppresses false
+# probes entirely). Curated per-brand keyword list, same maintenance
+# story as the battery-cycles autodetect (#593): a new brand's entity
+# name goes here, tests in test_743_export_limit_autodetect.py.
+EXPORT_LIMIT_KEYWORDS = (
+    "export_limit",            # generic / GoodWe (grid_export_limit)
+    "export_limitation",       # SolarEdge modbus packs
+    "export_control",          # SolaX (export_control_user_limit)
+    "feed_in_limit",           # generic feed-in naming
+    "maximum_feed_in",         # Victron ESS
+    "max_feed_in",             # Victron ESS (short form)
+    "active_power_control",    # Huawei (wlcrs/huawei_solar)
+    "einspeiselimit",          # DE-named templates
+    "einspeisebegrenzung",     # DE-named templates
+    "zero_export",             # zero-export toggles
+)
+
+
+def parse_export_limited(state, unit) -> "Optional[bool]":
+    """Entity state → tri-state export-limit reading (#743).
+
+    True = a ~0-export limit is ACTIVE, False = not limiting,
+    None = unreadable (the physics signature decides). Handles the
+    supported shapes: Huawei's string states ("Limited to X W" /
+    "Unlimited"), numeric W / kW / % limits, bare numbers as watts.
+    """
+    if state is None:
+        return None
+    s = str(state).strip()
+    if s.lower() in ("unknown", "unavailable", "none", ""):
+        return None
+    low = s.lower()
+    if "unlimited" in low or "no limit" in low or low in ("off", "disabled"):
+        return False
+    if "zero" in low:
+        return True
+    # "Limited to 5000 W" → the number inside decides.
+    import re as _re
+    m = _re.search(r"(-?\d+(?:[.,]\d+)?)", s)
+    if not m:
+        return None
+    try:
+        value = float(m.group(1).replace(",", "."))
+    except (ValueError, TypeError):
+        return None
+    u = str(unit or "").strip().lower()
+    if u == "%":
+        return value <= 1.0
+    if u == "kw":
+        return value <= 0.05
+    if u in ("w", ""):
+        # Huawei's string carries the unit in the text, not the attr.
+        if "kw" in low and u == "":
+            return value <= 0.05
+        return value <= 50.0
+    return None
+
+
+# #739 — the one "actually charging" power floor, shared by the published
+# charging badge and the plug-sensor physics inference. Matches the
+# adapters' own convention (``keba.py: handshake_power_w = 500``;
+# ``charger_types.py``: "prefer power_w > 500 … treat ``charging`` as
+# informational"). KEBA idles at ~110–140 W; a real ≥6 A charge is
+# ≥1.38 kW single-phase — 500 W separates the two with margin on both
+# sides. The previous 100 W sat BELOW the standby draw, so an idle box
+# inferred a phantom connection (#739, live on PROD 08.08.2026).
+EV_ACTIVE_CHARGE_FLOOR_W = 500.0
 
 # Known patterns for split grid power sensors — single source of truth.
 # GRID_TRIGGER_HINTS is derived from these and used in __init__.py to
@@ -131,6 +208,12 @@ class SensorConfig:
     # Binary sensors
     ev_plug_sensor: Optional[str] = None
     ev_charging_sensor: Optional[str] = None
+
+
+# (#818) ``_read_sensor`` names its caller; these three are the power
+# inputs whose 0.0 fallback is indistinguishable from a real reading
+# and which the surplus maths steers on.
+_DEGRADABLE_POWER_INPUTS = frozenset({"solar", "grid", "battery"})
 
 
 class SensorReader:
@@ -285,6 +368,21 @@ class SensorReader:
         self._FLEET_BID = "__fleet__"
         # Track sensor availability transitions (#5: robustness)
         self._sensor_unavailable: set[str] = set()
+        # (#758) Did ANY battery power read come back unavailable this cycle?
+        # Every path that produces ``readings.battery_power`` — Energy
+        # Dashboard combined, two-sensor pair, per-battery list, the SEM
+        # override, legacy config — reads through ``_read_sensor(..., "battery")``,
+        # so the flag is raised at that one door and published once per cycle.
+        self._battery_power_missing: bool = False
+        # (#818) Per-cycle tally of the POWER inputs, split two ways
+        # because two different questions are being asked:
+        #   ANY read dark  -> the DECISION cannot see; do not steer.
+        #   ALL reads dark -> the ENTITY has nothing true to publish.
+        # The split matters on a multi-inverter install: one dark
+        # inverter out of three degrades the decision but must not
+        # blank a total that is mostly real.
+        self._input_reads: dict[str, int] = {}
+        self._input_dark: dict[str, int] = {}
         # (HA Repairs, 2026-06-06) per-entity timestamp when sensor
         # first went unavailable in the current outage. Used to delay
         # the Repair issue past a transient flap window
@@ -538,10 +636,24 @@ class SensorReader:
 
         # Try Energy Dashboard config first, then legacy config
         self._split_pair_seen = set()
+        self._battery_power_missing = False   # (#758) per-cycle
+        self._input_reads = {}                # (#818) per-cycle
+        self._input_dark = {}                 # (#818) per-cycle
         if self._energy_dashboard_config:
             readings = self._read_from_energy_dashboard()
         else:
             readings = self._read_from_legacy_config()
+        # (#758) An unreadable battery power sensor reads as 0.0 W, which is
+        # also what an idle battery reads. Say which one this is, once, here.
+        readings.battery_power_unavailable = self._battery_power_missing
+        # (#818) Two questions, two answers. ``inputs_degraded`` gates
+        # WRITING (any dark read means this cycle cannot be steered on);
+        # the per-input flags gate PUBLISHING (only a total with nothing
+        # real left in it should read unavailable).
+        readings.inputs_degraded = any(self._input_dark.values())
+        readings.solar_power_unavailable = self._all_dark("solar")
+        readings.grid_power_unavailable = self._all_dark("grid")
+        readings.battery_power_all_unavailable = self._all_dark("battery")
 
         # #661 — forget audits for pairs that are no longer being netted, so a
         # removed battery can't leave a stale fault in the trace.
@@ -1660,6 +1772,17 @@ class SensorReader:
 
         return self._battery_sign_inverted[bid]
 
+    def _all_dark(self, name: str) -> bool:
+        """(#818) Was EVERY contributing read of this input unavailable?
+
+        The entity-facing question. One dark inverter among three leaves
+        a total that is mostly real and must still be published; a total
+        with nothing real left in it has no honest number to show, and
+        0 W is not one — that is the fabricated zero this issue is about.
+        """
+        dark = self._input_dark.get(name, 0)
+        return bool(dark) and self._input_reads.get(name, 0) == 0
+
     def _read_sensors_sum(self, entity_ids: list, name: str) -> float:
         """Sum values from multiple sensors of the same type."""
         return sum(self._read_sensor(eid, name) for eid in entity_ids)
@@ -2070,19 +2193,10 @@ class SensorReader:
         # ~6 kWh past the Max ceiling because SEM wasn't even watching.
         #
         # Current cannot flow without a connection. If we see active
-        # charging power (>100 W rules out KEBA's own standby draw) or
-        # the charging_state sensor reports True, infer connection — the
-        # plug sensor is wrong.
-        if not readings.ev_connected and (
-            readings.ev_charging or readings.ev_power > 100
-        ):
-            _LOGGER.warning(
-                "ev_connected inferred from physics: plug sensor reported off but "
-                "ev_power=%.0fW / ev_charging=%s. Treating as connected. (Upstream "
-                "charger-integration bug protection — see #285+1 in CHANGELOG.)",
-                readings.ev_power, readings.ev_charging,
-            )
-            readings.ev_connected = True
+        # charging power (the 500 W floor rules out KEBA's own standby
+        # draw, #739) or the gated charging badge is on, infer
+        # connection — the plug sensor is wrong.
+        self._infer_fleet_connection_from_physics(readings)
 
         # #584 follow-up: mirror the physics defence into the per-charger
         # map. build_charger_view now reads that map FIRST, so a fleet-only
@@ -2115,10 +2229,12 @@ class SensorReader:
         state = self.hass.states.get(entity)
         if not state or state.state in ("unknown", "unavailable", None):
             return
-        try:
-            readings.battery_temperature = float(state.state)
-        except (ValueError, TypeError):
-            return
+        # #727 — honour the SOURCE unit. SEM's sensor is °C-native and HA converts
+        # it to the user's display unit; a °F source read as °C is wrong by the
+        # F→C offset and HA compounds it. None means unreadable → leave unknown.
+        celsius = temperature_state_to_celsius(state)
+        if celsius is not None:
+            readings.battery_temperature = celsius
 
     def _autodetect_battery_temperature(self) -> Optional[str]:
         """Find a temperature sensor on the battery's own device.
@@ -2169,10 +2285,12 @@ class SensorReader:
         state = self.hass.states.get(entity)
         if not state or state.state in ("unknown", "unavailable", None):
             return
-        try:
-            readings.inverter_temperature = float(state.state)
-        except (ValueError, TypeError):
-            return
+        # #727 — honour the SOURCE unit (see _read_battery_temperature). A °F
+        # source (US install, or a mislabeled SolarAssistant bridge) read as °C
+        # showed a 48 °F reading as 118 °C in the Home view's inverter node.
+        celsius = temperature_state_to_celsius(state)
+        if celsius is not None:
+            readings.inverter_temperature = celsius
 
     def _autodetect_inverter_temperature(self) -> Optional[str]:
         """Find the inverter temperature sensor via hardware detection.
@@ -2957,17 +3075,9 @@ class SensorReader:
         self._read_ev_connection_status(readings, ev_chargers)
 
         # Physics-based defence against upstream plug-sensor quirks.
-        # Same logic as the energy-dashboard path — see comment there for
-        # the full PROD repro (#285+1).
-        if not readings.ev_connected and (
-            readings.ev_charging or readings.ev_power > 100
-        ):
-            _LOGGER.warning(
-                "ev_connected inferred from physics: plug sensor reported off but "
-                "ev_power=%.0fW / ev_charging=%s. Treating as connected.",
-                readings.ev_power, readings.ev_charging,
-            )
-            readings.ev_connected = True
+        # Same logic as the energy-dashboard path — see the helper for
+        # the full PROD repro (#285+1) and the #739 floor.
+        self._infer_fleet_connection_from_physics(readings)
 
         # #584 follow-up — see the energy-dashboard path for the rationale.
         self._infer_per_charger_connection_from_physics(readings)
@@ -3057,9 +3167,21 @@ class SensorReader:
 
         state = self.hass.states.get(entity_id)
         if not state or state.state in ("unknown", "unavailable", None):
-            _LOGGER.debug(f"Sensor {entity_id} ({name}) unavailable")
+            # (#762) edge-logged: one line when it goes silent, one when it
+            # comes back (below) — not 359 repeats per outage day.
+            log_on_change(_LOGGER, f"avail:{entity_id}", logging.DEBUG,
+                          f"Sensor {entity_id} ({name}) unavailable")
             # Track unavailability for transition detection
             self._sensor_unavailable.add(entity_id)
+            # (#758) Battery POWER is the one reading whose 0.0 fallback is a
+            # plausible real value, so the recorder must be told it is a
+            # fallback. ``name`` is the discriminator every battery power
+            # call site already passes.
+            if name == "battery":
+                self._battery_power_missing = True
+            # (#818) The steering inputs, same rule, no new number.
+            if name in _DEGRADABLE_POWER_INPUTS:
+                self._input_dark[name] = self._input_dark.get(name, 0) + 1
             # (HA Repairs) Stamp the outage start AND escalate to a
             # Repair issue once we cross the threshold. Quiet for
             # transient flaps; user-visible for real outages.
@@ -3081,6 +3203,12 @@ class SensorReader:
                     )
                     self._sensor_repair_raised.add(entity_id)
             return None if allow_none else 0.0
+
+        if name in _DEGRADABLE_POWER_INPUTS:
+            # (#818) The denominator for ``_all_dark``: this read reached a
+            # live state. Counted here, after the unavailable branch has
+            # returned, so the two tallies can never double-count.
+            self._input_reads[name] = self._input_reads.get(name, 0) + 1
 
         try:
             # #641 — one shared rule (this copy was ``.lower() == "kw"``, no
@@ -3104,7 +3232,11 @@ class SensorReader:
             # gracefully instead of spamming".
             if entity_id in self._sensor_unavailable:
                 self._sensor_unavailable.discard(entity_id)
-                _LOGGER.debug(
+                # (#762) SAME gate key as the outage line: the alternation
+                # resets the gate, so the NEXT outage logs again instead of
+                # being suppressed as "unchanged".
+                log_on_change(
+                    _LOGGER, f"avail:{entity_id}", logging.DEBUG,
                     "Sensor %s (%s) recovered — now reading %.1f",
                     entity_id, name, value,
                 )
@@ -3214,28 +3346,22 @@ class SensorReader:
             return True
         if s in ("off", "unknown", "unavailable"):
             return False
-        # Regular sensor status values (Easee, Wallbox, OCPP, Ohme, Alfen, etc.)
-        if name == "ev_plug" and s in (
-            "connected", "ready_to_charge", "awaiting_start",
-            "awaiting_authorization", "charging", "completed", "ready",
-            # OCPP: Preparing/Charging/SuspendedEV mean EV is plugged in
-            "preparing", "suspended_ev", "suspended_evse", "finishing",
-            # Ohme
-            "plugged in",
-            # Alfen
-            "ev connected", "charging power on",
-            # Peblar
-            # ("connected" already listed above)
-            # Blue Current
-            # ("connected" already listed above)
-        ):
-            return True
-        if name == "ev_charging" and s in (
-            "charging",
-            # Alfen
-            "charging power on",
-        ):
-            return True
+        # Regular sensor status values (Easee, Wallbox, OCPP, Ohme, Alfen, …).
+        # #833: these used to be two hardcoded tuples here, which drifted from
+        # the cross-brand vocabulary in ``status_enum.py`` — the plug tuple
+        # lost "paused" and "locked", so a Wallbox sitting idle-but-plugged
+        # read as "no car" and no session ever started (discussion #821). Both
+        # readers now delegate, so one place answers per brand and the lists
+        # cannot disagree again. Unrecognised → fall through to the numeric
+        # heuristic below, exactly as before.
+        if name == "ev_plug":
+            present = is_cable_present(s)
+            if present is not None:
+                return present
+        elif name == "ev_charging":
+            status = classify_charger_status(s)
+            if status != "unknown":
+                return status == "charging"
         # Numeric: treat > 0 as True (e.g. power sensor as charging indicator)
         try:
             return float(s) > 0
@@ -3276,6 +3402,7 @@ class SensorReader:
             readings.ev_charging = self._read_binary_sensor(
                 self.config.ev_charging_sensor, "ev_charging"
             )
+            self._gate_ev_charging_on_power(readings, ev_chargers)
             return
 
         any_connected = False
@@ -3322,6 +3449,83 @@ class SensorReader:
             any_charging if has_pc_charging or not single_or_legacy
             else self._read_binary_sensor(self.config.ev_charging_sensor, "ev_charging")
         )
+        self._gate_ev_charging_on_power(readings, ev_chargers)
+
+    def _gate_ev_charging_on_power(
+        self, readings: PowerReadings, ev_chargers: list,
+    ) -> None:
+        """#739 — the published charging badge honors the 500 W floor.
+
+        ``readings.ev_charging`` was the raw brand charging boolean — the
+        signal the codebase itself documents to distrust (KEBA's lags
+        ~5 s (#289); numeric state codes read truthy at idle through the
+        ``float(s) > 0`` fallback). At 140 W standby the badge said
+        "Charging" with the charger disabled. Whenever a power source is
+        configured, the badge now requires actual draw above
+        ``EV_ACTIVE_CHARGE_FLOOR_W`` — the same rule every adapter's
+        ``actual_charging`` already applies. Installs with only a
+        charging boolean keep the raw signal (nothing better exists).
+
+        Per-charger entries are judged on their OWN power reading; the
+        fleet flag is re-OR'd from the gated map so the two can't
+        disagree.
+        """
+        # Per-charger: gate each entry that has its own power reading.
+        gated_any = False
+        for cid, was_charging in list(
+            readings.ev_charging_per_charger.items()
+        ):
+            if not was_charging:
+                continue
+            pc_power = readings.ev_power_per_charger.get(cid)
+            if pc_power is None:
+                continue  # no power source for THIS charger — keep raw
+            if float(pc_power) <= EV_ACTIVE_CHARGE_FLOOR_W:
+                readings.ev_charging_per_charger[cid] = False
+                gated_any = True
+        if gated_any:
+            readings.ev_charging = any(
+                readings.ev_charging_per_charger.values()
+            )
+
+        # Fleet: gate only when a power source exists (flat/legacy key or
+        # any nested per-charger power sensor — the fleet sum is real).
+        power_available = bool(
+            getattr(self.config, "ev_power_sensor", None)
+            or any(
+                c.get("ev_charging_power_sensor") for c in ev_chargers
+            )
+        )
+        if (
+            power_available
+            and readings.ev_charging
+            and float(readings.ev_power or 0.0) <= EV_ACTIVE_CHARGE_FLOOR_W
+        ):
+            readings.ev_charging = False
+
+    def _infer_fleet_connection_from_physics(
+        self, readings: PowerReadings,
+    ) -> None:
+        """Physics defence against a lying plug sensor (#285+1), shared
+        by the energy-dashboard and legacy read paths.
+
+        Current cannot flow without a connection: if actual charging
+        power flows (above ``EV_ACTIVE_CHARGE_FLOOR_W`` — #739 raised
+        this from 100 W, which sat below KEBA's own standby draw) or the
+        gated charging badge is on, the plug sensor is wrong.
+        """
+        if not readings.ev_connected and (
+            readings.ev_charging
+            or readings.ev_power > EV_ACTIVE_CHARGE_FLOOR_W
+        ):
+            _LOGGER.warning(
+                "ev_connected inferred from physics: plug sensor reported off "
+                "but ev_power=%.0fW / ev_charging=%s. Treating as connected. "
+                "(Upstream charger-integration bug protection — see #285+1 "
+                "in CHANGELOG.)",
+                readings.ev_power, readings.ev_charging,
+            )
+            readings.ev_connected = True
 
     def _infer_per_charger_connection_from_physics(
         self, readings: PowerReadings,
@@ -3336,16 +3540,17 @@ class SensorReader:
         multi-charger fleets — the exact bug #285+1 fixed.
 
         Attribution is per-charger: only flip a charger whose own power
-        sensor shows draw (>100 W rules out standby) or whose own charging
-        sensor reads on. The legacy reader path doesn't populate
-        ``ev_power_per_charger``, so there it relies on the charging map.
+        sensor shows draw (the 500 W floor rules out standby, #739) or
+        whose own charging sensor reads on. The legacy reader path
+        doesn't populate ``ev_power_per_charger``, so there it relies on
+        the charging map.
         """
         for cid, connected in list(readings.ev_connected_per_charger.items()):
             if connected:
                 continue
             pc_power = readings.ev_power_per_charger.get(cid, 0.0) or 0.0
             pc_charging = readings.ev_charging_per_charger.get(cid, False)
-            if pc_power > 100 or pc_charging:
+            if pc_power > EV_ACTIVE_CHARGE_FLOOR_W or pc_charging:
                 _LOGGER.warning(
                     "ev_connected_per_charger[%s] inferred from physics: plug "
                     "sensor reported off but power=%.0fW / charging=%s. Treating "
@@ -3391,6 +3596,67 @@ class SensorReader:
             except Exception as e:  # noqa: BLE001 — best-effort autodetect
                 _LOGGER.debug("Battery cycles autodetect failed: %s", e)
         self._cycles_sensor_cache = result
+        return result
+
+    def _resolve_solar_anchor(
+        self, solar_anchor_entity: Optional[str],
+    ) -> Optional[str]:
+        """Which entity names the inverter device (#743).
+
+        The configured ``solar_production_sensor`` when there is one —
+        but most installs (HA-PROD included) leave it empty and let SEM
+        take solar from the Energy Dashboard, so the ED-resolved solar
+        entity is the anchor of record. Power first; if solar power is
+        derived rather than read (``stat_rate``), the lifetime-yield
+        counter sits on the same device and anchors just as well.
+        """
+        if solar_anchor_entity:
+            return solar_anchor_entity
+        ed = getattr(self, "_energy_dashboard_config", None)
+        if ed is None:
+            return None
+        return getattr(ed, "solar_power", None) or getattr(
+            ed, "solar_energy", None,
+        ) or None
+
+    def detect_export_limit_entity(
+        self, solar_anchor_entity: Optional[str],
+    ) -> Optional[str]:
+        """#743 — autodetect the inverter's export-limit entity on the
+        same device as the solar power sensor (the #593 keyword-scan
+        pattern). Brands covered by ``EXPORT_LIMIT_KEYWORDS``; the
+        manual ``export_limit_entity`` config override wins upstream.
+        Cached per reader instance; returns an entity id or None.
+        """
+        if getattr(self, "_export_limit_cache", _CYCLES_UNSET) is not _CYCLES_UNSET:
+            return self._export_limit_cache
+        result = None
+        solar_anchor_entity = self._resolve_solar_anchor(solar_anchor_entity)
+        if not solar_anchor_entity:
+            # The Energy-Dashboard config can arrive after the first
+            # cycle — no anchor yet is "ask again", not "none exists".
+            return None
+        if solar_anchor_entity and "." in solar_anchor_entity:
+            try:
+                registry = er.async_get(self.hass)
+                anchor = registry.async_get(solar_anchor_entity)
+                if anchor and anchor.device_id:
+                    for entry in er.async_entries_for_device(
+                        registry, anchor.device_id,
+                    ):
+                        if entry.domain not in ("number", "sensor", "select"):
+                            continue
+                        name = entry.entity_id.split(".", 1)[1]
+                        if any(k in name for k in EXPORT_LIMIT_KEYWORDS):
+                            _LOGGER.info(
+                                "Auto-detected export-limit entity: %s (#743)",
+                                entry.entity_id,
+                            )
+                            result = entry.entity_id
+                            break
+            except Exception as e:  # noqa: BLE001 — best-effort autodetect
+                _LOGGER.debug("Export-limit autodetect failed: %s", e)
+        self._export_limit_cache = result
         return result
 
     def _auto_detect_battery_soc(self, battery_power_entity: str) -> Optional[str]:
