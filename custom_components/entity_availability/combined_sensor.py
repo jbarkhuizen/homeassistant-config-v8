@@ -36,6 +36,7 @@ from .const import (
 from .coordinator import EntityAvailabilityCoordinator
 from .helpers import (
     collapse_representatives,
+    render_name_list,
     resolve_area_name,
     resolve_display_name,
 )
@@ -264,9 +265,11 @@ class CombinedSensorBase(WriteDedupMixin, SensorEntity):
         multiple groups with DIFFERENT config, each group gets its own row keyed
         as ``entity_id::coord_entry_id`` so each interpretation is visible.
 
-        An entity is auto-collapsible when its owning group has use_device_names=True
-        — no explicit collapse toggle needed.  Groups with use_device_names=False
-        keep their entities as individual rows.
+        An entity is auto-collapsible when its owning group is collapse-active
+        (use_device_names=True AND collapse_devices=True) — the same gate a
+        standalone group uses. Groups that are not collapse-active keep their
+        entities as individual rows, so combined mirrors each source group's
+        own collapse setting.
         """
         seen_fingerprint: dict[str, tuple] = {}
         merged: dict[str, Any] = {}
@@ -275,6 +278,7 @@ class CombinedSensorBase(WriteDedupMixin, SensorEntity):
 
         for coord in coords:
             udn = coord.entry.data.get(CONF_USE_DEVICE_NAMES, False)
+            collapse_active = coord.collapse_active
             battery_map = coord.entry.data.get(CONF_BATTERY_ENTITY_MAP, {})
             signal_map = coord.entry.data.get(CONF_SIGNAL_ENTITY_MAP, {})
             non_essential = set(coord.entry.data.get(CONF_NON_ESSENTIAL_ENTITIES, []))
@@ -316,7 +320,7 @@ class CombinedSensorBase(WriteDedupMixin, SensorEntity):
                     row_key = f"{eid}::{coord.entry.entry_id}"
                 merged[row_key] = d
                 udn_map[row_key] = udn
-                if udn:
+                if collapse_active:
                     collapsible.add(row_key)
 
         if not collapsible:
@@ -346,6 +350,58 @@ class CombinedSensorBase(WriteDedupMixin, SensorEntity):
             result.append(rk)
         return result
 
+    def _collapsed_recovery_pairs(
+        self, predicate: Callable[[EntityAvailabilityCoordinator, Any], bool]
+    ) -> list[tuple[EntityAvailabilityCoordinator, Any]]:
+        """Return collapse-gated, name-sorted (coord, DeviceState) pairs for a
+        per-coord recovery-window predicate.
+
+        The predicate is applied while the owning coordinator is still in scope so
+        each device is judged against ITS OWN group's recovery window (windows differ
+        per source group). Survivors then collapse through the SAME source-aware
+        ``rep_of`` map severity uses (built once by ``_device_map_cached`` across all
+        coords): one row per representative. Because it is the identical map, the
+        recovery list and the offline/battery/count lists agree at every grain —
+        including multi-source devices, where two battery sensors on one physical
+        device stay two rows in both. Non-collapse-active groups map each row to
+        itself (never collapse), device-less entities map to themselves, and a device
+        split across two collapse-active groups merges to one row because ``rep_of``
+        is cross-coord. Sorted by resolved display name (casefold) with entity_id
+        tiebreak; identical display strings then fold to ``"<name> {N}"`` at render,
+        so a collapse-off device with two entities never renders "Name, Name".
+        """
+        coords = self._active_coordinators()
+        merged, rep_of, _ = self._device_map_cached(coords)
+        # row_key lookup: an entity appears in ``merged`` keyed by entity_id, or by
+        # ``entity_id::entry_id`` when the same entity_id is monitored by two groups
+        # with different config. Same key derivation _device_map_of used.
+        seen: set[str] = set()
+        result: list[tuple[EntityAvailabilityCoordinator, Any]] = []
+        for coord in coords:
+            for d in coord.device_states.values():
+                if not predicate(coord, d):
+                    continue
+                split_key = f"{d.entity_id}::{coord.entry.entry_id}"
+                row_key = split_key if split_key in merged else d.entity_id
+                rep = rep_of.get(row_key, row_key)
+                if rep in seen:
+                    continue
+                seen.add(rep)
+                result.append((coord, d))
+        result.sort(
+            key=lambda cd: (
+                self._pair_name(*cd).casefold(),
+                cd[1].entity_id,
+            )
+        )
+        return result
+
+    def _pair_name(self, coord: EntityAvailabilityCoordinator, d: Any) -> str:
+        """Resolve the display name for a (coord, DeviceState) pair."""
+        return _friendly_name(
+            self.hass, d.entity_id, coord.entry.data.get(CONF_USE_DEVICE_NAMES, False)
+        )
+
 
 class CombinedGroupSensor(CombinedSensorBase):
     """Sensor showing total entity count across multiple groups."""
@@ -353,7 +409,12 @@ class CombinedGroupSensor(CombinedSensorBase):
     _attr_icon = "mdi:format-list-group"
     # No state_class: see GroupSummarySensor.
 
-    # Per-entity list/dict attrs: large, no historical value.
+    # Per-entity list/dict attrs: large, no historical value. This set is now
+    # load-bearing for two concerns: (1) keeping recorder rows small, and
+    # (2) the write-dedup comparison (WriteDedupMixin._ea_dedup_attrs excludes
+    # exactly these keys). Any volatile attr this sensor emits MUST be listed
+    # here — otherwise it advances every tick and re-introduces the per-tick
+    # redundant-write amplification even though the recorder would strip it.
     _unrecorded_attributes = frozenset(
         {
             "display_names",
@@ -380,6 +441,34 @@ class CombinedGroupSensor(CombinedSensorBase):
             "last_seen",
         }
     )
+
+    def _ea_dedup_attrs(self) -> Any:
+        """Widen the write-dedup compare to see collapsed-row membership changes.
+
+        ``row_members`` and ``offline_entities_non_essential`` are unrecorded (so
+        they never amplify recorder rows), but that also removes them from the
+        write-dedup compare. When a non-essential tier settle keeps the collapsed
+        ROW COUNT flat, ``native_value`` (``len(reps)``) is unchanged and every
+        moved list is unrecorded, so ``_ea_should_write`` would skip the write and
+        freeze a stale attrs dict on the live state the card reads. We fold a
+        compact signature of the rep→members STRUCTURE (entity ids only, never
+        volatile values like battery/signal) back into the compared view so a real
+        membership change triggers a write. Drifting readings cannot move it, so
+        the per-tick write-amp reduction (see ``_unrecorded_attributes``) holds.
+        """
+        stored = super()._ea_dedup_attrs()
+        # CombinedGroupSensor.extra_state_attributes always returns a populated
+        # dict, so super() (which passes non-dicts straight through) always
+        # returns a dict here.
+        rowsig = tuple(
+            sorted(
+                (rep, tuple(members))
+                for rep, members in (
+                    self.extra_state_attributes.get("row_members") or {}
+                ).items()
+            )
+        )
+        return {**stored, "_ea_rowsig": rowsig}
 
     def __init__(self, hass, entry, group_name, group_slug, combined_entry_ids):
         super().__init__(hass, entry, group_name, group_slug, combined_entry_ids)
@@ -1003,14 +1092,7 @@ class CombinedOfflineEntitiesSensor(CombinedSensorBase):
                 ),
             )
         ]
-        if not offline:
-            return "None"
-        result = ", ".join(offline)
-        return (
-            result[: MAX_STATE_LENGTH - 3] + "..."
-            if len(result) > MAX_STATE_LENGTH - 3
-            else result
-        )
+        return render_name_list(offline, MAX_STATE_LENGTH)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -1056,14 +1138,7 @@ class CombinedLowBatterySensor(CombinedSensorBase):
                 ),
             )
         ]
-        if not low:
-            return "None"
-        result = ", ".join(low)
-        return (
-            result[: MAX_STATE_LENGTH - 3] + "..."
-            if len(result) > MAX_STATE_LENGTH - 3
-            else result
-        )
+        return render_name_list(low, MAX_STATE_LENGTH)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -1130,41 +1205,22 @@ class CombinedRecentlyOfflineSensor(CombinedSensorBase):
         self._attr_translation_key = "recently_offline"
 
     def _matching_devices(self):
-        now = datetime.now(timezone.utc)
-        seen: set[str] = set()
-        result = []
-        for coord in self._active_coordinators():
-            cutoff = coord.recovery_window_minutes * 60
-            for d in coord.device_states.values():
-                if (
-                    d.is_offline
-                    and not d.is_suppressed
-                    and not d.is_non_essential
-                    and d.recently_offline_at is not None
-                    and (now - d.recently_offline_at).total_seconds() <= cutoff
-                    and d.entity_id not in seen
-                ):
-                    seen.add(d.entity_id)
-                    result.append((coord, d))
-        return result
+        return self._collapsed_recovery_pairs(
+            lambda coord, d: (
+                d.is_offline
+                and not d.is_suppressed
+                and not d.is_non_essential
+                and d.recently_offline_at is not None
+                and (datetime.now(timezone.utc) - d.recently_offline_at).total_seconds()
+                <= coord.recovery_window_minutes * 60
+            )
+        )
 
     @property
     def native_value(self) -> str:
         pairs = self._matching_devices()
-        if not pairs:
-            return "None"
-        result = ", ".join(
-            _friendly_name(
-                self.hass,
-                d.entity_id,
-                coord.entry.data.get(CONF_USE_DEVICE_NAMES, False),
-            )
-            for coord, d in pairs
-        )
-        return (
-            result[: MAX_STATE_LENGTH - 3] + "..."
-            if len(result) > MAX_STATE_LENGTH - 3
-            else result
+        return render_name_list(
+            [self._pair_name(coord, d) for coord, d in pairs], MAX_STATE_LENGTH
         )
 
     @property
@@ -1188,41 +1244,22 @@ class CombinedRecentlyRecoveredSensor(CombinedSensorBase):
         self._attr_translation_key = "recently_recovered"
 
     def _matching_devices(self):
-        now = datetime.now(timezone.utc)
-        seen: set[str] = set()
-        result = []
-        for coord in self._active_coordinators():
-            cutoff = coord.recovery_window_minutes * 60
-            for d in coord.device_states.values():
-                if (
-                    not d.is_offline
-                    and not d.is_suppressed
-                    and not d.is_non_essential
-                    and d.last_recovery is not None
-                    and (now - d.last_recovery).total_seconds() <= cutoff
-                    and d.entity_id not in seen
-                ):
-                    seen.add(d.entity_id)
-                    result.append((coord, d))
-        return result
+        return self._collapsed_recovery_pairs(
+            lambda coord, d: (
+                not d.is_offline
+                and not d.is_suppressed
+                and not d.is_non_essential
+                and d.last_recovery is not None
+                and (datetime.now(timezone.utc) - d.last_recovery).total_seconds()
+                <= coord.recovery_window_minutes * 60
+            )
+        )
 
     @property
     def native_value(self) -> str:
         pairs = self._matching_devices()
-        if not pairs:
-            return "None"
-        result = ", ".join(
-            _friendly_name(
-                self.hass,
-                d.entity_id,
-                coord.entry.data.get(CONF_USE_DEVICE_NAMES, False),
-            )
-            for coord, d in pairs
-        )
-        return (
-            result[: MAX_STATE_LENGTH - 3] + "..."
-            if len(result) > MAX_STATE_LENGTH - 3
-            else result
+        return render_name_list(
+            [self._pair_name(coord, d) for coord, d in pairs], MAX_STATE_LENGTH
         )
 
     @property

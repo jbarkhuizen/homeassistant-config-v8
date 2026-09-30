@@ -558,6 +558,13 @@ HEALTH_MONITORING_SENSORS: tuple[GarminConnectSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     GarminConnectSensorEntityDescription(
+        key="avgSleepRespirationValue",
+        translation_key="avg_sleep_respiration",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="brpm",
+        preserve_value=True,
+    ),
+    GarminConnectSensorEntityDescription(
         key="averageMonitoringEnvironmentAltitude",
         translation_key="avg_altitude",
         device_class=SensorDeviceClass.DISTANCE,
@@ -786,6 +793,30 @@ ACTIVITY_TRACKING_SENSORS: tuple[GarminConnectSensorEntityDescription, ...] = (
         attributes_fn=lambda data: {
             "last_workouts": (data.get("workouts") or [])[-10:],
         },
+    ),
+    GarminConnectSensorEntityDescription(
+        key="todayScheduledWorkout",
+        translation_key="today_scheduled_workout",
+        coordinator_type=CoordinatorType.ACTIVITY,
+        value_fn=lambda data: (data.get("todayScheduledWorkout") or {}).get("title"),
+        attributes_fn=lambda data: data.get("todayScheduledWorkout") or {},
+    ),
+    GarminConnectSensorEntityDescription(
+        key="nextScheduledWorkout",
+        translation_key="next_scheduled_workout",
+        coordinator_type=CoordinatorType.ACTIVITY,
+        value_fn=lambda data: (data.get("nextScheduledWorkout") or {}).get("title"),
+        attributes_fn=lambda data: {
+            **(data.get("nextScheduledWorkout") or {}),
+            "upcoming": data.get("scheduledWorkouts") or [],
+        },
+    ),
+    GarminConnectSensorEntityDescription(
+        key="trainingPlanGoalEvent",
+        translation_key="training_plan_goal_event",
+        coordinator_type=CoordinatorType.ACTIVITY,
+        value_fn=lambda data: (data.get("trainingPlanGoalEvent") or {}).get("eventName"),
+        attributes_fn=lambda data: data.get("trainingPlanGoalEvent") or {},
     ),
 )
 
@@ -1208,7 +1239,7 @@ def _parse_iso(value: str) -> datetime.datetime | None:
     """Parse an ISO datetime string, returning None on failure."""
     try:
         return datetime.datetime.fromisoformat(value)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return None
 
 
@@ -1223,8 +1254,7 @@ def _count_recent_activities(data: dict[str, Any]) -> int:
         [
             a
             for a in (data.get("lastActivities") or [])
-            if isinstance(a.get("startTime"), datetime.datetime)
-            and a["startTime"] >= cutoff
+            if isinstance(a.get("startTime"), datetime.datetime) and a["startTime"] >= cutoff
         ]
     )
 
@@ -1267,6 +1297,38 @@ GEAR_SENSORS: tuple[GarminConnectSensorEntityDescription, ...] = (
         attributes_fn=lambda data: {"devices": data.get("solarIntensity")},
     ),
     GarminConnectSensorEntityDescription(
+        key="avgSolarUtilization",
+        translation_key="avg_solar_intensity",
+        coordinator_type=CoordinatorType.GEAR,
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: next(
+            (
+                d.get("avgSolarUtilization")
+                for d in (data.get("solarIntensity") or [])
+                if d.get("avgSolarUtilization") is not None
+            ),
+            None,
+        ),
+        attributes_fn=lambda data: {"devices": data.get("solarIntensity")},
+    ),
+    GarminConnectSensorEntityDescription(
+        key="totalActivityTimeGainMinutes",
+        translation_key="solar_time_gained",
+        coordinator_type=CoordinatorType.GEAR,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        value_fn=lambda data: next(
+            (
+                d.get("totalActivityTimeGainMinutes")
+                for d in (data.get("solarIntensity") or [])
+                if d.get("totalActivityTimeGainMinutes") is not None
+            ),
+            None,
+        ),
+        attributes_fn=lambda data: {"devices": data.get("solarIntensity")},
+    ),
+    GarminConnectSensorEntityDescription(
         key="devices",
         translation_key="devices",
         coordinator_type=CoordinatorType.GEAR,
@@ -1277,6 +1339,15 @@ GEAR_SENSORS: tuple[GarminConnectSensorEntityDescription, ...] = (
             "devices": data.get("devices"),
             "last_used_device": data.get("lastUsedDevice"),
         },
+    ),
+    GarminConnectSensorEntityDescription(
+        key="sensors",
+        translation_key="connected_sensors",
+        coordinator_type=CoordinatorType.GEAR,
+        value_fn=lambda data: (
+            len(data["sensors"]) if isinstance(data.get("sensors"), list) else None
+        ),
+        attributes_fn=lambda data: {"sensors": data.get("sensors")},
     ),
 )
 
@@ -1471,12 +1542,7 @@ def _menstrual_fertile_window_end(data: dict[str, Any]) -> dt_date | None:
     s = _menstrual_day_summary(data)
     fw_start = s.get("fertileWindowStart")
     fw_len = s.get("lengthOfFertileWindow")
-    if (
-        not isinstance(fw_start, int)
-        or fw_start <= 0
-        or not isinstance(fw_len, int)
-        or fw_len <= 0
-    ):
+    if not isinstance(fw_start, int) or fw_start <= 0 or not isinstance(fw_len, int) or fw_len <= 0:
         return None
     fertile_start = start_date + timedelta(days=fw_start - 1)
     return fertile_start + timedelta(days=fw_len - 1)
@@ -1718,7 +1784,7 @@ def _async_migrate_sleep_duration_entity_id(registry: er.EntityRegistry) -> None
             old_entity_id,
             new_entity_id="sensor.garmin_connect_sleep_duration",
         )
-    except (ValueError, KeyError):
+    except ValueError, KeyError:
         pass
 
 
@@ -1734,9 +1800,7 @@ def _async_migrate_gear_unique_ids(
         gear_uuid = gear_stat.get("uuid") or gear_stat.get("gearUuid", "")
         if not gear_uuid:
             continue
-        old_unique_id = (
-            f"{entry_id}_gear_{gear_name.lower().replace(' ', '_').replace('-', '_')}"
-        )
+        old_unique_id = f"{entry_id}_gear_{gear_name.lower().replace(' ', '_').replace('-', '_')}"
         if registry.async_get_entity_id("sensor", DOMAIN, old_unique_id) is None:
             continue
         new_unique_id = f"{entry_id}_gear_{gear_uuid}"
@@ -1996,6 +2060,22 @@ class GarminConnectPowerToWeightSensor(CoordinatorEntity[TrainingCoordinator], S
             manufacturer="Garmin",
             entry_type=DeviceEntryType.SERVICE,
         )
+
+    @property
+    def suggested_object_id(self) -> str | None:
+        """Object id including the sport.
+
+        HA's default suggested_object_id doesn't resolve
+        translation_placeholders (issue #585) -- it uses a separate,
+        placeholder-unaware translation lookup from the one that renders
+        the display name, so every sport collapses to the same bare
+        "power to weight"/"ftp" string and HA numbers them _2, _3, ...
+        Only affects newly-registered entities; existing ones keep
+        whatever id they already have.
+        """
+        sport_display = self._sport.replace("_", " ").title()
+        prefix = "Power to Weight" if self._sensor_type == "ptw" else "FTP"
+        return f"{prefix} {sport_display}"
 
     def _get_entry(self) -> dict[str, Any] | None:
         """Return the powerToWeight entry for this sport, or None."""

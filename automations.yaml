@@ -163,3 +163,12 @@
   action:
     - service: ai_automation_suggester.request_suggestions
       data: {}
+
+- alias: "Daily - Expose New Entities to Assist"
+  description: "Catches any newly added entity and exposes it to Assist so external tools (Claude) can see it."
+  trigger:
+      - platform: time
+        at: "03:00:00"
+  action:
+      - service: script.expose_all_entities_to_assist
+  mode: single

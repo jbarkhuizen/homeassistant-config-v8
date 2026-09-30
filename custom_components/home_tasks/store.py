@@ -368,12 +368,13 @@ class HomeTasksStore:
         """Load data from disk."""
         data = await self._store.async_load()
         if data is None:
-            self._data = {"tasks": [], "sections": [], "defaults": {}}
+            self._data = {"tasks": [], "sections": [], "defaults": {}, "settings": {}}
             await self._async_save()
         else:
             self._data = data
             self._data.setdefault("sections", [])
             self._data.setdefault("defaults", {})
+            self._data.setdefault("settings", {})
             self._backfill_recurrence_fields()
             self._backfill_section_id()
             self._migrate_v1_to_v2()
@@ -446,15 +447,64 @@ class HomeTasksStore:
         """Return all tasks sorted by order."""
         return sorted(self._data["tasks"], key=lambda t: t["sort_order"])
 
+    def get_settings(self) -> dict:
+        """Per-list policy settings (not task defaults).
+
+        share_images: whether this list takes part in the cross-list image
+        pool. Default True — the historical behaviour, where generating an
+        image assigns it to every task with the same title everywhere. Off
+        means this list neither takes an image from another list nor hands
+        one over, which is what separate-but-similar lists need (three kids,
+        the same chore, their own pictures).
+
+        auto_generate_images: whether the background queue generates images
+        for open tasks in this list. Default False — it spends money at the
+        AI provider, so it has to be asked for.
+        """
+        s = self._data.get("settings") or {}
+        return {
+            "share_images": s.get("share_images", True) is not False,
+            "auto_generate_images": s.get("auto_generate_images", False) is True,
+        }
+
+    async def async_set_settings(
+        self, share_images: object = _UNSET, auto_generate_images: object = _UNSET
+    ) -> dict:
+        """Update per-list settings. Omitted fields keep their value."""
+        current = self.get_settings()
+        if share_images is _UNSET:
+            share_images = current["share_images"]
+        if auto_generate_images is _UNSET:
+            auto_generate_images = current["auto_generate_images"]
+        self._data["settings"] = {
+            "share_images": bool(share_images),
+            "auto_generate_images": bool(auto_generate_images),
+        }
+        # Same reasoning as async_set_defaults: persist immediately, skip the
+        # entity listener fanout (no entity state depends on this).
+        await self._store.async_save(self._data)
+        return self.get_settings()
+
     def get_defaults(self) -> dict:
         """List-level defaults applied to every newly created task, no matter
         which path creates it — card, WS, service, voice or todo platform
         (issues #44 / #46)."""
         d = self._data.get("defaults") or {}
-        return {"assignee": d.get("assignee") or None, "reminders": list(d.get("reminders") or [])}
+        return {
+            "assignee": d.get("assignee") or None,
+            "reminders": list(d.get("reminders") or []),
+            "tags": list(d.get("tags") or []),
+            "priority": d.get("priority"),
+            "section_id": d.get("section_id") or None,
+        }
 
     async def async_set_defaults(
-        self, assignee: object = _UNSET, reminders: object = _UNSET
+        self,
+        assignee: object = _UNSET,
+        reminders: object = _UNSET,
+        tags: object = _UNSET,
+        priority: object = _UNSET,
+        section_id: object = _UNSET,
     ) -> dict:
         """Update the list-level defaults.
 
@@ -474,7 +524,25 @@ class HomeTasksStore:
             reminders = current["reminders"]
         else:
             reminders = validate_reminders(reminders) if reminders else []
-        self._data["defaults"] = {"assignee": assignee or None, "reminders": reminders}
+        if tags is _UNSET:
+            tags = current["tags"]
+        else:
+            tags = validate_tags(tags) if tags else []
+        if priority is _UNSET:
+            priority = current["priority"]
+        else:
+            priority = validate_priority(priority)
+        if section_id is _UNSET:
+            section_id = current["section_id"]
+        elif section_id:
+            self._validate_section_id(section_id)
+        self._data["defaults"] = {
+            "assignee": assignee or None,
+            "reminders": reminders,
+            "tags": tags,
+            "priority": priority,
+            "section_id": section_id or None,
+        }
         # Immediate save (not async_delay_save): a pending delayed write of an
         # unloaded store instance could clobber newer disk state after a
         # config-entry reload, and the WS ack must mean "persisted".  Client-
@@ -493,6 +561,8 @@ class HomeTasksStore:
         reminders: list | None = None,
         notes: str | None = None,
         priority: int | None = None,
+        tags: list | None = None,
+        section_id: str | None = None,
     ) -> dict:
         """Add a task, optionally with an initial due date/time (issue #38),
         reminders (issue #43), notes and priority.
@@ -511,6 +581,17 @@ class HomeTasksStore:
             assigned_person = defaults["assignee"]
         if reminders is None and defaults.get("reminders"):
             reminders = list(defaults["reminders"])
+        if tags is None and defaults.get("tags"):
+            tags = list(defaults["tags"])
+        if priority is None and defaults.get("priority"):
+            priority = defaults["priority"]
+        if section_id is None and defaults.get("section_id"):
+            # A default pointing at a section that has since been deleted is a
+            # stale preference, not an instruction: ignore it rather than
+            # letting it fail every creation on the list.
+            known = {s["id"] for s in self._data.get("sections", [])}
+            if defaults["section_id"] in known:
+                section_id = defaults["section_id"]
         if assigned_person is not None:
             assigned_person = validate_assigned_person(assigned_person)
         due_date = validate_date(due_date, "due_date")
@@ -518,6 +599,9 @@ class HomeTasksStore:
         reminders = validate_reminders(reminders) if reminders else []
         notes = validate_notes(notes) if notes else ""
         priority = validate_priority(priority)
+        tags = validate_tags(tags) if tags else []
+        if section_id is not None:
+            self._validate_section_id(section_id)
         if len(self._data["tasks"]) >= MAX_TASKS_PER_LIST:
             raise ValueError(f"Maximum number of tasks ({MAX_TASKS_PER_LIST}) reached")
         max_order = max((t["sort_order"] for t in self._data["tasks"]), default=-1)
@@ -568,12 +652,12 @@ class HomeTasksStore:
             "completed_at": None,
             "reopen_at": None,
             "assigned_person": assigned_person,
-            "tags": [],
+            "tags": tags,
             "image_url": None,
             "history": history,
             "external_id": None,
             "sync_source": None,
-            "section_id": None,
+            "section_id": section_id,
         }
         self._data["tasks"].append(task)
         await self._async_save()
@@ -998,6 +1082,11 @@ class HomeTasksStore:
         for task in self._data.get("tasks", []):
             if task.get("section_id") == section_id:
                 task["section_id"] = None
+        # A default that points at the deleted section would put every new
+        # task into a section that is not there any more.
+        defaults = self._data.get("defaults") or {}
+        if defaults.get("section_id") == section_id:
+            defaults["section_id"] = None
         await self._async_save()
 
     async def async_reorder_sections(self, section_ids: list[str]) -> None:

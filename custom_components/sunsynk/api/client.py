@@ -11,6 +11,22 @@ import aiohttp
 _LOGGER = logging.getLogger(__name__)
 
 
+def _is_success(msg: Any) -> bool:
+    """Whether an API response's `msg` field indicates success.
+
+    Most endpoints reply with exactly "Success", but at least one
+    multi-inverter/parallel setup has been observed replying to a
+    settings write with "send command success:{}" instead — a message
+    that means the command DID succeed but doesn't equal the expected
+    string exactly (#21). A strict `== "Success"` check treated that as
+    a failure even though the setting was actually applied (confirmed by
+    the resulting slot showing up correctly). Match "success" as a
+    case-insensitive substring instead, since this API's success message
+    isn't documented anywhere and apparently isn't fully consistent.
+    """
+    return isinstance(msg, str) and "success" in msg.lower()
+
+
 class SunsynkApiError(Exception):
     """Raised when an API call fails."""
 
@@ -41,7 +57,7 @@ class SunsynkClient:
                 resp.raise_for_status()
                 data = await resp.json()
 
-            if data.get("msg") != "Success":
+            if not _is_success(data.get("msg")):
                 raise SunsynkApiError(f"API error: {data.get('msg')} for {url}")
 
             return data.get("data", {})
@@ -52,19 +68,24 @@ class SunsynkClient:
             raise SunsynkApiError(f"Connection error for {url}: {err}") from err
 
     async def _post(
-        self, session: aiohttp.ClientSession, url: str, payload: dict
+        self,
+        session: aiohttp.ClientSession,
+        url: str,
+        payload: dict,
+        params: dict | None = None,
     ) -> dict[str, Any]:
         try:
             async with session.post(
                 url,
                 headers=self._headers(),
                 json=payload,
+                params=params,
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as resp:
                 resp.raise_for_status()
                 data = await resp.json()
 
-            if data.get("msg") != "Success":
+            if not _is_success(data.get("msg")):
                 raise SunsynkApiError(f"API error: {data.get('msg')} for {url}")
 
             return data.get("data", {})
@@ -160,14 +181,20 @@ class SunsynkClient:
     async def async_get_plant_info(
         self, session: aiohttp.ClientSession, plant_id: str
     ) -> dict[str, Any]:
+        # `lan` is required here — omitting it doesn't 404, the API rejects
+        # the call outright: "Required request parameter 'lan' for method
+        # parameter type String is not present" (#20).
         url = f"{self._base}/api/v1/plant/{plant_id}"
-        return await self._get(session, url)
+        return await self._get(session, url, params={"lan": "en"})
 
     async def async_set_plant_income(
         self, session: aiohttp.ClientSession, plant_id: str, payload: dict[str, Any]
     ) -> None:
+        # Precautionary — not confirmed to need `lan` the way the GET above
+        # does (we've never gotten far enough to find out), but every other
+        # plant/lan-requiring endpoint takes it and it's harmless to include.
         url = f"{self._base}/api/v1/plant/{plant_id}/income"
-        await self._post(session, url, payload)
+        await self._post(session, url, payload, params={"lan": "en"})
         _LOGGER.debug("Plant income settings written for plant %s", plant_id)
 
     async def async_fetch_all(

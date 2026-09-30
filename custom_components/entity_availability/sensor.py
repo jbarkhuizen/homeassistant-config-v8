@@ -31,7 +31,7 @@ from .const import (
     NO_AREA_SENTINEL,
 )
 from .coordinator import EntityAvailabilityCoordinator
-from .helpers import resolve_area_name, resolve_display_name
+from .helpers import render_name_list, resolve_area_name, resolve_display_name
 from .write_dedup import DedupCoordinatorSensor
 
 _LOGGER = logging.getLogger(__name__)
@@ -272,12 +272,7 @@ class OfflineDevicesSensor(DedupCoordinatorSensor):
                 )
             )
         ]
-        if not offline:
-            return "None"
-        result = ", ".join(offline)
-        if len(result) > MAX_STATE_LENGTH - 3:
-            result = result[: MAX_STATE_LENGTH - 3] + "..."
-        return result
+        return render_name_list(offline, MAX_STATE_LENGTH)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -327,12 +322,7 @@ class DegradedDevicesSensor(DedupCoordinatorSensor):
                 )
             )
         ]
-        if not low_bat:
-            return "None"
-        result = ", ".join(low_bat)
-        if len(result) > MAX_STATE_LENGTH - 3:
-            result = result[: MAX_STATE_LENGTH - 3] + "..."
-        return result
+        return render_name_list(low_bat, MAX_STATE_LENGTH)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -394,12 +384,7 @@ class NonEssentialOfflineEntitiesSensor(DedupCoordinatorSensor):
                 lambda d: d.is_non_essential and d.is_offline and not d.is_suppressed
             )
         ]
-        if not offline:
-            return "None"
-        result = ", ".join(offline)
-        if len(result) > MAX_STATE_LENGTH - 3:
-            result = result[: MAX_STATE_LENGTH - 3] + "..."
-        return result
+        return render_name_list(offline, MAX_STATE_LENGTH)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -455,12 +440,7 @@ class NonEssentialLowBatterySensor(DedupCoordinatorSensor):
                 )
             )
         ]
-        if not low_bat:
-            return "None"
-        result = ", ".join(low_bat)
-        if len(result) > MAX_STATE_LENGTH - 3:
-            result = result[: MAX_STATE_LENGTH - 3] + "..."
-        return result
+        return render_name_list(low_bat, MAX_STATE_LENGTH)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -578,14 +558,7 @@ class NonEssentialStaleEntitiesSensor(DedupCoordinatorSensor):
                 )
             )
         ]
-        if not stale:
-            return "None"
-        result = ", ".join(stale)
-        return (
-            result
-            if len(result) <= MAX_STATE_LENGTH - 3
-            else result[: MAX_STATE_LENGTH - 3] + "..."
-        )
+        return render_name_list(stale, MAX_STATE_LENGTH)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -677,14 +650,7 @@ class StaleEntitiesSensor(DedupCoordinatorSensor):
                 )
             )
         ]
-        if not stale:
-            return "None"
-        result = ", ".join(stale)
-        return (
-            result
-            if len(result) <= MAX_STATE_LENGTH - 3
-            else result[: MAX_STATE_LENGTH - 3] + "..."
-        )
+        return render_name_list(stale, MAX_STATE_LENGTH)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -986,12 +952,14 @@ class GroupSummarySensor(DedupCoordinatorSensor):
     # statistics would be constant rows sampled every 5 min. Stays a valid state sensor.
     _attr_has_entity_name = True
 
-    # last_seen timestamps advance every tick — exclude from dedup comparison
-    # so the sensor only writes when monitoring data actually changes.
-    _EA_SKIP_DEDUP_KEYS = frozenset({"last_seen"})
-
     # Large dict/list attrs: live state machine access is fine but no value in
-    # recording per-entity snapshots historically. Keeps recorder rows small.
+    # recording per-entity snapshots historically. This set is now load-bearing
+    # for two concerns: (1) keeping recorder rows small, and (2) the write-dedup
+    # comparison (WriteDedupMixin._ea_dedup_attrs excludes exactly these keys).
+    # Any volatile attr this sensor emits MUST be listed here — otherwise it
+    # advances every tick and re-introduces the per-tick redundant-write
+    # amplification (last_seen/signal_levels/battery_levels …) even though the
+    # recorder would strip it.
     _unrecorded_attributes = frozenset(
         {
             "display_names",
@@ -1015,27 +983,6 @@ class GroupSummarySensor(DedupCoordinatorSensor):
             "row_members",
         }
     )
-
-    def _ea_should_write(self) -> bool:
-        """Write only when attrs excluding last_seen change."""
-        value = self._ea_current_value()
-        raw_attrs = self.extra_state_attributes
-        attrs = (
-            {k: v for k, v in raw_attrs.items() if k not in self._EA_SKIP_DEDUP_KEYS}
-            if raw_attrs
-            else raw_attrs
-        )
-        available = getattr(self, "available", True)
-        if (
-            value == self._ea_last_value
-            and attrs == self._ea_last_attrs
-            and available == self._ea_last_available
-        ):
-            return False
-        self._ea_last_value = value
-        self._ea_last_attrs = attrs
-        self._ea_last_available = available
-        return True
 
     def __init__(
         self,
@@ -1273,18 +1220,32 @@ class RecentlyOfflineSensor(DedupCoordinatorSensor):
         return self.coordinator.recovery_window_minutes * 60
 
     def _refresh_cache(self) -> list:
-        """Compute and return offline devices whose offline event is within the recovery window."""
+        """Compute and return offline devices whose offline event is within the recovery window.
+
+        Device-collapsed when active (one representative per device) and sorted by
+        display name so the joined state string is deterministic — same collapse and
+        ordering contract as the offline/low-battery sensors.
+        """
         now = datetime.now(timezone.utc)
         cutoff = self._window_seconds()
-        self._cached_devices = [
-            d
-            for d in self.coordinator.device_states.values()
-            if d.is_offline
-            and not d.is_suppressed
-            and not d.is_non_essential
-            and d.recently_offline_at is not None
-            and (now - d.recently_offline_at).total_seconds() <= cutoff
-        ]
+        use_device_names = self.coordinator.entry.data.get(CONF_USE_DEVICE_NAMES, False)
+        self._cached_devices = sorted(
+            self.coordinator.representative_states_matching(
+                lambda d: (
+                    d.is_offline
+                    and not d.is_suppressed
+                    and not d.is_non_essential
+                    and d.recently_offline_at is not None
+                    and (now - d.recently_offline_at).total_seconds() <= cutoff
+                )
+            ),
+            key=lambda d: (
+                _resolve_display_name(
+                    self.hass, d.entity_id, use_device_names
+                ).casefold(),
+                d.entity_id,
+            ),
+        )
         _LOGGER.debug(
             "[%s] RecentlyOfflineSensor cache refreshed: %d device(s) within %ss window",
             self.entity_id,
@@ -1297,16 +1258,14 @@ class RecentlyOfflineSensor(DedupCoordinatorSensor):
     def native_value(self) -> str:
         """Return comma-separated friendly names of recently offline entities."""
         devices = self._refresh_cache()
-        if not devices:
-            return "None"
         use_device_names = self.coordinator.entry.data.get(CONF_USE_DEVICE_NAMES, False)
-        result = ", ".join(
-            _resolve_display_name(self.hass, d.entity_id, use_device_names)
-            for d in devices
+        return render_name_list(
+            [
+                _resolve_display_name(self.hass, d.entity_id, use_device_names)
+                for d in devices
+            ],
+            MAX_STATE_LENGTH,
         )
-        if len(result) > MAX_STATE_LENGTH - 3:
-            result = result[: MAX_STATE_LENGTH - 3] + "..."
-        return result
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -1344,18 +1303,32 @@ class RecentlyRecoveredSensor(DedupCoordinatorSensor):
         return self.coordinator.recovery_window_minutes * 60
 
     def _refresh_cache(self) -> list:
-        """Compute and return online devices whose recovery event is within the recovery window."""
+        """Compute and return online devices whose recovery event is within the recovery window.
+
+        Device-collapsed when active (one representative per device) and sorted by
+        display name so the joined state string is deterministic — same collapse and
+        ordering contract as the offline/low-battery sensors.
+        """
         now = datetime.now(timezone.utc)
         cutoff = self._window_seconds()
-        self._cached_devices = [
-            d
-            for d in self.coordinator.device_states.values()
-            if not d.is_offline
-            and not d.is_suppressed
-            and not d.is_non_essential
-            and d.last_recovery is not None
-            and (now - d.last_recovery).total_seconds() <= cutoff
-        ]
+        use_device_names = self.coordinator.entry.data.get(CONF_USE_DEVICE_NAMES, False)
+        self._cached_devices = sorted(
+            self.coordinator.representative_states_matching(
+                lambda d: (
+                    not d.is_offline
+                    and not d.is_suppressed
+                    and not d.is_non_essential
+                    and d.last_recovery is not None
+                    and (now - d.last_recovery).total_seconds() <= cutoff
+                )
+            ),
+            key=lambda d: (
+                _resolve_display_name(
+                    self.hass, d.entity_id, use_device_names
+                ).casefold(),
+                d.entity_id,
+            ),
+        )
         _LOGGER.debug(
             "[%s] RecentlyRecoveredSensor cache refreshed: %d device(s) within %ss window",
             self.entity_id,
@@ -1368,16 +1341,14 @@ class RecentlyRecoveredSensor(DedupCoordinatorSensor):
     def native_value(self) -> str:
         """Return comma-separated friendly names of recently recovered entities."""
         devices = self._refresh_cache()
-        if not devices:
-            return "None"
         use_device_names = self.coordinator.entry.data.get(CONF_USE_DEVICE_NAMES, False)
-        result = ", ".join(
-            _resolve_display_name(self.hass, d.entity_id, use_device_names)
-            for d in devices
+        return render_name_list(
+            [
+                _resolve_display_name(self.hass, d.entity_id, use_device_names)
+                for d in devices
+            ],
+            MAX_STATE_LENGTH,
         )
-        if len(result) > MAX_STATE_LENGTH - 3:
-            result = result[: MAX_STATE_LENGTH - 3] + "..."
-        return result
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -1637,12 +1608,7 @@ class PoorSignalSensor(DedupCoordinatorSensor):
             for eid in self.coordinator._poor_signal_entity_ids()
             if eid in states
         ]
-        if not poor:
-            return "None"
-        result = ", ".join(poor)
-        if len(result) > MAX_STATE_LENGTH - 3:
-            result = result[: MAX_STATE_LENGTH - 3] + "..."
-        return result
+        return render_name_list(poor, MAX_STATE_LENGTH)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -1713,12 +1679,7 @@ class NonEssentialPoorSignalSensor(DedupCoordinatorSensor):
             for eid in self.coordinator._poor_signal_ne_entity_ids()
             if eid in states
         ]
-        if not poor:
-            return "None"
-        result = ", ".join(poor)
-        if len(result) > MAX_STATE_LENGTH - 3:
-            result = result[: MAX_STATE_LENGTH - 3] + "..."
-        return result
+        return render_name_list(poor, MAX_STATE_LENGTH)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

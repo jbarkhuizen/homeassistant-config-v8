@@ -16,131 +16,117 @@ var e = Object.defineProperty, t = (e, t, n) => () => {
 };
 //#endregion
 //#region node_modules/custom-card-helpers/dist/index.m.js
-function r() {
-	return (r = Object.assign || function(e) {
-		for (var t = 1; t < arguments.length; t++) {
-			var n = arguments[t];
-			for (var r in n) Object.prototype.hasOwnProperty.call(n, r) && (e[r] = n[r]);
-		}
-		return e;
-	}).apply(this, arguments);
-}
-function i(e) {
+function r(e) {
 	return e.substr(0, e.indexOf("."));
 }
-function a(e) {
+function i(e) {
 	return e !== void 0 && e.action !== "none";
 }
-function o(e, t, n) {
+function a(e, t, n) {
 	if (t.has("config") || n) return !0;
 	if (e.config.entity) {
-		var r = t.get("hass");
-		return !r || r.states[e.config.entity] !== e.hass.states[e.config.entity];
+		let n = t.get("hass");
+		return !n || n.states[e.config.entity] !== e.hass.states[e.config.entity];
 	}
 	return !1;
 }
-var s, c, l, u, d, f, p, m, h, g, _, v, y, b, x, S, C, w, T, E, D = t((() => {
-	l = function(e, t) {
-		return u(t).format(e);
-	}, u = function(e) {
-		return new Intl.DateTimeFormat(e.language, {
-			day: "numeric",
-			month: "short"
-		});
-	}, (function(e) {
+var o, s, c, l, u, d, f, p, m, h, g, _, v, y, b, x, S, C, w, T, E = t((() => {
+	(function(e) {
 		e.language = "language", e.system = "system", e.comma_decimal = "comma_decimal", e.decimal_comma = "decimal_comma", e.space_comma = "space_comma", e.none = "none";
-	})(s || (s = {})), function(e) {
+	})(o || (o = {})), (function(e) {
 		e.language = "language", e.system = "system", e.am_pm = "12", e.twenty_four = "24";
-	}(c || (c = {})), d = function(e) {
-		if (e.time_format === c.language || e.time_format === c.system) {
-			var t = e.time_format === c.language ? e.language : void 0, n = (/* @__PURE__ */ new Date()).toLocaleString(t);
+	})(s || (s = {})), c = (e) => {
+		if (e.time_format === s.language || e.time_format === s.system) {
+			let t = e.time_format === s.language ? e.language : void 0, n = (/* @__PURE__ */ new Date()).toLocaleString(t);
 			return n.includes("AM") || n.includes("PM");
 		}
-		return e.time_format === c.am_pm;
-	}, f = function(e, t) {
-		return p(t).format(e);
-	}, p = function(e) {
-		return new Intl.DateTimeFormat(e.language, {
-			hour: "numeric",
-			minute: "2-digit",
-			hour12: d(e)
-		});
-	}, m = function(e) {
+		return e.time_format === s.am_pm;
+	}, l = (e, t) => u(t).format(e), u = (e) => new Intl.DateTimeFormat(e.language, {
+		day: "numeric",
+		month: "short"
+	}), d = (e, t) => f(t).format(e), f = (e) => new Intl.DateTimeFormat(e.language, {
+		hour: "numeric",
+		minute: "2-digit",
+		hour12: c(e)
+	}), p = (e) => {
 		switch (e.number_format) {
-			case s.comma_decimal: return ["en-US", "en"];
-			case s.decimal_comma: return [
+			case o.comma_decimal: return ["en-US", "en"];
+			case o.decimal_comma: return [
 				"de",
 				"es",
 				"it"
 			];
-			case s.space_comma: return [
+			case o.space_comma: return [
 				"fr",
 				"sv",
 				"cs"
 			];
-			case s.system: return;
+			case o.system: return;
 			default: return e.language;
 		}
-	}, h = function(e, t) {
-		return t === void 0 && (t = 2), Math.round(e * 10 ** t) / 10 ** t;
-	}, g = function(e, t, n) {
-		var r = t ? m(t) : void 0;
+	}, m = (e, t = 2) => Math.round(e * 10 ** t) / 10 ** t, h = (e, t, n) => {
+		let r = t ? p(t) : void 0;
 		if (Number.isNaN = Number.isNaN || function e(t) {
 			return typeof t == "number" && e(t);
-		}, t?.number_format !== s.none && !Number.isNaN(Number(e)) && Intl) try {
-			return new Intl.NumberFormat(r, _(e, n)).format(Number(e));
+		}, t?.number_format !== o.none && !Number.isNaN(Number(e)) && Intl) try {
+			return new Intl.NumberFormat(r, g(e, n)).format(Number(e));
 		} catch (t) {
-			return console.error(t), new Intl.NumberFormat(void 0, _(e, n)).format(Number(e));
+			return console.error(t), new Intl.NumberFormat(void 0, g(e, n)).format(Number(e));
 		}
-		return typeof e == "string" ? e : h(e, n?.maximumFractionDigits).toString() + (n?.style === "currency" ? " " + n.currency : "");
-	}, _ = function(e, t) {
-		var n = r({ maximumFractionDigits: 2 }, t);
+		return typeof e == "string" ? e : `${m(e, n?.maximumFractionDigits).toString()}${n?.style === "currency" ? ` ${n.currency}` : ""}`;
+	}, g = (e, t) => {
+		let n = Object.assign({ maximumFractionDigits: 2 }, t);
 		if (typeof e != "string") return n;
 		if (!t || !t.minimumFractionDigits && !t.maximumFractionDigits) {
-			var i = e.indexOf(".") > -1 ? e.split(".")[1].length : 0;
-			n.minimumFractionDigits = i, n.maximumFractionDigits = i;
+			let t = e.indexOf(".") > -1 ? e.split(".")[1].length : 0;
+			n.minimumFractionDigits = t, n.maximumFractionDigits = t;
 		}
 		return n;
-	}, v = [
+	}, _ = [
 		"closed",
 		"locked",
 		"off"
-	], y = function(e, t, n, r) {
+	], v = (e, t, n, r) => {
 		r = r || {}, n = n ?? {};
-		var i = new Event(t, {
+		let i = new Event(t, {
 			bubbles: r.bubbles === void 0 || r.bubbles,
 			cancelable: !!r.cancelable,
 			composed: r.composed === void 0 || r.composed
 		});
 		return i.detail = n, e.dispatchEvent(i), i;
-	}, b = function(e) {
-		y(window, "haptic", e);
-	}, x = function(e, t, n) {
-		n === void 0 && (n = !1), n ? history.replaceState(null, "", t) : history.pushState(null, "", t), y(window, "location-changed", { replace: n });
-	}, S = function(e, t, n) {
-		n === void 0 && (n = !0);
-		var r, a = i(t), o = a === "group" ? "homeassistant" : a;
-		switch (a) {
+	}, y = () => {
+		let e = document.querySelector("home-assistant");
+		if (e = e && e.shadowRoot, e = e && e.querySelector("home-assistant-main"), e = e && e.shadowRoot, e = e && e.querySelector("app-drawer-layout partial-panel-resolver"), e = e && e.shadowRoot || e, e = e && e.querySelector("ha-panel-lovelace"), e = e && e.shadowRoot, e = e && e.querySelector("hui-root"), e) {
+			let t = e.lovelace;
+			return t.current_view = e.___curView, t;
+		}
+		return null;
+	}, b = (e) => {
+		v(window, "haptic", e);
+	}, x = (e, t, n = !1) => {
+		n ? history.replaceState(null, "", t) : history.pushState(null, "", t), v(window, "location-changed", { replace: n });
+	}, S = (e, t, n = !0) => {
+		let i = r(t), a = i === "group" ? "homeassistant" : i, o;
+		switch (i) {
 			case "lock":
-				r = n ? "unlock" : "lock";
+				o = n ? "unlock" : "lock";
 				break;
 			case "cover":
-				r = n ? "open_cover" : "close_cover";
+				o = n ? "open_cover" : "close_cover";
 				break;
-			default: r = n ? "turn_on" : "turn_off";
+			default: o = n ? "turn_on" : "turn_off";
 		}
-		return e.callService(o, r, { entity_id: t });
-	}, C = function(e, t) {
-		return S(e, t, v.includes(e.states[t].state));
-	}, w = function(e, t, n, r) {
-		if (r || (r = { action: "more-info" }), !r.confirmation || r.confirmation.exemptions && r.confirmation.exemptions.some(function(e) {
-			return e.user === t.user.id;
-		}) || (b("warning"), confirm(r.confirmation.text || "Are you sure you want to " + r.action + "?"))) switch (r.action) {
+		return e.callService(a, o, { entity_id: t });
+	}, C = (e, t) => {
+		let n = _.includes(e.states[t].state);
+		return S(e, t, n);
+	}, w = (e, t, n, r) => {
+		if (r || (r = { action: "more-info" }), !(r.confirmation && (!r.confirmation.exemptions || !r.confirmation.exemptions.some((e) => e.user === t.user.id)) && (b("warning"), !confirm(r.confirmation.text || `Are you sure you want to ${r.action}?`)))) switch (r.action) {
 			case "more-info":
-				(n.entity || n.camera_image) && y(e, "hass-more-info", { entityId: n.entity ? n.entity : n.camera_image });
+				(n.entity || n.camera_image) && v(e, "hass-more-info", { entityId: n.entity ? n.entity : n.camera_image });
 				break;
 			case "navigate":
-				r.navigation_path && x(0, r.navigation_path);
+				r.navigation_path && x(e, r.navigation_path);
 				break;
 			case "url":
 				r.url_path && window.open(r.url_path);
@@ -148,81 +134,78 @@ var s, c, l, u, d, f, p, m, h, g, _, v, y, b, x, S, C, w, T, E, D = t((() => {
 			case "toggle":
 				n.entity && (C(t, n.entity), b("success"));
 				break;
-			case "call-service":
-				if (!r.service) return void b("failure");
-				var i = r.service.split(".", 2);
-				t.callService(i[0], i[1], r.service_data, r.target), b("success");
+			case "call-service": {
+				if (!r.service) {
+					b("failure");
+					return;
+				}
+				let [e, n] = r.service.split(".", 2);
+				t.callService(e, n, r.service_data, r.target), b("success");
 				break;
-			case "fire-dom-event": y(e, "ll-custom", r);
+			}
+			case "fire-dom-event": v(e, "ll-custom", r);
 		}
-	}, T = function(e, t, n, r) {
-		var i;
+	}, T = (e, t, n, r) => {
+		let i;
 		r === "double_tap" && n.double_tap_action ? i = n.double_tap_action : r === "hold" && n.hold_action ? i = n.hold_action : r === "tap" && n.tap_action && (i = n.tap_action), w(e, t, n, i);
-	}, E = function() {
-		var e = document.querySelector("home-assistant");
-		if (e = (e = (e = (e = (e = (e = (e = (e = e && e.shadowRoot) && e.querySelector("home-assistant-main")) && e.shadowRoot) && e.querySelector("app-drawer-layout partial-panel-resolver")) && e.shadowRoot || e) && e.querySelector("ha-panel-lovelace")) && e.shadowRoot) && e.querySelector("hui-root")) {
-			var t = e.lovelace;
-			return t.current_view = e.___curView, t;
-		}
-		return null;
 	};
 }));
 //#endregion
 //#region node_modules/is-valid-css-color/dist/index.js
-D();
-var O = String.raw`[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?`, k = `(?:${O}%?|none)`, A = `(?:${O}(?:deg|grad|rad|turn)?|none)`, j = `(?:${String.raw`${O}\s*,\s*${O}\s*,\s*${O}`}|${String.raw`${O}%\s*,\s*${O}%\s*,\s*${O}%`})${String.raw`(?:\s*,\s*${O}%?)?`}`, M = `(?:${O}%?|none)`, N = String.raw`(?:\s*\/\s*${M})?`, P = String.raw`${M}\s+${M}\s+${M}${N}`, ee = new RegExp(String.raw`^rgba?\(\s*(?:${j})\s*\)$`, "i"), te = new RegExp(String.raw`^rgba?\(\s*(?:${P})\s*\)$`, "i"), F = (e) => typeof e == "string" && (e = e.trim(), ee.test(e) || te.test(e)), ne = `(?:${O}(?:deg|grad|rad|turn)?)`, re = `(?:${O}%)`, ie = `(?:${O}%?)`, ae = String.raw`${ne}\s*,\s*${re}\s*,\s*${re}(?:\s*,\s*${ie})?`, oe = String.raw`${A}\s+${k}\s+${k}(?:\s*\/\s*${k})?`, se = new RegExp(String.raw`^hsla?\(\s*${ae}\s*\)$`, "i"), ce = new RegExp(String.raw`^hsla?\(\s*${oe}\s*\)$`, "i"), le = (e) => typeof e == "string" && (e = e.trim(), se.test(e) || ce.test(e)), ue = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}(?:[0-9a-f]{2})?)$/i, de = (e) => typeof e == "string" && ue.test(e.trim()), fe = new RegExp(String.raw`^hwb\(\s*${A}\s+${k}\s+${k}\s*(?:\/\s*${k}\s*)?\)$`, "i"), pe = (e) => typeof e == "string" && fe.test(e.trim()), me = new RegExp(String.raw`^lab\(\s*${k}\s+${k}\s+${k}(?:\s*\/\s*${k})?\s*\)$`, "i"), he = (e) => typeof e == "string" && me.test(e.trim()), ge = new RegExp(String.raw`^lch\(\s*${k}\s+${k}\s+${A}\s*(?:\/\s*${k}\s*)?\)$`, "i"), _e = (e) => typeof e == "string" && ge.test(e.trim()), I = new RegExp(String.raw`^oklab\(\s*${k}\s+${k}\s+${k}(?:\s*\/\s*${k})?\s*\)$`, "i"), ve = (e) => typeof e == "string" && I.test(e.trim()), ye = new RegExp(String.raw`^oklch\(\s*${k}\s+${k}\s+${A}\s*(?:\/\s*${k}\s*)?\)$`, "i"), be = (e) => typeof e == "string" && ye.test(e.trim()), xe = /* @__PURE__ */ new Set(/* @__PURE__ */ "accentcolor.accentcolortext.activeborder.activecaption.activetext.aliceblue.antiquewhite.appworkspace.aqua.aquamarine.azure.background.beige.bisque.black.blanchedalmond.blue.blueviolet.brown.burlywood.buttonborder.buttonface.buttonhighlight.buttonshadow.buttontext.cadetblue.canvas.canvastext.captiontext.chartreuse.chocolate.coral.cornflowerblue.cornsilk.crimson.currentcolor.cyan.darkblue.darkcyan.darkgoldenrod.darkgray.darkgreen.darkgrey.darkkhaki.darkmagenta.darkolivegreen.darkorange.darkorchid.darkred.darksalmon.darkseagreen.darkslateblue.darkslategray.darkslategrey.darkturquoise.darkviolet.deeppink.deepskyblue.dimgray.dimgrey.dodgerblue.field.fieldtext.firebrick.floralwhite.forestgreen.fuchsia.gainsboro.ghostwhite.gold.goldenrod.gray.graytext.green.greenyellow.grey.highlight.highlighttext.honeydew.hotpink.inactiveborder.inactivecaption.inactivecaptiontext.indianred.indigo.infobackground.infotext.ivory.khaki.lavender.lavenderblush.lawngreen.lemonchiffon.lightblue.lightcoral.lightcyan.lightgoldenrodyellow.lightgray.lightgreen.lightgrey.lightpink.lightsalmon.lightseagreen.lightskyblue.lightslategray.lightslategrey.lightsteelblue.lightyellow.lime.limegreen.linen.linktext.magenta.mark.marktext.maroon.mediumaquamarine.mediumblue.mediumorchid.mediumpurple.mediumseagreen.mediumslateblue.mediumspringgreen.mediumturquoise.mediumvioletred.menu.menutext.midnightblue.mintcream.mistyrose.moccasin.navajowhite.navy.oldlace.olive.olivedrab.orange.orangered.orchid.palegoldenrod.palegreen.paleturquoise.palevioletred.papayawhip.peachpuff.peru.pink.plum.powderblue.purple.rebeccapurple.red.rosybrown.royalblue.saddlebrown.salmon.sandybrown.scrollbar.seagreen.seashell.selecteditem.selecteditemtext.sienna.silver.skyblue.slateblue.slategray.slategrey.snow.springgreen.steelblue.tan.teal.thistle.threeddarkshadow.threedface.threedhighlight.threedlightshadow.threedshadow.tomato.transparent.turquoise.violet.visitedtext.wheat.white.whitesmoke.window.windowframe.windowtext.yellow.yellowgreen".split(".")), Se = (e) => typeof e == "string" && xe.has(e.trim().toLowerCase()), Ce = new RegExp(String.raw`^color\(\s*${"(?:srgb(?:-linear)?|display-p3(?:-linear)?|a98-rgb|prophoto-rgb|rec2020|xyz(?:-d(?:50|65))?)"}\s+${k}\s+${k}\s+${k}(?:\s*\/\s*${k})?\s*\)$`, "i"), we = (e) => typeof e == "string" && Ce.test(e.trim()), Te = (e) => {
+E();
+var D = String.raw`[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?`, O = `(?:${D}%?|none)`, k = `(?:${D}(?:deg|grad|rad|turn)?|none)`, A = `(?:${String.raw`${D}\s*,\s*${D}\s*,\s*${D}`}|${String.raw`${D}%\s*,\s*${D}%\s*,\s*${D}%`})${String.raw`(?:\s*,\s*${D}%?)?`}`, j = `(?:${D}%?|none)`, M = String.raw`(?:\s*\/\s*${j})?`, N = String.raw`${j}\s+${j}\s+${j}${M}`, P = new RegExp(String.raw`^rgba?\(\s*(?:${A})\s*\)$`, "i"), F = new RegExp(String.raw`^rgba?\(\s*(?:${N})\s*\)$`, "i"), ee = (e) => typeof e == "string" && (e = e.trim(), P.test(e) || F.test(e)), I = `(?:${D}(?:deg|grad|rad|turn)?)`, te = `(?:${D}%)`, ne = `(?:${D}%?)`, re = String.raw`${I}\s*,\s*${te}\s*,\s*${te}(?:\s*,\s*${ne})?`, ie = String.raw`${k}\s+${O}\s+${O}(?:\s*\/\s*${O})?`, ae = new RegExp(String.raw`^hsla?\(\s*${re}\s*\)$`, "i"), oe = new RegExp(String.raw`^hsla?\(\s*${ie}\s*\)$`, "i"), se = (e) => typeof e == "string" && (e = e.trim(), ae.test(e) || oe.test(e)), ce = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}(?:[0-9a-f]{2})?)$/i, le = (e) => typeof e == "string" && ce.test(e.trim()), ue = new RegExp(String.raw`^hwb\(\s*${k}\s+${O}\s+${O}\s*(?:\/\s*${O}\s*)?\)$`, "i"), de = (e) => typeof e == "string" && ue.test(e.trim()), fe = new RegExp(String.raw`^lab\(\s*${O}\s+${O}\s+${O}(?:\s*\/\s*${O})?\s*\)$`, "i"), pe = (e) => typeof e == "string" && fe.test(e.trim()), me = new RegExp(String.raw`^lch\(\s*${O}\s+${O}\s+${k}\s*(?:\/\s*${O}\s*)?\)$`, "i"), he = (e) => typeof e == "string" && me.test(e.trim()), ge = new RegExp(String.raw`^oklab\(\s*${O}\s+${O}\s+${O}(?:\s*\/\s*${O})?\s*\)$`, "i"), L = (e) => typeof e == "string" && ge.test(e.trim()), _e = new RegExp(String.raw`^oklch\(\s*${O}\s+${O}\s+${k}\s*(?:\/\s*${O}\s*)?\)$`, "i"), ve = (e) => typeof e == "string" && _e.test(e.trim()), ye = /* @__PURE__ */ new Set(/* @__PURE__ */ "accentcolor.accentcolortext.activeborder.activecaption.activetext.aliceblue.antiquewhite.appworkspace.aqua.aquamarine.azure.background.beige.bisque.black.blanchedalmond.blue.blueviolet.brown.burlywood.buttonborder.buttonface.buttonhighlight.buttonshadow.buttontext.cadetblue.canvas.canvastext.captiontext.chartreuse.chocolate.coral.cornflowerblue.cornsilk.crimson.currentcolor.cyan.darkblue.darkcyan.darkgoldenrod.darkgray.darkgreen.darkgrey.darkkhaki.darkmagenta.darkolivegreen.darkorange.darkorchid.darkred.darksalmon.darkseagreen.darkslateblue.darkslategray.darkslategrey.darkturquoise.darkviolet.deeppink.deepskyblue.dimgray.dimgrey.dodgerblue.field.fieldtext.firebrick.floralwhite.forestgreen.fuchsia.gainsboro.ghostwhite.gold.goldenrod.gray.graytext.green.greenyellow.grey.highlight.highlighttext.honeydew.hotpink.inactiveborder.inactivecaption.inactivecaptiontext.indianred.indigo.infobackground.infotext.ivory.khaki.lavender.lavenderblush.lawngreen.lemonchiffon.lightblue.lightcoral.lightcyan.lightgoldenrodyellow.lightgray.lightgreen.lightgrey.lightpink.lightsalmon.lightseagreen.lightskyblue.lightslategray.lightslategrey.lightsteelblue.lightyellow.lime.limegreen.linen.linktext.magenta.mark.marktext.maroon.mediumaquamarine.mediumblue.mediumorchid.mediumpurple.mediumseagreen.mediumslateblue.mediumspringgreen.mediumturquoise.mediumvioletred.menu.menutext.midnightblue.mintcream.mistyrose.moccasin.navajowhite.navy.oldlace.olive.olivedrab.orange.orangered.orchid.palegoldenrod.palegreen.paleturquoise.palevioletred.papayawhip.peachpuff.peru.pink.plum.powderblue.purple.rebeccapurple.red.rosybrown.royalblue.saddlebrown.salmon.sandybrown.scrollbar.seagreen.seashell.selecteditem.selecteditemtext.sienna.silver.skyblue.slateblue.slategray.slategrey.snow.springgreen.steelblue.tan.teal.thistle.threeddarkshadow.threedface.threedhighlight.threedlightshadow.threedshadow.tomato.transparent.turquoise.violet.visitedtext.wheat.white.whitesmoke.window.windowframe.windowtext.yellow.yellowgreen".split(".")), be = (e) => typeof e == "string" && ye.has(e.trim().toLowerCase()), xe = new RegExp(String.raw`^color\(\s*${"(?:srgb(?:-linear)?|display-p3(?:-linear)?|a98-rgb|prophoto-rgb|rec2020|xyz(?:-d(?:50|65))?)"}\s+${O}\s+${O}\s+${O}(?:\s*\/\s*${O})?\s*\)$`, "i"), Se = (e) => typeof e == "string" && xe.test(e.trim()), Ce = (e) => {
 	if (typeof e != "string") return !1;
 	let t = e.trim();
 	if (t.length === 0) return !1;
-	if (t[0] === "#") return de(t);
-	if (!t.includes("(")) return Se(t);
+	if (t[0] === "#") return le(t);
+	if (!t.includes("(")) return be(t);
 	switch (t[0]) {
 		case "r":
-		case "R": return F(t);
+		case "R": return ee(t);
 		case "c":
-		case "C": return we(t);
+		case "C": return Se(t);
 		case "h":
-		case "H": return pe(t) || le(t);
+		case "H": return de(t) || se(t);
 		case "l":
-		case "L": return he(t) || _e(t);
+		case "L": return pe(t) || he(t);
 		case "o":
-		case "O": return ve(t) || be(t);
+		case "O": return L(t) || ve(t);
 		default: return !1;
 	}
-}, Ee, De, Oe, ke, Ae, je, Me, Ne, Pe = t((() => {
-	Ee = globalThis, De = Ee.ShadowRoot && (Ee.ShadyCSS === void 0 || Ee.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Oe = Symbol(), ke = /* @__PURE__ */ new WeakMap(), Ae = class {
+}, we, Te, Ee, De, Oe, ke, Ae, je, Me = t((() => {
+	we = globalThis, Te = we.ShadowRoot && (we.ShadyCSS === void 0 || we.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Ee = Symbol(), De = /* @__PURE__ */ new WeakMap(), Oe = class {
 		constructor(e, t, n) {
-			if (this._$cssResult$ = !0, n !== Oe) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+			if (this._$cssResult$ = !0, n !== Ee) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
 			this.cssText = e, this.t = t;
 		}
 		get styleSheet() {
 			let e = this.o, t = this.t;
-			if (De && e === void 0) {
+			if (Te && e === void 0) {
 				let n = t !== void 0 && t.length === 1;
-				n && (e = ke.get(t)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), n && ke.set(t, e));
+				n && (e = De.get(t)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), n && De.set(t, e));
 			}
 			return e;
 		}
 		toString() {
 			return this.cssText;
 		}
-	}, je = (e) => new Ae(typeof e == "string" ? e : e + "", void 0, Oe), Me = (e, t) => {
-		if (De) e.adoptedStyleSheets = t.map(((e) => e instanceof CSSStyleSheet ? e : e.styleSheet));
+	}, ke = (e) => new Oe(typeof e == "string" ? e : e + "", void 0, Ee), Ae = (e, t) => {
+		if (Te) e.adoptedStyleSheets = t.map(((e) => e instanceof CSSStyleSheet ? e : e.styleSheet));
 		else for (let n of t) {
-			let t = document.createElement("style"), r = Ee.litNonce;
+			let t = document.createElement("style"), r = we.litNonce;
 			r !== void 0 && t.setAttribute("nonce", r), t.textContent = n.cssText, e.appendChild(t);
 		}
-	}, Ne = De ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((e) => {
+	}, je = Te ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((e) => {
 		let t = "";
 		for (let n of e.cssRules) t += n.cssText;
-		return je(t);
+		return ke(t);
 	})(e) : e;
-})), Fe, Ie, Le, Re, ze, Be, Ve, He, Ue, We, Ge, Ke, qe, Je, Ye, Xe, Ze = t((() => {
-	Pe(), {is: Ie, defineProperty: Le, getOwnPropertyDescriptor: Re, getOwnPropertyNames: ze, getOwnPropertySymbols: Be, getPrototypeOf: Ve} = Object, He = globalThis, Ue = He.trustedTypes, We = Ue ? Ue.emptyScript : "", Ge = He.reactiveElementPolyfillSupport, Ke = (e, t) => e, qe = {
+})), Ne, Pe, Fe, Ie, Le, Re, ze, Be, Ve, He, Ue, We, Ge, Ke, qe, Je, Ye = t((() => {
+	Me(), {is: Pe, defineProperty: Fe, getOwnPropertyDescriptor: Ie, getOwnPropertyNames: Le, getOwnPropertySymbols: Re, getPrototypeOf: ze} = Object, Be = globalThis, Ve = Be.trustedTypes, He = Ve ? Ve.emptyScript : "", Ue = Be.reactiveElementPolyfillSupport, We = (e, t) => e, Ge = {
 		toAttribute(e, t) {
 			switch (t) {
 				case Boolean:
-					e = e ? We : null;
+					e = e ? He : null;
 					break;
 				case Object:
 				case Array: e = e == null ? e : JSON.stringify(e);
@@ -247,28 +230,28 @@ var O = String.raw`[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?`, k = `(?:${O}%
 			}
 			return n;
 		}
-	}, Je = (e, t) => !Ie(e, t), Ye = {
+	}, Ke = (e, t) => !Pe(e, t), qe = {
 		attribute: !0,
 		type: String,
-		converter: qe,
+		converter: Ge,
 		reflect: !1,
 		useDefault: !1,
-		hasChanged: Je
-	}, (Fe = Symbol).metadata ?? (Fe.metadata = Symbol("metadata")), He.litPropertyMetadata ?? (He.litPropertyMetadata = /* @__PURE__ */ new WeakMap()), Xe = class extends HTMLElement {
+		hasChanged: Ke
+	}, (Ne = Symbol).metadata ?? (Ne.metadata = Symbol("metadata")), Be.litPropertyMetadata ?? (Be.litPropertyMetadata = /* @__PURE__ */ new WeakMap()), Je = class extends HTMLElement {
 		static addInitializer(e) {
 			this._$Ei(), (this.l ?? (this.l = [])).push(e);
 		}
 		static get observedAttributes() {
 			return this.finalize(), this._$Eh && [...this._$Eh.keys()];
 		}
-		static createProperty(e, t = Ye) {
+		static createProperty(e, t = qe) {
 			if (t.state && (t.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((t = Object.create(t)).wrapped = !0), this.elementProperties.set(e, t), !t.noAccessor) {
 				let n = Symbol(), r = this.getPropertyDescriptor(e, n, t);
-				r !== void 0 && Le(this.prototype, e, r);
+				r !== void 0 && Fe(this.prototype, e, r);
 			}
 		}
 		static getPropertyDescriptor(e, t, n) {
-			let { get: r, set: i } = Re(this.prototype, e) ?? {
+			let { get: r, set: i } = Ie(this.prototype, e) ?? {
 				get() {
 					return this[t];
 				},
@@ -287,17 +270,17 @@ var O = String.raw`[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?`, k = `(?:${O}%
 			};
 		}
 		static getPropertyOptions(e) {
-			return this.elementProperties.get(e) ?? Ye;
+			return this.elementProperties.get(e) ?? qe;
 		}
 		static _$Ei() {
-			if (this.hasOwnProperty(Ke("elementProperties"))) return;
-			let e = Ve(this);
+			if (this.hasOwnProperty(We("elementProperties"))) return;
+			let e = ze(this);
 			e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
 		}
 		static finalize() {
-			if (this.hasOwnProperty(Ke("finalized"))) return;
-			if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(Ke("properties"))) {
-				let e = this.properties, t = [...ze(e), ...Be(e)];
+			if (this.hasOwnProperty(We("finalized"))) return;
+			if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(We("properties"))) {
+				let e = this.properties, t = [...Le(e), ...Re(e)];
 				for (let n of t) this.createProperty(n, e[n]);
 			}
 			let e = this[Symbol.metadata];
@@ -316,8 +299,8 @@ var O = String.raw`[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?`, k = `(?:${O}%
 			let t = [];
 			if (Array.isArray(e)) {
 				let n = new Set(e.flat(1 / 0).reverse());
-				for (let e of n) t.unshift(Ne(e));
-			} else e !== void 0 && t.push(Ne(e));
+				for (let e of n) t.unshift(je(e));
+			} else e !== void 0 && t.push(je(e));
 			return t;
 		}
 		static _$Eu(e, t) {
@@ -343,7 +326,7 @@ var O = String.raw`[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?`, k = `(?:${O}%
 		}
 		createRenderRoot() {
 			let e = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-			return Me(e, this.constructor.elementStyles), e;
+			return Ae(e, this.constructor.elementStyles), e;
 		}
 		connectedCallback() {
 			this.renderRoot ?? (this.renderRoot = this.createRenderRoot()), this.enableUpdating(!0), this._$EO?.forEach(((e) => e.hostConnected?.()));
@@ -358,14 +341,14 @@ var O = String.raw`[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?`, k = `(?:${O}%
 		_$ET(e, t) {
 			let n = this.constructor.elementProperties.get(e), r = this.constructor._$Eu(e, n);
 			if (r !== void 0 && !0 === n.reflect) {
-				let i = (n.converter?.toAttribute === void 0 ? qe : n.converter).toAttribute(t, n.type);
+				let i = (n.converter?.toAttribute === void 0 ? Ge : n.converter).toAttribute(t, n.type);
 				this._$Em = e, i == null ? this.removeAttribute(r) : this.setAttribute(r, i), this._$Em = null;
 			}
 		}
 		_$AK(e, t) {
 			let n = this.constructor, r = n._$Eh.get(e);
 			if (r !== void 0 && this._$Em !== r) {
-				let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? qe : e.converter;
+				let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? Ge : e.converter;
 				this._$Em = r;
 				let a = i.fromAttribute(t, e.type);
 				this[r] = a ?? this._$Ej?.get(r) ?? a, this._$Em = null;
@@ -374,7 +357,7 @@ var O = String.raw`[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?`, k = `(?:${O}%
 		requestUpdate(e, t, n) {
 			if (e !== void 0) {
 				let r = this.constructor, i = this[e];
-				if (n ?? (n = r.getPropertyOptions(e)), !((n.hasChanged ?? Je)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(r._$Eu(e, n)))) return;
+				if (n ?? (n = r.getPropertyOptions(e)), !((n.hasChanged ?? Ke)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(r._$Eu(e, n)))) return;
 				this.C(e, t, n);
 			}
 			!1 === this.isUpdatePending && (this._$ES = this._$EP());
@@ -437,89 +420,89 @@ var O = String.raw`[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?`, k = `(?:${O}%
 		}
 		updated(e) {}
 		firstUpdated(e) {}
-	}, Xe.elementStyles = [], Xe.shadowRootOptions = { mode: "open" }, Xe[Ke("elementProperties")] = /* @__PURE__ */ new Map(), Xe[Ke("finalized")] = /* @__PURE__ */ new Map(), Ge?.({ ReactiveElement: Xe }), (He.reactiveElementVersions ?? (He.reactiveElementVersions = [])).push("2.1.1");
+	}, Je.elementStyles = [], Je.shadowRootOptions = { mode: "open" }, Je[We("elementProperties")] = /* @__PURE__ */ new Map(), Je[We("finalized")] = /* @__PURE__ */ new Map(), Ue?.({ ReactiveElement: Je }), (Be.reactiveElementVersions ?? (Be.reactiveElementVersions = [])).push("2.1.1");
 }));
 //#endregion
 //#region node_modules/lit-html/lit-html.js
-function Qe(e, t) {
-	if (!lt(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
-	return nt === void 0 ? t : nt.createHTML(t);
+function Xe(e, t) {
+	if (!st(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
+	return et === void 0 ? t : et.createHTML(t);
 }
-function $e(e, t, n = e, r) {
-	if (t === B) return t;
-	let i = r === void 0 ? n._$Cl : n._$Co?.[r], a = ct(t) ? void 0 : t._$litDirective$;
-	return i?.constructor !== a && (i?._$AO?.(!1), a === void 0 ? i = void 0 : (i = new a(e), i._$AT(e, n, r)), r === void 0 ? n._$Cl = i : (n._$Co ?? (n._$Co = []))[r] = i), i !== void 0 && (t = $e(e, i._$AS(e, t.values), i, r)), t;
+function Ze(e, t, n = e, r) {
+	if (t === V) return t;
+	let i = r === void 0 ? n._$Cl : n._$Co?.[r], a = ot(t) ? void 0 : t._$litDirective$;
+	return i?.constructor !== a && (i?._$AO?.(!1), a === void 0 ? i = void 0 : (i = new a(e), i._$AT(e, n, r)), r === void 0 ? n._$Cl = i : (n._$Co ?? (n._$Co = []))[r] = i), i !== void 0 && (t = Ze(e, i._$AS(e, t.values), i, r)), t;
 }
-var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, vt, yt, R, z, B, V, bt, xt, St, Ct, wt, Tt, Et, Dt, Ot, kt, At, jt, Mt, Nt, Pt = t((() => {
-	et = globalThis, tt = et.trustedTypes, nt = tt ? tt.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, rt = "$lit$", L = `lit$${Math.random().toFixed(9).slice(2)}$`, it = "?" + L, at = `<${it}>`, ot = document, st = () => ot.createComment(""), ct = (e) => e === null || typeof e != "object" && typeof e != "function", lt = Array.isArray, ut = (e) => lt(e) || typeof e?.[Symbol.iterator] == "function", dt = "[ 	\n\f\r]", ft = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, pt = /-->/g, mt = />/g, ht = RegExp(`>|${dt}(?:([^\\s"'>=/]+)(${dt}*=${dt}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), gt = /'/g, _t = /"/g, vt = /^(?:script|style|textarea|title)$/i, yt = (e) => (t, ...n) => ({
+var Qe, $e, et, tt, R, nt, rt, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, z, B, V, H, vt, yt, bt, xt, St, Ct, wt, Tt, Et, Dt, Ot, kt, At, jt, Mt = t((() => {
+	Qe = globalThis, $e = Qe.trustedTypes, et = $e ? $e.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, tt = "$lit$", R = `lit$${Math.random().toFixed(9).slice(2)}$`, nt = "?" + R, rt = `<${nt}>`, it = document, at = () => it.createComment(""), ot = (e) => e === null || typeof e != "object" && typeof e != "function", st = Array.isArray, ct = (e) => st(e) || typeof e?.[Symbol.iterator] == "function", lt = "[ 	\n\f\r]", ut = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, dt = /-->/g, ft = />/g, pt = RegExp(`>|${lt}(?:([^\\s"'>=/]+)(${lt}*=${lt}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), mt = /'/g, ht = /"/g, gt = /^(?:script|style|textarea|title)$/i, _t = (e) => (t, ...n) => ({
 		_$litType$: e,
 		strings: t,
 		values: n
-	}), R = yt(1), z = yt(2), yt(3), B = Symbol.for("lit-noChange"), V = Symbol.for("lit-nothing"), bt = /* @__PURE__ */ new WeakMap(), xt = ot.createTreeWalker(ot, 129), St = (e, t) => {
-		let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = ft;
+	}), z = _t(1), B = _t(2), _t(3), V = Symbol.for("lit-noChange"), H = Symbol.for("lit-nothing"), vt = /* @__PURE__ */ new WeakMap(), yt = it.createTreeWalker(it, 129), bt = (e, t) => {
+		let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = ut;
 		for (let t = 0; t < n; t++) {
 			let n = e[t], s, c, l = -1, u = 0;
-			for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === ft ? c[1] === "!--" ? o = pt : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = ht) : (vt.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = ht) : o = mt : o === ht ? c[0] === ">" ? (o = i ?? ft, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? ht : c[3] === "\"" ? _t : gt) : o === _t || o === gt ? o = ht : o === pt || o === mt ? o = ft : (o = ht, i = void 0);
-			let d = o === ht && e[t + 1].startsWith("/>") ? " " : "";
-			a += o === ft ? n + at : l >= 0 ? (r.push(s), n.slice(0, l) + rt + n.slice(l) + L + d) : n + L + (l === -2 ? t : d);
+			for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === ut ? c[1] === "!--" ? o = dt : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = pt) : (gt.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = pt) : o = ft : o === pt ? c[0] === ">" ? (o = i ?? ut, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? pt : c[3] === "\"" ? ht : mt) : o === ht || o === mt ? o = pt : o === dt || o === ft ? o = ut : (o = pt, i = void 0);
+			let d = o === pt && e[t + 1].startsWith("/>") ? " " : "";
+			a += o === ut ? n + rt : l >= 0 ? (r.push(s), n.slice(0, l) + tt + n.slice(l) + R + d) : n + R + (l === -2 ? t : d);
 		}
-		return [Qe(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
-	}, Ct = class e {
+		return [Xe(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
+	}, xt = class e {
 		constructor({ strings: t, _$litType$: n }, r) {
 			let i;
 			this.parts = [];
-			let a = 0, o = 0, s = t.length - 1, c = this.parts, [l, u] = St(t, n);
-			if (this.el = e.createElement(l, r), xt.currentNode = this.el.content, n === 2 || n === 3) {
+			let a = 0, o = 0, s = t.length - 1, c = this.parts, [l, u] = bt(t, n);
+			if (this.el = e.createElement(l, r), yt.currentNode = this.el.content, n === 2 || n === 3) {
 				let e = this.el.content.firstChild;
 				e.replaceWith(...e.childNodes);
 			}
-			for (; (i = xt.nextNode()) !== null && c.length < s;) {
+			for (; (i = yt.nextNode()) !== null && c.length < s;) {
 				if (i.nodeType === 1) {
-					if (i.hasAttributes()) for (let e of i.getAttributeNames()) if (e.endsWith(rt)) {
-						let t = u[o++], n = i.getAttribute(e).split(L), r = /([.?@])?(.*)/.exec(t);
+					if (i.hasAttributes()) for (let e of i.getAttributeNames()) if (e.endsWith(tt)) {
+						let t = u[o++], n = i.getAttribute(e).split(R), r = /([.?@])?(.*)/.exec(t);
 						c.push({
 							type: 1,
 							index: a,
 							name: r[2],
 							strings: n,
-							ctor: r[1] === "." ? Dt : r[1] === "?" ? Ot : r[1] === "@" ? kt : Et
+							ctor: r[1] === "." ? Tt : r[1] === "?" ? Et : r[1] === "@" ? Dt : wt
 						}), i.removeAttribute(e);
-					} else e.startsWith(L) && (c.push({
+					} else e.startsWith(R) && (c.push({
 						type: 6,
 						index: a
 					}), i.removeAttribute(e));
-					if (vt.test(i.tagName)) {
-						let e = i.textContent.split(L), t = e.length - 1;
+					if (gt.test(i.tagName)) {
+						let e = i.textContent.split(R), t = e.length - 1;
 						if (t > 0) {
-							i.textContent = tt ? tt.emptyScript : "";
-							for (let n = 0; n < t; n++) i.append(e[n], st()), xt.nextNode(), c.push({
+							i.textContent = $e ? $e.emptyScript : "";
+							for (let n = 0; n < t; n++) i.append(e[n], at()), yt.nextNode(), c.push({
 								type: 2,
 								index: ++a
 							});
-							i.append(e[t], st());
+							i.append(e[t], at());
 						}
 					}
 				} else if (i.nodeType === 8) {
-					if (i.data === it) c.push({
+					if (i.data === nt) c.push({
 						type: 2,
 						index: a
 					});
 					else {
 						let e = -1;
-						for (; (e = i.data.indexOf(L, e + 1)) !== -1;) c.push({
+						for (; (e = i.data.indexOf(R, e + 1)) !== -1;) c.push({
 							type: 7,
 							index: a
-						}), e += L.length - 1;
+						}), e += R.length - 1;
 					}
 				}
 				a++;
 			}
 		}
 		static createElement(e, t) {
-			let n = ot.createElement("template");
+			let n = it.createElement("template");
 			return n.innerHTML = e, n;
 		}
-	}, wt = class {
+	}, St = class {
 		constructor(e, t) {
 			this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = t;
 		}
@@ -530,28 +513,28 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 			return this._$AM._$AU;
 		}
 		u(e) {
-			let { el: { content: t }, parts: n } = this._$AD, r = (e?.creationScope ?? ot).importNode(t, !0);
-			xt.currentNode = r;
-			let i = xt.nextNode(), a = 0, o = 0, s = n[0];
+			let { el: { content: t }, parts: n } = this._$AD, r = (e?.creationScope ?? it).importNode(t, !0);
+			yt.currentNode = r;
+			let i = yt.nextNode(), a = 0, o = 0, s = n[0];
 			for (; s !== void 0;) {
 				if (a === s.index) {
 					let t;
-					s.type === 2 ? t = new Tt(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new At(i, this, e)), this._$AV.push(t), s = n[++o];
+					s.type === 2 ? t = new Ct(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new Ot(i, this, e)), this._$AV.push(t), s = n[++o];
 				}
-				a !== s?.index && (i = xt.nextNode(), a++);
+				a !== s?.index && (i = yt.nextNode(), a++);
 			}
-			return xt.currentNode = ot, r;
+			return yt.currentNode = it, r;
 		}
 		p(e) {
 			let t = 0;
 			for (let n of this._$AV) n !== void 0 && (n.strings === void 0 ? n._$AI(e[t]) : (n._$AI(e, n, t), t += n.strings.length - 2)), t++;
 		}
-	}, Tt = class e {
+	}, Ct = class e {
 		get _$AU() {
 			return this._$AM?._$AU ?? this._$Cv;
 		}
 		constructor(e, t, n, r) {
-			this.type = 2, this._$AH = V, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = n, this.options = r, this._$Cv = r?.isConnected ?? !0;
+			this.type = 2, this._$AH = H, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = n, this.options = r, this._$Cv = r?.isConnected ?? !0;
 		}
 		get parentNode() {
 			let e = this._$AA.parentNode, t = this._$AM;
@@ -564,7 +547,7 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 			return this._$AB;
 		}
 		_$AI(e, t = this) {
-			e = $e(this, e, t), ct(e) ? e === V || e == null || e === "" ? (this._$AH !== V && this._$AR(), this._$AH = V) : e !== this._$AH && e !== B && this._(e) : e._$litType$ === void 0 ? e.nodeType === void 0 ? ut(e) ? this.k(e) : this._(e) : this.T(e) : this.$(e);
+			e = Ze(this, e, t), ot(e) ? e === H || e == null || e === "" ? (this._$AH !== H && this._$AR(), this._$AH = H) : e !== this._$AH && e !== V && this._(e) : e._$litType$ === void 0 ? e.nodeType === void 0 ? ct(e) ? this.k(e) : this._(e) : this.T(e) : this.$(e);
 		}
 		O(e) {
 			return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -573,24 +556,24 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 			this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
 		}
 		_(e) {
-			this._$AH !== V && ct(this._$AH) ? this._$AA.nextSibling.data = e : this.T(ot.createTextNode(e)), this._$AH = e;
+			this._$AH !== H && ot(this._$AH) ? this._$AA.nextSibling.data = e : this.T(it.createTextNode(e)), this._$AH = e;
 		}
 		$(e) {
-			let { values: t, _$litType$: n } = e, r = typeof n == "number" ? this._$AC(e) : (n.el === void 0 && (n.el = Ct.createElement(Qe(n.h, n.h[0]), this.options)), n);
+			let { values: t, _$litType$: n } = e, r = typeof n == "number" ? this._$AC(e) : (n.el === void 0 && (n.el = xt.createElement(Xe(n.h, n.h[0]), this.options)), n);
 			if (this._$AH?._$AD === r) this._$AH.p(t);
 			else {
-				let e = new wt(r, this), n = e.u(this.options);
+				let e = new St(r, this), n = e.u(this.options);
 				e.p(t), this.T(n), this._$AH = e;
 			}
 		}
 		_$AC(e) {
-			let t = bt.get(e.strings);
-			return t === void 0 && bt.set(e.strings, t = new Ct(e)), t;
+			let t = vt.get(e.strings);
+			return t === void 0 && vt.set(e.strings, t = new xt(e)), t;
 		}
 		k(t) {
-			lt(this._$AH) || (this._$AH = [], this._$AR());
+			st(this._$AH) || (this._$AH = [], this._$AR());
 			let n = this._$AH, r, i = 0;
-			for (let a of t) i === n.length ? n.push(r = new e(this.O(st()), this.O(st()), this, this.options)) : r = n[i], r._$AI(a), i++;
+			for (let a of t) i === n.length ? n.push(r = new e(this.O(at()), this.O(at()), this, this.options)) : r = n[i], r._$AI(a), i++;
 			i < n.length && (this._$AR(r && r._$AB.nextSibling, i), n.length = i);
 		}
 		_$AR(e = this._$AA.nextSibling, t) {
@@ -602,7 +585,7 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 		setConnected(e) {
 			this._$AM === void 0 && (this._$Cv = e, this._$AP?.(e));
 		}
-	}, Et = class {
+	}, wt = class {
 		get tagName() {
 			return this.element.tagName;
 		}
@@ -610,47 +593,47 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 			return this._$AM._$AU;
 		}
 		constructor(e, t, n, r, i) {
-			this.type = 1, this._$AH = V, this._$AN = void 0, this.element = e, this.name = t, this._$AM = r, this.options = i, n.length > 2 || n[0] !== "" || n[1] !== "" ? (this._$AH = Array(n.length - 1).fill(/* @__PURE__ */ new String()), this.strings = n) : this._$AH = V;
+			this.type = 1, this._$AH = H, this._$AN = void 0, this.element = e, this.name = t, this._$AM = r, this.options = i, n.length > 2 || n[0] !== "" || n[1] !== "" ? (this._$AH = Array(n.length - 1).fill(/* @__PURE__ */ new String()), this.strings = n) : this._$AH = H;
 		}
 		_$AI(e, t = this, n, r) {
 			let i = this.strings, a = !1;
-			if (i === void 0) e = $e(this, e, t, 0), a = !ct(e) || e !== this._$AH && e !== B, a && (this._$AH = e);
+			if (i === void 0) e = Ze(this, e, t, 0), a = !ot(e) || e !== this._$AH && e !== V, a && (this._$AH = e);
 			else {
 				let r = e, o, s;
-				for (e = i[0], o = 0; o < i.length - 1; o++) s = $e(this, r[n + o], t, o), s === B && (s = this._$AH[o]), a || (a = !ct(s) || s !== this._$AH[o]), s === V ? e = V : e !== V && (e += (s ?? "") + i[o + 1]), this._$AH[o] = s;
+				for (e = i[0], o = 0; o < i.length - 1; o++) s = Ze(this, r[n + o], t, o), s === V && (s = this._$AH[o]), a || (a = !ot(s) || s !== this._$AH[o]), s === H ? e = H : e !== H && (e += (s ?? "") + i[o + 1]), this._$AH[o] = s;
 			}
 			a && !r && this.j(e);
 		}
 		j(e) {
-			e === V ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
+			e === H ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
 		}
-	}, Dt = class extends Et {
+	}, Tt = class extends wt {
 		constructor() {
 			super(...arguments), this.type = 3;
 		}
 		j(e) {
-			this.element[this.name] = e === V ? void 0 : e;
+			this.element[this.name] = e === H ? void 0 : e;
 		}
-	}, Ot = class extends Et {
+	}, Et = class extends wt {
 		constructor() {
 			super(...arguments), this.type = 4;
 		}
 		j(e) {
-			this.element.toggleAttribute(this.name, !!e && e !== V);
+			this.element.toggleAttribute(this.name, !!e && e !== H);
 		}
-	}, kt = class extends Et {
+	}, Dt = class extends wt {
 		constructor(e, t, n, r, i) {
 			super(e, t, n, r, i), this.type = 5;
 		}
 		_$AI(e, t = this) {
-			if ((e = $e(this, e, t, 0) ?? V) === B) return;
-			let n = this._$AH, r = e === V && n !== V || e.capture !== n.capture || e.once !== n.once || e.passive !== n.passive, i = e !== V && (n === V || r);
+			if ((e = Ze(this, e, t, 0) ?? H) === V) return;
+			let n = this._$AH, r = e === H && n !== H || e.capture !== n.capture || e.once !== n.once || e.passive !== n.passive, i = e !== H && (n === H || r);
 			r && this.element.removeEventListener(this.name, this, n), i && this.element.addEventListener(this.name, this, e), this._$AH = e;
 		}
 		handleEvent(e) {
 			typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, e) : this._$AH.handleEvent(e);
 		}
-	}, At = class {
+	}, Ot = class {
 		constructor(e, t, n) {
 			this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = n;
 		}
@@ -658,72 +641,72 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 			return this._$AM._$AU;
 		}
 		_$AI(e) {
-			$e(this, e);
+			Ze(this, e);
 		}
-	}, jt = {
-		M: rt,
-		P: L,
-		A: it,
+	}, kt = {
+		M: tt,
+		P: R,
+		A: nt,
 		C: 1,
-		L: St,
-		R: wt,
-		D: ut,
-		V: $e,
-		I: Tt,
-		H: Et,
-		N: Ot,
-		U: kt,
-		B: Dt,
-		F: At
-	}, Mt = et.litHtmlPolyfillSupport, Mt?.(Ct, Tt), (et.litHtmlVersions ?? (et.litHtmlVersions = [])).push("3.3.1"), Nt = (e, t, n) => {
+		L: bt,
+		R: St,
+		D: ct,
+		V: Ze,
+		I: Ct,
+		H: wt,
+		N: Et,
+		U: Dt,
+		B: Tt,
+		F: Ot
+	}, At = Qe.litHtmlPolyfillSupport, At?.(xt, Ct), (Qe.litHtmlVersions ?? (Qe.litHtmlVersions = [])).push("3.3.1"), jt = (e, t, n) => {
 		let r = n?.renderBefore ?? t, i = r._$litPart$;
 		if (i === void 0) {
 			let e = n?.renderBefore ?? null;
-			r._$litPart$ = i = new Tt(t.insertBefore(st(), e), e, void 0, n ?? {});
+			r._$litPart$ = i = new Ct(t.insertBefore(at(), e), e, void 0, n ?? {});
 		}
 		return i._$AI(e), i;
 	};
-})), Ft, It, Lt, Rt, zt, Bt, Vt, Ht, Ut, Wt = t((() => {
-	Ft = globalThis, It = Ft.ShadowRoot && (Ft.ShadyCSS === void 0 || Ft.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Lt = Symbol(), Rt = /* @__PURE__ */ new WeakMap(), zt = class {
+})), Nt, Pt, Ft, It, Lt, Rt, zt, Bt, Vt, Ht = t((() => {
+	Nt = globalThis, Pt = Nt.ShadowRoot && (Nt.ShadyCSS === void 0 || Nt.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Ft = Symbol(), It = /* @__PURE__ */ new WeakMap(), Lt = class {
 		constructor(e, t, n) {
-			if (this._$cssResult$ = !0, n !== Lt) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+			if (this._$cssResult$ = !0, n !== Ft) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
 			this.cssText = e, this.t = t;
 		}
 		get styleSheet() {
 			let e = this.o, t = this.t;
-			if (It && e === void 0) {
+			if (Pt && e === void 0) {
 				let n = t !== void 0 && t.length === 1;
-				n && (e = Rt.get(t)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), n && Rt.set(t, e));
+				n && (e = It.get(t)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), n && It.set(t, e));
 			}
 			return e;
 		}
 		toString() {
 			return this.cssText;
 		}
-	}, Bt = (e) => new zt(typeof e == "string" ? e : e + "", void 0, Lt), Vt = (e, ...t) => {
+	}, Rt = (e) => new Lt(typeof e == "string" ? e : e + "", void 0, Ft), zt = (e, ...t) => {
 		let n = e.length === 1 ? e[0] : t.reduce(((t, n, r) => t + ((e) => {
 			if (!0 === e._$cssResult$) return e.cssText;
 			if (typeof e == "number") return e;
 			throw Error("Value passed to 'css' function must be a 'css' function result: " + e + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
 		})(n) + e[r + 1]), e[0]);
-		return new zt(n, e, Lt);
-	}, Ht = (e, t) => {
-		if (It) e.adoptedStyleSheets = t.map(((e) => e instanceof CSSStyleSheet ? e : e.styleSheet));
+		return new Lt(n, e, Ft);
+	}, Bt = (e, t) => {
+		if (Pt) e.adoptedStyleSheets = t.map(((e) => e instanceof CSSStyleSheet ? e : e.styleSheet));
 		else for (let n of t) {
-			let t = document.createElement("style"), r = Ft.litNonce;
+			let t = document.createElement("style"), r = Nt.litNonce;
 			r !== void 0 && t.setAttribute("nonce", r), t.textContent = n.cssText, e.appendChild(t);
 		}
-	}, Ut = It ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((e) => {
+	}, Vt = Pt ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((e) => {
 		let t = "";
 		for (let n of e.cssRules) t += n.cssText;
-		return Bt(t);
+		return Rt(t);
 	})(e) : e;
-})), Gt, Kt, qt, Jt, Yt, Xt, Zt, Qt, $t, en, tn, nn, rn, an, on, sn, cn = t((() => {
-	Wt(), {is: Kt, defineProperty: qt, getOwnPropertyDescriptor: Jt, getOwnPropertyNames: Yt, getOwnPropertySymbols: Xt, getPrototypeOf: Zt} = Object, Qt = globalThis, $t = Qt.trustedTypes, en = $t ? $t.emptyScript : "", tn = Qt.reactiveElementPolyfillSupport, nn = (e, t) => e, rn = {
+})), Ut, Wt, Gt, Kt, qt, Jt, Yt, Xt, Zt, Qt, $t, en, tn, nn, rn, an, on = t((() => {
+	Ht(), {is: Wt, defineProperty: Gt, getOwnPropertyDescriptor: Kt, getOwnPropertyNames: qt, getOwnPropertySymbols: Jt, getPrototypeOf: Yt} = Object, Xt = globalThis, Zt = Xt.trustedTypes, Qt = Zt ? Zt.emptyScript : "", $t = Xt.reactiveElementPolyfillSupport, en = (e, t) => e, tn = {
 		toAttribute(e, t) {
 			switch (t) {
 				case Boolean:
-					e = e ? en : null;
+					e = e ? Qt : null;
 					break;
 				case Object:
 				case Array: e = e == null ? e : JSON.stringify(e);
@@ -748,28 +731,28 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 			}
 			return n;
 		}
-	}, an = (e, t) => !Kt(e, t), on = {
+	}, nn = (e, t) => !Wt(e, t), rn = {
 		attribute: !0,
 		type: String,
-		converter: rn,
+		converter: tn,
 		reflect: !1,
 		useDefault: !1,
-		hasChanged: an
-	}, (Gt = Symbol).metadata ?? (Gt.metadata = Symbol("metadata")), Qt.litPropertyMetadata ?? (Qt.litPropertyMetadata = /* @__PURE__ */ new WeakMap()), sn = class extends HTMLElement {
+		hasChanged: nn
+	}, (Ut = Symbol).metadata ?? (Ut.metadata = Symbol("metadata")), Xt.litPropertyMetadata ?? (Xt.litPropertyMetadata = /* @__PURE__ */ new WeakMap()), an = class extends HTMLElement {
 		static addInitializer(e) {
 			this._$Ei(), (this.l ?? (this.l = [])).push(e);
 		}
 		static get observedAttributes() {
 			return this.finalize(), this._$Eh && [...this._$Eh.keys()];
 		}
-		static createProperty(e, t = on) {
+		static createProperty(e, t = rn) {
 			if (t.state && (t.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((t = Object.create(t)).wrapped = !0), this.elementProperties.set(e, t), !t.noAccessor) {
 				let n = Symbol(), r = this.getPropertyDescriptor(e, n, t);
-				r !== void 0 && qt(this.prototype, e, r);
+				r !== void 0 && Gt(this.prototype, e, r);
 			}
 		}
 		static getPropertyDescriptor(e, t, n) {
-			let { get: r, set: i } = Jt(this.prototype, e) ?? {
+			let { get: r, set: i } = Kt(this.prototype, e) ?? {
 				get() {
 					return this[t];
 				},
@@ -788,17 +771,17 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 			};
 		}
 		static getPropertyOptions(e) {
-			return this.elementProperties.get(e) ?? on;
+			return this.elementProperties.get(e) ?? rn;
 		}
 		static _$Ei() {
-			if (this.hasOwnProperty(nn("elementProperties"))) return;
-			let e = Zt(this);
+			if (this.hasOwnProperty(en("elementProperties"))) return;
+			let e = Yt(this);
 			e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
 		}
 		static finalize() {
-			if (this.hasOwnProperty(nn("finalized"))) return;
-			if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(nn("properties"))) {
-				let e = this.properties, t = [...Yt(e), ...Xt(e)];
+			if (this.hasOwnProperty(en("finalized"))) return;
+			if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(en("properties"))) {
+				let e = this.properties, t = [...qt(e), ...Jt(e)];
 				for (let n of t) this.createProperty(n, e[n]);
 			}
 			let e = this[Symbol.metadata];
@@ -817,8 +800,8 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 			let t = [];
 			if (Array.isArray(e)) {
 				let n = new Set(e.flat(1 / 0).reverse());
-				for (let e of n) t.unshift(Ut(e));
-			} else e !== void 0 && t.push(Ut(e));
+				for (let e of n) t.unshift(Vt(e));
+			} else e !== void 0 && t.push(Vt(e));
 			return t;
 		}
 		static _$Eu(e, t) {
@@ -844,7 +827,7 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 		}
 		createRenderRoot() {
 			let e = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-			return Ht(e, this.constructor.elementStyles), e;
+			return Bt(e, this.constructor.elementStyles), e;
 		}
 		connectedCallback() {
 			this.renderRoot ?? (this.renderRoot = this.createRenderRoot()), this.enableUpdating(!0), this._$EO?.forEach(((e) => e.hostConnected?.()));
@@ -859,14 +842,14 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 		_$ET(e, t) {
 			let n = this.constructor.elementProperties.get(e), r = this.constructor._$Eu(e, n);
 			if (r !== void 0 && !0 === n.reflect) {
-				let i = (n.converter?.toAttribute === void 0 ? rn : n.converter).toAttribute(t, n.type);
+				let i = (n.converter?.toAttribute === void 0 ? tn : n.converter).toAttribute(t, n.type);
 				this._$Em = e, i == null ? this.removeAttribute(r) : this.setAttribute(r, i), this._$Em = null;
 			}
 		}
 		_$AK(e, t) {
 			let n = this.constructor, r = n._$Eh.get(e);
 			if (r !== void 0 && this._$Em !== r) {
-				let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? rn : e.converter;
+				let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? tn : e.converter;
 				this._$Em = r;
 				let a = i.fromAttribute(t, e.type);
 				this[r] = a ?? this._$Ej?.get(r) ?? a, this._$Em = null;
@@ -875,7 +858,7 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 		requestUpdate(e, t, n) {
 			if (e !== void 0) {
 				let r = this.constructor, i = this[e];
-				if (n ?? (n = r.getPropertyOptions(e)), !((n.hasChanged ?? an)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(r._$Eu(e, n)))) return;
+				if (n ?? (n = r.getPropertyOptions(e)), !((n.hasChanged ?? nn)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(r._$Eu(e, n)))) return;
 				this.C(e, t, n);
 			}
 			!1 === this.isUpdatePending && (this._$ES = this._$EP());
@@ -938,9 +921,9 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 		}
 		updated(e) {}
 		firstUpdated(e) {}
-	}, sn.elementStyles = [], sn.shadowRootOptions = { mode: "open" }, sn[nn("elementProperties")] = /* @__PURE__ */ new Map(), sn[nn("finalized")] = /* @__PURE__ */ new Map(), tn?.({ ReactiveElement: sn }), (Qt.reactiveElementVersions ?? (Qt.reactiveElementVersions = [])).push("2.1.1");
-})), ln, un, dn, fn = t((() => {
-	cn(), cn(), Pt(), Pt(), ln = globalThis, un = class extends sn {
+	}, an.elementStyles = [], an.shadowRootOptions = { mode: "open" }, an[en("elementProperties")] = /* @__PURE__ */ new Map(), an[en("finalized")] = /* @__PURE__ */ new Map(), $t?.({ ReactiveElement: an }), (Xt.reactiveElementVersions ?? (Xt.reactiveElementVersions = [])).push("2.1.1");
+})), sn, cn, ln, un = t((() => {
+	on(), on(), Mt(), Mt(), sn = globalThis, cn = class extends an {
 		constructor() {
 			super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
 		}
@@ -951,7 +934,7 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 		}
 		update(e) {
 			let t = this.render();
-			this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Nt(t, this.renderRoot, this.renderOptions);
+			this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = jt(t, this.renderRoot, this.renderOptions);
 		}
 		connectedCallback() {
 			super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -960,13 +943,13 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 			super.disconnectedCallback(), this._$Do?.setConnected(!1);
 		}
 		render() {
-			return B;
+			return V;
 		}
-	}, un._$litElement$ = !0, un.finalized = !0, ln.litElementHydrateSupport?.({ LitElement: un }), dn = ln.litElementPolyfillSupport, dn?.({ LitElement: un }), (ln.litElementVersions ?? (ln.litElementVersions = [])).push("4.2.1");
-})), pn = t((() => {})), mn = t((() => {
-	Ze(), Pt(), fn(), pn();
-})), hn, gn = t((() => {
-	hn = (e) => (t, n) => {
+	}, cn._$litElement$ = !0, cn.finalized = !0, sn.litElementHydrateSupport?.({ LitElement: cn }), ln = sn.litElementPolyfillSupport, ln?.({ LitElement: cn }), (sn.litElementVersions ?? (sn.litElementVersions = [])).push("4.2.1");
+})), dn = t((() => {})), fn = t((() => {
+	Ye(), Mt(), un(), dn();
+})), pn, mn = t((() => {
+	pn = (e) => (t, n) => {
 		n === void 0 ? customElements.define(e, t) : n.addInitializer((() => {
 			customElements.define(e, t);
 		}));
@@ -974,20 +957,20 @@ var et, tt, nt, rt, L, it, at, ot, st, ct, lt, ut, dt, ft, pt, mt, ht, gt, _t, v
 }));
 //#endregion
 //#region node_modules/lit/node_modules/@lit/reactive-element/decorators/property.js
-function H(e) {
-	return (t, n) => typeof n == "object" ? vn(e, t, n) : ((e, t, n) => {
+function U(e) {
+	return (t, n) => typeof n == "object" ? gn(e, t, n) : ((e, t, n) => {
 		let r = t.hasOwnProperty(n);
 		return t.constructor.createProperty(n, e), r ? Object.getOwnPropertyDescriptor(t, n) : void 0;
 	})(e, t, n);
 }
-var _n, vn, yn = t((() => {
-	Ze(), _n = {
+var hn, gn, _n = t((() => {
+	Ye(), hn = {
 		attribute: !0,
 		type: String,
-		converter: qe,
+		converter: Ge,
 		reflect: !1,
-		hasChanged: Je
-	}, vn = (e = _n, t, n) => {
+		hasChanged: Ke
+	}, gn = (e = hn, t, n) => {
 		let { kind: r, metadata: i } = n, a = globalThis.litPropertyMetadata.get(i);
 		if (a === void 0 && globalThis.litPropertyMetadata.set(i, a = /* @__PURE__ */ new Map()), r === "setter" && ((e = Object.create(e)).wrapped = !0), a.set(n.name, e), r === "accessor") {
 			let { name: r } = n;
@@ -1013,30 +996,30 @@ var _n, vn, yn = t((() => {
 }));
 //#endregion
 //#region node_modules/lit/node_modules/@lit/reactive-element/decorators/state.js
-function bn(e) {
-	return H({
+function vn(e) {
+	return U({
 		...e,
 		state: !0,
 		attribute: !1
 	});
 }
-var xn = t((() => {
-	yn();
-})), Sn = t((() => {})), Cn = t((() => {})), wn = t((() => {})), Tn = t((() => {})), En = t((() => {})), Dn = t((() => {})), On = t((() => {
-	gn(), yn(), xn(), Sn(), Cn(), wn(), Tn(), En(), Dn();
+var yn = t((() => {
+	_n();
+})), bn = t((() => {})), xn = t((() => {})), Sn = t((() => {})), Cn = t((() => {})), wn = t((() => {})), Tn = t((() => {})), En = t((() => {
+	mn(), _n(), yn(), bn(), xn(), Sn(), Cn(), wn(), Tn();
 }));
-mn(), On(), Pt();
-var { I: kn } = jt, An = (e) => e === null || typeof e != "object" && typeof e != "function", jn = (e) => e.strings === void 0, Mn = {
+fn(), En(), Mt();
+var { I: Dn } = kt, On = (e) => e === null || typeof e != "object" && typeof e != "function", kn = (e) => e.strings === void 0, An = {
 	ATTRIBUTE: 1,
 	CHILD: 2,
 	PROPERTY: 3,
 	BOOLEAN_ATTRIBUTE: 4,
 	EVENT: 5,
 	ELEMENT: 6
-}, Nn = (e) => (...t) => ({
+}, jn = (e) => (...t) => ({
 	_$litDirective$: e,
 	values: t
-}), Pn = class {
+}), Mn = class {
 	constructor(e) {}
 	get _$AU() {
 		return this._$AM._$AU;
@@ -1050,51 +1033,51 @@ var { I: kn } = jt, An = (e) => e === null || typeof e != "object" && typeof e !
 	update(e, t) {
 		return this.render(...t);
 	}
-}, Fn = (e, t) => {
+}, Nn = (e, t) => {
 	let n = e._$AN;
 	if (n === void 0) return !1;
-	for (let e of n) e._$AO?.(t, !1), Fn(e, t);
+	for (let e of n) e._$AO?.(t, !1), Nn(e, t);
 	return !0;
-}, In = (e) => {
+}, Pn = (e) => {
 	let t, n;
 	do {
 		if ((t = e._$AM) === void 0) break;
 		n = t._$AN, n.delete(e), e = t;
 	} while (n?.size === 0);
-}, Ln = (e) => {
+}, Fn = (e) => {
 	for (let t; t = e._$AM; e = t) {
 		let n = t._$AN;
 		if (n === void 0) t._$AN = n = /* @__PURE__ */ new Set();
 		else if (n.has(e)) break;
-		n.add(e), Bn(t);
+		n.add(e), Rn(t);
 	}
 };
-function Rn(e) {
-	this._$AN === void 0 ? this._$AM = e : (In(this), this._$AM = e, Ln(this));
+function In(e) {
+	this._$AN === void 0 ? this._$AM = e : (Pn(this), this._$AM = e, Fn(this));
 }
-function zn(e, t = !1, n = 0) {
+function Ln(e, t = !1, n = 0) {
 	let r = this._$AH, i = this._$AN;
 	if (i !== void 0 && i.size !== 0) {
 		if (t) {
-			if (Array.isArray(r)) for (let e = n; e < r.length; e++) Fn(r[e], !1), In(r[e]);
-			else r != null && (Fn(r, !1), In(r));
-		} else Fn(this, e);
+			if (Array.isArray(r)) for (let e = n; e < r.length; e++) Nn(r[e], !1), Pn(r[e]);
+			else r != null && (Nn(r, !1), Pn(r));
+		} else Nn(this, e);
 	}
 }
-var Bn = (e) => {
-	e.type == Mn.CHILD && (e._$AP ?? (e._$AP = zn), e._$AQ ?? (e._$AQ = Rn));
-}, Vn = class extends Pn {
+var Rn = (e) => {
+	e.type == An.CHILD && (e._$AP ?? (e._$AP = Ln), e._$AQ ?? (e._$AQ = In));
+}, zn = class extends Mn {
 	constructor() {
 		super(...arguments), this._$AN = void 0;
 	}
 	_$AT(e, t, n) {
-		super._$AT(e, t, n), Ln(this), this.isConnected = e._$AU;
+		super._$AT(e, t, n), Fn(this), this.isConnected = e._$AU;
 	}
 	_$AO(e, t = !0) {
-		e !== this.isConnected && (this.isConnected = e, e ? this.reconnected?.() : this.disconnected?.()), t && (Fn(this, e), In(this));
+		e !== this.isConnected && (this.isConnected = e, e ? this.reconnected?.() : this.disconnected?.()), t && (Nn(this, e), Pn(this));
 	}
 	setValue(e) {
-		if (jn(this._$Ct)) this._$Ct._$AI(e, this);
+		if (kn(this._$Ct)) this._$Ct._$AI(e, this);
 		else {
 			let t = [...this._$Ct._$AH];
 			t[this._$Ci] = e, this._$Ct._$AI(t, this, 0);
@@ -1102,7 +1085,7 @@ var Bn = (e) => {
 	}
 	disconnected() {}
 	reconnected() {}
-}, Hn = class {
+}, Bn = class {
 	constructor(e) {
 		this.G = e;
 	}
@@ -1115,7 +1098,7 @@ var Bn = (e) => {
 	deref() {
 		return this.G;
 	}
-}, Un = class {
+}, Vn = class {
 	constructor() {
 		this.Y = void 0, this.Z = void 0;
 	}
@@ -1131,13 +1114,13 @@ var Bn = (e) => {
 };
 //#endregion
 //#region node_modules/lit-html/directives/until.js
-Pt();
-var Wn = (e) => !An(e) && typeof e.then == "function", Gn = 1073741823, Kn = Nn(class extends Vn {
+Mt();
+var Hn = (e) => !On(e) && typeof e.then == "function", Un = 1073741823, Wn = jn(class extends zn {
 	constructor() {
-		super(...arguments), this._$Cwt = Gn, this._$Cbt = [], this._$CK = new Hn(this), this._$CX = new Un();
+		super(...arguments), this._$Cwt = Un, this._$Cbt = [], this._$CK = new Bn(this), this._$CX = new Vn();
 	}
 	render(...e) {
-		return e.find(((e) => !Wn(e))) ?? B;
+		return e.find(((e) => !Hn(e))) ?? V;
 	}
 	update(e, t) {
 		let n = this._$Cbt, r = n.length;
@@ -1146,8 +1129,8 @@ var Wn = (e) => !An(e) && typeof e.then == "function", Gn = 1073741823, Kn = Nn(
 		this.isConnected || this.disconnected();
 		for (let e = 0; e < t.length && !(e > this._$Cwt); e++) {
 			let o = t[e];
-			if (!Wn(o)) return this._$Cwt = e, o;
-			e < r && o === n[e] || (this._$Cwt = Gn, r = 0, Promise.resolve(o).then((async (e) => {
+			if (!Hn(o)) return this._$Cwt = e, o;
+			e < r && o === n[e] || (this._$Cwt = Un, r = 0, Promise.resolve(o).then((async (e) => {
 				for (; a.get();) await a.get();
 				let t = i.deref();
 				if (t !== void 0) {
@@ -1156,7 +1139,7 @@ var Wn = (e) => !An(e) && typeof e.then == "function", Gn = 1073741823, Kn = Nn(
 				}
 			})));
 		}
-		return B;
+		return V;
 	}
 	disconnected() {
 		this._$CK.disconnect(), this._$CX.pause();
@@ -1164,15 +1147,15 @@ var Wn = (e) => !An(e) && typeof e.then == "function", Gn = 1073741823, Kn = Nn(
 	reconnected() {
 		this._$CK.reconnect(this), this._$CX.resume();
 	}
-}), qn = "7.0.0", Jn = "ontouchstart" in window || navigator.maxTouchPoints > 0 || navigator.maxTouchPoints > 0, Yn = class extends HTMLElement {
+}), Gn = "7.1.1", Kn = "ontouchstart" in window || navigator.maxTouchPoints > 0 || navigator.maxTouchPoints > 0, qn = class extends HTMLElement {
 	constructor() {
 		super(), this.holdTime = 500, this.held = !1, this.ripple = document.createElement("mwc-ripple");
 	}
 	connectedCallback() {
 		Object.assign(this.style, {
 			position: "absolute",
-			width: Jn ? "100px" : "50px",
-			height: Jn ? "100px" : "50px",
+			width: Kn ? "100px" : "50px",
+			height: Kn ? "100px" : "50px",
 			transform: "translate(-50%, -50%)",
 			pointerEvents: "none",
 			zIndex: "999"
@@ -1203,9 +1186,9 @@ var Wn = (e) => !An(e) && typeof e.then == "function", Gn = 1073741823, Kn = Nn(
 				this.startAnimation(t, n), this.held = !0;
 			}, this.holdTime);
 		}, r = (n) => {
-			n.preventDefault(), !(["touchend", "touchcancel"].includes(n.type) && this.timer === void 0) && (clearTimeout(this.timer), this.stopAnimation(), this.timer = void 0, this.held ? y(e, "action", { action: "hold" }) : t.hasDoubleClick ? n.type === "click" && n.detail < 2 || !this.dblClickTimeout ? this.dblClickTimeout = window.setTimeout(() => {
-				this.dblClickTimeout = void 0, y(e, "action", { action: "tap" });
-			}, 250) : (clearTimeout(this.dblClickTimeout), this.dblClickTimeout = void 0, y(e, "action", { action: "double_tap" })) : y(e, "action", { action: "tap" }));
+			n.preventDefault(), !(["touchend", "touchcancel"].includes(n.type) && this.timer === void 0) && (clearTimeout(this.timer), this.stopAnimation(), this.timer = void 0, this.held ? v(e, "action", { action: "hold" }) : t.hasDoubleClick ? n.type === "click" && n.detail < 2 || !this.dblClickTimeout ? this.dblClickTimeout = window.setTimeout(() => {
+				this.dblClickTimeout = void 0, v(e, "action", { action: "tap" });
+			}, 250) : (clearTimeout(this.dblClickTimeout), this.dblClickTimeout = void 0, v(e, "action", { action: "double_tap" })) : v(e, "action", { action: "tap" }));
 		};
 		e.addEventListener("touchstart", n, { passive: !0 }), e.addEventListener("touchend", r), e.addEventListener("touchcancel", r), e.addEventListener("mousedown", n, { passive: !0 }), e.addEventListener("click", r), e.addEventListener("keyup", (e) => {
 			e.keyCode === 13 && r(e);
@@ -1222,21 +1205,21 @@ var Wn = (e) => !An(e) && typeof e.then == "function", Gn = 1073741823, Kn = Nn(
 		this.ripple.active = !1, this.ripple.disabled = !0, this.style.display = "none";
 	}
 };
-customElements.define("action-handler-hourly-weather", Yn);
-var Xn = () => {
+customElements.define("action-handler-hourly-weather", qn);
+var Jn = () => {
 	let e = document.body;
 	if (e.querySelector("action-handler-hourly-weather")) return e.querySelector("action-handler-hourly-weather");
 	let t = document.createElement("action-handler-hourly-weather");
 	return e.appendChild(t), t;
-}, Zn = (e, t) => {
-	let n = Xn();
+}, Yn = (e, t) => {
+	let n = Jn();
 	n && n.bind(e, t);
-}, Qn = Nn(class extends Pn {
+}, Xn = jn(class extends Mn {
 	update(e, [t]) {
-		return Zn(e.element, t), B;
+		return Yn(e.element, t), V;
 	}
 	render(e) {}
-}), $n = {
+}), Zn = {
 	"clear-night": "conditions.clear",
 	cloudy: "conditions.cloudy",
 	fog: "conditions.fog",
@@ -1253,7 +1236,7 @@ var Xn = () => {
 	windy: "conditions.windy",
 	"windy-variant": "conditions.windy",
 	exceptional: "conditions.clear"
-}, er = {
+}, Qn = {
 	"clear-night": "weather-night",
 	cloudy: "cloudy",
 	fog: "fog",
@@ -1270,12 +1253,12 @@ var Xn = () => {
 	windy: "windy",
 	"windy-variant": "windy-variant",
 	exceptional: "alert-outline"
-}, tr = {
+}, $n = {
 	sunny: ["sunny", "clear-night"],
 	"clear-night": ["sunny", "clear-night"],
 	partlycloudy: ["partlycloudy", "night-partly-cloudy"],
 	"night-partly-cloudy": ["partlycloudy", "night-partly-cloudy"]
-}, nr = {
+}, er = {
 	n: "direction.n",
 	nne: "direction.nne",
 	ne: "direction.ne",
@@ -1292,7 +1275,7 @@ var Xn = () => {
 	wnw: "direction.wnw",
 	nw: "direction.nw",
 	nnw: "direction.nnw"
-}, rr = {
+}, tr = {
 	n: 0,
 	nne: 22.5,
 	ne: 45,
@@ -1309,27 +1292,29 @@ var Xn = () => {
 	wnw: 292.5,
 	nw: 315,
 	nnw: 337.5
-}, ir = /* @__PURE__ */ n({
-	card: () => ur,
-	common: () => ar,
-	conditions: () => cr,
-	default: () => dr,
-	direction: () => lr,
-	editor: () => or,
-	errors: () => sr
-}), ar, or, sr, cr, lr, ur, dr, fr = t((() => {
-	ar = {
+}, nr = /* @__PURE__ */ n({
+	card: () => cr,
+	common: () => rr,
+	conditions: () => or,
+	default: () => lr,
+	direction: () => sr,
+	editor: () => ir,
+	errors: () => ar
+}), rr, ir, ar, or, sr, cr, lr, ur = t((() => {
+	rr = {
 		version: "Версия",
 		title: "Времето по часове",
 		title_card: "Карта с времето по часове",
 		description: "Карта, която визуализира почасово метеорологичните условия във вид на лента.",
 		invalid_configuration: "Невалидна конфигурация"
-	}, or = {
+	}, ir = {
 		entity: "Entity (Задължително)",
 		name: "Име (Опционално)",
 		segments_to_show: "Брой сегменти за визуализиране (Опционално)",
 		offset: "Брой сегменти с които да се отмести началото (Опционално)",
 		icons: "Показвай икони вместо текст",
+		show_current: "Показване на текущото време като първи сегмент",
+		auto_label_spacing: "Автоматично намаляване на етикетите, когато картата е тясна",
 		label_spacing: "Брой сегменти между етикетите за час и температура (Опционално)",
 		show_wind: "Показвай посока и скорост на вятъра",
 		show_date: "Показвай дати",
@@ -1345,7 +1330,7 @@ var Xn = () => {
 		barb_speed_and_direction: "Като wind barb, скорост и посока",
 		all: "Всички",
 		on_day_boundaries: "На границите между дните"
-	}, sr = {
+	}, ar = {
 		missing_entity: "entity липсва в конфигурацията",
 		too_many_segments_requested: "Задали сте твърде много сегменти с прогнози в num_segments. Трябва да бъдат <= от броя сегменти във forecast entity.",
 		must_be_int: "Трябва да бъде четно число по-голямо или равно на 2",
@@ -1355,7 +1340,7 @@ var Xn = () => {
 		forecast_not_available: "Не е налична прогноза",
 		check_entity: "Проверете конфигурираното forecast entity.",
 		invalid_value_icon_fill: "icon_fill трябва да бъде или положително цяло число, или едно от 'single' или 'full'"
-	}, cr = {
+	}, or = {
 		clear: "Ясно",
 		cloudy: "Облачно",
 		fog: "Мъгла",
@@ -1369,7 +1354,7 @@ var Xn = () => {
 		mixedPrecip: "Смесен валеж",
 		sunny: "Слънчево",
 		windy: "Ветровито"
-	}, lr = {
+	}, sr = {
 		n: "С",
 		nne: "ССИ",
 		ne: "СИ",
@@ -1386,35 +1371,40 @@ var Xn = () => {
 		wnw: "ЗСЗ",
 		nw: "СЗ",
 		nnw: "ССЗ"
-	}, ur = { chance_of_precipitation: "{0}% вероятност за валежи" }, dr = {
-		common: ar,
-		editor: or,
-		errors: sr,
-		conditions: cr,
-		direction: lr,
-		card: ur
+	}, cr = {
+		now: "Сега",
+		chance_of_precipitation: "{0}% вероятност за валежи"
+	}, lr = {
+		common: rr,
+		editor: ir,
+		errors: ar,
+		conditions: or,
+		direction: sr,
+		card: cr
 	};
-})), pr = /* @__PURE__ */ n({
-	card: () => yr,
-	common: () => mr,
-	conditions: () => _r,
-	default: () => br,
-	direction: () => vr,
-	editor: () => hr,
-	errors: () => gr
-}), mr, hr, gr, _r, vr, yr, br, xr = t((() => {
-	mr = {
+})), dr = /* @__PURE__ */ n({
+	card: () => _r,
+	common: () => fr,
+	conditions: () => hr,
+	default: () => vr,
+	direction: () => gr,
+	editor: () => pr,
+	errors: () => mr
+}), fr, pr, mr, hr, gr, _r, vr, yr = t((() => {
+	fr = {
 		version: "Verze",
 		title: "Hodinnová předpověď",
 		title_card: "Karta Hodinnová předpověď",
 		description: "Karta zobrazující hodinovou předpověď v řádku.",
 		invalid_configuration: "Neplatná konfigurace"
-	}, hr = {
+	}, pr = {
 		entity: "Entita (Povinné)",
 		name: "Název (Nepovinné)",
 		segments_to_show: "Počet dílků předpovědi k vykreslení (Nepovinné)",
 		offset: "Počet dílků, které se přeskočí před začátkem (Nepovinné)",
 		icons: "Zobrazit ikony namísto textových popisků",
+		show_current: "Zobrazit aktuální počasí jako první segment",
+		auto_label_spacing: "Automaticky zmenšit popisky, když je karta úzká",
 		label_spacing: "Po kolika dílcích se vykreslí čas a teplota (Nepovinné)",
 		show_wind: "Zobrazit rychlost a směr větru",
 		show_date: "Zobrazit datumy",
@@ -1430,7 +1420,7 @@ var Xn = () => {
 		barb_speed_and_direction: "Jako šipku větru, rychlost a směr",
 		all: "Všechny",
 		on_day_boundaries: "Při změně dne"
-	}, gr = {
+	}, mr = {
 		missing_entity: "Hodnota 'entity' nebyla zadána",
 		too_many_segments_requested: "Je nastaveno příliš mnoho dílků předpovědi v 'num_segments'. Hodnota musí být <= počtu hodnot v zadané entitě.",
 		must_be_int: "Hodnota musí být kladné sudé celé číslo",
@@ -1440,7 +1430,7 @@ var Xn = () => {
 		forecast_not_available: "Předpověď není dostupná",
 		check_entity: "Zkontrolujte zadanou entity předpovědi.",
 		invalid_value_icon_fill: "icon_fill musí být buď kladné celé číslo, nebo jedno z 'single'; nebo 'full';"
-	}, _r = {
+	}, hr = {
 		clear: "Jasno",
 		cloudy: "Oblačno",
 		fog: "Mlha",
@@ -1454,7 +1444,7 @@ var Xn = () => {
 		mixedPrecip: "Smíšené srážky",
 		sunny: "Slunečno",
 		windy: "Větrno"
-	}, vr = {
+	}, gr = {
 		n: "S",
 		nne: "SSV",
 		ne: "SV",
@@ -1471,37 +1461,43 @@ var Xn = () => {
 		wnw: "ZSZ",
 		nw: "SZ",
 		nnw: "SSZ"
-	}, yr = { chance_of_precipitation: "{0}% šance srážek" }, br = {
-		common: mr,
-		editor: hr,
-		errors: gr,
-		conditions: _r,
-		direction: vr,
-		card: yr
+	}, _r = {
+		now: "Nyní",
+		chance_of_precipitation: "{0}% šance srážek"
+	}, vr = {
+		common: fr,
+		editor: pr,
+		errors: mr,
+		conditions: hr,
+		direction: gr,
+		card: _r
 	};
-})), Sr = /* @__PURE__ */ n({
-	card: () => Or,
-	common: () => Cr,
-	conditions: () => Er,
-	default: () => kr,
-	direction: () => Dr,
-	editor: () => wr,
-	errors: () => Tr
-}), Cr, wr, Tr, Er, Dr, Or, kr, Ar = t((() => {
-	Cr = {
+})), br = /* @__PURE__ */ n({
+	card: () => Er,
+	common: () => xr,
+	conditions: () => wr,
+	default: () => Dr,
+	direction: () => Tr,
+	editor: () => Sr,
+	errors: () => Cr
+}), xr, Sr, Cr, wr, Tr, Er, Dr, Or = t((() => {
+	xr = {
 		version: "Version",
 		title: "Time Vejr",
 		title_card: "Time Vejr Kort",
 		description: "Et kort som viser vejret hver time som en linje.",
 		invalid_configuration: "Ugyldig konfiguration"
-	}, wr = {
+	}, Sr = {
 		entity: "Entitet (Påkrævet)",
 		name: "Navn (Valgfri)",
 		segments_to_show: "Antal udsigtssegmenter der skal vises (Valgfri)",
 		offset: "Antal udsigtssegmenter starten skal forskydes (Valgfri)",
 		icons: "Vis ikoner i stedet for tekst",
+		show_current: "Vis det aktuelle vejr som det første segment",
+		auto_label_spacing: "Reducer automatisk etiketter, når kortet er smalt",
 		label_spacing: "Antal segmenter imellem tid og temperatur labels (Valgfri)",
 		show_wind: "Vis vindhastighed og retning",
+		show_date: "Vis datoer",
 		show_precipitation_amounts: "Vis nedbørsmængde",
 		show_precipitation_probability: "Vis nedbørssandsynlighed",
 		none: "Ingen",
@@ -1512,10 +1508,9 @@ var Xn = () => {
 		barb_and_speed: "Som vindrose og hastighed",
 		barb_and_direction: "Som vindrose og retning",
 		barb_speed_and_direction: "Som vindrose, hastighed, og retning",
-		show_date: "Vis datoer",
 		all: "Alle",
 		on_day_boundaries: "På dagsgrænser"
-	}, Tr = {
+	}, Cr = {
 		missing_entity: "entitet mangler i konfiguration",
 		too_many_segments_requested: "For mange segmenter forespurgt i num_segments. Skal være mindre eller lig antal segmenter i vejrudsigtsentiteten.",
 		must_be_int: "Skal være et heltal størrere end eller lig 2",
@@ -1525,7 +1520,7 @@ var Xn = () => {
 		forecast_not_available: "Vejrudsigt ikke tilgængelig",
 		check_entity: "Kontroller den definerede vejrudsigtsentitet.",
 		invalid_value_icon_fill: "icon_fill skal enten være et positivt heltal eller et af 'single' eller 'full'"
-	}, Er = {
+	}, wr = {
 		clear: "Klart",
 		cloudy: "Skyet",
 		fog: "Tåge",
@@ -1539,7 +1534,7 @@ var Xn = () => {
 		mixedPrecip: "Blandet nedbør",
 		sunny: "Sol",
 		windy: "Blæsende"
-	}, Dr = {
+	}, Tr = {
 		n: "N",
 		nne: "NNØ",
 		ne: "NØ",
@@ -1556,61 +1551,66 @@ var Xn = () => {
 		wnw: "VNV",
 		nw: "NV",
 		nnw: "NNV"
-	}, Or = { chance_of_precipitation: "{0}% risiko for nedbør" }, kr = {
-		common: Cr,
-		editor: wr,
-		errors: Tr,
-		conditions: Er,
-		direction: Dr,
-		card: Or
+	}, Er = {
+		now: "Nu",
+		chance_of_precipitation: "{0}% risiko for nedbør"
+	}, Dr = {
+		common: xr,
+		editor: Sr,
+		errors: Cr,
+		conditions: wr,
+		direction: Tr,
+		card: Er
 	};
-})), jr = /* @__PURE__ */ n({
-	card: () => Lr,
-	common: () => Mr,
-	conditions: () => Fr,
-	default: () => Rr,
-	direction: () => Ir,
-	editor: () => Nr,
-	errors: () => Pr
-}), Mr, Nr, Pr, Fr, Ir, Lr, Rr, zr = t((() => {
-	Mr = {
+})), kr = /* @__PURE__ */ n({
+	card: () => Fr,
+	common: () => Ar,
+	conditions: () => Nr,
+	default: () => Ir,
+	direction: () => Pr,
+	editor: () => jr,
+	errors: () => Mr
+}), Ar, jr, Mr, Nr, Pr, Fr, Ir, Lr = t((() => {
+	Ar = {
 		version: "Version",
 		title: "Stündliches Wetterbedingungen",
 		title_card: "Stündliche Wetterbedingungen",
 		description: "Diese Karte stellt stündliche Wetterbedingungen als Balken dar.",
 		invalid_configuration: "Ungültige Konfiguration"
-	}, Nr = {
+	}, jr = {
 		entity: "Entität",
 		name: "Bezeichnung (optional)",
-		icons: "Zeigen Sie Symbole anstelle von Textbeschriftungen an",
-		offset: "Anzahl der Prognosesegmente zum Versetzen beginnen um (optional)",
 		segments_to_show: "Anzahl der anzuzeigenden Prognosesegmente (optional)",
+		offset: "Anzahl der Prognosesegmente zum Versetzen beginnen um (optional)",
+		icons: "Zeigen Sie Symbole anstelle von Textbeschriftungen an",
+		show_current: "Aktuelles Wetter als erstes Segment anzeigen",
+		auto_label_spacing: "Etiketten bei schmaler Karte automatisch verkleinern",
 		label_spacing: "Anzahl der Vorhersagesegmente für Raumzeit- und Temperaturbeschriftungen nach (optional)",
 		show_wind: "Zeigt Windgeschwindigkeit und -richtung an",
+		show_date: "Termine anzeigen",
 		show_precipitation_amounts: "Niederschlagsmenge anzeigen",
-		speed_only: "Nur Geschwindigkeit",
-		direction_only: "Nur Richtung",
-		barb: "Als Windbarbe",
 		show_precipitation_probability: "Niederschlagswahrscheinlichkeit anzeigen",
 		none: "Keiner",
 		speed_and_direction: "Geschwindigkeit und Richtung",
+		speed_only: "Nur Geschwindigkeit",
+		direction_only: "Nur Richtung",
+		barb: "Als Windbarbe",
 		barb_and_speed: "Als Windwiderhaken und Geschwindigkeit",
 		barb_and_direction: "Als Windwiderhaken und Richtung",
 		barb_speed_and_direction: "Als Windwiderstand, Geschwindigkeit und Richtung",
-		show_date: "Termine anzeigen",
 		all: "Alle",
 		on_day_boundaries: "An Tagesgrenzen"
-	}, Pr = {
+	}, Mr = {
 		missing_entity: "Keine Wetter-Entität festgelegt",
+		too_many_segments_requested: "Zu viele Prognosesegmente in num_segments angefordert. Muss <= Anzahl der Segmente in der Prognoseentität sein.",
 		must_be_int: "Muss eine gerade ganze Zahl größer oder gleich 2 sein.",
 		invalid_colors: "Die folgenden Farben in Ihrer Konfiguration sind ungültig:",
 		must_be_positive_int: "Muss eine positive Ganzzahl sein",
-		too_many_segments_requested: "Zu viele Prognosesegmente in num_segments angefordert. Muss <= Anzahl der Segmente in der Prognoseentität sein.",
 		offset_must_be_positive_int: "offset muss eine positive Ganzzahl sein",
 		forecast_not_available: "Prognose nicht verfügbar",
 		check_entity: "Überprüfen Sie die konfigurierte Prognoseentität.",
 		invalid_value_icon_fill: "icon_fill muss entweder eine positive Ganzzahl oder einer der Werte 'single' oder 'full' sein."
-	}, Fr = {
+	}, Nr = {
 		clear: "Klar",
 		cloudy: "Bewölkt",
 		fog: "Nebel",
@@ -1624,7 +1624,7 @@ var Xn = () => {
 		mixedPrecip: "Gemischter Niederschlag",
 		sunny: "Sonnig",
 		windy: "Windig"
-	}, Ir = {
+	}, Pr = {
 		n: "N",
 		nne: "NNO",
 		ne: "NO",
@@ -1641,35 +1641,40 @@ var Xn = () => {
 		wnw: "WNW",
 		nw: "NW",
 		nnw: "NNW"
-	}, Lr = { chance_of_precipitation: "{0}% Niederschlagswahrscheinlichkeit" }, Rr = {
-		common: Mr,
-		editor: Nr,
-		errors: Pr,
-		conditions: Fr,
-		direction: Ir,
-		card: Lr
+	}, Fr = {
+		chance_of_precipitation: "{0}% Niederschlagswahrscheinlichkeit",
+		now: "Jetzt"
+	}, Ir = {
+		common: Ar,
+		editor: jr,
+		errors: Mr,
+		conditions: Nr,
+		direction: Pr,
+		card: Fr
 	};
-})), Br = /* @__PURE__ */ n({
-	card: () => Kr,
-	common: () => Vr,
-	conditions: () => Wr,
-	default: () => qr,
-	direction: () => Gr,
-	editor: () => Hr,
-	errors: () => Ur
-}), Vr, Hr, Ur, Wr, Gr, Kr, qr, Jr = t((() => {
-	Vr = {
+})), Rr = /* @__PURE__ */ n({
+	card: () => Wr,
+	common: () => zr,
+	conditions: () => Hr,
+	default: () => Gr,
+	direction: () => Ur,
+	editor: () => Br,
+	errors: () => Vr
+}), zr, Br, Vr, Hr, Ur, Wr, Gr, Kr = t((() => {
+	zr = {
 		version: "Version",
 		title: "Hourly Weather",
 		title_card: "Hourly Weather Card",
 		description: "A card to render hourly weather conditions as a bar.",
 		invalid_configuration: "Invalid configuration"
-	}, Hr = {
+	}, Br = {
 		entity: "Entity (Required)",
 		name: "Name (Optional)",
 		segments_to_show: "Number of forecast segments to show (Optional)",
 		offset: "Number of forecast segments to offset start by (Optional)",
 		icons: "Show icons instead of text labels",
+		show_current: "Show current weather as the first segment",
+		auto_label_spacing: "Automatically reduce labels when the card is narrow",
 		label_spacing: "Number of forecast segments to space time and temperature labels by (Optional)",
 		show_wind: "Show wind speed and direction",
 		show_date: "Show dates",
@@ -1685,7 +1690,7 @@ var Xn = () => {
 		barb_speed_and_direction: "As wind barb, speed, and direction",
 		all: "All",
 		on_day_boundaries: "On day boundaries"
-	}, Ur = {
+	}, Vr = {
 		missing_entity: "entity is missing in configuration",
 		too_many_segments_requested: "Too many forecast segments requested in num_segments. Must be <= number of segments in forecast entity.",
 		must_be_int: "Must be an even integer greater than or equal to 2",
@@ -1695,7 +1700,7 @@ var Xn = () => {
 		forecast_not_available: "Forecast not available",
 		check_entity: "Check the configured forecast entity.",
 		invalid_value_icon_fill: "icon_fill must be either a positive integer or one of 'single' or 'full'"
-	}, Wr = {
+	}, Hr = {
 		clear: "Clear",
 		cloudy: "Cloudy",
 		fog: "Fog",
@@ -1709,7 +1714,7 @@ var Xn = () => {
 		mixedPrecip: "Mixed precip",
 		sunny: "Sunny",
 		windy: "Windy"
-	}, Gr = {
+	}, Ur = {
 		n: "N",
 		nne: "NNE",
 		ne: "NE",
@@ -1726,61 +1731,66 @@ var Xn = () => {
 		wnw: "WNW",
 		nw: "NW",
 		nnw: "NNW"
-	}, Kr = { chance_of_precipitation: "{0}% chance of precipitation" }, qr = {
-		common: Vr,
-		editor: Hr,
-		errors: Ur,
-		conditions: Wr,
-		direction: Gr,
-		card: Kr
+	}, Wr = {
+		now: "Now",
+		chance_of_precipitation: "{0}% chance of precipitation"
+	}, Gr = {
+		common: zr,
+		editor: Br,
+		errors: Vr,
+		conditions: Hr,
+		direction: Ur,
+		card: Wr
 	};
-})), Yr = /* @__PURE__ */ n({
-	card: () => ti,
-	common: () => Xr,
-	conditions: () => $r,
-	default: () => ni,
-	direction: () => ei,
-	editor: () => Zr,
-	errors: () => Qr
-}), Xr, Zr, Qr, $r, ei, ti, ni, ri = t((() => {
-	Xr = {
+})), qr = /* @__PURE__ */ n({
+	card: () => $r,
+	common: () => Jr,
+	conditions: () => Zr,
+	default: () => ei,
+	direction: () => Qr,
+	editor: () => Yr,
+	errors: () => Xr
+}), Jr, Yr, Xr, Zr, Qr, $r, ei, ti = t((() => {
+	Jr = {
 		version: "Versión",
 		title: "Tiempo por hora",
 		title_card: "Tarjeta de Tiempo por hora",
 		description: "Una tarjeta para mostrar las condiciones climáticas cada hora en una barra.",
 		invalid_configuration: "Configuración inválida"
-	}, Zr = {
+	}, Yr = {
 		entity: "Entidad (Requerida)",
 		name: "Nombre (Opcional)",
-		icons: "Mostrar iconos en vez de texto",
-		offset: "Número de segmentos de pronóstico para compensar el inicio por (Opcional)",
 		segments_to_show: "Número de segmentos de pronóstico para mostrar (Opcional)",
+		offset: "Número de segmentos de pronóstico para compensar el inicio por (Opcional)",
+		icons: "Mostrar iconos en vez de texto",
+		show_current: "Mostrar el clima actual como primer segmento",
+		auto_label_spacing: "Reducir automáticamente las etiquetas cuando la tarjeta sea estrecha",
 		label_spacing: "Número de segmentos de pronóstico para etiquetas de temperatura y tiempo espacial por (Opcional)",
 		show_wind: "Mostrar la velocidad y dirección del viento",
+		show_date: "Mostrar fechas",
 		show_precipitation_amounts: "Mostrar cantidad de precipitación",
-		speed_only: "Solo velocidad",
-		direction_only: "Solo dirección",
-		barb: "Como púa de viento",
 		show_precipitation_probability: "Mostrar probabilidad de precipitación",
 		none: "Ninguno",
 		speed_and_direction: "Velocidad y dirección",
+		speed_only: "Solo velocidad",
+		direction_only: "Solo dirección",
+		barb: "Como púa de viento",
 		barb_and_speed: "Como púas de viento y velocidad",
 		barb_and_direction: "Como púa de viento y dirección",
 		barb_speed_and_direction: "Como púa de viento, velocidad y dirección",
-		show_date: "Mostrar fechas",
 		all: "Todo",
 		on_day_boundaries: "En los límites del día"
-	}, Qr = {
+	}, Xr = {
 		missing_entity: "falta la entidad en la configuración",
+		too_many_segments_requested: "Se solicitaron demasiados segmentos de pronóstico en num_segments. Debe ser <= número de segmentos en la entidad de pronóstico.",
 		must_be_int: "Debe ser un entero mayor o igual a 2",
 		invalid_colors: "Los siguientes colores en su configuración no son válidos:",
 		must_be_positive_int: "Debe ser un entero positivo",
-		too_many_segments_requested: "Se solicitaron demasiados segmentos de pronóstico en num_segments. Debe ser <= número de segmentos en la entidad de pronóstico.",
 		offset_must_be_positive_int: "offset debe ser un número entero positivo",
 		forecast_not_available: "Pronóstico no disponible",
 		check_entity: "Verifique la entidad de pronóstico configurada.",
 		invalid_value_icon_fill: "icon_fill debe ser un número entero positivo o uno de los valores 'single' o 'full'"
-	}, $r = {
+	}, Zr = {
 		clear: "Despejado",
 		cloudy: "Nublado",
 		fog: "Niebla",
@@ -1794,7 +1804,7 @@ var Xn = () => {
 		mixedPrecip: "Chaparrones dispersos",
 		sunny: "Soleado",
 		windy: "Ventoso"
-	}, ei = {
+	}, Qr = {
 		n: "N",
 		nne: "NNE",
 		ne: "NE",
@@ -1811,61 +1821,66 @@ var Xn = () => {
 		wnw: "ONO",
 		nw: "NO",
 		nnw: "NNO"
-	}, ti = { chance_of_precipitation: "{0}% probabilidad de precipitación" }, ni = {
-		common: Xr,
-		editor: Zr,
-		errors: Qr,
-		conditions: $r,
-		direction: ei,
-		card: ti
+	}, $r = {
+		now: "Ahora",
+		chance_of_precipitation: "{0}% probabilidad de precipitación"
+	}, ei = {
+		common: Jr,
+		editor: Yr,
+		errors: Xr,
+		conditions: Zr,
+		direction: Qr,
+		card: $r
 	};
-})), ii = /* @__PURE__ */ n({
-	card: () => ui,
-	common: () => ai,
-	conditions: () => ci,
-	default: () => di,
-	direction: () => li,
-	editor: () => oi,
-	errors: () => si
-}), ai, oi, si, ci, li, ui, di, fi = t((() => {
-	ai = {
+})), ni = /* @__PURE__ */ n({
+	card: () => ci,
+	common: () => ri,
+	conditions: () => oi,
+	default: () => li,
+	direction: () => si,
+	editor: () => ii,
+	errors: () => ai
+}), ri, ii, ai, oi, si, ci, li, ui = t((() => {
+	ri = {
 		version: "Version",
 		title: "Prévisions météo par heure",
 		title_card: "Prévisions météo par heure",
 		description: "Une carte pour afficher les prévisions météo par heure sur une ligne.",
 		invalid_configuration: "Configuration invalide"
-	}, oi = {
+	}, ii = {
 		entity: "Entité (requis)",
 		name: "Nom (facultatif)",
-		icons: "Afficher des icônes à la place du texte",
-		offset: "Décalage initial de segments de prévision (facultatif)",
 		segments_to_show: "Nombre de segments de prévision à afficher (facultatif)",
+		offset: "Décalage initial de segments de prévision (facultatif)",
+		icons: "Afficher des icônes à la place du texte",
+		show_current: "Afficher la météo actuelle en premier segment",
+		auto_label_spacing: "Réduire automatiquement la taille des étiquettes lorsque la carte est étroite",
 		label_spacing: "Segments d'espacement entre les étiquettes d'heure et de température (facultatif)",
 		show_wind: "Afficher la vitesse et la direction du vent",
+		show_date: "Afficher les dates",
 		show_precipitation_amounts: "Afficher la quantité de précipitations",
-		speed_only: "Vitesse uniquement",
-		direction_only: "Sens uniquement",
-		barb: "Comme barbillon de vent",
 		show_precipitation_probability: "Afficher la probabilité de précipitation",
 		none: "Aucun",
 		speed_and_direction: "Vitesse et orientation",
+		speed_only: "Vitesse uniquement",
+		direction_only: "Sens uniquement",
+		barb: "Comme barbillon de vent",
 		barb_and_speed: "Comme barbe de vent et vitesse",
 		barb_and_direction: "Comme barbillon de vent et direction",
 		barb_speed_and_direction: "Comme barbillon de vent, vitesse et direction",
-		show_date: "Afficher les dates",
 		all: "Tous",
 		on_day_boundaries: "Aux limites du jour"
-	}, si = {
+	}, ai = {
 		missing_entity: "Entité manquante dans la configuration",
+		too_many_segments_requested: "Trop de segments de prévision demandés dans num_segments. Doit être <= au nombre de segments de l'entité de prévision.",
 		must_be_int: "Doit être un nombre entier pair supérieur ou égal à 2",
 		invalid_colors: "Les couleurs suivantes dans votre configuration ne sont pas valides\xA0:",
 		must_be_positive_int: "Doit être un entier positif",
-		too_many_segments_requested: "Trop de segments de prévision demandés dans num_segments. Doit être <= au nombre de segments de l'entité de prévision.",
 		offset_must_be_positive_int: "offset doit être un entier positif",
 		forecast_not_available: "Prévision non disponible",
 		check_entity: "Vérifiez l'entité de prévision configurée.",
 		invalid_value_icon_fill: "icon_fill doit être soit un entier positif, soit l'un des nombres 'single' ou 'full'"
-	}, ci = {
+	}, oi = {
 		clear: "Dégagé",
 		cloudy: "Nuageux",
 		fog: "Brouillard",
@@ -1879,7 +1894,7 @@ var Xn = () => {
 		mixedPrecip: "Neigeux, pluvieux",
 		sunny: "Ensoleillé",
 		windy: "Venteux"
-	}, li = {
+	}, si = {
 		n: "N",
 		nne: "NNE",
 		ne: "NE",
@@ -1896,51 +1911,56 @@ var Xn = () => {
 		wnw: "ONO",
 		nw: "NO",
 		nnw: "NNO"
-	}, ui = { chance_of_precipitation: "{0}% probabilité de précipitations" }, di = {
-		common: ai,
-		editor: oi,
-		errors: si,
-		conditions: ci,
-		direction: li,
-		card: ui
+	}, ci = {
+		now: "Maintenant",
+		chance_of_precipitation: "{0}% probabilité de précipitations"
+	}, li = {
+		common: ri,
+		editor: ii,
+		errors: ai,
+		conditions: oi,
+		direction: si,
+		card: ci
 	};
-})), pi = /* @__PURE__ */ n({
-	card: () => yi,
-	common: () => mi,
-	conditions: () => _i,
-	default: () => bi,
-	direction: () => vi,
-	editor: () => hi,
-	errors: () => gi
-}), mi, hi, gi, _i, vi, yi, bi, xi = t((() => {
-	mi = {
+})), di = /* @__PURE__ */ n({
+	card: () => _i,
+	common: () => fi,
+	conditions: () => hi,
+	default: () => vi,
+	direction: () => gi,
+	editor: () => pi,
+	errors: () => mi
+}), fi, pi, mi, hi, gi, _i, vi, yi = t((() => {
+	fi = {
 		version: "Verzió",
 		title: "Óránkénti időjárás",
 		title_card: "Óránkénti időjárás kártya",
 		description: "Egy kártya, amely az óránkénti időjárási viszonyokat egy sávban jeleníti meg",
 		invalid_configuration: "Érvénytelen konfiguráció"
-	}, hi = {
+	}, pi = {
 		entity: "Entitás (Kötelező)",
 		name: "Név (Opcionális)",
 		segments_to_show: "Megjelenítendő előrejelzési órák száma (Opcionális)",
 		offset: "Az előrejelzett órák kezdő értékének eltolása (Opcionális)",
 		icons: "Ikonok megjelenítése szövegek helyett",
+		show_current: "Aktuális időjárás megjelenítése első szegmensként",
+		auto_label_spacing: "Automatikusan csökkentse a címkéket, ha a kártya keskeny",
 		label_spacing: "Az idő- és hőmérsékleti címkékhez tartozó előrejelzési órák időköze (Opcionális)",
 		show_wind: "Szélsebesség és irány megjelenítése",
+		show_date: "Dátumok megjelenítése",
 		show_precipitation_amounts: "Csapadékmennyiség megjelenítése",
 		show_precipitation_probability: "Csapadék valószínűségének megjelenítése",
+		none: "Egyik sem",
+		speed_and_direction: "Sebesség és irány",
 		speed_only: "Sebesség",
 		direction_only: "Irány",
 		barb: "Irány nyílként",
-		none: "Egyik sem",
-		speed_and_direction: "Sebesség és irány",
 		barb_and_speed: "Szélfogóként és sebességként",
 		barb_and_direction: "Szellőként és irányként",
 		barb_speed_and_direction: "Szélfogként, sebességként és irányként",
-		show_date: "Dátumok megjelenítése",
 		all: "Minden",
 		on_day_boundaries: "A napok határain"
-	}, gi = {
+	}, mi = {
 		missing_entity: "az entitás hiányzik a konfigurációból",
 		too_many_segments_requested: "Túl sok előrejelzési órát adtak meg a num_segments-ben. <= az előrejelző egységben lévő órák száma.",
 		must_be_int: "Páros egész számnak kell lennie, amely nagyobb vagy egyenlő 2-nél.",
@@ -1950,7 +1970,7 @@ var Xn = () => {
 		forecast_not_available: "Előrejelzés nem elérhető",
 		check_entity: "Ellenőrizze a beállított előrejelző egységet.",
 		invalid_value_icon_fill: "Az ikon_kitöltésének pozitív egésznek vagy az 'single' vagy 'full'"
-	}, _i = {
+	}, hi = {
 		clear: "Tiszta",
 		cloudy: "Felhős",
 		fog: "Ködös",
@@ -1964,7 +1984,7 @@ var Xn = () => {
 		mixedPrecip: "Havas eső",
 		sunny: "Napos",
 		windy: "Szeles"
-	}, vi = {
+	}, gi = {
 		n: "É",
 		nne: "ÉÉK",
 		ne: "ÉK",
@@ -1981,61 +2001,66 @@ var Xn = () => {
 		wnw: "NyÉNy",
 		nw: "ÉNy",
 		nnw: "ÉÉNy"
-	}, yi = { chance_of_precipitation: "{0}% a csapadék valószínűsége" }, bi = {
-		common: mi,
-		editor: hi,
-		errors: gi,
-		conditions: _i,
-		direction: vi,
-		card: yi
+	}, _i = {
+		now: "Most",
+		chance_of_precipitation: "{0}% a csapadék valószínűsége"
+	}, vi = {
+		common: fi,
+		editor: pi,
+		errors: mi,
+		conditions: hi,
+		direction: gi,
+		card: _i
 	};
-})), Si = /* @__PURE__ */ n({
-	card: () => Oi,
-	common: () => Ci,
-	conditions: () => Ei,
-	default: () => ki,
-	direction: () => Di,
-	editor: () => wi,
-	errors: () => Ti
-}), Ci, wi, Ti, Ei, Di, Oi, ki, Ai = t((() => {
-	Ci = {
+})), bi = /* @__PURE__ */ n({
+	card: () => Ei,
+	common: () => xi,
+	conditions: () => wi,
+	default: () => Di,
+	direction: () => Ti,
+	editor: () => Si,
+	errors: () => Ci
+}), xi, Si, Ci, wi, Ti, Ei, Di, Oi = t((() => {
+	xi = {
 		version: "Versione",
 		title: "Previsione Meteo Oraria",
 		title_card: "Scheda Meteo Oraria",
 		description: "Una scheda per rappresentare le condizioni meteorologiche orarie come una barra.",
 		invalid_configuration: "Configurazione Non Valida"
-	}, wi = {
+	}, Si = {
 		entity: "Entità (Richiesta)",
 		name: "Nome (Facoltativo)",
-		icons: "Mostra le icone invece delle etichette di testo",
-		offset: "Numero di segmenti di previsione di cui compensare l'inizio (Facoltativo)",
 		segments_to_show: "Numero di segmenti di previsione da mostrare (facoltativo)",
+		offset: "Numero di segmenti di previsione di cui compensare l'inizio (Facoltativo)",
+		icons: "Mostra le icone invece delle etichette di testo",
+		show_current: "Mostra le condizioni meteo attuali come primo segmento",
+		auto_label_spacing: "Riduci automaticamente le etichette quando la scheda è stretta",
 		label_spacing: "Numero di segmenti di previsione per spazio etichette tempo e temperatura per (facoltativo)",
 		show_wind: "Mostra la velocità e la direzione del vento",
+		show_date: "Mostra date",
 		show_precipitation_amounts: "Mostra la quantità di precipitazioni",
-		speed_only: "Solo velocità",
-		direction_only: "Solo direzione",
-		barb: "Come una punta di vento",
 		show_precipitation_probability: "Mostra la probabilità di precipitazioni",
 		none: "Nessuno",
 		speed_and_direction: "Velocità e direzione",
+		speed_only: "Solo velocità",
+		direction_only: "Solo direzione",
+		barb: "Come una punta di vento",
 		barb_and_speed: "Come il vento tagliente e la velocità",
 		barb_and_direction: "Come il vento e la direzione",
 		barb_speed_and_direction: "Come la punta del vento, la velocità e la direzione",
-		show_date: "Mostra date",
 		all: "Tutto",
 		on_day_boundaries: "Sui confini del giorno"
-	}, Ti = {
+	}, Ci = {
 		missing_entity: "entità mancante nella configurazione",
+		too_many_segments_requested: "Troppi segmenti di previsione richiesti in num_segments. Deve essere <= numero di segmenti nell'entità di previsione.",
 		must_be_int: "Deve essere un numero intero pari, maggiore o uguale a 2",
 		invalid_colors: "I seguenti colori nella tua configurazione non sono validi:",
 		must_be_positive_int: "Deve essere un numero intero positivo",
-		too_many_segments_requested: "Troppi segmenti di previsione richiesti in num_segments. Deve essere <= numero di segmenti nell'entità di previsione.",
 		offset_must_be_positive_int: "offset deve essere un numero intero positivo",
 		forecast_not_available: "Previsione non disponibile",
 		check_entity: "Controllare l'entità di previsione configurata.",
 		invalid_value_icon_fill: "icon_fill deve essere un numero intero positivo o uno dei valori 'single' o 'full'"
-	}, Ei = {
+	}, wi = {
 		clear: "Limpido",
 		cloudy: "Nuvoloso",
 		fog: "Nebbia",
@@ -2049,7 +2074,7 @@ var Xn = () => {
 		mixedPrecip: "Precipitazioni Miste",
 		sunny: "Soleggiato",
 		windy: "Ventoso"
-	}, Di = {
+	}, Ti = {
 		n: "N",
 		nne: "NNE",
 		ne: "NE",
@@ -2066,61 +2091,66 @@ var Xn = () => {
 		wnw: "ONO",
 		nw: "NO",
 		nnw: "NNO"
-	}, Oi = { chance_of_precipitation: "{0}% possibilità di precipitazioni" }, ki = {
-		common: Ci,
-		editor: wi,
-		errors: Ti,
-		conditions: Ei,
-		direction: Di,
-		card: Oi
+	}, Ei = {
+		now: "Ora",
+		chance_of_precipitation: "{0}% possibilità di precipitazioni"
+	}, Di = {
+		common: xi,
+		editor: Si,
+		errors: Ci,
+		conditions: wi,
+		direction: Ti,
+		card: Ei
 	};
-})), ji = /* @__PURE__ */ n({
-	card: () => Li,
-	common: () => Mi,
-	conditions: () => Fi,
-	default: () => Ri,
-	direction: () => Ii,
-	editor: () => Ni,
-	errors: () => Pi
-}), Mi, Ni, Pi, Fi, Ii, Li, Ri, zi = t((() => {
-	Mi = {
+})), ki = /* @__PURE__ */ n({
+	card: () => Fi,
+	common: () => Ai,
+	conditions: () => Ni,
+	default: () => Ii,
+	direction: () => Pi,
+	editor: () => ji,
+	errors: () => Mi
+}), Ai, ji, Mi, Ni, Pi, Fi, Ii, Li = t((() => {
+	Ai = {
 		version: "Versjon",
-		invalid_configuration: "Ikke gyldig konfiguration",
 		title: "Timelig vær",
 		title_card: "Timevis værkort",
-		description: "Et kort for å gjengi værforhold hver time som en bar."
-	}, Ni = {
-		icons: "Vis ikoner i stedet for tekstetiketter",
+		description: "Et kort for å gjengi værforhold hver time som en bar.",
+		invalid_configuration: "Ikke gyldig konfiguration"
+	}, ji = {
 		entity: "Entitet (obligatorisk)",
 		name: "Navn (valgfritt)",
-		offset: "Antall prognosesegmenter å utligne start med (valgfritt)",
 		segments_to_show: "Antall prognosesegmenter som skal vises (valgfritt)",
+		offset: "Antall prognosesegmenter å utligne start med (valgfritt)",
+		icons: "Vis ikoner i stedet for tekstetiketter",
+		show_current: "Vis gjeldende vær som det første segmentet",
+		auto_label_spacing: "Reduser etiketter automatisk når kortet er smalt",
 		label_spacing: "Antall prognosesegmenter til romtid og temperaturetiketter etter (valgfritt)",
 		show_wind: "Vis vindhastighet og retning",
+		show_date: "Vis datoer",
 		show_precipitation_amounts: "Vis nedbørsmengde",
-		speed_only: "Kun hastighet",
-		direction_only: "Kun retning",
-		barb: "Som vindmothak",
 		show_precipitation_probability: "Vis nedbørssannsynlighet",
 		none: "Ingen",
 		speed_and_direction: "Fart og retning",
+		speed_only: "Kun hastighet",
+		direction_only: "Kun retning",
+		barb: "Som vindmothak",
 		barb_and_speed: "Som vindmottak og fart",
 		barb_and_direction: "Som vindmottak og retning",
 		barb_speed_and_direction: "Som vindmothak, hastighet og retning",
-		show_date: "Vis datoer",
 		all: "Alle",
 		on_day_boundaries: "På dagsgrenser"
-	}, Pi = {
+	}, Mi = {
 		missing_entity: "entity mangler i konfigurasjonen",
+		too_many_segments_requested: "For mange prognosesegmenter er forespurt i num_segments. Må være <= antall segmenter i prognoseenheten.",
 		must_be_int: "Må være et jevnt heltall større enn eller lik 2",
 		invalid_colors: "Følgende farger i konfigurasjonen din er ugyldige:",
 		must_be_positive_int: "Må være et positivt heltall",
-		too_many_segments_requested: "For mange prognosesegmenter er forespurt i num_segments. Må være <= antall segmenter i prognoseenheten.",
 		offset_must_be_positive_int: "offset må være et positivt heltall",
 		forecast_not_available: "Værvarsel er ikke tilgjengelig",
 		check_entity: "Sjekk den konfigurerte prognoseenheten.",
 		invalid_value_icon_fill: "icon_fill må enten være et positivt heltall eller et av 'single' eller 'full'"
-	}, Fi = {
+	}, Ni = {
 		clear: "Klar",
 		cloudy: "Skyet",
 		fog: "Tåke",
@@ -2134,7 +2164,7 @@ var Xn = () => {
 		mixedPrecip: "Blandet nedbør",
 		sunny: "Solfylt",
 		windy: "Vindfullt"
-	}, Ii = {
+	}, Pi = {
 		n: "N",
 		nne: "NNØ",
 		ne: "NE",
@@ -2151,30 +2181,33 @@ var Xn = () => {
 		wnw: "VNV",
 		nw: "NV",
 		nnw: "NNV"
-	}, Li = { chance_of_precipitation: "{0}% sjanse for nedbør" }, Ri = {
-		common: Mi,
-		editor: Ni,
-		errors: Pi,
-		conditions: Fi,
-		direction: Ii,
-		card: Li
+	}, Fi = {
+		now: "Nå",
+		chance_of_precipitation: "{0}% sjanse for nedbør"
+	}, Ii = {
+		common: Ai,
+		editor: ji,
+		errors: Mi,
+		conditions: Ni,
+		direction: Pi,
+		card: Fi
 	};
-})), Bi = /* @__PURE__ */ n({
-	card: () => Ki,
-	common: () => Vi,
-	conditions: () => Wi,
-	default: () => qi,
-	direction: () => Gi,
-	editor: () => Hi,
-	errors: () => Ui
-}), Vi, Hi, Ui, Wi, Gi, Ki, qi, Ji = t((() => {
-	Vi = {
+})), Ri = /* @__PURE__ */ n({
+	card: () => Wi,
+	common: () => zi,
+	conditions: () => Hi,
+	default: () => Gi,
+	direction: () => Ui,
+	editor: () => Bi,
+	errors: () => Vi
+}), zi, Bi, Vi, Hi, Ui, Wi, Gi, Ki = t((() => {
+	zi = {
 		version: "Versjon",
 		invalid_configuration: "Ikkje gyldeg konfiguasjon",
 		title: "Timelig vær",
 		title_card: "Timevis værkort",
 		description: "Eit kort for å gjengje verforhold kvar time som ein bar."
-	}, Hi = {
+	}, Bi = {
 		icons: "Vis ikon i staden for tekstetikettar",
 		entity: "Entitet (obligatorisk)",
 		name: "Namn (valfritt)",
@@ -2196,8 +2229,10 @@ var Xn = () => {
 		barb_speed_and_direction: "Som vindmothak, hastighet og retning",
 		show_date: "Vis datoer",
 		all: "Alle",
-		on_day_boundaries: "På dagsgrenser"
-	}, Ui = {
+		on_day_boundaries: "På dagsgrenser",
+		show_current: "Vis gjeldende vær som det første segmentet",
+		auto_label_spacing: "Reduser etiketter automatisk når kortet er smalt"
+	}, Vi = {
 		missing_entity: "entity manglar i konfigurasjonen",
 		must_be_int: "Må være et jevnt heiltal større enn eller lik 2",
 		invalid_colors: "Følgande fargar i konfigurasjonen din er ugyldege:",
@@ -2207,7 +2242,7 @@ var Xn = () => {
 		forecast_not_available: "Vervarsel er ikkje tilgjengeleg",
 		check_entity: "Sjekk den konfigurerte prognoseeininga.",
 		invalid_value_icon_fill: "icon_fill må enten være et positivt heltall eller et av 'single' eller 'full'"
-	}, Wi = {
+	}, Hi = {
 		clear: "Klart",
 		cloudy: "Skya",
 		fog: "Tåke",
@@ -2221,7 +2256,7 @@ var Xn = () => {
 		mixedPrecip: "Blanda nedbør",
 		sunny: "Sol",
 		windy: "Vindfullt"
-	}, Gi = {
+	}, Ui = {
 		n: "N",
 		nne: "NNØ",
 		ne: "NE",
@@ -2238,51 +2273,56 @@ var Xn = () => {
 		wnw: "VNV",
 		nw: "NV",
 		nnw: "NNV"
-	}, Ki = { chance_of_precipitation: "{0}% sjanse for nedbør" }, qi = {
-		common: Vi,
-		editor: Hi,
-		errors: Ui,
-		conditions: Wi,
-		direction: Gi,
-		card: Ki
+	}, Wi = {
+		chance_of_precipitation: "{0}% sjanse for nedbør",
+		now: "Nå"
+	}, Gi = {
+		common: zi,
+		editor: Bi,
+		errors: Vi,
+		conditions: Hi,
+		direction: Ui,
+		card: Wi
 	};
-})), Yi = /* @__PURE__ */ n({
-	card: () => ta,
-	common: () => Xi,
-	conditions: () => $i,
-	default: () => na,
-	direction: () => ea,
-	editor: () => Zi,
-	errors: () => Qi
-}), Xi, Zi, Qi, $i, ea, ta, na, ra = t((() => {
-	Xi = {
+})), qi = /* @__PURE__ */ n({
+	card: () => $i,
+	common: () => Ji,
+	conditions: () => Zi,
+	default: () => ea,
+	direction: () => Qi,
+	editor: () => Yi,
+	errors: () => Xi
+}), Ji, Yi, Xi, Zi, Qi, $i, ea, ta = t((() => {
+	Ji = {
 		version: "Versie",
 		title: "Weer per uur",
 		title_card: "Weerkaart per uur",
 		description: "Een kaart om de weersomstandigheden per uur weer te geven als een bar.",
 		invalid_configuration: "Ongeldige configuratie"
-	}, Zi = {
+	}, Yi = {
 		entity: "Entiteit (Verplicht)",
 		name: "Naam: (Optioneel)",
 		segments_to_show: "Aantal weer te geven prognosesegmenten (Optioneel)",
 		offset: "Aantal prognosesegmenten om mee te compenseren (Optioneel)",
 		icons: "Pictogrammen weergeven in plaats van tekstlabels",
+		show_current: "Toon het actuele weer als eerste segment",
+		auto_label_spacing: "Labels automatisch verkleinen wanneer de kaart smal is",
 		label_spacing: "Aantal prognosesegmenten naar ruimtetijd- en temperatuurlabels per (Optioneel)",
 		show_wind: "Toon windsnelheid en richting",
+		show_date: "Datums weergeven",
 		show_precipitation_amounts: "Toon hoeveelheid neerslag",
-		speed_only: "Alleen snelheid",
-		direction_only: "Alleen richting (tekst)",
-		barb: "Alleen richting (pijl)",
 		show_precipitation_probability: "Neerslagkans weergeven",
 		none: "Geen",
 		speed_and_direction: "Snelheid en richting",
+		speed_only: "Alleen snelheid",
+		direction_only: "Alleen richting (tekst)",
+		barb: "Alleen richting (pijl)",
 		barb_and_speed: "Zoals wind weerhaak en snelheid",
 		barb_and_direction: "Als windhaak en richting",
 		barb_speed_and_direction: "Zoals wind weerhaak, snelheid en richting",
-		show_date: "Datums weergeven",
 		all: "Alle",
 		on_day_boundaries: "Op daggrenzen"
-	}, Qi = {
+	}, Xi = {
 		missing_entity: "entiteit ontbreekt in configuratie",
 		too_many_segments_requested: "Te veel prognosesegmenten aangevraagd in num_segments. Moet <= aantal segmenten in prognose-entiteit zijn.",
 		must_be_int: "Moet een even geheel getal zijn groter of gelijk aan 2",
@@ -2292,7 +2332,7 @@ var Xn = () => {
 		forecast_not_available: "Prognose niet beschikbaar",
 		check_entity: "Controleer de geconfigureerde prognose-entiteit.",
 		invalid_value_icon_fill: "icon_fill moet een positief geheel getal zijn of een van de 'single'; of 'full'"
-	}, $i = {
+	}, Zi = {
 		clear: "Helder",
 		cloudy: "Bewolkt",
 		fog: "Mist",
@@ -2306,7 +2346,7 @@ var Xn = () => {
 		mixedPrecip: "Gemengde neerslag",
 		sunny: "Zonnig",
 		windy: "Winderig"
-	}, ea = {
+	}, Qi = {
 		n: "N",
 		nne: "NNO",
 		ne: "NO",
@@ -2323,33 +2363,38 @@ var Xn = () => {
 		wnw: "WNW",
 		nw: "NW",
 		nnw: "NNW"
-	}, ta = { chance_of_precipitation: "{0}% kans op neerslag" }, na = {
-		common: Xi,
-		editor: Zi,
-		errors: Qi,
-		conditions: $i,
-		direction: ea,
-		card: ta
+	}, $i = {
+		now: "Nu",
+		chance_of_precipitation: "{0}% kans op neerslag"
+	}, ea = {
+		common: Ji,
+		editor: Yi,
+		errors: Xi,
+		conditions: Zi,
+		direction: Qi,
+		card: $i
 	};
-})), ia = /* @__PURE__ */ n({
-	card: () => ua,
-	common: () => aa,
-	conditions: () => ca,
-	default: () => da,
-	direction: () => la,
-	editor: () => oa,
-	errors: () => sa
-}), aa, oa, sa, ca, la, ua, da, fa = t((() => {
-	aa = {
+})), na = /* @__PURE__ */ n({
+	card: () => ca,
+	common: () => ra,
+	conditions: () => oa,
+	default: () => la,
+	direction: () => sa,
+	editor: () => ia,
+	errors: () => aa
+}), ra, ia, aa, oa, sa, ca, la, ua = t((() => {
+	ra = {
 		version: "Wersja",
 		title: "Pogoda godzinowa",
 		title_card: "Pogoda godzinowa",
 		description: "Karta w formie wykresu słupkowego dla pogody godzinowej",
 		invalid_configuration: "Nieprawiłowa konfiguracja"
-	}, oa = {
+	}, ia = {
 		entity: "Encja",
 		name: "Nazwa (opcjonalnie)",
 		icons: "Pokaż ikony zamiast etykiet tekstowych",
+		show_current: "Pokaż aktualną pogodę jako pierwszy segment",
+		auto_label_spacing: "Automatycznie ogranicz etykiety, gdy karta jest wąska",
 		offset: "Liczba segmentów prognozy, o które należy skompensować początek (opcjonalnie)",
 		segments_to_show: "Liczba segmentów prognozy do wyświetlenia (opcjonalnie)",
 		label_spacing: "Liczba segmentów prognozy do etykiet czasoprzestrzeni i temperatury według (opcjonalnie)",
@@ -2367,7 +2412,7 @@ var Xn = () => {
 		show_date: "Pokaż daty",
 		all: "Wszystko",
 		on_day_boundaries: "Na granicach dnia"
-	}, sa = {
+	}, aa = {
 		missing_entity: "encja nie istnieje",
 		must_be_int: "Musi być parzystą liczbą całkowitą większą lub równą 2",
 		invalid_colors: "Następujące kolory w Twojej konfiguracji są nieprawidłowe:",
@@ -2377,7 +2422,7 @@ var Xn = () => {
 		forecast_not_available: "Prognoza niedostępna",
 		check_entity: "Sprawdź skonfigurowaną encję prognozy.",
 		invalid_value_icon_fill: "icon_fill musi być dodatnią liczbą całkowitą lub jedną z wartości 'single' lub 'full'"
-	}, ca = {
+	}, oa = {
 		clear: "Bezchmurnie",
 		cloudy: "Pochmurnie",
 		fog: "Mgła",
@@ -2391,7 +2436,7 @@ var Xn = () => {
 		mixedPrecip: "Mieszane opady",
 		sunny: "Słonecznie",
 		windy: "Wietrznie"
-	}, la = {
+	}, sa = {
 		n: "P",
 		nne: "PPW",
 		ne: "PW",
@@ -2408,61 +2453,66 @@ var Xn = () => {
 		wnw: "ZPZ",
 		nw: "PZ",
 		nnw: "PPZ"
-	}, ua = { chance_of_precipitation: "{0}% szans na opady" }, da = {
-		common: aa,
-		editor: oa,
-		errors: sa,
-		conditions: ca,
-		direction: la,
-		card: ua
+	}, ca = {
+		now: "TERAZ",
+		chance_of_precipitation: "{0}% szans na opady"
+	}, la = {
+		common: ra,
+		editor: ia,
+		errors: aa,
+		conditions: oa,
+		direction: sa,
+		card: ca
 	};
-})), pa = /* @__PURE__ */ n({
-	card: () => ya,
-	common: () => ma,
-	conditions: () => _a,
-	default: () => ba,
-	direction: () => va,
-	editor: () => ha,
-	errors: () => ga
-}), ma, ha, ga, _a, va, ya, ba, xa = t((() => {
-	ma = {
+})), da = /* @__PURE__ */ n({
+	card: () => _a,
+	common: () => fa,
+	conditions: () => ha,
+	default: () => va,
+	direction: () => ga,
+	editor: () => pa,
+	errors: () => ma
+}), fa, pa, ma, ha, ga, _a, va, ya = t((() => {
+	fa = {
 		version: "Versão",
 		title: "Tempo de hora em hora",
 		title_card: "Tempo de hora em hora",
 		description: "Um cartão para mostrar as condições meteorológicas de hora em hora como uma barra.",
 		invalid_configuration: "Configuração Inválida"
-	}, ha = {
+	}, pa = {
 		entity: "Entidade",
 		name: "Nome (opcional)",
-		icons: "Mostrar ícones em vez de rótulos de texto",
-		offset: "Número de segmentos de previsão para começar a compensar (opcional)",
 		segments_to_show: "Número de segmentos de previsão a serem exibidos (opcional)",
+		offset: "Número de segmentos de previsão para começar a compensar (opcional)",
+		icons: "Mostrar ícones em vez de rótulos de texto",
+		show_current: "Exibir a previsão do tempo atual como primeiro segmento",
+		auto_label_spacing: "Reduzir automaticamente os rótulos quando o cartão for estreito",
 		label_spacing: "Número de segmentos de previsão para rótulos de tempo e temperatura de espaço por (opcional)",
 		show_wind: "Mostrar velocidade e direção do vento",
+		show_date: "Mostrar datas",
 		show_precipitation_amounts: "Mostrar quantidade de precipitação",
-		speed_only: "Apenas velocidade",
-		direction_only: "Apenas direção",
-		barb: "Como farpa de vento",
 		show_precipitation_probability: "Mostrar probabilidade de precipitação",
 		none: "Nenhum",
 		speed_and_direction: "Velocidade e direção",
+		speed_only: "Apenas velocidade",
+		direction_only: "Apenas direção",
+		barb: "Como farpa de vento",
 		barb_and_speed: "Como farpa de vento e velocidade",
 		barb_and_direction: "Como farpa de vento e direção",
 		barb_speed_and_direction: "Como farpa de vento, velocidade e direção",
-		show_date: "Mostrar datas",
 		all: "Todos",
 		on_day_boundaries: "Nos limites do dia"
-	}, ga = {
+	}, ma = {
 		missing_entity: "A entidade não existe na configuração",
+		too_many_segments_requested: "Muitos segmentos de previsão solicitados em num_segments. Deve ser <= número de segmentos na entidade de previsão.",
 		must_be_int: "Deve ser um número inteiro par maior ou igual a 2",
 		invalid_colors: "As seguintes cores em sua configuração são inválidas:",
 		must_be_positive_int: "Deve ser um número inteiro positivo",
-		too_many_segments_requested: "Muitos segmentos de previsão solicitados em num_segments. Deve ser <= número de segmentos na entidade de previsão.",
 		offset_must_be_positive_int: "offset deve ser um número inteiro positivo",
 		forecast_not_available: "Previsão não disponível",
 		check_entity: "Verifique a entidade de previsão configurada.",
 		invalid_value_icon_fill: "icon_fill deve ser um número inteiro positivo ou um dos valores 'single' ou 'full'"
-	}, _a = {
+	}, ha = {
 		clear: "Limpo",
 		cloudy: "Nublado",
 		fog: "Nevoeiro",
@@ -2476,7 +2526,7 @@ var Xn = () => {
 		mixedPrecip: "Precipitação mista",
 		sunny: "Sol",
 		windy: "Vento"
-	}, va = {
+	}, ga = {
 		n: "N",
 		nne: "NNE",
 		ne: "NE",
@@ -2493,30 +2543,33 @@ var Xn = () => {
 		wnw: "ONO",
 		nw: "NO",
 		nnw: "NNO"
-	}, ya = { chance_of_precipitation: "{0}% chance de chuva" }, ba = {
-		common: ma,
-		editor: ha,
-		errors: ga,
-		conditions: _a,
-		direction: va,
-		card: ya
+	}, _a = {
+		now: "Agora",
+		chance_of_precipitation: "{0}% chance de chuva"
+	}, va = {
+		common: fa,
+		editor: pa,
+		errors: ma,
+		conditions: ha,
+		direction: ga,
+		card: _a
 	};
-})), Sa = /* @__PURE__ */ n({
-	card: () => Oa,
-	common: () => Ca,
-	conditions: () => Ea,
-	default: () => ka,
-	direction: () => Da,
-	editor: () => wa,
-	errors: () => Ta
-}), Ca, wa, Ta, Ea, Da, Oa, ka, Aa = t((() => {
-	Ca = {
+})), ba = /* @__PURE__ */ n({
+	card: () => Ea,
+	common: () => xa,
+	conditions: () => wa,
+	default: () => Da,
+	direction: () => Ta,
+	editor: () => Sa,
+	errors: () => Ca
+}), xa, Sa, Ca, wa, Ta, Ea, Da, Oa = t((() => {
+	xa = {
 		version: "Versão",
 		title: "Tempo de hora em hora",
 		title_card: "Cartão meteorológico por hora",
 		description: "Um cartão para renderizar as condições climáticas horárias como uma barra.",
 		invalid_configuration: "Configuração inválida"
-	}, wa = {
+	}, Sa = {
 		entity: "Entidade (obrigatório)",
 		name: "Nome (opcional)",
 		segments_to_show: "Número de segmentos de previsão a serem exibidos (opcional)",
@@ -2538,8 +2591,10 @@ var Xn = () => {
 		barb_speed_and_direction: "Como farpa de vento, velocidade e direção",
 		show_date: "Mostrar datas",
 		all: "Todos",
-		on_day_boundaries: "Nos limites do dia"
-	}, Ta = {
+		on_day_boundaries: "Nos limites do dia",
+		show_current: "Exibir a previsão do tempo atual como primeiro segmento",
+		auto_label_spacing: "Reduzir automaticamente os rótulos quando o cartão for estreito"
+	}, Ca = {
 		missing_entity: "entidade está faltando na configuração",
 		too_many_segments_requested: "Muitos segmentos de previsão solicitados em num_segments. Deve ser <= número de segmentos na entidade de previsão.",
 		must_be_int: "Deve ser um número inteiro par maior ou igual a 2",
@@ -2549,7 +2604,7 @@ var Xn = () => {
 		forecast_not_available: "Previsão não disponível",
 		check_entity: "Verifique a entidade de previsão configurada.",
 		invalid_value_icon_fill: "icon_fill deve ser um número inteiro positivo ou um dos valores 'single' ou 'full'"
-	}, Ea = {
+	}, wa = {
 		clear: "Claro",
 		cloudy: "Nublado",
 		fog: "Névoa",
@@ -2563,7 +2618,7 @@ var Xn = () => {
 		mixedPrecip: "Precipitação mista",
 		sunny: "Ensolarado",
 		windy: "Ventania"
-	}, Da = {
+	}, Ta = {
 		n: "N",
 		nne: "NNE",
 		ne: "NE",
@@ -2580,35 +2635,40 @@ var Xn = () => {
 		wnw: "ONO",
 		nw: "NO",
 		nnw: "NNO"
-	}, Oa = { chance_of_precipitation: "{0}% chance de precipitação" }, ka = {
-		common: Ca,
-		editor: wa,
-		errors: Ta,
-		conditions: Ea,
-		direction: Da,
-		card: Oa
+	}, Ea = {
+		chance_of_precipitation: "{0}% chance de precipitação",
+		now: "Agora"
+	}, Da = {
+		common: xa,
+		editor: Sa,
+		errors: Ca,
+		conditions: wa,
+		direction: Ta,
+		card: Ea
 	};
-})), ja = /* @__PURE__ */ n({
-	card: () => La,
-	common: () => Ma,
-	conditions: () => Fa,
-	default: () => Ra,
-	direction: () => Ia,
-	editor: () => Na,
-	errors: () => Pa
-}), Ma, Na, Pa, Fa, Ia, La, Ra, za = t((() => {
-	Ma = {
+})), ka = /* @__PURE__ */ n({
+	card: () => Fa,
+	common: () => Aa,
+	conditions: () => Na,
+	default: () => Ia,
+	direction: () => Pa,
+	editor: () => ja,
+	errors: () => Ma
+}), Aa, ja, Ma, Na, Pa, Fa, Ia, La = t((() => {
+	Aa = {
 		version: "Версия",
 		title: "Почасовая погода",
 		title_card: "Карточка почасовой погоды",
 		description: "Карточка для отображения почасовых условий погоды в виде полосы.",
 		invalid_configuration: "Недопустимая конфигурация"
-	}, Na = {
+	}, ja = {
 		entity: "Сущность (Обязательно)",
 		name: "Название (По желанию)",
 		segments_to_show: "Количество отображаемых сегментов (По желанию)",
 		offset: "Количество сегментов для смещения (По желанию)",
 		icons: "Отображать значки вместо текстовых меток",
+		show_current: "Отображение текущей погоды в первом сегменте",
+		auto_label_spacing: "Автоматическое уменьшение количества подписей при узкой карточке",
 		label_spacing: "Количество сегментов для размещения временных и температурных меток (По желанию)",
 		show_wind: "Отображать скорость и направление ветра",
 		show_date: "Отображать даты",
@@ -2624,7 +2684,7 @@ var Xn = () => {
 		barb_speed_and_direction: "Как ветровой флажок, скорость и направление",
 		all: "Все",
 		on_day_boundaries: "На границах дня"
-	}, Pa = {
+	}, Ma = {
 		missing_entity: "Отсутствует сущность в конфигурации",
 		too_many_segments_requested: "Запрошено слишком много сегментов в num_segments. Должно быть <= количества сегментов в сущности прогноза.",
 		must_be_int: "Должно быть четным целым числом, большим или равным 2",
@@ -2634,7 +2694,7 @@ var Xn = () => {
 		forecast_not_available: "Прогноз недоступен",
 		check_entity: "Проверьте настроенную сущность прогноза.",
 		invalid_value_icon_fill: "icon_fill должен быть либо положительным целым числом, либо одним из значений 'single' или 'full'"
-	}, Fa = {
+	}, Na = {
 		clear: "Ясно",
 		cloudy: "Облачно",
 		fog: "Туман",
@@ -2648,7 +2708,7 @@ var Xn = () => {
 		mixedPrecip: "Смешанные осадки",
 		sunny: "Солнечно",
 		windy: "Ветрено"
-	}, Ia = {
+	}, Pa = {
 		n: "С",
 		nne: "ССВ",
 		ne: "СВ",
@@ -2665,37 +2725,43 @@ var Xn = () => {
 		wnw: "ЗСЗ",
 		nw: "СЗ",
 		nnw: "ССЗ"
-	}, La = { chance_of_precipitation: "Вероятность осадков: {0}%" }, Ra = {
-		common: Ma,
-		editor: Na,
-		errors: Pa,
-		conditions: Fa,
-		direction: Ia,
-		card: La
+	}, Fa = {
+		now: "Сейчас",
+		chance_of_precipitation: "Вероятность осадков: {0}%"
+	}, Ia = {
+		common: Aa,
+		editor: ja,
+		errors: Ma,
+		conditions: Na,
+		direction: Pa,
+		card: Fa
 	};
-})), Ba = /* @__PURE__ */ n({
-	card: () => Ka,
-	common: () => Va,
-	conditions: () => Wa,
-	default: () => qa,
-	direction: () => Ga,
-	editor: () => Ha,
-	errors: () => Ua
-}), Va, Ha, Ua, Wa, Ga, Ka, qa, Ja = t((() => {
-	Va = {
+})), Ra = /* @__PURE__ */ n({
+	card: () => Wa,
+	common: () => za,
+	conditions: () => Ha,
+	default: () => Ga,
+	direction: () => Ua,
+	editor: () => Ba,
+	errors: () => Va
+}), za, Ba, Va, Ha, Ua, Wa, Ga, Ka = t((() => {
+	za = {
 		version: "Verzia",
 		title: "Hodinové počasie",
 		title_card: "Hodinové Weather Card",
 		description: "Karta na vykreslenie hodinových poveternostných podmienok ako pruh.",
 		invalid_configuration: "Neplatná konfigurácia"
-	}, Ha = {
+	}, Ba = {
 		entity: "Entita (požadovaná)",
 		name: "Názov (voliteľné)",
 		segments_to_show: "Počet segmentov prognózy, ktoré sa majú zobraziť (voliteľné)",
 		offset: "Počet segmentov prognózy, o ktoré sa má začať kompenzácia (voliteľné)",
 		icons: "Zobrazovať ikony namiesto textových štítkov",
+		show_current: "Zobraziť aktuálne počasie ako prvý segment",
+		auto_label_spacing: "Automaticky zmenšiť popisky, keď je karta úzka",
 		label_spacing: "Počet segmentov predpovede na štítky časopriestoru a teploty podľa (voliteľné)",
 		show_wind: "Zobraziť rýchlosť a smer vetra",
+		show_date: "Zobraziť dátumy",
 		show_precipitation_amounts: "Zobraziť množstvo zrážok",
 		show_precipitation_probability: "Zobraziť pravdepodobnosť zrážok",
 		none: "Nič",
@@ -2706,10 +2772,9 @@ var Xn = () => {
 		barb_and_speed: "Ako veterný osteň a rýchlosť",
 		barb_and_direction: "Ako veterný osteň a smer",
 		barb_speed_and_direction: "Ako veterný osteň, rýchlosť a smer",
-		show_date: "Zobraziť dátumy",
 		all: "Všetky",
 		on_day_boundaries: "Na hraniciach dňa"
-	}, Ua = {
+	}, Va = {
 		missing_entity: "v konfigurácii chýba entita",
 		too_many_segments_requested: "Príliš veľa segmentov prognózy požadovaných v num_segments. Musí byť <= počet segmentov v entite prognózy.",
 		must_be_int: "Musí byť párne celé číslo väčšie alebo rovné 2",
@@ -2719,7 +2784,7 @@ var Xn = () => {
 		forecast_not_available: "Predpoveď nie je k dispozícii",
 		check_entity: "Skontrolujte nakonfigurovanú entitu predpovede.",
 		invalid_value_icon_fill: "icon_fill musí byť buď kladné celé číslo alebo jedno z 'single'; alebo 'full';"
-	}, Wa = {
+	}, Ha = {
 		clear: "Čisté",
 		cloudy: "Zamračené",
 		fog: "Hmla",
@@ -2733,7 +2798,7 @@ var Xn = () => {
 		mixedPrecip: "Zmiešené",
 		sunny: "Slnečno",
 		windy: "Veterno"
-	}, Ga = {
+	}, Ua = {
 		n: "S",
 		nne: "SSV",
 		ne: "SV",
@@ -2750,35 +2815,130 @@ var Xn = () => {
 		wnw: "ZSZ",
 		nw: "SZ",
 		nnw: "SSZ"
-	}, Ka = { chance_of_precipitation: "{0}% možnosť zrážok" }, qa = {
-		common: Va,
-		editor: Ha,
-		errors: Ua,
-		conditions: Wa,
-		direction: Ga,
-		card: Ka
+	}, Wa = {
+		now: "Teraz",
+		chance_of_precipitation: "{0}% možnosť zrážok"
+	}, Ga = {
+		common: za,
+		editor: Ba,
+		errors: Va,
+		conditions: Ha,
+		direction: Ua,
+		card: Wa
 	};
-})), Ya = /* @__PURE__ */ n({
-	card: () => to,
-	common: () => Xa,
-	conditions: () => $a,
-	default: () => no,
-	direction: () => eo,
-	editor: () => Za,
-	errors: () => Qa
-}), Xa, Za, Qa, $a, eo, to, no, ro = t((() => {
-	Xa = {
+})), qa = /* @__PURE__ */ n({
+	card: () => $a,
+	common: () => Ja,
+	conditions: () => Za,
+	default: () => eo,
+	direction: () => Qa,
+	editor: () => Ya,
+	errors: () => Xa
+}), Ja, Ya, Xa, Za, Qa, $a, eo, to = t((() => {
+	Ja = {
+		version: "Verzija",
+		title: "Prognoza po satima",
+		title_card: "Kartica sa prognozom po satima",
+		description: "Kartica za prikaz vremenskih uslova po satima u obliku trake.",
+		invalid_configuration: "Neispravna konfiguracija"
+	}, Ya = {
+		entity: "Entitet (Obavezno)",
+		name: "Naziv (Opciono)",
+		segments_to_show: "Broj segmenata prognoze za prikaz (Opciono)",
+		offset: "Broj segmenata prognoze za pomeranje početka (Opciono)",
+		icons: "Prikaz ikone umesto tekstualnih oznaka",
+		show_current: "Prikaži trenutno vreme kao prvi segment",
+		auto_label_spacing: "Automatski smanji broj oznaka kada je kartica uska",
+		label_spacing: "Razmak između oznaka vremena i temperature izražen u broju segmenata (Opciono)",
+		show_wind: "Prikaži brzinu i smer vetra",
+		show_date: "Prikaži datume",
+		show_precipitation_amounts: "Prikaz količine padavina",
+		show_precipitation_probability: "Prikaz verovatnoće padavina",
+		none: "Nijedno",
+		speed_and_direction: "Brzina i smer",
+		speed_only: "Samo brzina",
+		direction_only: "Samo smer",
+		barb: "Kao strelica za vetar (barb)",
+		barb_and_speed: "Kao strelica za vetar i brzina",
+		barb_and_direction: "Kao strelica za vetar i smer",
+		barb_speed_and_direction: "Kao strelica za vetar, brzina i smer",
+		all: "Sve",
+		on_day_boundaries: "Na granicama dana"
+	}, Xa = {
+		missing_entity: "entitet nedostaje u konfiguraciji",
+		too_many_segments_requested: "Zatraženo je previše segmenata prognoze u 'num_segments'. Broj mora biti manji ili jednak broju segmenata u samom entitetu prognoze.",
+		must_be_int: "Mora biti paran ceo broj veći od ili jednak 2",
+		invalid_colors: "Sledeće boje u vašoj konfiguraciji nisu ispravne:",
+		must_be_positive_int: "Mora biti pozitivan ceo broj",
+		offset_must_be_positive_int: "'offset' mora biti pozitivan ceo broj",
+		forecast_not_available: "Prognoza nije dostupna",
+		check_entity: "Proverite podešeni entitet za prognozu.",
+		invalid_value_icon_fill: "'icon_fill' mora biti pozitivan ceo broj ili jedna od vrednosti: 'single' ili 'full'"
+	}, Za = {
+		clear: "Vedro",
+		cloudy: "Oblačno",
+		fog: "Magla",
+		hail: "Grad",
+		thunderstorm: "Grmljavina",
+		partlyCloudy: "Delimično oblačno",
+		partlyCloudyNight: "Delimično oblačno (noću)",
+		heavyRain: "Jaka kiša",
+		rain: "Kiša",
+		snow: "Sneg",
+		mixedPrecip: "Susnežica",
+		sunny: "Sunčano",
+		windy: "Vetrovito"
+	}, Qa = {
+		n: "S",
+		nne: "SSI",
+		ne: "SI",
+		ene: "ISI",
+		e: "I",
+		ese: "IJI",
+		se: "JI",
+		sse: "JJI",
+		s: "J",
+		ssw: "JJZ",
+		sw: "JZ",
+		wsw: "ZJZ",
+		w: "Z",
+		wnw: "ZZS",
+		nw: "SZ",
+		nnw: "SSZ"
+	}, $a = {
+		now: "Sada",
+		chance_of_precipitation: "{0}% šanse za padavine"
+	}, eo = {
+		common: Ja,
+		editor: Ya,
+		errors: Xa,
+		conditions: Za,
+		direction: Qa,
+		card: $a
+	};
+})), no = /* @__PURE__ */ n({
+	card: () => co,
+	common: () => ro,
+	conditions: () => oo,
+	default: () => lo,
+	direction: () => so,
+	editor: () => io,
+	errors: () => ao
+}), ro, io, ao, oo, so, co, lo, uo = t((() => {
+	ro = {
 		version: "Sürüm",
 		title: "Saatlik Hava Durumu",
 		title_card: "Saatlik Hava Durumu Kartı",
 		description: "Saatlik hava koşullarını çubuk grafik olarak gösteren bir kart.",
 		invalid_configuration: "Geçersiz yapılandırma"
-	}, Za = {
+	}, io = {
 		entity: "Varlık (Zorunlu)",
 		name: "Ad (İsteğe bağlı)",
 		segments_to_show: "Gösterilecek tahmin dilimi sayısı (İsteğe bağlı)",
 		offset: "Başlangıcı öteleme sayısı (İsteğe bağlı)",
 		icons: "Metin etiketleri yerine simgeleri göster",
+		show_current: "Mevcut hava durumunu ilk bölüm olarak göster",
+		auto_label_spacing: "Kart daraldığında etiketleri otomatik olarak küçült",
 		label_spacing: "Zaman ve sıcaklık etiketlerinin aralık sayısı (İsteğe bağlı)",
 		show_wind: "Rüzgar hızı ve yönünü göster",
 		show_date: "Tarihleri göster",
@@ -2794,7 +2954,7 @@ var Xn = () => {
 		barb_speed_and_direction: "Rüzgar oku, hız ve yön olarak",
 		all: "Tümü",
 		on_day_boundaries: "Gün sınırlarında"
-	}, Qa = {
+	}, ao = {
 		missing_entity: "Yapılandırmada varlık eksik",
 		too_many_segments_requested: "İstenen tahmin dilimi sayısı çok fazla. num_segments değeri, tahmin varlığındaki dilim sayısından fazla olamaz.",
 		must_be_int: "2 veya daha büyük çift bir tam sayı olmalı",
@@ -2804,7 +2964,7 @@ var Xn = () => {
 		forecast_not_available: "Tahmin mevcut değil",
 		check_entity: "Yapılandırılmış tahmin varlığını kontrol edin.",
 		invalid_value_icon_fill: "icon_fill değeri pozitif bir tam sayı ya da 'single' veya 'full' olmalıdır"
-	}, $a = {
+	}, oo = {
 		clear: "Açık",
 		cloudy: "Bulutlu",
 		fog: "Sisli",
@@ -2818,7 +2978,7 @@ var Xn = () => {
 		mixedPrecip: "Karışık yağış",
 		sunny: "Güneşli",
 		windy: "Rüzgarlı"
-	}, eo = {
+	}, so = {
 		n: "K",
 		nne: "KKB",
 		ne: "KB",
@@ -2835,35 +2995,40 @@ var Xn = () => {
 		wnw: "BKB",
 		nw: "KB",
 		nnw: "KKB"
-	}, to = { chance_of_precipitation: "%{0} yağış olasılığı" }, no = {
-		common: Xa,
-		editor: Za,
-		errors: Qa,
-		conditions: $a,
-		direction: eo,
-		card: to
+	}, co = {
+		now: "Şimdi",
+		chance_of_precipitation: "%{0} yağış olasılığı"
+	}, lo = {
+		common: ro,
+		editor: io,
+		errors: ao,
+		conditions: oo,
+		direction: so,
+		card: co
 	};
-})), io = /* @__PURE__ */ n({
-	card: () => uo,
-	common: () => ao,
-	conditions: () => co,
-	default: () => fo,
-	direction: () => lo,
-	editor: () => oo,
-	errors: () => so
-}), ao, oo, so, co, lo, uo, fo, po = t((() => {
-	ao = {
+})), fo = /* @__PURE__ */ n({
+	card: () => vo,
+	common: () => po,
+	conditions: () => go,
+	default: () => yo,
+	direction: () => _o,
+	editor: () => mo,
+	errors: () => ho
+}), po, mo, ho, go, _o, vo, yo, bo = t((() => {
+	po = {
 		version: "Версія",
 		title: "Погодинний прогноз погоди",
 		title_card: "Картка погодинного прогнозу погоди",
 		description: "Картка для відображення погодинних умов погоди у вигляді діаграми.",
 		invalid_configuration: "Недійсна конфігурація"
-	}, oo = {
+	}, mo = {
 		entity: "Сутність (Обов'язково)",
 		name: "Назва (Необов'язково)",
 		segments_to_show: "Кількість сегментів прогнозу для показу (Необов'язково)",
 		offset: "Кількість сегментів прогнозу для зміщення початку (Необов'язково)",
 		icons: "Показувати іконки замість текстових міток",
+		show_current: "Показувати поточну погоду як перший сегмент",
+		auto_label_spacing: "Автоматично зменшувати мітки, коли картка вузька",
 		label_spacing: "Кількість сегментів прогнозу для інтервалу між мітками часу та температури (Необов'язково)",
 		show_wind: "Показувати швидкість та напрямок вітру",
 		show_date: "Показувати дати",
@@ -2879,7 +3044,7 @@ var Xn = () => {
 		barb_speed_and_direction: "Як вітровий вимпел, швидкість та напрямок",
 		all: "Все",
 		on_day_boundaries: "На межах днів"
-	}, so = {
+	}, ho = {
 		missing_entity: "відсутня сутність в конфігурації",
 		too_many_segments_requested: "Запитано забагато сегментів прогнозу в num_segments. Має бути <= кількості сегментів в сутності прогнозу.",
 		must_be_int: "Має бути парним цілим числом більшим або рівним 2",
@@ -2889,7 +3054,7 @@ var Xn = () => {
 		forecast_not_available: "Прогноз недоступний",
 		check_entity: "Перевірте налаштовану сутність прогнозу.",
 		invalid_value_icon_fill: "icon_fill має бути додатнім цілим числом або одним з 'single' чи 'full'"
-	}, co = {
+	}, go = {
 		clear: "Ясно",
 		cloudy: "Хмарно",
 		fog: "Туман",
@@ -2903,7 +3068,7 @@ var Xn = () => {
 		mixedPrecip: "Змішані опади",
 		sunny: "Сонячно",
 		windy: "Вітряно"
-	}, lo = {
+	}, _o = {
 		n: "Пн",
 		nne: "ПнПнСх",
 		ne: "ПнСх",
@@ -2920,35 +3085,40 @@ var Xn = () => {
 		wnw: "ЗхПнЗх",
 		nw: "ПнЗх",
 		nnw: "ПнПнЗх"
-	}, uo = { chance_of_precipitation: "{0}% ймовірність опадів" }, fo = {
-		common: ao,
-		editor: oo,
-		errors: so,
-		conditions: co,
-		direction: lo,
-		card: uo
+	}, vo = {
+		now: "Зараз",
+		chance_of_precipitation: "{0}% ймовірність опадів"
+	}, yo = {
+		common: po,
+		editor: mo,
+		errors: ho,
+		conditions: go,
+		direction: _o,
+		card: vo
 	};
-})), mo = /* @__PURE__ */ n({
-	card: () => bo,
-	common: () => ho,
-	conditions: () => vo,
-	default: () => xo,
-	direction: () => yo,
-	editor: () => go,
-	errors: () => _o
-}), ho, go, _o, vo, yo, bo, xo, So = t((() => {
-	ho = {
+})), xo = /* @__PURE__ */ n({
+	card: () => Do,
+	common: () => So,
+	conditions: () => To,
+	default: () => Oo,
+	direction: () => Eo,
+	editor: () => Co,
+	errors: () => wo
+}), So, Co, wo, To, Eo, Do, Oo, ko = t((() => {
+	So = {
 		version: "版本",
 		title: "逐小时天气",
 		title_card: "逐小时天气卡片",
 		description: "一个用于显示逐小时天气状况的卡片。",
 		invalid_configuration: "无效的配置"
-	}, go = {
+	}, Co = {
 		entity: "实体（必需）",
 		name: "名称（可选）",
 		segments_to_show: "显示的预测段数（可选）",
 		offset: "开始的预测段偏移数（可选）",
 		icons: "显示图标而非文字标签",
+		show_current: "将当前天气显示为第一部分",
+		auto_label_spacing: "卡片变窄时自动缩小标签",
 		label_spacing: "时间和温度标签的预测段间距数（可选）",
 		show_wind: "显示风速和风向",
 		show_date: "显示日期",
@@ -2964,7 +3134,7 @@ var Xn = () => {
 		barb_speed_and_direction: "风向图标，速度和方向",
 		all: "全部",
 		on_day_boundaries: "在日边界上"
-	}, _o = {
+	}, wo = {
 		missing_entity: "配置中缺少实体",
 		too_many_segments_requested: "在num_segments中请求的预测段过多。必须 <= 预测实体中的段数。",
 		must_be_int: "必须是大于或等于2的偶数",
@@ -2974,7 +3144,7 @@ var Xn = () => {
 		forecast_not_available: "预测不可用",
 		check_entity: "检查配置的预测实体。",
 		invalid_value_icon_fill: "icon_fill 必须是正整数,或者是'single'或'full'之一"
-	}, vo = {
+	}, To = {
 		clear: "晴朗",
 		cloudy: "多云",
 		fog: "雾",
@@ -2988,7 +3158,7 @@ var Xn = () => {
 		mixedPrecip: "雨夹雪",
 		sunny: "晴天",
 		windy: "有风"
-	}, yo = {
+	}, Eo = {
 		n: "北",
 		nne: "北偏东",
 		ne: "东北",
@@ -3005,71 +3175,75 @@ var Xn = () => {
 		wnw: "西偏北",
 		nw: "西北",
 		nnw: "北偏西"
-	}, bo = { chance_of_precipitation: "{0}%的降雨概率" }, xo = {
-		common: ho,
-		editor: go,
-		errors: _o,
-		conditions: vo,
-		direction: yo,
-		card: bo
+	}, Do = {
+		now: "现在",
+		chance_of_precipitation: "{0}%的降雨概率"
+	}, Oo = {
+		common: So,
+		editor: Co,
+		errors: wo,
+		conditions: To,
+		direction: Eo,
+		card: Do
 	};
 }));
 //#endregion
 //#region src/localize/localize.ts
-function Co(e, t) {
+function Ao(e, t) {
 	return function(n, r = "", i = "") {
 		let a = (e || localStorage.getItem("selectedLanguage") || t || "en").replace(/['"]+/g, "").replace("-", "_"), o;
 		try {
-			o = n.split(".").reduce((e, t) => e[t], wo[a]);
+			o = n.split(".").reduce((e, t) => e[t], jo[a]);
 		} catch {
-			o = n.split(".").reduce((e, t) => e[t], wo.en);
+			o = n.split(".").reduce((e, t) => e[t], jo.en);
 		}
-		return o === void 0 && (o = n.split(".").reduce((e, t) => e[t], wo.en)), r !== "" && i !== "" && (o = o.replace(r, i)), o;
+		return o === void 0 && (o = n.split(".").reduce((e, t) => e[t], jo.en)), r !== "" && i !== "" && (o = o.replace(r, i)), o;
 	};
 }
-var wo, To = t((() => {
-	fr(), xr(), Ar(), zr(), Jr(), ri(), fi(), xi(), Ai(), zi(), Ji(), ra(), fa(), xa(), Aa(), za(), Ja(), ro(), po(), So(), wo = {
-		bg: ir,
-		cs: pr,
-		da: Sr,
-		de: jr,
-		en: Br,
-		es: Yr,
-		fr: ii,
-		hu: pi,
-		it: Si,
-		nb: ji,
-		nn_NO: Bi,
-		nl: Yi,
-		pl: ia,
-		pt: pa,
-		pt_BR: Sa,
-		ru: ja,
-		sk: Ba,
-		tr: Ya,
-		uk: io,
-		zh: mo
+var jo, Mo = t((() => {
+	ur(), yr(), Or(), Lr(), Kr(), ti(), ui(), yi(), Oi(), Li(), Ki(), ta(), ua(), ya(), Oa(), La(), Ka(), to(), uo(), bo(), ko(), jo = {
+		bg: nr,
+		cs: dr,
+		da: br,
+		de: kr,
+		en: Rr,
+		es: qr,
+		fr: ni,
+		hu: di,
+		it: bi,
+		nb: ki,
+		nn_NO: Ri,
+		nl: qi,
+		pl: na,
+		pt: da,
+		pt_BR: ba,
+		ru: ka,
+		sk: Ra,
+		sr_Latn: qa,
+		tr: no,
+		uk: fo,
+		zh: xo
 	};
 }));
 //#endregion
 //#region src/solar.ts
-To();
-var Eo = Math.PI / 180, Do = 360, Oo = 24, ko = 864e5, Ao = 15, jo = 2451545, Mo = 2440587.5, No = 280.46, Po = .9856474, Fo = 357.528, Io = .9856003, Lo = 1.915, Ro = .02, zo = 23.439, Bo = 4e-7, Vo = 18.697374558, Ho = 24.06570982441908, Uo = -.833;
-function Wo(e, t, n) {
-	let r = e.getTime() / ko + Mo - jo, i = (No + Po * r) % Do, a = (Fo + Io * r) % Do * Eo, o = (i + Lo * Math.sin(a) + Ro * Math.sin(2 * a)) * Eo, s = (zo - Bo * r) * Eo, c = Math.asin(Math.sin(s) * Math.sin(o)), l = Math.atan2(Math.cos(s) * Math.sin(o), Math.cos(o)), u = (Vo + Ho * r) % Oo;
-	u < 0 && (u += Oo);
-	let d = u * Ao * Eo + n * Eo - l, f = t * Eo, p = Math.sin(f) * Math.sin(c) + Math.cos(f) * Math.cos(c) * Math.cos(d);
-	return Math.asin(Math.min(1, Math.max(-1, p))) / Eo;
+Mo();
+var No = Math.PI / 180, Po = 360, Fo = 24, Io = 864e5, Lo = 15, Ro = 2451545, zo = 2440587.5, Bo = 280.46, Vo = .9856474, Ho = 357.528, Uo = .9856003, Wo = 1.915, Go = .02, Ko = 23.439, qo = 4e-7, Jo = 18.697374558, Yo = 24.06570982441908, Xo = -.833;
+function Zo(e, t, n) {
+	let r = e.getTime() / Io + zo - Ro, i = (Bo + Vo * r) % Po, a = (Ho + Uo * r) % Po * No, o = (i + Wo * Math.sin(a) + Go * Math.sin(2 * a)) * No, s = (Ko - qo * r) * No, c = Math.asin(Math.sin(s) * Math.sin(o)), l = Math.atan2(Math.cos(s) * Math.sin(o), Math.cos(o)), u = (Jo + Yo * r) % Fo;
+	u < 0 && (u += Fo);
+	let d = u * Lo * No + n * No - l, f = t * No, p = Math.sin(f) * Math.sin(c) + Math.cos(f) * Math.cos(c) * Math.cos(d);
+	return Math.asin(Math.min(1, Math.max(-1, p))) / No;
 }
-function Go(e, t, n) {
-	return Wo(e, t, n) > Uo;
+function Qo(e, t, n) {
+	return Zo(e, t, n) > Xo;
 }
 //#endregion
 //#region node_modules/lit-html/directives/style-map.js
-Pt();
-var Ko = "important", qo = " !" + Ko, Jo = Nn(class extends Pn {
+Mt();
+var $o = "important", es = " !" + $o, ts = jn(class extends Mn {
 	constructor(e) {
-		if (super(e), e.type !== Mn.ATTRIBUTE || e.name !== "style" || e.strings?.length > 2) throw Error("The `styleMap` directive must be used in the `style` attribute and must be the only part in the attribute.");
+		if (super(e), e.type !== An.ATTRIBUTE || e.name !== "style" || e.strings?.length > 2) throw Error("The `styleMap` directive must be used in the `style` attribute and must be the only part in the attribute.");
 	}
 	render(e) {
 		return Object.keys(e).reduce(((t, n) => {
@@ -3085,26 +3259,26 @@ var Ko = "important", qo = " !" + Ko, Jo = Nn(class extends Pn {
 			let r = t[e];
 			if (r != null) {
 				this.ft.add(e);
-				let t = typeof r == "string" && r.endsWith(qo);
-				e.includes("-") || t ? n.setProperty(e, t ? r.slice(0, -11) : r, t ? Ko : "") : n[e] = r;
+				let t = typeof r == "string" && r.endsWith(es);
+				e.includes("-") || t ? n.setProperty(e, t ? r.slice(0, -11) : r, t ? $o : "") : n[e] = r;
 			}
 		}
-		return B;
+		return V;
 	}
-}), U = "bottom", Yo = "right", W = "left", Xo = "auto", Zo = [
+}), W = "bottom", ns = "right", G = "left", rs = "auto", is = [
 	"top",
-	U,
-	Yo,
-	W
-], Qo = "start", $o = "clippingParents", es = "viewport", ts = "popper", ns = "reference", rs = /*#__PURE__*/ Zo.reduce(function(e, t) {
-	return e.concat([t + "-" + Qo, t + "-end"]);
-}, []), is = /*#__PURE__*/ [].concat(Zo, [Xo]).reduce(function(e, t) {
+	W,
+	ns,
+	G
+], as = "start", os = "clippingParents", ss = "viewport", cs = "popper", ls = "reference", us = /*#__PURE__*/ is.reduce(function(e, t) {
+	return e.concat([t + "-" + as, t + "-end"]);
+}, []), ds = /*#__PURE__*/ [].concat(is, [rs]).reduce(function(e, t) {
 	return e.concat([
 		t,
-		t + "-" + Qo,
+		t + "-" + as,
 		t + "-end"
 	]);
-}, []), as = [
+}, []), fs = [
 	"beforeRead",
 	"read",
 	"afterRead",
@@ -3117,12 +3291,12 @@ var Ko = "important", qo = " !" + Ko, Jo = Nn(class extends Pn {
 ];
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getNodeName.js
-function G(e) {
+function K(e) {
 	return e ? (e.nodeName || "").toLowerCase() : null;
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getWindow.js
-function K(e) {
+function q(e) {
 	if (e == null) return window;
 	if (e.toString() !== "[object Window]") {
 		var t = e.ownerDocument;
@@ -3132,28 +3306,28 @@ function K(e) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/instanceOf.js
-function os(e) {
-	return e instanceof K(e).Element || e instanceof Element;
+function ps(e) {
+	return e instanceof q(e).Element || e instanceof Element;
 }
-function q(e) {
-	return e instanceof K(e).HTMLElement || e instanceof HTMLElement;
+function J(e) {
+	return e instanceof q(e).HTMLElement || e instanceof HTMLElement;
 }
-function ss(e) {
-	return typeof ShadowRoot > "u" ? !1 : e instanceof K(e).ShadowRoot || e instanceof ShadowRoot;
+function ms(e) {
+	return typeof ShadowRoot > "u" ? !1 : e instanceof q(e).ShadowRoot || e instanceof ShadowRoot;
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/modifiers/applyStyles.js
-function cs(e) {
+function hs(e) {
 	var t = e.state;
 	Object.keys(t.elements).forEach(function(e) {
 		var n = t.styles[e] || {}, r = t.attributes[e] || {}, i = t.elements[e];
-		!q(i) || !G(i) || (Object.assign(i.style, n), Object.keys(r).forEach(function(e) {
+		J(i) && K(i) && (Object.assign(i.style, n), Object.keys(r).forEach(function(e) {
 			var t = r[e];
 			t === !1 ? i.removeAttribute(e) : i.setAttribute(e, t === !0 ? "" : t);
 		}));
 	});
 }
-function ls(e) {
+function gs(e) {
 	var t = e.state, n = {
 		popper: {
 			position: t.options.strategy,
@@ -3169,31 +3343,31 @@ function ls(e) {
 			var r = t.elements[e], i = t.attributes[e] || {}, a = Object.keys(t.styles.hasOwnProperty(e) ? t.styles[e] : n[e]).reduce(function(e, t) {
 				return e[t] = "", e;
 			}, {});
-			!q(r) || !G(r) || (Object.assign(r.style, a), Object.keys(i).forEach(function(e) {
+			J(r) && K(r) && (Object.assign(r.style, a), Object.keys(i).forEach(function(e) {
 				r.removeAttribute(e);
 			}));
 		});
 	};
 }
-var us = {
+var _s = {
 	name: "applyStyles",
 	enabled: !0,
 	phase: "write",
-	fn: cs,
-	effect: ls,
+	fn: hs,
+	effect: gs,
 	requires: ["computeStyles"]
 };
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/getBasePlacement.js
-function J(e) {
+function Y(e) {
 	return e.split("-")[0];
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/math.js
-var ds = Math.max, fs = Math.min, ps = Math.round;
+var vs = Math.max, ys = Math.min, bs = Math.round;
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/userAgent.js
-function ms() {
+function xs() {
 	var e = navigator.userAgentData;
 	return e != null && e.brands && Array.isArray(e.brands) ? e.brands.map(function(e) {
 		return e.brand + "/" + e.version;
@@ -3201,16 +3375,16 @@ function ms() {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/isLayoutViewport.js
-function hs() {
-	return !/^((?!chrome|android).)*safari/i.test(ms());
+function Ss() {
+	return !/^((?!chrome|android).)*safari/i.test(xs());
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getBoundingClientRect.js
-function gs(e, t, n) {
+function Cs(e, t, n) {
 	t === void 0 && (t = !1), n === void 0 && (n = !1);
 	var r = e.getBoundingClientRect(), i = 1, a = 1;
-	t && q(e) && (i = e.offsetWidth > 0 && ps(r.width) / e.offsetWidth || 1, a = e.offsetHeight > 0 && ps(r.height) / e.offsetHeight || 1);
-	var o = (os(e) ? K(e) : window).visualViewport, s = !hs() && n, c = (r.left + (s && o ? o.offsetLeft : 0)) / i, l = (r.top + (s && o ? o.offsetTop : 0)) / a, u = r.width / i, d = r.height / a;
+	t && J(e) && (i = e.offsetWidth > 0 && bs(r.width) / e.offsetWidth || 1, a = e.offsetHeight > 0 && bs(r.height) / e.offsetHeight || 1);
+	var o = (ps(e) ? q(e) : window).visualViewport, s = !Ss() && n, c = (r.left + (s && o ? o.offsetLeft : 0)) / i, l = (r.top + (s && o ? o.offsetTop : 0)) / a, u = r.width / i, d = r.height / a;
 	return {
 		width: u,
 		height: d,
@@ -3224,8 +3398,8 @@ function gs(e, t, n) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getLayoutRect.js
-function _s(e) {
-	var t = gs(e), n = e.offsetWidth, r = e.offsetHeight;
+function ws(e) {
+	var t = Cs(e), n = e.offsetWidth, r = e.offsetHeight;
 	return Math.abs(t.width - n) <= 1 && (n = t.width), Math.abs(t.height - r) <= 1 && (r = t.height), {
 		x: e.offsetLeft,
 		y: e.offsetTop,
@@ -3235,10 +3409,10 @@ function _s(e) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/contains.js
-function vs(e, t) {
+function Ts(e, t) {
 	var n = t.getRootNode && t.getRootNode();
 	if (e.contains(t)) return !0;
-	if (n && ss(n)) {
+	if (n && ms(n)) {
 		var r = t;
 		do {
 			if (r && e.isSameNode(r)) return !0;
@@ -3249,65 +3423,65 @@ function vs(e, t) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getComputedStyle.js
-function Y(e) {
-	return K(e).getComputedStyle(e);
+function Es(e) {
+	return q(e).getComputedStyle(e);
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/isTableElement.js
-function ys(e) {
+function Ds(e) {
 	return [
 		"table",
 		"td",
 		"th"
-	].indexOf(G(e)) >= 0;
+	].indexOf(K(e)) >= 0;
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getDocumentElement.js
-function bs(e) {
-	return ((os(e) ? e.ownerDocument : e.document) || window.document).documentElement;
+function Os(e) {
+	return ((ps(e) ? e.ownerDocument : e.document) || window.document).documentElement;
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getParentNode.js
-function xs(e) {
-	return G(e) === "html" ? e : e.assignedSlot || e.parentNode || (ss(e) ? e.host : null) || bs(e);
+function ks(e) {
+	return K(e) === "html" ? e : e.assignedSlot || e.parentNode || (ms(e) ? e.host : null) || Os(e);
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getOffsetParent.js
-function Ss(e) {
-	return !q(e) || Y(e).position === "fixed" ? null : e.offsetParent;
+function As(e) {
+	return !J(e) || Es(e).position === "fixed" ? null : e.offsetParent;
 }
-function Cs(e) {
-	var t = /firefox/i.test(ms());
-	if (/Trident/i.test(ms()) && q(e) && Y(e).position === "fixed") return null;
-	var n = xs(e);
-	for (ss(n) && (n = n.host); q(n) && ["html", "body"].indexOf(G(n)) < 0;) {
-		var r = Y(n);
+function js(e) {
+	var t = /firefox/i.test(xs());
+	if (/Trident/i.test(xs()) && J(e) && Es(e).position === "fixed") return null;
+	var n = ks(e);
+	for (ms(n) && (n = n.host); J(n) && ["html", "body"].indexOf(K(n)) < 0;) {
+		var r = Es(n);
 		if (r.transform !== "none" || r.perspective !== "none" || r.contain === "paint" || ["transform", "perspective"].indexOf(r.willChange) !== -1 || t && r.willChange === "filter" || t && r.filter && r.filter !== "none") return n;
 		n = n.parentNode;
 	}
 	return null;
 }
-function ws(e) {
-	for (var t = K(e), n = Ss(e); n && ys(n) && Y(n).position === "static";) n = Ss(n);
-	return n && (G(n) === "html" || G(n) === "body" && Y(n).position === "static") ? t : n || Cs(e) || t;
+function Ms(e) {
+	for (var t = q(e), n = As(e); n && Ds(n) && Es(n).position === "static";) n = As(n);
+	return n && (K(n) === "html" || K(n) === "body" && Es(n).position === "static") ? t : n || js(e) || t;
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/getMainAxisFromPlacement.js
-function Ts(e) {
+function Ns(e) {
 	return ["top", "bottom"].indexOf(e) >= 0 ? "x" : "y";
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/within.js
-function Es(e, t, n) {
-	return ds(e, fs(t, n));
+function Ps(e, t, n) {
+	return vs(e, ys(t, n));
 }
-function Ds(e, t, n) {
-	var r = Es(e, t, n);
+function Fs(e, t, n) {
+	var r = Ps(e, t, n);
 	return r > n ? n : r;
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/getFreshSideObject.js
-function Os() {
+function Is() {
 	return {
 		top: 0,
 		right: 0,
@@ -3317,62 +3491,62 @@ function Os() {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/mergePaddingObject.js
-function ks(e) {
-	return Object.assign({}, Os(), e);
+function Ls(e) {
+	return Object.assign({}, Is(), e);
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/expandToHashMap.js
-function As(e, t) {
+function Rs(e, t) {
 	return t.reduce(function(t, n) {
 		return t[n] = e, t;
 	}, {});
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/modifiers/arrow.js
-var js = function(e, t) {
-	return e = typeof e == "function" ? e(Object.assign({}, t.rects, { placement: t.placement })) : e, ks(typeof e == "number" ? As(e, Zo) : e);
+var zs = function(e, t) {
+	return e = typeof e == "function" ? e(Object.assign({}, t.rects, { placement: t.placement })) : e, Ls(typeof e == "number" ? Rs(e, is) : e);
 };
-function Ms(e) {
-	var t, n = e.state, r = e.name, i = e.options, a = n.elements.arrow, o = n.modifiersData.popperOffsets, s = J(n.placement), c = Ts(s), l = ["left", "right"].indexOf(s) >= 0 ? "height" : "width";
-	if (!(!a || !o)) {
-		var u = js(i.padding, n), d = _s(a), f = c === "y" ? "top" : W, p = c === "y" ? U : Yo, m = n.rects.reference[l] + n.rects.reference[c] - o[c] - n.rects.popper[l], h = o[c] - n.rects.reference[c], g = ws(a), _ = g ? c === "y" ? g.clientHeight || 0 : g.clientWidth || 0 : 0, v = m / 2 - h / 2, y = u[f], b = _ - d[l] - u[p], x = _ / 2 - d[l] / 2 + v, S = Es(y, x, b), C = c;
+function Bs(e) {
+	var t, n = e.state, r = e.name, i = e.options, a = n.elements.arrow, o = n.modifiersData.popperOffsets, s = Y(n.placement), c = Ns(s), l = ["left", "right"].indexOf(s) >= 0 ? "height" : "width";
+	if (a && o) {
+		var u = zs(i.padding, n), d = ws(a), f = c === "y" ? "top" : G, p = c === "y" ? W : ns, m = n.rects.reference[l] + n.rects.reference[c] - o[c] - n.rects.popper[l], h = o[c] - n.rects.reference[c], g = Ms(a), _ = g ? c === "y" ? g.clientHeight || 0 : g.clientWidth || 0 : 0, v = m / 2 - h / 2, y = u[f], b = _ - d[l] - u[p], x = _ / 2 - d[l] / 2 + v, S = Ps(y, x, b), C = c;
 		n.modifiersData[r] = (t = {}, t[C] = S, t.centerOffset = S - x, t);
 	}
 }
-function Ns(e) {
+function Vs(e) {
 	var t = e.state, n = e.options.element, r = n === void 0 ? "[data-popper-arrow]" : n;
-	r != null && (typeof r == "string" && (r = t.elements.popper.querySelector(r), !r) || vs(t.elements.popper, r) && (t.elements.arrow = r));
+	r != null && (typeof r == "string" && (r = t.elements.popper.querySelector(r), !r) || Ts(t.elements.popper, r) && (t.elements.arrow = r));
 }
-var Ps = {
+var Hs = {
 	name: "arrow",
 	enabled: !0,
 	phase: "main",
-	fn: Ms,
-	effect: Ns,
+	fn: Bs,
+	effect: Vs,
 	requires: ["popperOffsets"],
 	requiresIfExists: ["preventOverflow"]
 };
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/getVariation.js
-function Fs(e) {
+function Us(e) {
 	return e.split("-")[1];
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/modifiers/computeStyles.js
-var Is = {
+var Ws = {
 	top: "auto",
 	right: "auto",
 	bottom: "auto",
 	left: "auto"
 };
-function Ls(e, t) {
+function Gs(e, t) {
 	var n = e.x, r = e.y, i = t.devicePixelRatio || 1;
 	return {
-		x: ps(n * i) / i || 0,
-		y: ps(r * i) / i || 0
+		x: bs(n * i) / i || 0,
+		y: bs(r * i) / i || 0
 	};
 }
-function Rs(e) {
+function Ks(e) {
 	var t, n = e.popper, r = e.popperRect, i = e.placement, a = e.variation, o = e.offsets, s = e.position, c = e.gpuAcceleration, l = e.adaptive, u = e.roundOffsets, d = e.isFixed, f = o.x, p = f === void 0 ? 0 : f, m = o.y, h = m === void 0 ? 0 : m, g = typeof u == "function" ? u({
 		x: p,
 		y: h
@@ -3381,24 +3555,24 @@ function Rs(e) {
 		y: h
 	};
 	p = g.x, h = g.y;
-	var _ = o.hasOwnProperty("x"), v = o.hasOwnProperty("y"), y = W, b = "top", x = window;
+	var _ = o.hasOwnProperty("x"), v = o.hasOwnProperty("y"), y = G, b = "top", x = window;
 	if (l) {
-		var S = ws(n), C = "clientHeight", w = "clientWidth";
-		if (S === K(n) && (S = bs(n), Y(S).position !== "static" && s === "absolute" && (C = "scrollHeight", w = "scrollWidth")), S = S, i === "top" || (i === "left" || i === "right") && a === "end") {
-			b = U;
+		var S = Ms(n), C = "clientHeight", w = "clientWidth";
+		if (S === q(n) && (S = Os(n), Es(S).position !== "static" && s === "absolute" && (C = "scrollHeight", w = "scrollWidth")), S = S, i === "top" || (i === "left" || i === "right") && a === "end") {
+			b = W;
 			var T = d && S === x && x.visualViewport ? x.visualViewport.height : S[C];
 			h -= T - r.height, h *= c ? 1 : -1;
 		}
 		if (i === "left" || (i === "top" || i === "bottom") && a === "end") {
-			y = Yo;
+			y = ns;
 			var E = d && S === x && x.visualViewport ? x.visualViewport.width : S[w];
 			p -= E - r.width, p *= c ? 1 : -1;
 		}
 	}
-	var D = Object.assign({ position: s }, l && Is), O = u === !0 ? Ls({
+	var D = Object.assign({ position: s }, l && Ws), O = u === !0 ? Gs({
 		x: p,
 		y: h
-	}, K(n)) : {
+	}, q(n)) : {
 		x: p,
 		y: h
 	};
@@ -3408,77 +3582,77 @@ function Rs(e) {
 	}
 	return Object.assign({}, D, (t = {}, t[b] = v ? h + "px" : "", t[y] = _ ? p + "px" : "", t.transform = "", t));
 }
-function zs(e) {
+function qs(e) {
 	var t = e.state, n = e.options, r = n.gpuAcceleration, i = r === void 0 || r, a = n.adaptive, o = a === void 0 || a, s = n.roundOffsets, c = s === void 0 || s, l = {
-		placement: J(t.placement),
-		variation: Fs(t.placement),
+		placement: Y(t.placement),
+		variation: Us(t.placement),
 		popper: t.elements.popper,
 		popperRect: t.rects.popper,
 		gpuAcceleration: i,
 		isFixed: t.options.strategy === "fixed"
 	};
-	t.modifiersData.popperOffsets != null && (t.styles.popper = Object.assign({}, t.styles.popper, Rs(Object.assign({}, l, {
+	t.modifiersData.popperOffsets != null && (t.styles.popper = Object.assign({}, t.styles.popper, Ks(Object.assign({}, l, {
 		offsets: t.modifiersData.popperOffsets,
 		position: t.options.strategy,
 		adaptive: o,
 		roundOffsets: c
-	})))), t.modifiersData.arrow != null && (t.styles.arrow = Object.assign({}, t.styles.arrow, Rs(Object.assign({}, l, {
+	})))), t.modifiersData.arrow != null && (t.styles.arrow = Object.assign({}, t.styles.arrow, Ks(Object.assign({}, l, {
 		offsets: t.modifiersData.arrow,
 		position: "absolute",
 		adaptive: !1,
 		roundOffsets: c
 	})))), t.attributes.popper = Object.assign({}, t.attributes.popper, { "data-popper-placement": t.placement });
 }
-var Bs = {
+var Js = {
 	name: "computeStyles",
 	enabled: !0,
 	phase: "beforeWrite",
-	fn: zs,
+	fn: qs,
 	data: {}
-}, Vs = { passive: !0 };
-function Hs(e) {
-	var t = e.state, n = e.instance, r = e.options, i = r.scroll, a = i === void 0 || i, o = r.resize, s = o === void 0 || o, c = K(t.elements.popper), l = [].concat(t.scrollParents.reference, t.scrollParents.popper);
+}, Ys = { passive: !0 };
+function Xs(e) {
+	var t = e.state, n = e.instance, r = e.options, i = r.scroll, a = i === void 0 || i, o = r.resize, s = o === void 0 || o, c = q(t.elements.popper), l = [].concat(t.scrollParents.reference, t.scrollParents.popper);
 	return a && l.forEach(function(e) {
-		e.addEventListener("scroll", n.update, Vs);
-	}), s && c.addEventListener("resize", n.update, Vs), function() {
+		e.addEventListener("scroll", n.update, Ys);
+	}), s && c.addEventListener("resize", n.update, Ys), function() {
 		a && l.forEach(function(e) {
-			e.removeEventListener("scroll", n.update, Vs);
-		}), s && c.removeEventListener("resize", n.update, Vs);
+			e.removeEventListener("scroll", n.update, Ys);
+		}), s && c.removeEventListener("resize", n.update, Ys);
 	};
 }
-var Us = {
+var Zs = {
 	name: "eventListeners",
 	enabled: !0,
 	phase: "write",
 	fn: function() {},
-	effect: Hs,
+	effect: Xs,
 	data: {}
-}, Ws = {
+}, Qs = {
 	left: "right",
 	right: "left",
 	bottom: "top",
 	top: "bottom"
 };
-function Gs(e) {
+function $s(e) {
 	return e.replace(/left|right|bottom|top/g, function(e) {
-		return Ws[e];
+		return Qs[e];
 	});
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/getOppositeVariationPlacement.js
-var Ks = {
+var ec = {
 	start: "end",
 	end: "start"
 };
-function qs(e) {
+function tc(e) {
 	return e.replace(/start|end/g, function(e) {
-		return Ks[e];
+		return ec[e];
 	});
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getWindowScroll.js
-function Js(e) {
-	var t = K(e);
+function nc(e) {
+	var t = q(e);
 	return {
 		scrollLeft: t.pageXOffset,
 		scrollTop: t.pageYOffset
@@ -3486,30 +3660,30 @@ function Js(e) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getWindowScrollBarX.js
-function Ys(e) {
-	return gs(bs(e)).left + Js(e).scrollLeft;
+function rc(e) {
+	return Cs(Os(e)).left + nc(e).scrollLeft;
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getViewportRect.js
-function Xs(e, t) {
-	var n = K(e), r = bs(e), i = n.visualViewport, a = r.clientWidth, o = r.clientHeight, s = 0, c = 0;
+function ic(e, t) {
+	var n = q(e), r = Os(e), i = n.visualViewport, a = r.clientWidth, o = r.clientHeight, s = 0, c = 0;
 	if (i) {
 		a = i.width, o = i.height;
-		var l = hs();
+		var l = Ss();
 		(l || !l && t === "fixed") && (s = i.offsetLeft, c = i.offsetTop);
 	}
 	return {
 		width: a,
 		height: o,
-		x: s + Ys(e),
+		x: s + rc(e),
 		y: c
 	};
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getDocumentRect.js
-function Zs(e) {
-	var t = bs(e), n = Js(e), r = e.ownerDocument?.body, i = ds(t.scrollWidth, t.clientWidth, r ? r.scrollWidth : 0, r ? r.clientWidth : 0), a = ds(t.scrollHeight, t.clientHeight, r ? r.scrollHeight : 0, r ? r.clientHeight : 0), o = -n.scrollLeft + Ys(e), s = -n.scrollTop;
-	return Y(r || t).direction === "rtl" && (o += ds(t.clientWidth, r ? r.clientWidth : 0) - i), {
+function ac(e) {
+	var t = Os(e), n = nc(e), r = e.ownerDocument?.body, i = vs(t.scrollWidth, t.clientWidth, r ? r.scrollWidth : 0, r ? r.clientWidth : 0), a = vs(t.scrollHeight, t.clientHeight, r ? r.scrollHeight : 0, r ? r.clientHeight : 0), o = -n.scrollLeft + rc(e), s = -n.scrollTop;
+	return Es(r || t).direction === "rtl" && (o += vs(t.clientWidth, r ? r.clientWidth : 0) - i), {
 		width: i,
 		height: a,
 		x: o,
@@ -3518,29 +3692,29 @@ function Zs(e) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/isScrollParent.js
-function Qs(e) {
-	var t = Y(e), n = t.overflow, r = t.overflowX, i = t.overflowY;
+function oc(e) {
+	var t = Es(e), n = t.overflow, r = t.overflowX, i = t.overflowY;
 	return /auto|scroll|overlay|hidden/.test(n + i + r);
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getScrollParent.js
-function $s(e) {
+function sc(e) {
 	return [
 		"html",
 		"body",
 		"#document"
-	].indexOf(G(e)) >= 0 ? e.ownerDocument.body : q(e) && Qs(e) ? e : $s(xs(e));
+	].indexOf(K(e)) >= 0 ? e.ownerDocument.body : J(e) && oc(e) ? e : sc(ks(e));
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/listScrollParents.js
-function ec(e, t) {
+function cc(e, t) {
 	t === void 0 && (t = []);
-	var n = $s(e), r = n === e.ownerDocument?.body, i = K(n), a = r ? [i].concat(i.visualViewport || [], Qs(n) ? n : []) : n, o = t.concat(a);
-	return r ? o : o.concat(ec(xs(a)));
+	var n = sc(e), r = n === e.ownerDocument?.body, i = q(n), a = r ? [i].concat(i.visualViewport || [], oc(n) ? n : []) : n, o = t.concat(a);
+	return r ? o : o.concat(cc(ks(a)));
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/rectToClientRect.js
-function tc(e) {
+function lc(e) {
 	return Object.assign({}, e, {
 		left: e.x,
 		top: e.y,
@@ -3550,30 +3724,30 @@ function tc(e) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getClippingRect.js
-function nc(e, t) {
-	var n = gs(e, !1, t === "fixed");
+function uc(e, t) {
+	var n = Cs(e, !1, t === "fixed");
 	return n.top += e.clientTop, n.left += e.clientLeft, n.bottom = n.top + e.clientHeight, n.right = n.left + e.clientWidth, n.width = e.clientWidth, n.height = e.clientHeight, n.x = n.left, n.y = n.top, n;
 }
-function rc(e, t, n) {
-	return t === "viewport" ? tc(Xs(e, n)) : os(t) ? nc(t, n) : tc(Zs(bs(e)));
+function dc(e, t, n) {
+	return t === "viewport" ? lc(ic(e, n)) : ps(t) ? uc(t, n) : lc(ac(Os(e)));
 }
-function ic(e) {
-	var t = ec(xs(e)), n = ["absolute", "fixed"].indexOf(Y(e).position) >= 0 && q(e) ? ws(e) : e;
-	return os(n) ? t.filter(function(e) {
-		return os(e) && vs(e, n) && G(e) !== "body";
+function fc(e) {
+	var t = cc(ks(e)), n = ["absolute", "fixed"].indexOf(Es(e).position) >= 0 && J(e) ? Ms(e) : e;
+	return ps(n) ? t.filter(function(e) {
+		return ps(e) && Ts(e, n) && K(e) !== "body";
 	}) : [];
 }
-function ac(e, t, n, r) {
-	var i = t === "clippingParents" ? ic(e) : [].concat(t), a = [].concat(i, [n]), o = a[0], s = a.reduce(function(t, n) {
-		var i = rc(e, n, r);
-		return t.top = ds(i.top, t.top), t.right = fs(i.right, t.right), t.bottom = fs(i.bottom, t.bottom), t.left = ds(i.left, t.left), t;
-	}, rc(e, o, r));
+function pc(e, t, n, r) {
+	var i = t === "clippingParents" ? fc(e) : [].concat(t), a = [].concat(i, [n]), o = a[0], s = a.reduce(function(t, n) {
+		var i = dc(e, n, r);
+		return t.top = vs(i.top, t.top), t.right = ys(i.right, t.right), t.bottom = ys(i.bottom, t.bottom), t.left = vs(i.left, t.left), t;
+	}, dc(e, o, r));
 	return s.width = s.right - s.left, s.height = s.bottom - s.top, s.x = s.left, s.y = s.top, s;
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/computeOffsets.js
-function oc(e) {
-	var t = e.reference, n = e.element, r = e.placement, i = r ? J(r) : null, a = r ? Fs(r) : null, o = t.x + t.width / 2 - n.width / 2, s = t.y + t.height / 2 - n.height / 2, c;
+function mc(e) {
+	var t = e.reference, n = e.element, r = e.placement, i = r ? Y(r) : null, a = r ? Us(r) : null, o = t.x + t.width / 2 - n.width / 2, s = t.y + t.height / 2 - n.height / 2, c;
 	switch (i) {
 		case "top":
 			c = {
@@ -3581,19 +3755,19 @@ function oc(e) {
 				y: t.y - n.height
 			};
 			break;
-		case U:
+		case W:
 			c = {
 				x: o,
 				y: t.y + t.height
 			};
 			break;
-		case Yo:
+		case ns:
 			c = {
 				x: t.x + t.width,
 				y: s
 			};
 			break;
-		case W:
+		case G:
 			c = {
 				x: t.x - n.width,
 				y: s
@@ -3604,11 +3778,11 @@ function oc(e) {
 			y: t.y
 		};
 	}
-	var l = i ? Ts(i) : null;
+	var l = i ? Ns(i) : null;
 	if (l != null) {
 		var u = l === "y" ? "height" : "width";
 		switch (a) {
-			case Qo:
+			case as:
 				c[l] = c[l] - (t[u] / 2 - n[u] / 2);
 				break;
 			case "end": c[l] = c[l] + (t[u] / 2 - n[u] / 2);
@@ -3618,14 +3792,14 @@ function oc(e) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/detectOverflow.js
-function sc(e, t) {
+function hc(e, t) {
 	t === void 0 && (t = {});
-	var n = t, r = n.placement, i = r === void 0 ? e.placement : r, a = n.strategy, o = a === void 0 ? e.strategy : a, s = n.boundary, c = s === void 0 ? $o : s, l = n.rootBoundary, u = l === void 0 ? es : l, d = n.elementContext, f = d === void 0 ? ts : d, p = n.altBoundary, m = p !== void 0 && p, h = n.padding, g = h === void 0 ? 0 : h, _ = ks(typeof g == "number" ? As(g, Zo) : g), v = f === "popper" ? ns : ts, y = e.rects.popper, b = e.elements[m ? v : f], x = ac(os(b) ? b : b.contextElement || bs(e.elements.popper), c, u, o), S = gs(e.elements.reference), C = oc({
+	var n = t, r = n.placement, i = r === void 0 ? e.placement : r, a = n.strategy, o = a === void 0 ? e.strategy : a, s = n.boundary, c = s === void 0 ? os : s, l = n.rootBoundary, u = l === void 0 ? ss : l, d = n.elementContext, f = d === void 0 ? cs : d, p = n.altBoundary, m = p !== void 0 && p, h = n.padding, g = h === void 0 ? 0 : h, _ = Ls(typeof g == "number" ? Rs(g, is) : g), v = f === "popper" ? ls : cs, y = e.rects.popper, b = e.elements[m ? v : f], x = pc(ps(b) ? b : b.contextElement || Os(e.elements.popper), c, u, o), S = Cs(e.elements.reference), C = mc({
 		reference: S,
 		element: y,
 		strategy: "absolute",
 		placement: i
-	}), w = tc(Object.assign({}, y, C)), T = f === "popper" ? w : S, E = {
+	}), w = lc(Object.assign({}, y, C)), T = f === "popper" ? w : S, E = {
 		top: x.top - T.top + _.top,
 		bottom: T.bottom - x.bottom + _.bottom,
 		left: x.left - T.left + _.left,
@@ -3642,21 +3816,21 @@ function sc(e, t) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/computeAutoPlacement.js
-function cc(e, t) {
+function gc(e, t) {
 	t === void 0 && (t = {});
-	var n = t, r = n.placement, i = n.boundary, a = n.rootBoundary, o = n.padding, s = n.flipVariations, c = n.allowedAutoPlacements, l = c === void 0 ? is : c, u = Fs(r), d = u ? s ? rs : rs.filter(function(e) {
-		return Fs(e) === u;
-	}) : Zo, f = d.filter(function(e) {
+	var n = t, r = n.placement, i = n.boundary, a = n.rootBoundary, o = n.padding, s = n.flipVariations, c = n.allowedAutoPlacements, l = c === void 0 ? ds : c, u = Us(r), d = u ? s ? us : us.filter(function(e) {
+		return Us(e) === u;
+	}) : is, f = d.filter(function(e) {
 		return l.indexOf(e) >= 0;
 	});
 	f.length === 0 && (f = d);
 	var p = f.reduce(function(t, n) {
-		return t[n] = sc(e, {
+		return t[n] = hc(e, {
 			placement: n,
 			boundary: i,
 			rootBoundary: a,
 			padding: o
-		})[J(n)], t;
+		})[Y(n)], t;
 	}, {});
 	return Object.keys(p).sort(function(e, t) {
 		return p[e] - p[t];
@@ -3664,20 +3838,20 @@ function cc(e, t) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/modifiers/flip.js
-function lc(e) {
-	if (J(e) === "auto") return [];
-	var t = Gs(e);
+function _c(e) {
+	if (Y(e) === "auto") return [];
+	var t = $s(e);
 	return [
-		qs(e),
+		tc(e),
 		t,
-		qs(t)
+		tc(t)
 	];
 }
-function uc(e) {
+function vc(e) {
 	var t = e.state, n = e.options, r = e.name;
 	if (!t.modifiersData[r]._skip) {
-		for (var i = n.mainAxis, a = i === void 0 || i, o = n.altAxis, s = o === void 0 || o, c = n.fallbackPlacements, l = n.padding, u = n.boundary, d = n.rootBoundary, f = n.altBoundary, p = n.flipVariations, m = p === void 0 || p, h = n.allowedAutoPlacements, g = t.options.placement, _ = J(g) === g, v = c || (_ || !m ? [Gs(g)] : lc(g)), y = [g].concat(v).reduce(function(e, n) {
-			return e.concat(J(n) === "auto" ? cc(t, {
+		for (var i = n.mainAxis, a = i === void 0 || i, o = n.altAxis, s = o === void 0 || o, c = n.fallbackPlacements, l = n.padding, u = n.boundary, d = n.rootBoundary, f = n.altBoundary, p = n.flipVariations, m = p === void 0 || p, h = n.allowedAutoPlacements, g = t.options.placement, _ = Y(g) === g, v = c || (_ || !m ? [$s(g)] : _c(g)), y = [g].concat(v).reduce(function(e, n) {
+			return e.concat(Y(n) === "auto" ? gc(t, {
 				placement: n,
 				boundary: u,
 				rootBoundary: d,
@@ -3686,15 +3860,15 @@ function uc(e) {
 				allowedAutoPlacements: h
 			}) : n);
 		}, []), b = t.rects.reference, x = t.rects.popper, S = /* @__PURE__ */ new Map(), C = !0, w = y[0], T = 0; T < y.length; T++) {
-			var E = y[T], D = J(E), O = Fs(E) === Qo, k = ["top", U].indexOf(D) >= 0, A = k ? "width" : "height", j = sc(t, {
+			var E = y[T], D = Y(E), O = Us(E) === as, k = ["top", W].indexOf(D) >= 0, A = k ? "width" : "height", j = hc(t, {
 				placement: E,
 				boundary: u,
 				rootBoundary: d,
 				altBoundary: f,
 				padding: l
-			}), M = k ? O ? Yo : W : O ? U : "top";
-			b[A] > x[A] && (M = Gs(M));
-			var N = Gs(M), P = [];
+			}), M = k ? O ? ns : G : O ? W : "top";
+			b[A] > x[A] && (M = $s(M));
+			var N = $s(M), P = [];
 			if (a && P.push(j[D] <= 0), s && P.push(j[M] <= 0, j[N] <= 0), P.every(function(e) {
 				return e;
 			})) {
@@ -3703,7 +3877,7 @@ function uc(e) {
 			}
 			S.set(E, P);
 		}
-		if (C) for (var ee = m ? 3 : 1, te = function(e) {
+		if (C) for (var F = m ? 3 : 1, ee = function(e) {
 			var t = y.find(function(t) {
 				var n = S.get(t);
 				if (n) return n.slice(0, e).every(function(e) {
@@ -3711,21 +3885,21 @@ function uc(e) {
 				});
 			});
 			if (t) return w = t, "break";
-		}, F = ee; F > 0 && te(F) !== "break"; F--);
+		}, I = F; I > 0 && ee(I) !== "break"; I--);
 		t.placement !== w && (t.modifiersData[r]._skip = !0, t.placement = w, t.reset = !0);
 	}
 }
-var dc = {
+var yc = {
 	name: "flip",
 	enabled: !0,
 	phase: "main",
-	fn: uc,
+	fn: vc,
 	requiresIfExists: ["offset"],
 	data: { _skip: !1 }
 };
 //#endregion
 //#region node_modules/@popperjs/core/lib/modifiers/hide.js
-function fc(e, t, n) {
+function bc(e, t, n) {
 	return n === void 0 && (n = {
 		x: 0,
 		y: 0
@@ -3736,18 +3910,18 @@ function fc(e, t, n) {
 		left: e.left - t.width - n.x
 	};
 }
-function pc(e) {
+function xc(e) {
 	return [
 		"top",
-		Yo,
-		U,
-		W
+		ns,
+		W,
+		G
 	].some(function(t) {
 		return e[t] >= 0;
 	});
 }
-function mc(e) {
-	var t = e.state, n = e.name, r = t.rects.reference, i = t.rects.popper, a = t.modifiersData.preventOverflow, o = sc(t, { elementContext: "reference" }), s = sc(t, { altBoundary: !0 }), c = fc(o, r), l = fc(s, i, a), u = pc(c), d = pc(l);
+function Sc(e) {
+	var t = e.state, n = e.name, r = t.rects.reference, i = t.rects.popper, a = t.modifiersData.preventOverflow, o = hc(t, { elementContext: "reference" }), s = hc(t, { altBoundary: !0 }), c = bc(o, r), l = bc(s, i, a), u = xc(c), d = xc(l);
 	t.modifiersData[n] = {
 		referenceClippingOffsets: c,
 		popperEscapeOffsets: l,
@@ -3758,17 +3932,17 @@ function mc(e) {
 		"data-popper-escaped": d
 	});
 }
-var hc = {
+var Cc = {
 	name: "hide",
 	enabled: !0,
 	phase: "main",
 	requiresIfExists: ["preventOverflow"],
-	fn: mc
+	fn: Sc
 };
 //#endregion
 //#region node_modules/@popperjs/core/lib/modifiers/offset.js
-function gc(e, t, n) {
-	var r = J(e), i = ["left", "top"].indexOf(r) >= 0 ? -1 : 1, a = typeof n == "function" ? n(Object.assign({}, t, { placement: e })) : n, o = a[0], s = a[1];
+function wc(e, t, n) {
+	var r = Y(e), i = ["left", "top"].indexOf(r) >= 0 ? -1 : 1, a = typeof n == "function" ? n(Object.assign({}, t, { placement: e })) : n, o = a[0], s = a[1];
 	return o = o || 0, s = (s || 0) * i, ["left", "right"].indexOf(r) >= 0 ? {
 		x: s,
 		y: o
@@ -3777,51 +3951,51 @@ function gc(e, t, n) {
 		y: s
 	};
 }
-function _c(e) {
-	var t = e.state, n = e.options, r = e.name, i = n.offset, a = i === void 0 ? [0, 0] : i, o = is.reduce(function(e, n) {
-		return e[n] = gc(n, t.rects, a), e;
+function Tc(e) {
+	var t = e.state, n = e.options, r = e.name, i = n.offset, a = i === void 0 ? [0, 0] : i, o = ds.reduce(function(e, n) {
+		return e[n] = wc(n, t.rects, a), e;
 	}, {}), s = o[t.placement], c = s.x, l = s.y;
 	t.modifiersData.popperOffsets != null && (t.modifiersData.popperOffsets.x += c, t.modifiersData.popperOffsets.y += l), t.modifiersData[r] = o;
 }
-var vc = {
+var Ec = {
 	name: "offset",
 	enabled: !0,
 	phase: "main",
 	requires: ["popperOffsets"],
-	fn: _c
+	fn: Tc
 };
 //#endregion
 //#region node_modules/@popperjs/core/lib/modifiers/popperOffsets.js
-function yc(e) {
+function Dc(e) {
 	var t = e.state, n = e.name;
-	t.modifiersData[n] = oc({
+	t.modifiersData[n] = mc({
 		reference: t.rects.reference,
 		element: t.rects.popper,
 		strategy: "absolute",
 		placement: t.placement
 	});
 }
-var bc = {
+var Oc = {
 	name: "popperOffsets",
 	enabled: !0,
 	phase: "read",
-	fn: yc,
+	fn: Dc,
 	data: {}
 };
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/getAltAxis.js
-function xc(e) {
+function kc(e) {
 	return e === "x" ? "y" : "x";
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/modifiers/preventOverflow.js
-function Sc(e) {
-	var t = e.state, n = e.options, r = e.name, i = n.mainAxis, a = i === void 0 || i, o = n.altAxis, s = o !== void 0 && o, c = n.boundary, l = n.rootBoundary, u = n.altBoundary, d = n.padding, f = n.tether, p = f === void 0 || f, m = n.tetherOffset, h = m === void 0 ? 0 : m, g = sc(t, {
+function Ac(e) {
+	var t = e.state, n = e.options, r = e.name, i = n.mainAxis, a = i === void 0 || i, o = n.altAxis, s = o !== void 0 && o, c = n.boundary, l = n.rootBoundary, u = n.altBoundary, d = n.padding, f = n.tether, p = f === void 0 || f, m = n.tetherOffset, h = m === void 0 ? 0 : m, g = hc(t, {
 		boundary: c,
 		rootBoundary: l,
 		padding: d,
 		altBoundary: u
-	}), _ = J(t.placement), v = Fs(t.placement), y = !v, b = Ts(_), x = xc(b), S = t.modifiersData.popperOffsets, C = t.rects.reference, w = t.rects.popper, T = typeof h == "function" ? h(Object.assign({}, t.rects, { placement: t.placement })) : h, E = typeof T == "number" ? {
+	}), _ = Y(t.placement), v = Us(t.placement), y = !v, b = Ns(_), x = kc(b), S = t.modifiersData.popperOffsets, C = t.rects.reference, w = t.rects.popper, T = typeof h == "function" ? h(Object.assign({}, t.rects, { placement: t.placement })) : h, E = typeof T == "number" ? {
 		mainAxis: T,
 		altAxis: T
 	} : Object.assign({
@@ -3833,29 +4007,29 @@ function Sc(e) {
 	};
 	if (S) {
 		if (a) {
-			var k = b === "y" ? "top" : W, A = b === "y" ? U : Yo, j = b === "y" ? "height" : "width", M = S[b], N = M + g[k], P = M - g[A], ee = p ? -w[j] / 2 : 0, te = v === "start" ? C[j] : w[j], F = v === "start" ? -w[j] : -C[j], ne = t.elements.arrow, re = p && ne ? _s(ne) : {
+			var k = b === "y" ? "top" : G, A = b === "y" ? W : ns, j = b === "y" ? "height" : "width", M = S[b], N = M + g[k], P = M - g[A], F = p ? -w[j] / 2 : 0, ee = v === "start" ? C[j] : w[j], I = v === "start" ? -w[j] : -C[j], te = t.elements.arrow, ne = p && te ? ws(te) : {
 				width: 0,
 				height: 0
-			}, ie = t.modifiersData["arrow#persistent"] ? t.modifiersData["arrow#persistent"].padding : Os(), ae = ie[k], oe = ie[A], se = Es(0, C[j], re[j]), ce = y ? C[j] / 2 - ee - se - ae - E.mainAxis : te - se - ae - E.mainAxis, le = y ? -C[j] / 2 + ee + se + oe + E.mainAxis : F + se + oe + E.mainAxis, ue = t.elements.arrow && ws(t.elements.arrow), de = ue ? b === "y" ? ue.clientTop || 0 : ue.clientLeft || 0 : 0, fe = D?.[b] ?? 0, pe = M + ce - fe - de, me = M + le - fe, he = Es(p ? fs(N, pe) : N, M, p ? ds(P, me) : P);
-			S[b] = he, O[b] = he - M;
+			}, re = t.modifiersData["arrow#persistent"] ? t.modifiersData["arrow#persistent"].padding : Is(), ie = re[k], ae = re[A], oe = Ps(0, C[j], ne[j]), se = y ? C[j] / 2 - F - oe - ie - E.mainAxis : ee - oe - ie - E.mainAxis, ce = y ? -C[j] / 2 + F + oe + ae + E.mainAxis : I + oe + ae + E.mainAxis, le = t.elements.arrow && Ms(t.elements.arrow), ue = le ? b === "y" ? le.clientTop || 0 : le.clientLeft || 0 : 0, de = D?.[b] ?? 0, fe = M + se - de - ue, pe = M + ce - de, me = Ps(p ? ys(N, fe) : N, M, p ? vs(P, pe) : P);
+			S[b] = me, O[b] = me - M;
 		}
 		if (s) {
-			var ge = b === "x" ? "top" : W, _e = b === "x" ? U : Yo, I = S[x], ve = x === "y" ? "height" : "width", ye = I + g[ge], be = I - g[_e], xe = ["top", W].indexOf(_) !== -1, Se = D?.[x] ?? 0, Ce = xe ? ye : I - C[ve] - w[ve] - Se + E.altAxis, we = xe ? I + C[ve] + w[ve] - Se - E.altAxis : be, Te = p && xe ? Ds(Ce, I, we) : Es(p ? Ce : ye, I, p ? we : be);
-			S[x] = Te, O[x] = Te - I;
+			var he = b === "x" ? "top" : G, ge = b === "x" ? W : ns, L = S[x], _e = x === "y" ? "height" : "width", ve = L + g[he], ye = L - g[ge], be = ["top", G].indexOf(_) !== -1, xe = D?.[x] ?? 0, Se = be ? ve : L - C[_e] - w[_e] - xe + E.altAxis, Ce = be ? L + C[_e] + w[_e] - xe - E.altAxis : ye, we = p && be ? Fs(Se, L, Ce) : Ps(p ? Se : ve, L, p ? Ce : ye);
+			S[x] = we, O[x] = we - L;
 		}
 		t.modifiersData[r] = O;
 	}
 }
-var Cc = {
+var jc = {
 	name: "preventOverflow",
 	enabled: !0,
 	phase: "main",
-	fn: Sc,
+	fn: Ac,
 	requiresIfExists: ["offset"]
 };
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getHTMLElementScroll.js
-function wc(e) {
+function Mc(e) {
 	return {
 		scrollLeft: e.scrollLeft,
 		scrollTop: e.scrollTop
@@ -3863,25 +4037,25 @@ function wc(e) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getNodeScroll.js
-function Tc(e) {
-	return e === K(e) || !q(e) ? Js(e) : wc(e);
+function Nc(e) {
+	return e === q(e) || !J(e) ? nc(e) : Mc(e);
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/dom-utils/getCompositeRect.js
-function Ec(e) {
-	var t = e.getBoundingClientRect(), n = ps(t.width) / e.offsetWidth || 1, r = ps(t.height) / e.offsetHeight || 1;
+function Pc(e) {
+	var t = e.getBoundingClientRect(), n = bs(t.width) / e.offsetWidth || 1, r = bs(t.height) / e.offsetHeight || 1;
 	return n !== 1 || r !== 1;
 }
-function Dc(e, t, n) {
+function Fc(e, t, n) {
 	n === void 0 && (n = !1);
-	var r = q(t), i = q(t) && Ec(t), a = bs(t), o = gs(e, i, n), s = {
+	var r = J(t), i = J(t) && Pc(t), a = Os(t), o = Cs(e, i, n), s = {
 		scrollLeft: 0,
 		scrollTop: 0
 	}, c = {
 		x: 0,
 		y: 0
 	};
-	return (r || !r && !n) && ((G(t) !== "body" || Qs(a)) && (s = Tc(t)), q(t) ? (c = gs(t, !0), c.x += t.clientLeft, c.y += t.clientTop) : a && (c.x = Ys(a))), {
+	return (r || !r && !n) && ((K(t) !== "body" || oc(a)) && (s = Nc(t)), J(t) ? (c = Cs(t, !0), c.x += t.clientLeft, c.y += t.clientTop) : a && (c.x = rc(a))), {
 		x: o.left + s.scrollLeft - c.x,
 		y: o.top + s.scrollTop - c.y,
 		width: o.width,
@@ -3890,7 +4064,7 @@ function Dc(e, t, n) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/orderModifiers.js
-function Oc(e) {
+function Ic(e) {
 	var t = /* @__PURE__ */ new Map(), n = /* @__PURE__ */ new Set(), r = [];
 	e.forEach(function(e) {
 		t.set(e.name, e);
@@ -3907,9 +4081,9 @@ function Oc(e) {
 		n.has(e.name) || i(e);
 	}), r;
 }
-function kc(e) {
-	var t = Oc(e);
-	return as.reduce(function(e, n) {
+function Lc(e) {
+	var t = Ic(e);
+	return fs.reduce(function(e, n) {
 		return e.concat(t.filter(function(e) {
 			return e.phase === n;
 		}));
@@ -3917,7 +4091,7 @@ function kc(e) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/debounce.js
-function Ac(e) {
+function Rc(e) {
 	var t;
 	return function() {
 		return t || (t = new Promise(function(n) {
@@ -3929,7 +4103,7 @@ function Ac(e) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/utils/mergeByName.js
-function jc(e) {
+function zc(e) {
 	var t = e.reduce(function(e, t) {
 		var n = e[t.name];
 		return e[t.name] = n ? Object.assign({}, n, t, {
@@ -3943,25 +4117,25 @@ function jc(e) {
 }
 //#endregion
 //#region node_modules/@popperjs/core/lib/createPopper.js
-var Mc = {
+var Bc = {
 	placement: "bottom",
 	modifiers: [],
 	strategy: "absolute"
 };
-function Nc() {
+function Vc() {
 	return ![...arguments].some(function(e) {
 		return !(e && typeof e.getBoundingClientRect == "function");
 	});
 }
-function Pc(e) {
+function Hc(e) {
 	e === void 0 && (e = {});
-	var t = e, n = t.defaultModifiers, r = n === void 0 ? [] : n, i = t.defaultOptions, a = i === void 0 ? Mc : i;
+	var t = e, n = t.defaultModifiers, r = n === void 0 ? [] : n, i = t.defaultOptions, a = i === void 0 ? Bc : i;
 	return function(e, t, n) {
 		n === void 0 && (n = a);
 		var i = {
 			placement: "bottom",
 			orderedModifiers: [],
-			options: Object.assign({}, Mc, a),
+			options: Object.assign({}, Bc, a),
 			modifiersData: {},
 			elements: {
 				reference: e,
@@ -3974,10 +4148,10 @@ function Pc(e) {
 			setOptions: function(n) {
 				var o = typeof n == "function" ? n(i.options) : n;
 				u(), i.options = Object.assign({}, a, i.options, o), i.scrollParents = {
-					reference: os(e) ? ec(e) : e.contextElement ? ec(e.contextElement) : [],
-					popper: ec(t)
+					reference: ps(e) ? cc(e) : e.contextElement ? cc(e.contextElement) : [],
+					popper: cc(t)
 				};
-				var s = kc(jc([].concat(r, i.options.modifiers)));
+				var s = Lc(zc([].concat(r, i.options.modifiers)));
 				return i.orderedModifiers = s.filter(function(e) {
 					return e.enabled;
 				}), l(), c.update();
@@ -3985,10 +4159,10 @@ function Pc(e) {
 			forceUpdate: function() {
 				if (!s) {
 					var e = i.elements, t = e.reference, n = e.popper;
-					if (Nc(t, n)) {
+					if (Vc(t, n)) {
 						i.rects = {
-							reference: Dc(t, ws(n), i.options.strategy === "fixed"),
-							popper: _s(n)
+							reference: Fc(t, Ms(n), i.options.strategy === "fixed"),
+							popper: ws(n)
 						}, i.reset = !1, i.placement = i.options.placement, i.orderedModifiers.forEach(function(e) {
 							return i.modifiersData[e.name] = Object.assign({}, e.data);
 						});
@@ -4008,7 +4182,7 @@ function Pc(e) {
 					}
 				}
 			},
-			update: Ac(function() {
+			update: Rc(function() {
 				return new Promise(function(e) {
 					c.forceUpdate(), e(i);
 				});
@@ -4017,7 +4191,7 @@ function Pc(e) {
 				u(), s = !0;
 			}
 		};
-		if (!Nc(e, t)) return c;
+		if (!Vc(e, t)) return c;
 		c.setOptions(n).then(function(e) {
 			!s && n.onFirstUpdate && n.onFirstUpdate(e);
 		});
@@ -4043,33 +4217,33 @@ function Pc(e) {
 		return c;
 	};
 }
-var Fc = /*#__PURE__*/ Pc({ defaultModifiers: [
-	Us,
-	bc,
-	Bs,
-	us,
-	vc,
-	dc,
-	Cc,
-	Ps,
-	hc
-] }), Ic = "tippy-box", Lc = "tippy-content", Rc = "tippy-backdrop", zc = "tippy-arrow", Bc = "tippy-svg-arrow", Vc = {
+var Uc = /*#__PURE__*/ Hc({ defaultModifiers: [
+	Zs,
+	Oc,
+	Js,
+	_s,
+	Ec,
+	yc,
+	jc,
+	Hs,
+	Cc
+] }), Wc = "tippy-box", Gc = "tippy-content", Kc = "tippy-backdrop", qc = "tippy-arrow", Jc = "tippy-svg-arrow", Yc = {
 	passive: !0,
 	capture: !0
-}, Hc = function() {
+}, Xc = function() {
 	return document.body;
 };
-function Uc(e, t, n) {
+function Zc(e, t, n) {
 	return Array.isArray(e) ? e[t] ?? (Array.isArray(n) ? n[t] : n) : e;
 }
-function Wc(e, t) {
+function Qc(e, t) {
 	var n = {}.toString.call(e);
 	return n.indexOf("[object") === 0 && n.indexOf(t + "]") > -1;
 }
-function Gc(e, t) {
+function $c(e, t) {
 	return typeof e == "function" ? e.apply(void 0, t) : e;
 }
-function Kc(e, t) {
+function el(e, t) {
 	if (t === 0) return e;
 	var n;
 	return function(r) {
@@ -4078,107 +4252,107 @@ function Kc(e, t) {
 		}, t);
 	};
 }
-function qc(e) {
+function tl(e) {
 	return e.split(/\s+/).filter(Boolean);
 }
-function Jc(e) {
+function nl(e) {
 	return [].concat(e);
 }
-function Yc(e, t) {
+function rl(e, t) {
 	e.indexOf(t) === -1 && e.push(t);
 }
-function Xc(e) {
+function il(e) {
 	return e.filter(function(t, n) {
 		return e.indexOf(t) === n;
 	});
 }
-function Zc(e) {
+function al(e) {
 	return e.split("-")[0];
 }
-function Qc(e) {
+function ol(e) {
 	return [].slice.call(e);
 }
-function $c(e) {
+function sl(e) {
 	return Object.keys(e).reduce(function(t, n) {
 		return e[n] !== void 0 && (t[n] = e[n]), t;
 	}, {});
 }
-function el() {
+function cl() {
 	return document.createElement("div");
 }
-function tl(e) {
+function ll(e) {
 	return ["Element", "Fragment"].some(function(t) {
-		return Wc(e, t);
+		return Qc(e, t);
 	});
 }
-function nl(e) {
-	return Wc(e, "NodeList");
+function ul(e) {
+	return Qc(e, "NodeList");
 }
-function rl(e) {
-	return Wc(e, "MouseEvent");
+function dl(e) {
+	return Qc(e, "MouseEvent");
 }
-function il(e) {
+function fl(e) {
 	return !!(e && e._tippy && e._tippy.reference === e);
 }
-function al(e) {
-	return tl(e) ? [e] : nl(e) ? Qc(e) : Array.isArray(e) ? e : Qc(document.querySelectorAll(e));
+function pl(e) {
+	return ll(e) ? [e] : ul(e) ? ol(e) : Array.isArray(e) ? e : ol(document.querySelectorAll(e));
 }
-function ol(e, t) {
+function ml(e, t) {
 	e.forEach(function(e) {
 		e && (e.style.transitionDuration = t + "ms");
 	});
 }
-function sl(e, t) {
+function hl(e, t) {
 	e.forEach(function(e) {
 		e && e.setAttribute("data-state", t);
 	});
 }
-function cl(e) {
-	var t, n = Jc(e)[0];
+function gl(e) {
+	var t, n = nl(e)[0];
 	return n != null && (t = n.ownerDocument) != null && t.body ? n.ownerDocument : document;
 }
-function ll(e, t) {
+function _l(e, t) {
 	var n = t.clientX, r = t.clientY;
 	return e.every(function(e) {
-		var t = e.popperRect, i = e.popperState, a = e.props.interactiveBorder, o = Zc(i.placement), s = i.modifiersData.offset;
+		var t = e.popperRect, i = e.popperState, a = e.props.interactiveBorder, o = al(i.placement), s = i.modifiersData.offset;
 		if (!s) return !0;
 		var c = o === "bottom" ? s.top.y : 0, l = o === "top" ? s.bottom.y : 0, u = o === "right" ? s.left.x : 0, d = o === "left" ? s.right.x : 0, f = t.top - r + c > a, p = r - t.bottom - l > a, m = t.left - n + u > a, h = n - t.right - d > a;
 		return f || p || m || h;
 	});
 }
-function ul(e, t, n) {
+function vl(e, t, n) {
 	var r = t + "EventListener";
 	["transitionend", "webkitTransitionEnd"].forEach(function(t) {
 		e[r](t, n);
 	});
 }
-function dl(e, t) {
+function yl(e, t) {
 	for (var n = t; n;) {
 		if (e.contains(n)) return !0;
 		n = n.getRootNode == null ? void 0 : n.getRootNode()?.host;
 	}
 	return !1;
 }
-var X = { isTouch: !1 }, fl = 0;
-function pl() {
-	X.isTouch || (X.isTouch = !0, window.performance && document.addEventListener("mousemove", ml));
+var X = { isTouch: !1 }, bl = 0;
+function xl() {
+	X.isTouch || (X.isTouch = !0, window.performance && document.addEventListener("mousemove", Sl));
 }
-function ml() {
+function Sl() {
 	var e = performance.now();
-	e - fl < 20 && (X.isTouch = !1, document.removeEventListener("mousemove", ml)), fl = e;
+	e - bl < 20 && (X.isTouch = !1, document.removeEventListener("mousemove", Sl)), bl = e;
 }
-function hl() {
+function Cl() {
 	var e = document.activeElement;
-	if (il(e)) {
+	if (fl(e)) {
 		var t = e._tippy;
 		e.blur && !t.state.isVisible && e.blur();
 	}
 }
-function gl() {
-	document.addEventListener("touchstart", pl, Vc), window.addEventListener("blur", hl);
+function wl() {
+	document.addEventListener("touchstart", xl, Yc), window.addEventListener("blur", Cl);
 }
-var _l = typeof window < "u" && typeof document < "u" && !!window.msCrypto, Z = Object.assign({
-	appendTo: Hc,
+var Tl = typeof window < "u" && typeof document < "u" && !!window.msCrypto, Z = Object.assign({
+	appendTo: Xc,
 	aria: {
 		content: "auto",
 		expanded: "auto"
@@ -4228,20 +4402,20 @@ var _l = typeof window < "u" && typeof document < "u" && !!window.msCrypto, Z = 
 	role: "tooltip",
 	theme: "",
 	zIndex: 9999
-}), vl = Object.keys(Z), yl = function(e) {
+}), El = Object.keys(Z), Dl = function(e) {
 	Object.keys(e).forEach(function(t) {
 		Z[t] = e[t];
 	});
 };
-function bl(e) {
+function Ol(e) {
 	var t = (e.plugins || []).reduce(function(t, n) {
 		var r = n.name, i = n.defaultValue;
 		return r && (t[r] = e[r] === void 0 ? Z[r] ?? i : e[r]), t;
 	}, {});
 	return Object.assign({}, e, t);
 }
-function xl(e, t) {
-	return (t ? Object.keys(bl(Object.assign({}, Z, { plugins: t }))) : vl).reduce(function(t, n) {
+function kl(e, t) {
+	return (t ? Object.keys(Ol(Object.assign({}, Z, { plugins: t }))) : El).reduce(function(t, n) {
 		var r = (e.getAttribute("data-tippy-" + n) || "").trim();
 		if (!r) return t;
 		if (n === "content") t[n] = r;
@@ -4253,62 +4427,62 @@ function xl(e, t) {
 		return t;
 	}, {});
 }
-function Sl(e, t) {
-	var n = Object.assign({}, t, { content: Gc(t.content, [e]) }, t.ignoreAttributes ? {} : xl(e, t.plugins));
+function Al(e, t) {
+	var n = Object.assign({}, t, { content: $c(t.content, [e]) }, t.ignoreAttributes ? {} : kl(e, t.plugins));
 	return n.aria = Object.assign({}, Z.aria, n.aria), n.aria = {
 		expanded: n.aria.expanded === "auto" ? t.interactive : n.aria.expanded,
 		content: n.aria.content === "auto" ? t.interactive ? null : "describedby" : n.aria.content
 	}, n;
 }
-var Cl = function() {
+var jl = function() {
 	return "innerHTML";
 };
-function wl(e, t) {
-	e[Cl()] = t;
+function Ml(e, t) {
+	e[jl()] = t;
 }
-function Tl(e) {
-	var t = el();
-	return e === !0 ? t.className = zc : (t.className = Bc, tl(e) ? t.appendChild(e) : wl(t, e)), t;
+function Nl(e) {
+	var t = cl();
+	return e === !0 ? t.className = qc : (t.className = Jc, ll(e) ? t.appendChild(e) : Ml(t, e)), t;
 }
-function El(e, t) {
-	tl(t.content) ? (wl(e, ""), e.appendChild(t.content)) : typeof t.content != "function" && (t.allowHTML ? wl(e, t.content) : e.textContent = t.content);
+function Pl(e, t) {
+	ll(t.content) ? (Ml(e, ""), e.appendChild(t.content)) : typeof t.content != "function" && (t.allowHTML ? Ml(e, t.content) : e.textContent = t.content);
 }
-function Dl(e) {
-	var t = e.firstElementChild, n = Qc(t.children);
+function Fl(e) {
+	var t = e.firstElementChild, n = ol(t.children);
 	return {
 		box: t,
 		content: n.find(function(e) {
-			return e.classList.contains(Lc);
+			return e.classList.contains(Gc);
 		}),
 		arrow: n.find(function(e) {
-			return e.classList.contains(zc) || e.classList.contains(Bc);
+			return e.classList.contains(qc) || e.classList.contains(Jc);
 		}),
 		backdrop: n.find(function(e) {
-			return e.classList.contains(Rc);
+			return e.classList.contains(Kc);
 		})
 	};
 }
-function Ol(e) {
-	var t = el(), n = el();
-	n.className = Ic, n.setAttribute("data-state", "hidden"), n.setAttribute("tabindex", "-1");
-	var r = el();
-	r.className = Lc, r.setAttribute("data-state", "hidden"), El(r, e.props), t.appendChild(n), n.appendChild(r), i(e.props, e.props);
+function Il(e) {
+	var t = cl(), n = cl();
+	n.className = Wc, n.setAttribute("data-state", "hidden"), n.setAttribute("tabindex", "-1");
+	var r = cl();
+	r.className = Gc, r.setAttribute("data-state", "hidden"), Pl(r, e.props), t.appendChild(n), n.appendChild(r), i(e.props, e.props);
 	function i(n, r) {
-		var i = Dl(t), a = i.box, o = i.content, s = i.arrow;
-		r.theme ? a.setAttribute("data-theme", r.theme) : a.removeAttribute("data-theme"), typeof r.animation == "string" ? a.setAttribute("data-animation", r.animation) : a.removeAttribute("data-animation"), r.inertia ? a.setAttribute("data-inertia", "") : a.removeAttribute("data-inertia"), a.style.maxWidth = typeof r.maxWidth == "number" ? r.maxWidth + "px" : r.maxWidth, r.role ? a.setAttribute("role", r.role) : a.removeAttribute("role"), (n.content !== r.content || n.allowHTML !== r.allowHTML) && El(o, e.props), r.arrow ? s ? n.arrow !== r.arrow && (a.removeChild(s), a.appendChild(Tl(r.arrow))) : a.appendChild(Tl(r.arrow)) : s && a.removeChild(s);
+		var i = Fl(t), a = i.box, o = i.content, s = i.arrow;
+		r.theme ? a.setAttribute("data-theme", r.theme) : a.removeAttribute("data-theme"), typeof r.animation == "string" ? a.setAttribute("data-animation", r.animation) : a.removeAttribute("data-animation"), r.inertia ? a.setAttribute("data-inertia", "") : a.removeAttribute("data-inertia"), a.style.maxWidth = typeof r.maxWidth == "number" ? r.maxWidth + "px" : r.maxWidth, r.role ? a.setAttribute("role", r.role) : a.removeAttribute("role"), (n.content !== r.content || n.allowHTML !== r.allowHTML) && Pl(o, e.props), r.arrow ? s ? n.arrow !== r.arrow && (a.removeChild(s), a.appendChild(Nl(r.arrow))) : a.appendChild(Nl(r.arrow)) : s && a.removeChild(s);
 	}
 	return {
 		popper: t,
 		onUpdate: i
 	};
 }
-Ol.$$tippy = !0;
-var kl = 1, Al = [], jl = [];
-function Ml(e, t) {
-	var n = Sl(e, Object.assign({}, Z, bl($c(t)))), r, i, a, o = !1, s = !1, c = !1, l = !1, u, d, f, p = [], m = Kc(pe, n.interactiveDebounce), h, g = kl++, _ = null, v = Xc(n.plugins), y = {
+Il.$$tippy = !0;
+var Ll = 1, Rl = [], zl = [];
+function Bl(e, t) {
+	var n = Al(e, Object.assign({}, Z, Ol(sl(t)))), r, i, a, o = !1, s = !1, c = !1, l = !1, u, d, f, p = [], m = el(fe, n.interactiveDebounce), h, g = Ll++, _ = null, v = il(n.plugins), y = {
 		id: g,
 		reference: e,
-		popper: el(),
+		popper: cl(),
 		popperInstance: _,
 		props: n,
 		state: {
@@ -4319,16 +4493,16 @@ function Ml(e, t) {
 			isShown: !1
 		},
 		plugins: v,
-		clearDelayTimeouts: we,
-		setProps: Te,
-		setContent: Ee,
-		show: De,
-		hide: Oe,
-		hideWithInteractivity: ke,
-		enable: Se,
-		disable: Ce,
-		unmount: Ae,
-		destroy: je
+		clearDelayTimeouts: Ce,
+		setProps: we,
+		setContent: Te,
+		show: Ee,
+		hide: De,
+		hideWithInteractivity: Oe,
+		enable: xe,
+		disable: Se,
+		unmount: ke,
+		destroy: Ae
 	};
 	/* istanbul ignore if */
 	if (!n.render) return y;
@@ -4337,7 +4511,7 @@ function Ml(e, t) {
 	var C = v.map(function(e) {
 		return e.fn(y);
 	}), w = e.hasAttribute("aria-expanded");
-	return ue(), ee(), M(), N("onCreate", [y]), n.showOnCreate && be(), x.addEventListener("mouseenter", function() {
+	return le(), F(), M(), N("onCreate", [y]), n.showOnCreate && ye(), x.addEventListener("mouseenter", function() {
 		y.props.interactive && y.state.isVisible && y.clearDelayTimeouts();
 	}), x.addEventListener("mouseleave", function() {
 		y.props.interactive && y.props.trigger.indexOf("mouseenter") >= 0 && k().addEventListener("mousemove", m);
@@ -4358,13 +4532,13 @@ function Ml(e, t) {
 	}
 	function k() {
 		var e = O().parentNode;
-		return e ? cl(e) : document;
+		return e ? gl(e) : document;
 	}
 	function A() {
-		return Dl(x);
+		return Fl(x);
 	}
 	function j(e) {
-		return y.state.isMounted && !y.state.isVisible || X.isTouch || u && u.type === "focus" ? 0 : Uc(y.props.delay, +!e, Z.delay);
+		return y.state.isMounted && !y.state.isVisible || X.isTouch || u && u.type === "focus" ? 0 : Zc(y.props.delay, +!e, Z.delay);
 	}
 	function M(e) {
 		e === void 0 && (e = !1), x.style.pointerEvents = y.props.interactive && !e ? "" : "none", x.style.zIndex = "" + y.props.zIndex;
@@ -4381,7 +4555,7 @@ function Ml(e, t) {
 		var t = y.props.aria;
 		if (t.content) {
 			var n = "aria-" + t.content, r = x.id;
-			Jc(y.props.triggerTarget || e).forEach(function(e) {
+			nl(y.props.triggerTarget || e).forEach(function(e) {
 				var t = e.getAttribute(n);
 				if (y.state.isVisible) e.setAttribute(n, t ? t + " " + r : r);
 				else {
@@ -4391,63 +4565,63 @@ function Ml(e, t) {
 			});
 		}
 	}
-	function ee() {
-		w || !y.props.aria.expanded || Jc(y.props.triggerTarget || e).forEach(function(e) {
+	function F() {
+		!w && y.props.aria.expanded && nl(y.props.triggerTarget || e).forEach(function(e) {
 			y.props.interactive ? e.setAttribute("aria-expanded", y.state.isVisible && e === O() ? "true" : "false") : e.removeAttribute("aria-expanded");
 		});
 	}
-	function te() {
-		k().removeEventListener("mousemove", m), Al = Al.filter(function(e) {
+	function ee() {
+		k().removeEventListener("mousemove", m), Rl = Rl.filter(function(e) {
 			return e !== m;
 		});
 	}
-	function F(t) {
-		if (!(X.isTouch && (c || t.type === "mousedown"))) {
+	function I(t) {
+		if (!X.isTouch || !c && t.type !== "mousedown") {
 			var n = t.composedPath && t.composedPath()[0] || t.target;
-			if (!(y.props.interactive && dl(x, n))) {
-				if (Jc(y.props.triggerTarget || e).some(function(e) {
-					return dl(e, n);
+			if (!(y.props.interactive && yl(x, n))) {
+				if (nl(y.props.triggerTarget || e).some(function(e) {
+					return yl(e, n);
 				})) {
 					if (X.isTouch || y.state.isVisible && y.props.trigger.indexOf("click") >= 0) return;
 				} else N("onClickOutside", [y, t]);
 				y.props.hideOnClick === !0 && (y.clearDelayTimeouts(), y.hide(), s = !0, setTimeout(function() {
 					s = !1;
-				}), y.state.isMounted || ae());
+				}), y.state.isMounted || ie());
 			}
 		}
 	}
-	function ne() {
+	function te() {
 		c = !0;
 	}
-	function re() {
+	function ne() {
 		c = !1;
+	}
+	function re() {
+		var e = k();
+		e.addEventListener("mousedown", I, !0), e.addEventListener("touchend", I, Yc), e.addEventListener("touchstart", ne, Yc), e.addEventListener("touchmove", te, Yc);
 	}
 	function ie() {
 		var e = k();
-		e.addEventListener("mousedown", F, !0), e.addEventListener("touchend", F, Vc), e.addEventListener("touchstart", re, Vc), e.addEventListener("touchmove", ne, Vc);
+		e.removeEventListener("mousedown", I, !0), e.removeEventListener("touchend", I, Yc), e.removeEventListener("touchstart", ne, Yc), e.removeEventListener("touchmove", te, Yc);
 	}
-	function ae() {
-		var e = k();
-		e.removeEventListener("mousedown", F, !0), e.removeEventListener("touchend", F, Vc), e.removeEventListener("touchstart", re, Vc), e.removeEventListener("touchmove", ne, Vc);
-	}
-	function oe(e, t) {
-		ce(e, function() {
+	function ae(e, t) {
+		se(e, function() {
 			!y.state.isVisible && x.parentNode && x.parentNode.contains(x) && t();
 		});
 	}
-	function se(e, t) {
-		ce(e, t);
+	function oe(e, t) {
+		se(e, t);
 	}
-	function ce(e, t) {
+	function se(e, t) {
 		var n = A().box;
 		function r(e) {
-			e.target === n && (ul(n, "remove", r), t());
+			e.target === n && (vl(n, "remove", r), t());
 		}
 		if (e === 0) return t();
-		ul(n, "remove", d), ul(n, "add", r), d = r;
+		vl(n, "remove", d), vl(n, "add", r), d = r;
 	}
-	function le(t, n, r) {
-		r === void 0 && (r = !1), Jc(y.props.triggerTarget || e).forEach(function(e) {
+	function ce(t, n, r) {
+		r === void 0 && (r = !1), nl(y.props.triggerTarget || e).forEach(function(e) {
 			e.addEventListener(t, n, r), p.push({
 				node: e,
 				eventType: t,
@@ -4456,63 +4630,63 @@ function Ml(e, t) {
 			});
 		});
 	}
-	function ue() {
-		E() && (le("touchstart", fe, { passive: !0 }), le("touchend", me, { passive: !0 })), qc(y.props.trigger).forEach(function(e) {
-			if (e !== "manual") switch (le(e, fe), e) {
+	function le() {
+		E() && (ce("touchstart", de, { passive: !0 }), ce("touchend", pe, { passive: !0 })), tl(y.props.trigger).forEach(function(e) {
+			if (e !== "manual") switch (ce(e, de), e) {
 				case "mouseenter":
-					le("mouseleave", me);
+					ce("mouseleave", pe);
 					break;
 				case "focus":
-					le(_l ? "focusout" : "blur", he);
+					ce(Tl ? "focusout" : "blur", me);
 					break;
-				case "focusin": le("focusout", he);
+				case "focusin": ce("focusout", me);
 			}
 		});
 	}
-	function de() {
+	function ue() {
 		p.forEach(function(e) {
 			var t = e.node, n = e.eventType, r = e.handler, i = e.options;
 			t.removeEventListener(n, r, i);
 		}), p = [];
 	}
-	function fe(e) {
+	function de(e) {
 		var t = !1;
-		if (!(!y.state.isEnabled || ge(e) || s)) {
+		if (!(!y.state.isEnabled || he(e) || s)) {
 			var n = u?.type === "focus";
-			u = e, h = e.currentTarget, ee(), !y.state.isVisible && rl(e) && Al.forEach(function(t) {
+			u = e, h = e.currentTarget, F(), !y.state.isVisible && dl(e) && Rl.forEach(function(t) {
 				return t(e);
-			}), e.type === "click" && (y.props.trigger.indexOf("mouseenter") < 0 || o) && y.props.hideOnClick !== !1 && y.state.isVisible ? t = !0 : be(e), e.type === "click" && (o = !t), t && !n && xe(e);
+			}), e.type === "click" && (y.props.trigger.indexOf("mouseenter") < 0 || o) && y.props.hideOnClick !== !1 && y.state.isVisible ? t = !0 : ye(e), e.type === "click" && (o = !t), t && !n && be(e);
 		}
 	}
-	function pe(e) {
+	function fe(e) {
 		var t = e.target, r = O().contains(t) || x.contains(t);
-		e.type === "mousemove" && r || ll(ye().concat(x).map(function(e) {
+		e.type === "mousemove" && r || _l(ve().concat(x).map(function(e) {
 			var t = e._tippy.popperInstance?.state;
 			return t ? {
 				popperRect: e.getBoundingClientRect(),
 				popperState: t,
 				props: n
 			} : null;
-		}).filter(Boolean), e) && (te(), xe(e));
+		}).filter(Boolean), e) && (ee(), be(e));
 	}
-	function me(e) {
-		if (!(ge(e) || y.props.trigger.indexOf("click") >= 0 && o)) {
+	function pe(e) {
+		if (!(he(e) || y.props.trigger.indexOf("click") >= 0 && o)) {
 			if (y.props.interactive) {
 				y.hideWithInteractivity(e);
 				return;
 			}
-			xe(e);
+			be(e);
 		}
 	}
-	function he(e) {
-		y.props.trigger.indexOf("focusin") < 0 && e.target !== O() || y.props.interactive && e.relatedTarget && x.contains(e.relatedTarget) || xe(e);
+	function me(e) {
+		y.props.trigger.indexOf("focusin") < 0 && e.target !== O() || y.props.interactive && e.relatedTarget && x.contains(e.relatedTarget) || be(e);
 	}
-	function ge(e) {
+	function he(e) {
 		return X.isTouch ? E() !== e.type.indexOf("touch") >= 0 : !1;
 	}
-	function _e() {
-		I();
-		var t = y.props, n = t.popperOptions, r = t.placement, i = t.offset, a = t.getReferenceClientRect, o = t.moveTransition, s = D() ? Dl(x).arrow : null, c = a ? {
+	function ge() {
+		L();
+		var t = y.props, n = t.popperOptions, r = t.placement, i = t.offset, a = t.getReferenceClientRect, o = t.moveTransition, s = D() ? Fl(x).arrow : null, c = a ? {
 			getBoundingClientRect: a,
 			contextElement: a.contextElement || O()
 		} : e, l = [
@@ -4563,32 +4737,32 @@ function Ml(e, t) {
 				element: s,
 				padding: 3
 			}
-		}), l.push.apply(l, n?.modifiers || []), y.popperInstance = Fc(c, x, Object.assign({}, n, {
+		}), l.push.apply(l, n?.modifiers || []), y.popperInstance = Uc(c, x, Object.assign({}, n, {
 			placement: r,
 			onFirstUpdate: f,
 			modifiers: l
 		}));
 	}
-	function I() {
+	function L() {
 		y.popperInstance && (y.popperInstance.destroy(), y.popperInstance = null);
 	}
-	function ve() {
+	function _e() {
 		var e = y.props.appendTo, t, n = O();
-		t = y.props.interactive && e === Hc || e === "parent" ? n.parentNode : Gc(e, [n]), t.contains(x) || t.appendChild(x), y.state.isMounted = !0, _e();
+		t = y.props.interactive && e === Xc || e === "parent" ? n.parentNode : $c(e, [n]), t.contains(x) || t.appendChild(x), y.state.isMounted = !0, ge();
 	}
-	function ye() {
-		return Qc(x.querySelectorAll("[data-tippy-root]"));
+	function ve() {
+		return ol(x.querySelectorAll("[data-tippy-root]"));
 	}
-	function be(e) {
-		y.clearDelayTimeouts(), e && N("onTrigger", [y, e]), ie();
+	function ye(e) {
+		y.clearDelayTimeouts(), e && N("onTrigger", [y, e]), re();
 		var t = j(!0), n = T(), i = n[0], a = n[1];
 		X.isTouch && i === "hold" && a && (t = a), t ? r = setTimeout(function() {
 			y.show();
 		}, t) : y.show();
 	}
-	function xe(e) {
+	function be(e) {
 		if (y.clearDelayTimeouts(), N("onUntrigger", [y, e]), !y.state.isVisible) {
-			ae();
+			ie();
 			return;
 		}
 		if (!(y.props.trigger.indexOf("mouseenter") >= 0 && y.props.trigger.indexOf("click") >= 0 && ["mouseleave", "mousemove"].indexOf(e.type) >= 0 && o)) {
@@ -4600,87 +4774,87 @@ function Ml(e, t) {
 			});
 		}
 	}
-	function Se() {
+	function xe() {
 		y.state.isEnabled = !0;
 	}
-	function Ce() {
+	function Se() {
 		y.hide(), y.state.isEnabled = !1;
 	}
-	function we() {
+	function Ce() {
 		clearTimeout(r), clearTimeout(i), cancelAnimationFrame(a);
 	}
-	function Te(t) {
+	function we(t) {
 		if (!y.state.isDestroyed) {
-			N("onBeforeUpdate", [y, t]), de();
-			var n = y.props, r = Sl(e, Object.assign({}, n, $c(t), { ignoreAttributes: !0 }));
-			y.props = r, ue(), n.interactiveDebounce !== r.interactiveDebounce && (te(), m = Kc(pe, r.interactiveDebounce)), n.triggerTarget && !r.triggerTarget ? Jc(n.triggerTarget).forEach(function(e) {
+			N("onBeforeUpdate", [y, t]), ue();
+			var n = y.props, r = Al(e, Object.assign({}, n, sl(t), { ignoreAttributes: !0 }));
+			y.props = r, le(), n.interactiveDebounce !== r.interactiveDebounce && (ee(), m = el(fe, r.interactiveDebounce)), n.triggerTarget && !r.triggerTarget ? nl(n.triggerTarget).forEach(function(e) {
 				e.removeAttribute("aria-expanded");
-			}) : r.triggerTarget && e.removeAttribute("aria-expanded"), ee(), M(), S && S(n, r), y.popperInstance && (_e(), ye().forEach(function(e) {
+			}) : r.triggerTarget && e.removeAttribute("aria-expanded"), F(), M(), S && S(n, r), y.popperInstance && (ge(), ve().forEach(function(e) {
 				requestAnimationFrame(e._tippy.popperInstance.forceUpdate);
 			})), N("onAfterUpdate", [y, t]);
 		}
 	}
-	function Ee(e) {
+	function Te(e) {
 		y.setProps({ content: e });
 	}
-	function De() {
-		var e = y.state.isVisible, t = y.state.isDestroyed, n = !y.state.isEnabled, r = X.isTouch && !y.props.touch, i = Uc(y.props.duration, 0, Z.duration);
+	function Ee() {
+		var e = y.state.isVisible, t = y.state.isDestroyed, n = !y.state.isEnabled, r = X.isTouch && !y.props.touch, i = Zc(y.props.duration, 0, Z.duration);
 		if (!(e || t || n || r) && !O().hasAttribute("disabled") && (N("onShow", [y], !1), y.props.onShow(y) !== !1)) {
-			if (y.state.isVisible = !0, D() && (x.style.visibility = "visible"), M(), ie(), y.state.isMounted || (x.style.transition = "none"), D()) {
+			if (y.state.isVisible = !0, D() && (x.style.visibility = "visible"), M(), re(), y.state.isMounted || (x.style.transition = "none"), D()) {
 				var a = A(), o = a.box, s = a.content;
-				ol([o, s], 0);
+				ml([o, s], 0);
 			}
 			f = function() {
 				var e;
-				if (!(!y.state.isVisible || l)) {
+				if (y.state.isVisible && !l) {
 					if (l = !0, x.offsetHeight, x.style.transition = y.props.moveTransition, D() && y.props.animation) {
 						var t = A(), n = t.box, r = t.content;
-						ol([n, r], i), sl([n, r], "visible");
+						ml([n, r], i), hl([n, r], "visible");
 					}
-					P(), ee(), Yc(jl, y), (e = y.popperInstance) == null || e.forceUpdate(), N("onMount", [y]), y.props.animation && D() && se(i, function() {
+					P(), F(), rl(zl, y), (e = y.popperInstance) == null || e.forceUpdate(), N("onMount", [y]), y.props.animation && D() && oe(i, function() {
 						y.state.isShown = !0, N("onShown", [y]);
 					});
 				}
-			}, ve();
+			}, _e();
 		}
 	}
-	function Oe() {
-		var e = !y.state.isVisible, t = y.state.isDestroyed, n = !y.state.isEnabled, r = Uc(y.props.duration, 1, Z.duration);
+	function De() {
+		var e = !y.state.isVisible, t = y.state.isDestroyed, n = !y.state.isEnabled, r = Zc(y.props.duration, 1, Z.duration);
 		if (!(e || t || n) && (N("onHide", [y], !1), y.props.onHide(y) !== !1)) {
-			if (y.state.isVisible = !1, y.state.isShown = !1, l = !1, o = !1, D() && (x.style.visibility = "hidden"), te(), ae(), M(!0), D()) {
+			if (y.state.isVisible = !1, y.state.isShown = !1, l = !1, o = !1, D() && (x.style.visibility = "hidden"), ee(), ie(), M(!0), D()) {
 				var i = A(), a = i.box, s = i.content;
-				y.props.animation && (ol([a, s], r), sl([a, s], "hidden"));
+				y.props.animation && (ml([a, s], r), hl([a, s], "hidden"));
 			}
-			P(), ee(), y.props.animation ? D() && oe(r, y.unmount) : y.unmount();
+			P(), F(), y.props.animation ? D() && ae(r, y.unmount) : y.unmount();
 		}
 	}
-	function ke(e) {
-		k().addEventListener("mousemove", m), Yc(Al, m), m(e);
+	function Oe(e) {
+		k().addEventListener("mousemove", m), rl(Rl, m), m(e);
 	}
-	function Ae() {
-		y.state.isVisible && y.hide(), y.state.isMounted && (I(), ye().forEach(function(e) {
+	function ke() {
+		y.state.isVisible && y.hide(), y.state.isMounted && (L(), ve().forEach(function(e) {
 			e._tippy.unmount();
-		}), x.parentNode && x.parentNode.removeChild(x), jl = jl.filter(function(e) {
+		}), x.parentNode && x.parentNode.removeChild(x), zl = zl.filter(function(e) {
 			return e !== y;
 		}), y.state.isMounted = !1, N("onHidden", [y]));
 	}
-	function je() {
-		y.state.isDestroyed || (y.clearDelayTimeouts(), y.unmount(), de(), delete e._tippy, y.state.isDestroyed = !0, N("onDestroy", [y]));
+	function Ae() {
+		y.state.isDestroyed || (y.clearDelayTimeouts(), y.unmount(), ue(), delete e._tippy, y.state.isDestroyed = !0, N("onDestroy", [y]));
 	}
 }
-function Nl(e, t) {
+function Vl(e, t) {
 	t === void 0 && (t = {});
 	var n = Z.plugins.concat(t.plugins || []);
-	gl();
-	var r = Object.assign({}, t, { plugins: n }), i = al(e).reduce(function(e, t) {
-		var n = t && Ml(t, r);
+	wl();
+	var r = Object.assign({}, t, { plugins: n }), i = pl(e).reduce(function(e, t) {
+		var n = t && Bl(t, r);
 		return n && e.push(n), e;
 	}, []);
-	return tl(e) ? i[0] : i;
+	return ll(e) ? i[0] : i;
 }
 //#endregion
 //#region src/lib/svg-wind-barbs/index.ts
-Nl.defaultProps = Z, Nl.setDefaultProps = yl, Nl.currentInput = X, Object.assign({}, us, { effect: function(e) {
+Vl.defaultProps = Z, Vl.setDefaultProps = Dl, Vl.currentInput = X, Object.assign({}, _s, { effect: function(e) {
 	var t = e.state, n = {
 		popper: {
 			position: t.options.strategy,
@@ -4692,32 +4866,32 @@ Nl.defaultProps = Z, Nl.setDefaultProps = yl, Nl.currentInput = X, Object.assign
 		reference: {}
 	};
 	Object.assign(t.elements.popper.style, n.popper), t.styles = n, t.elements.arrow && Object.assign(t.elements.arrow.style, n.arrow);
-} }), Nl.setDefaultProps({ render: Ol }), mn();
-var Pl = z`<path class="svg-wb-fill" d="M125,120c2.762,0,5,2.239,5,5c0,2.762-2.238,5-5,5c-2.761,0-5-2.238-5-5C120,122.239,122.239,120,125,120z"/><path fill="none" class="svg-wb-stroke" stroke-width="2" d="M125,115c5.523,0,10,4.477,10,10c0,5.523-4.477,10-10,10 c-5.523,0-10-4.477-10-10C115,119.477,119.477,115,125,115z "/>`, Fl = z`<path class="svg-wb" d="M125,112V76 M125,125l7-12.1h-14L125,125z"/>`, Il = z`<path class="svg-wb" d="M125,112V76 M125,89l7-7 M125,125l7-12.1h-14L125,125z"/>`, Ll = z`<path class="svg-wb" d="M125,112V89 M125,89l14-14 M125,125l7-12.1h-14L125,125z"/>`, Rl = z`<path class="svg-wb" d="M125,112V89 M125,89l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, zl = z`<path class="svg-wb" d="M125,112V89 M125,89l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, Bl = z`<path class="svg-wb" d="M125,112V79 M125,79l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, Vl = z`<path class="svg-wb" d="M125,112V79 M125,79l14-14 M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, Hl = z`<path class="svg-wb" d="M125,112V69 M125,69l14-14 M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, Ul = z`<path class="svg-wb" d="M125,112V69 M125,69l14-14 M125,80l14-14 M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, Wl = z`<path class="svg-wb" d="M125,112V59 M125,59l14-14 M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14 L125,125z"/>`, Gl = z`<path class="svg-wb" d="M125,112V76 M125,76h14l-14,14V76z M125,125l7-12.1h-14L125,125z"/>`, Kl = z`<path class="svg-wb" d="M125,112V76 M125,76h14l-14,14V76z M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, ql = z`<path class="svg-wb" d="M125,112V76 M125,76h14l-14,14V76z M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, Jl = z`<path class="svg-wb" d="M125,112V66 M125,66h14l-14,14V66z M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, Yl = z`<path class="svg-wb" d="M125,112V66 M125,66h14l-14,14V66z M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, Xl = z`<path class="svg-wb" d="M125,112V56 M125,56h14l-14,14V56z M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, Zl = z`<path class="svg-wb" d="M125,112V56 M125,56h14l-14,14V56z M125,80l14-14 M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, Ql = z`<path class="svg-wb" d="M125,112V46 M125,46h14l-14,14V46z M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1 h-14L125,125z"/>`, $l = z`<path class="svg-wb" d="M125,112V46 M125,46h14l-14,14V46z M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100l14-14 M125,125l7-12.1 h-14L125,125z"/>`, eu = z`<path class="svg-wb" d="M125,112V36 M125,36h14l-14,14V36z M125,60l14-14 M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, tu = z`<path class="svg-wb" d="M125,112V62 M125,62h14l-14,14V62z M125,76h14l-14,14V76z M125,125l7-12.1h-14L125,125z"/>`, nu = z`<path class="svg-wb" d="M125,112V62 M125,62h14l-14,14V62z M125,76h14l-14,14V76z M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, ru = z`<path class="svg-wb" d="M125,112V62 M125,62h14l-14,14V62z M125,76h14l-14,14V76z M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, iu = z`<path class="svg-wb" d="M125,112V52 M125,52h14l-14,14V52z M125,66h14l-14,14V66z M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14 L125,125z"/>`, au = z`<path class="svg-wb" d="M125,112V52 M125,52h14l-14,14V52z M125,66h14l-14,14V66z M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14 L125,125z"/>`, ou = z`<path class="svg-wb" d="M125,112V42 M125,42h14l-14,14V42z M125,56h14l-14,14V56z M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125 l7-12.1h-14L125,125z"/>`, su = z`<path class="svg-wb" d="M125,112V42 M125,42h14l-14,14V42z M125,56h14l-14,14V56z M125,80l14-14 M125,90l14-14 M125,100l14-14 M125,125 l7-12.1h-14L125,125z"/>`, cu = z`<path class="svg-wb" d="M125,112V32 M125,32h14l-14,14V32z M125,46h14l-14,14V46z M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100 l7-7 M125,125l7-12.1h-14L125,125z"/>`, lu = z`<path class="svg-wb" d="M125,112V32 M125,32h14l-14,14V32z M125,46h14l-14,14V46z M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100 l14-14 M125,125l7-12.1h-14L125,125z"/>`, uu = z`<path class="svg-wb" d="M125,112V22 M125,22h14l-14,14V22z M125,36h14l-14,14V36z M125,60l14-14 M125,70l14-14 M125,80l14-14 M125,90 l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, du = z`<path class="svg-wb" d="M125,112V48 M125,48h14l-14,14V48z M125,62h14l-14,14V62z M125,76h14l-14,14V76z M125,125l7-12.1h-14L125,125z"/>`, fu = z`<path class="svg-wb" d="M125,112V48 M125,48h14l-14,14V48z M125,62h14l-14,14V62z M125,76h14l-14,14V76z M125,100l7-7 M125,125l7-12.1 h-14L125,125z"/>`, pu = z`<path class="svg-wb" d="M125,112V48 M125,48h14l-14,14V48z M125,62h14l-14,14V62z M125,76h14l-14,14V76z M125,100l14-14 M125,125 l7-12.1h-14L125,125z"/>`, mu = z`<path class="svg-wb" d="M125,112V38 M125,38h14l-14,14V38z M125,52h14l-14,14V52z M125,66h14l-14,14V66z M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, hu = z`<path class="svg-wb" d="M125,112V38 M125,38h14l-14,14V38z M125,52h14l-14,14V52z M125,66h14l-14,14V66z M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, gu = z`<path class="svg-wb" d="M125,112V28 M125,28h14l-14,14V28z M125,42h14l-14,14V42z M125,56h14l-14,14V56z M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, _u = z`<path class="svg-wb" d="M125,112V28 M125,28h14l-14,14V28z M125,42h14l-14,14V42z M125,56h14l-14,14V56z M125,80l14-14 M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, vu = z`<path class="svg-wb" d="M125,112V18 M125,18h14l-14,14V18z M125,32h14l-14,14V32z M125,46h14l-14,14V46z M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, yu = z`<path class="svg-wb" d="M125,112V18 M125,18h14l-14,14V18z M125,32h14l-14,14V32z M125,46h14l-14,14V46z M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`;
-function bu(e) {
-	return e <= 0 || e < 1 ? Pl : e < 2.5 ? Fl : e < 5 ? Il : e < 7.5 ? Ll : e < 10 ? Rl : e < 12.5 ? zl : e < 15 ? Bl : e < 17.5 ? Vl : e < 20 ? Hl : e < 22.5 ? Ul : e < 25 ? Wl : e < 27.5 ? Gl : e < 30 ? Kl : e < 32.5 ? ql : e < 35 ? Jl : e < 37.5 ? Yl : e < 40 ? Xl : e < 42.5 ? Zl : e < 45 ? Ql : e < 47.5 ? $l : e < 50 ? eu : e < 52.5 ? tu : e < 55 ? nu : e < 57.5 ? ru : e < 60 ? iu : e < 62.5 ? au : e < 65 ? ou : e < 67.5 ? su : e < 70 ? cu : e < 72.5 ? lu : e < 75 ? uu : e < 77.5 ? du : e < 80 ? fu : e < 82.5 ? pu : e < 85 ? mu : e < 87.5 ? hu : e < 90 ? gu : e < 92.5 ? _u : e < 95 ? vu : e < 97.5 ? yu : Pl;
+} }), Vl.setDefaultProps({ render: Il }), fn();
+var Hl = B`<path class="svg-wb-fill" d="M125,120c2.762,0,5,2.239,5,5c0,2.762-2.238,5-5,5c-2.761,0-5-2.238-5-5C120,122.239,122.239,120,125,120z"/><path fill="none" class="svg-wb-stroke" stroke-width="2" d="M125,115c5.523,0,10,4.477,10,10c0,5.523-4.477,10-10,10 c-5.523,0-10-4.477-10-10C115,119.477,119.477,115,125,115z "/>`, Ul = B`<path class="svg-wb" d="M125,112V76 M125,125l7-12.1h-14L125,125z"/>`, Wl = B`<path class="svg-wb" d="M125,112V76 M125,89l7-7 M125,125l7-12.1h-14L125,125z"/>`, Gl = B`<path class="svg-wb" d="M125,112V89 M125,89l14-14 M125,125l7-12.1h-14L125,125z"/>`, Kl = B`<path class="svg-wb" d="M125,112V89 M125,89l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, ql = B`<path class="svg-wb" d="M125,112V89 M125,89l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, Jl = B`<path class="svg-wb" d="M125,112V79 M125,79l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, Yl = B`<path class="svg-wb" d="M125,112V79 M125,79l14-14 M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, Xl = B`<path class="svg-wb" d="M125,112V69 M125,69l14-14 M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, Zl = B`<path class="svg-wb" d="M125,112V69 M125,69l14-14 M125,80l14-14 M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, Ql = B`<path class="svg-wb" d="M125,112V59 M125,59l14-14 M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14 L125,125z"/>`, $l = B`<path class="svg-wb" d="M125,112V76 M125,76h14l-14,14V76z M125,125l7-12.1h-14L125,125z"/>`, eu = B`<path class="svg-wb" d="M125,112V76 M125,76h14l-14,14V76z M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, tu = B`<path class="svg-wb" d="M125,112V76 M125,76h14l-14,14V76z M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, nu = B`<path class="svg-wb" d="M125,112V66 M125,66h14l-14,14V66z M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, ru = B`<path class="svg-wb" d="M125,112V66 M125,66h14l-14,14V66z M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, iu = B`<path class="svg-wb" d="M125,112V56 M125,56h14l-14,14V56z M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, au = B`<path class="svg-wb" d="M125,112V56 M125,56h14l-14,14V56z M125,80l14-14 M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, ou = B`<path class="svg-wb" d="M125,112V46 M125,46h14l-14,14V46z M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1 h-14L125,125z"/>`, su = B`<path class="svg-wb" d="M125,112V46 M125,46h14l-14,14V46z M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100l14-14 M125,125l7-12.1 h-14L125,125z"/>`, cu = B`<path class="svg-wb" d="M125,112V36 M125,36h14l-14,14V36z M125,60l14-14 M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, lu = B`<path class="svg-wb" d="M125,112V62 M125,62h14l-14,14V62z M125,76h14l-14,14V76z M125,125l7-12.1h-14L125,125z"/>`, uu = B`<path class="svg-wb" d="M125,112V62 M125,62h14l-14,14V62z M125,76h14l-14,14V76z M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, du = B`<path class="svg-wb" d="M125,112V62 M125,62h14l-14,14V62z M125,76h14l-14,14V76z M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, fu = B`<path class="svg-wb" d="M125,112V52 M125,52h14l-14,14V52z M125,66h14l-14,14V66z M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14 L125,125z"/>`, pu = B`<path class="svg-wb" d="M125,112V52 M125,52h14l-14,14V52z M125,66h14l-14,14V66z M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14 L125,125z"/>`, mu = B`<path class="svg-wb" d="M125,112V42 M125,42h14l-14,14V42z M125,56h14l-14,14V56z M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125 l7-12.1h-14L125,125z"/>`, hu = B`<path class="svg-wb" d="M125,112V42 M125,42h14l-14,14V42z M125,56h14l-14,14V56z M125,80l14-14 M125,90l14-14 M125,100l14-14 M125,125 l7-12.1h-14L125,125z"/>`, gu = B`<path class="svg-wb" d="M125,112V32 M125,32h14l-14,14V32z M125,46h14l-14,14V46z M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100 l7-7 M125,125l7-12.1h-14L125,125z"/>`, _u = B`<path class="svg-wb" d="M125,112V32 M125,32h14l-14,14V32z M125,46h14l-14,14V46z M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100 l14-14 M125,125l7-12.1h-14L125,125z"/>`, vu = B`<path class="svg-wb" d="M125,112V22 M125,22h14l-14,14V22z M125,36h14l-14,14V36z M125,60l14-14 M125,70l14-14 M125,80l14-14 M125,90 l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, yu = B`<path class="svg-wb" d="M125,112V48 M125,48h14l-14,14V48z M125,62h14l-14,14V62z M125,76h14l-14,14V76z M125,125l7-12.1h-14L125,125z"/>`, bu = B`<path class="svg-wb" d="M125,112V48 M125,48h14l-14,14V48z M125,62h14l-14,14V62z M125,76h14l-14,14V76z M125,100l7-7 M125,125l7-12.1 h-14L125,125z"/>`, xu = B`<path class="svg-wb" d="M125,112V48 M125,48h14l-14,14V48z M125,62h14l-14,14V62z M125,76h14l-14,14V76z M125,100l14-14 M125,125 l7-12.1h-14L125,125z"/>`, Su = B`<path class="svg-wb" d="M125,112V38 M125,38h14l-14,14V38z M125,52h14l-14,14V52z M125,66h14l-14,14V66z M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, Cu = B`<path class="svg-wb" d="M125,112V38 M125,38h14l-14,14V38z M125,52h14l-14,14V52z M125,66h14l-14,14V66z M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, wu = B`<path class="svg-wb" d="M125,112V28 M125,28h14l-14,14V28z M125,42h14l-14,14V42z M125,56h14l-14,14V56z M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, Tu = B`<path class="svg-wb" d="M125,112V28 M125,28h14l-14,14V28z M125,42h14l-14,14V42z M125,56h14l-14,14V56z M125,80l14-14 M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`, Eu = B`<path class="svg-wb" d="M125,112V18 M125,18h14l-14,14V18z M125,32h14l-14,14V32z M125,46h14l-14,14V46z M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100l7-7 M125,125l7-12.1h-14L125,125z"/>`, Du = B`<path class="svg-wb" d="M125,112V18 M125,18h14l-14,14V18z M125,32h14l-14,14V32z M125,46h14l-14,14V46z M125,70l14-14 M125,80l14-14 M125,90l14-14 M125,100l14-14 M125,125l7-12.1h-14L125,125z"/>`;
+function Ou(e) {
+	return e <= 0 || e < 1 ? Hl : e < 2.5 ? Ul : e < 5 ? Wl : e < 7.5 ? Gl : e < 10 ? Kl : e < 12.5 ? ql : e < 15 ? Jl : e < 17.5 ? Yl : e < 20 ? Xl : e < 22.5 ? Zl : e < 25 ? Ql : e < 27.5 ? $l : e < 30 ? eu : e < 32.5 ? tu : e < 35 ? nu : e < 37.5 ? ru : e < 40 ? iu : e < 42.5 ? au : e < 45 ? ou : e < 47.5 ? su : e < 50 ? cu : e < 52.5 ? lu : e < 55 ? uu : e < 57.5 ? du : e < 60 ? fu : e < 62.5 ? pu : e < 65 ? mu : e < 67.5 ? hu : e < 70 ? gu : e < 72.5 ? _u : e < 75 ? vu : e < 77.5 ? yu : e < 80 ? bu : e < 82.5 ? xu : e < 85 ? Su : e < 87.5 ? Cu : e < 90 ? wu : e < 92.5 ? Tu : e < 95 ? Eu : e < 97.5 ? Du : Hl;
 }
 //#endregion
-//#region \0@oxc-project+runtime@0.146.0/helpers/esm/decorate.js
+//#region \0@oxc-project+runtime@0.149.0/helpers/esm/decorate.js
 function Q(e, t, n, r) {
 	var i = arguments.length, a = i < 3 ? t : r === null ? r = Object.getOwnPropertyDescriptor(t, n) : r, o;
 	if (typeof Reflect == "object" && typeof Reflect.decorate == "function") a = Reflect.decorate(e, t, n, r);
 	else for (var s = e.length - 1; s >= 0; s--) (o = e[s]) && (a = (i < 3 ? o(a) : i > 3 ? o(t, n, a) : o(t, n)) || a);
 	return i > 3 && a && Object.defineProperty(t, n, a), a;
 }
-var xu = t((() => {}));
-mn(), xu();
-var Su, Cu = ".tippy-box[data-animation=fade][data-state=hidden]{opacity:0}[data-tippy-root]{max-width:calc(100vw - 10px)}.tippy-box{position:relative;background-color:#333;color:#fff;border-radius:4px;font-size:14px;line-height:1.4;white-space:normal;outline:0;transition-property:transform,visibility,opacity}.tippy-box[data-placement^=top]>.tippy-arrow{bottom:0}.tippy-box[data-placement^=top]>.tippy-arrow:before{bottom:-7px;left:0;border-width:8px 8px 0;border-top-color:initial;transform-origin:center top}.tippy-box[data-placement^=bottom]>.tippy-arrow{top:0}.tippy-box[data-placement^=bottom]>.tippy-arrow:before{top:-7px;left:0;border-width:0 8px 8px;border-bottom-color:initial;transform-origin:center bottom}.tippy-box[data-placement^=left]>.tippy-arrow{right:0}.tippy-box[data-placement^=left]>.tippy-arrow:before{border-width:8px 0 8px 8px;border-left-color:initial;right:-7px;transform-origin:center left}.tippy-box[data-placement^=right]>.tippy-arrow{left:0}.tippy-box[data-placement^=right]>.tippy-arrow:before{left:-7px;border-width:8px 8px 8px 0;border-right-color:initial;transform-origin:center right}.tippy-box[data-inertia][data-state=visible]{transition-timing-function:cubic-bezier(.54,1.5,.38,1.11)}.tippy-arrow{width:16px;height:16px;color:#333}.tippy-arrow:before{content:\"\";position:absolute;border-color:transparent;border-style:solid}.tippy-content{position:relative;padding:5px 9px;z-index:1}", $ = class extends un {
+var ku = t((() => {}));
+fn(), ku();
+var Au, ju = ".tippy-box[data-animation=fade][data-state=hidden]{opacity:0}[data-tippy-root]{max-width:calc(100vw - 10px)}.tippy-box{position:relative;background-color:#333;color:#fff;border-radius:4px;font-size:14px;line-height:1.4;white-space:normal;outline:0;transition-property:transform,visibility,opacity}.tippy-box[data-placement^=top]>.tippy-arrow{bottom:0}.tippy-box[data-placement^=top]>.tippy-arrow:before{bottom:-7px;left:0;border-width:8px 8px 0;border-top-color:initial;transform-origin:center top}.tippy-box[data-placement^=bottom]>.tippy-arrow{top:0}.tippy-box[data-placement^=bottom]>.tippy-arrow:before{top:-7px;left:0;border-width:0 8px 8px;border-bottom-color:initial;transform-origin:center bottom}.tippy-box[data-placement^=left]>.tippy-arrow{right:0}.tippy-box[data-placement^=left]>.tippy-arrow:before{border-width:8px 0 8px 8px;border-left-color:initial;right:-7px;transform-origin:center left}.tippy-box[data-placement^=right]>.tippy-arrow{left:0}.tippy-box[data-placement^=right]>.tippy-arrow:before{left:-7px;border-width:8px 8px 8px 0;border-right-color:initial;transform-origin:center right}.tippy-box[data-inertia][data-state=visible]{transition-timing-function:cubic-bezier(.54,1.5,.38,1.11)}.tippy-arrow{width:16px;height:16px;color:#333}.tippy-arrow:before{content:\"\";position:absolute;border-color:transparent;border-style:solid}.tippy-content{position:relative;padding:5px 9px;z-index:1}", $ = class extends cn {
 	constructor(...e) {
-		super(...e), this.conditions = [], this.temperatures = [], this.wind = [], this.precipitation = [], this.icons = !1, this.icon_map = void 0, this.colors = void 0, this.hide_hours = !1, this.hide_temperatures = !1, this.hide_bar = !1, this.icon_fill = "single", this.show_wind = "false", this.show_precipitation_amounts = !1, this.show_precipitation_probability = !1, this.show_date = "false", this.label_spacing = 2, this.labels = $n, this.tips = [];
+		super(...e), this.conditions = [], this.temperatures = [], this.wind = [], this.precipitation = [], this.icons = !1, this.icon_map = void 0, this.colors = void 0, this.hide_hours = !1, this.hide_temperatures = !1, this.hide_bar = !1, this.icon_fill = "single", this.show_wind = "false", this.show_precipitation_amounts = !1, this.show_precipitation_probability = !1, this.has_current_segment = !1, this.current_label = "Now", this.current_time = "", this.show_date = "false", this.label_spacing = 2, this.labels = Zn, this.tips = [];
 	}
 	render() {
 		let e = [], t = 1;
 		if (!this.hide_bar) for (let n of this.conditions) {
 			let r = this.labels[n[0]], i = this.icon_map?.[n[0]];
-			i || (i = er[n[0]], i = i === n[0] ? "mdi:weather-" + i : "mdi:" + i);
+			i || (i = Qn[n[0]], i = i === n[0] ? "mdi:weather-" + i : "mdi:" + i);
 			let a = [];
-			if (!this.icons) a.push(R`<span class="condition-label">${r}</span>`);
+			if (!this.icons) a.push(z`<span class="condition-label">${r}</span>`);
 			else {
 				let e;
 				e = !this.icon_fill || this.icon_fill === "single" ? n[1] : this.icon_fill === "full" ? 1 : Math.max(Number(this.icon_fill) || 0, 1);
@@ -4727,36 +4901,36 @@ var Su, Cu = ".tippy-box[data-animation=fade][data-state=hidden]{opacity:0}[data
 						gridColumnStart: String(t),
 						gridColumnEnd: String(t += e * 2)
 					};
-					a.push(R`<span class="condition-icon" style=${Jo(n)}><ha-icon icon=${i}></ha-icon></span>`);
+					a.push(z`<span class="condition-icon" style=${ts(n)}><ha-icon icon=${i}></ha-icon></span>`);
 				}
 			}
 			let o = {
 				gridColumnStart: String(t),
 				gridColumnEnd: String(t += n[1] * 2)
 			};
-			e.push(R`
-          <div class=${n[0]} style=${Jo(o)} data-tippy-content=${r}>
+			e.push(z`
+          <div class=${n[0]} style=${ts(o)} data-tippy-content=${r}>
             ${a}
           </div>
         `);
 		}
 		let n = this.show_wind ?? "", r = [], i = null;
 		for (let e = 0; e < this.temperatures.length; e += 1) {
-			let t = e % this.label_spacing !== 0, a = this.hide_hours || t, o = this.hide_temperatures || t, s = (n === "true" || n.includes("speed")) && !t, c = (n === "true" || n.includes("direction")) && !t, l = n.includes("barb") && !t, u = this.show_precipitation_amounts && !t, d = this.show_precipitation_probability && !t, { hour: f, date: p, temperature: m } = this.temperatures[e], h = null;
-			!t && this.show_date && this.show_date !== "false" && (this.show_date === "all" ? h = p : this.show_date === "boundary" && (i === p ? h = R`&nbsp;` : (h = p, i = p)));
-			let { windSpeed: g, windSpeedRawMS: _, windDirection: v, windDirectionRaw: y } = this.wind[e], b = [], x = typeof y == "number" ? y : rr[y?.toLowerCase()];
-			l && x !== void 0 && (b.push(R`<span title=${`${g} ${v}`}>
+			let t = this.shouldSkipLabel(e), a = this.hide_hours || t, o = this.hide_temperatures || t, s = (n === "true" || n.includes("speed")) && !t, c = (n === "true" || n.includes("direction")) && !t, l = n.includes("barb") && !t, u = this.show_precipitation_amounts && !t, d = this.show_precipitation_probability && !t, { hour: f, date: p, temperature: m } = this.temperatures[e], h = null;
+			!t && this.show_date && this.show_date !== "false" && (this.show_date === "all" ? h = p : this.show_date === "boundary" && (i === p ? h = z`&nbsp;` : (h = p, i = p)));
+			let { windSpeed: g, windSpeedRawMS: _, windDirection: v, windDirectionRaw: y } = this.wind[e], b = [], x = typeof y == "number" ? y : tr[y?.toLowerCase()];
+			l && x !== void 0 && (b.push(z`<span title=${`${g} ${v}`}>
           ${this.getWindBarb(_, x)}
-        </span>`), (s || c) && b.push(R`<br>`)), s && b.push(R`${g}`), s && c && b.push(R`<br>`), c && b.push(R`${v}`);
+        </span>`), (s || c) && b.push(z`<br>`)), s && b.push(z`${g}`), s && c && b.push(z`<br>`), c && b.push(z`${v}`);
 			let { precipitationAmount: S, precipitationProbability: C, precipitationProbabilityText: w } = this.precipitation[e], T = [];
-			u && T.push(R`${S}`), u && d && T.push(R`<br>`), d && T.push(R`<span title=${w}>${C}</span>`), r.push(R`
+			u && T.push(z`${S}`), u && d && T.push(z`<br>`), d && T.push(z`<span title=${w}>${C}</span>`), r.push(z`
         <div class="bar-block">
           <div class="bar-block-left"></div>
           <div class="bar-block-right"></div>
           <div class="bar-block-bottom">
             <div class="date">${h}</div>
-            <div class="hour">${a ? null : f}</div>
-            <div class="temperature">${o ? null : R`${m}&deg;`}</div>
+            <div class="hour">${a ? null : this.has_current_segment && e === 0 ? z`<span class="current-time" title=${this.current_time}>${this.current_label}</span>` : f}</div>
+            <div class="temperature">${o ? null : z`${m}&deg;`}</div>
             <div class="wind">${b}</div>
             <div class="precipitation">${T}</div>
           </div>
@@ -4764,16 +4938,19 @@ var Su, Cu = ".tippy-box[data-animation=fade][data-state=hidden]{opacity:0}[data
       `);
 		}
 		let a = null;
-		return this.colors && (a = this.getColorStyles(this.colors)), R`
+		return this.colors && (a = this.getColorStyles(this.colors)), z`
       <div class="main">
         ${a ?? null}
-        ${this.hide_bar ? null : R`<div class="bar">${e}</div>`}
+        ${this.hide_bar ? null : z`<div class="bar">${e}</div>`}
         <div class="axes">${r}</div>
       </div>
     `;
 	}
+	shouldSkipLabel(e) {
+		return this.has_current_segment ? e !== 0 && (e - 1) % this.label_spacing != 0 : e % this.label_spacing !== 0;
+	}
 	update(e) {
-		super.update(e), this.tips.forEach((e) => e.destroy()), this.tips = Nl(this.renderRoot.querySelectorAll(".bar > div"), {
+		super.update(e), this.tips.forEach((e) => e.destroy()), this.tips = Vl(this.renderRoot.querySelectorAll(".bar > div"), {
 			appendTo: this.renderRoot.firstElementChild || void 0,
 			touch: "hold"
 		});
@@ -4782,20 +4959,20 @@ var Su, Cu = ".tippy-box[data-animation=fade][data-state=hidden]{opacity:0}[data
 		if (!e || e.size === 0) return null;
 		let t = [];
 		for (let [n, r] of e.entries()) r.background && t.push(`--color-${n}: ${r.background};`), r.foreground && t.push(`--color-${n}-foreground: ${r.foreground};`);
-		return R`<style>
+		return z`<style>
       .main > .bar {
-        ${Bt(t.join(" "))}
+        ${Rt(t.join(" "))}
       }
     </style>`;
 	}
 	getWindBarb(e, t) {
-		let n = { transform: `rotate(${t}deg)` };
-		return R`<svg xmlns="http://www.w3.org/2000/svg" viewBox="70 40 120 120" class="barb" style=${Jo(n)}>
-      ${bu(e)}
+		let n = e < 1, r = { transform: `rotate(${t}deg)` };
+		return z`<svg xmlns="http://www.w3.org/2000/svg" viewBox="70 40 120 120" class="barb" style=${n ? void 0 : ts(r)}>
+      ${Ou(e)}
     </svg>`;
 	}
 };
-Su = $, Su.styles = [Bt(Cu), Vt`
+Au = $, Au.styles = [Rt(ju), zt`
     .main {
       --color-clear-night: #111;
       --color-cloudy: #777777;
@@ -4973,20 +5150,20 @@ Su = $, Su.styles = [Bt(Cu), Vt`
       stroke-linejoin: round;
       stroke-miterlimit: 10;
     }
-  `], Q([H({ type: Array })], $.prototype, "conditions", void 0), Q([H({ type: Array })], $.prototype, "temperatures", void 0), Q([H({ type: Array })], $.prototype, "wind", void 0), Q([H({ type: Array })], $.prototype, "precipitation", void 0), Q([H({ type: Boolean })], $.prototype, "icons", void 0), Q([H({ type: Object })], $.prototype, "icon_map", void 0), Q([H({ attribute: !1 })], $.prototype, "colors", void 0), Q([H({ type: Boolean })], $.prototype, "hide_hours", void 0), Q([H({ type: Boolean })], $.prototype, "hide_temperatures", void 0), Q([H({ type: Boolean })], $.prototype, "hide_bar", void 0), Q([H({ type: String })], $.prototype, "icon_fill", void 0), Q([H({ type: String })], $.prototype, "show_wind", void 0), Q([H({ type: Boolean })], $.prototype, "show_precipitation_amounts", void 0), Q([H({ type: Boolean })], $.prototype, "show_precipitation_probability", void 0), Q([H({ type: String })], $.prototype, "show_date", void 0), Q([H({ type: Number })], $.prototype, "label_spacing", void 0), Q([H({ type: Object })], $.prototype, "labels", void 0);
+  `], Q([U({ type: Array })], $.prototype, "conditions", void 0), Q([U({ type: Array })], $.prototype, "temperatures", void 0), Q([U({ type: Array })], $.prototype, "wind", void 0), Q([U({ type: Array })], $.prototype, "precipitation", void 0), Q([U({ type: Boolean })], $.prototype, "icons", void 0), Q([U({ type: Object })], $.prototype, "icon_map", void 0), Q([U({ attribute: !1 })], $.prototype, "colors", void 0), Q([U({ type: Boolean })], $.prototype, "hide_hours", void 0), Q([U({ type: Boolean })], $.prototype, "hide_temperatures", void 0), Q([U({ type: Boolean })], $.prototype, "hide_bar", void 0), Q([U({ type: String })], $.prototype, "icon_fill", void 0), Q([U({ type: String })], $.prototype, "show_wind", void 0), Q([U({ type: Boolean })], $.prototype, "show_precipitation_amounts", void 0), Q([U({ type: Boolean })], $.prototype, "show_precipitation_probability", void 0), Q([U({ type: Boolean })], $.prototype, "has_current_segment", void 0), Q([U({ type: String })], $.prototype, "current_label", void 0), Q([U({ type: String })], $.prototype, "current_time", void 0), Q([U({ type: String })], $.prototype, "show_date", void 0), Q([U({ type: Number })], $.prototype, "label_spacing", void 0), Q([U({ type: Object })], $.prototype, "labels", void 0);
 //#endregion
 //#region node_modules/@lit/reactive-element/css-tag.js
-var wu, Tu, Eu, Du = t((() => {
-	wu = window, Tu = wu.ShadowRoot && (wu.ShadyCSS === void 0 || wu.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Eu = (e, t) => {
-		Tu ? e.adoptedStyleSheets = t.map(((e) => e instanceof CSSStyleSheet ? e : e.styleSheet)) : t.forEach(((t) => {
-			let n = document.createElement("style"), r = wu.litNonce;
+var Mu, Nu, Pu, Fu = t((() => {
+	Mu = window, Nu = Mu.ShadowRoot && (Mu.ShadyCSS === void 0 || Mu.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Pu = (e, t) => {
+		Nu ? e.adoptedStyleSheets = t.map(((e) => e instanceof CSSStyleSheet ? e : e.styleSheet)) : t.forEach(((t) => {
+			let n = document.createElement("style"), r = Mu.litNonce;
 			r !== void 0 && n.setAttribute("nonce", r), n.textContent = t.cssText, e.appendChild(n);
 		}));
 	};
 }));
 //#endregion
 //#region node_modules/@lit-labs/scoped-registry-mixin/scoped-registry-mixin.js
-function Ou(e) {
+function Iu(e) {
 	return class extends e {
 		createRenderRoot() {
 			let e = this.constructor, { registry: t, elementDefinitions: n, shadowRootOptions: r } = e;
@@ -4995,14 +5172,14 @@ function Ou(e) {
 				...r,
 				customElements: e.registry
 			});
-			return Eu(i, this.constructor.elementStyles), i;
+			return Pu(i, this.constructor.elementStyles), i;
 		}
 	};
 }
-var ku = t((() => {
-	Du();
-})), Au = /* @__PURE__ */ n({ HourlyWeatherCardEditor: () => Mu }), ju, Mu, Nu = t((() => {
-	mn(), D(), ku(), On(), xu(), Mu = (ju = class extends Ou(un) {
+var Lu = t((() => {
+	Fu();
+})), Ru = /* @__PURE__ */ n({ HourlyWeatherCardEditor: () => Bu }), zu, Bu, Vu = t((() => {
+	fn(), E(), Lu(), En(), ku(), zu = class extends Iu(cn) {
 		constructor(...e) {
 			super(...e), this._initialized = !1;
 		}
@@ -5082,6 +5259,14 @@ var ku = t((() => {
 					selector: { boolean: {} }
 				},
 				{
+					name: "show_current",
+					selector: { boolean: {} }
+				},
+				{
+					name: "auto_label_spacing",
+					selector: { boolean: {} }
+				},
+				{
 					name: "show_wind",
 					selector: { select: {
 						mode: "dropdown",
@@ -5152,9 +5337,9 @@ var ku = t((() => {
 			];
 		}
 		render() {
-			if (!this.hass || !this._helpers) return R``;
-			let e = Co(this._config?.language, this.hass?.locale?.language), t = this.getSchema(e);
-			return R`
+			if (!this.hass || !this._helpers) return z``;
+			let e = Ao(this._config?.language, this.hass?.locale?.language), t = this.getSchema(e);
+			return z`
       <ha-form
         .hass=${this.hass}
         .data=${this._config}
@@ -5166,6 +5351,8 @@ var ku = t((() => {
 				offset: e("editor.offset"),
 				label_spacing: e("editor.label_spacing"),
 				icons: e("editor.icons"),
+				show_current: e("editor.show_current"),
+				auto_label_spacing: e("editor.auto_label_spacing"),
 				show_wind: e("editor.show_wind"),
 				show_date: e("editor.show_date"),
 				show_precipitation_amounts: e("editor.show_precipitation_amounts"),
@@ -5189,9 +5376,9 @@ var ku = t((() => {
 			let t = { ...e.detail.value };
 			Object.keys(t).forEach((e) => {
 				(t[e] === "" || t[e] === void 0) && delete t[e];
-			}), "num_hours" in t && "num_segments" in t && delete t.num_hours, this._config = t, y(this, "config-changed", { config: this._config });
+			}), "num_hours" in t && "num_segments" in t && delete t.num_hours, this._config = t, v(this, "config-changed", { config: this._config });
 		}
-	}, ju.styles = Vt`
+	}, Bu = (zu.styles = zt`
     mwc-select,
     mwc-textfield {
       margin-bottom: 16px;
@@ -5203,53 +5390,115 @@ var ku = t((() => {
     mwc-switch {
       --mdc-theme-secondary: var(--switch-checked-color);
     }
-  `, ju), Q([H({ attribute: !1 })], Mu.prototype, "hass", void 0), Q([bn()], Mu.prototype, "_config", void 0), Q([bn()], Mu.prototype, "_helpers", void 0), Mu = Q([hn("hourly-weather-editor")], Mu);
+  `, zu), Q([U({ attribute: !1 })], Bu.prototype, "hass", void 0), Q([vn()], Bu.prototype, "_config", void 0), Q([vn()], Bu.prototype, "_helpers", void 0), Bu = Q([pn("hourly-weather-editor")], Bu);
 }));
-D(), mn(), On(), To(), xu();
-var Pu;
+E(), fn(), En(), Mo(), ku();
+var Hu;
 customElements.define("weather-bar", $);
-var Fu = Co(void 0, void 0);
-console.info(`%c  HOURLY-WEATHER-CARD \n%c  ${Fu("common.version")} ${qn}    `, "color: orange; font-weight: bold; background: black", "color: white; font-weight: bold; background: dimgray"), window.customCards = window.customCards || [], window.customCards.push({
+var Uu = Ao(void 0, void 0), Wu = 56, Gu = 32, Ku = 1500, qu = 3e4, Ju = 21e5;
+console.info(`%c  HOURLY-WEATHER-CARD \n%c  ${Uu("common.version")} ${Gn}    `, "color: orange; font-weight: bold; background: black", "color: white; font-weight: bold; background: dimgray"), window.customCards = window.customCards || [], window.customCards.push({
 	type: "hourly-weather",
-	name: Fu("common.title_card"),
-	description: Fu("common.description")
+	name: Uu("common.title_card"),
+	description: Uu("common.description")
 });
-var Iu = Pu = class extends un {
+var Yu = Hu = class extends cn {
 	constructor(...e) {
-		super(...e), this.configRenderPending = !1, this.localizer = void 0, this.localizerLastSettings = {
+		super(...e), this.observedWidth = 0, this.forecastRecoveryPending = !1, this.configRenderPending = !1, this.localizer = void 0, this.localizerLastSettings = {
 			configuredLanguage: void 0,
 			haServerLanguage: void 0
-		}, this._labels = $n, this.labelsLocalized = !1, this._directions = Object.keys(nr), this.directionsLocalized = !1;
+		}, this._labels = Zn, this.labelsLocalized = !1, this._directions = Object.keys(er), this.directionsLocalized = !1;
 	}
 	static async getConfigElement() {
-		return await Promise.resolve().then(() => (Nu(), Au)), document.createElement("hourly-weather-editor");
+		return await Promise.resolve().then(() => (Vu(), Ru)), document.createElement("hourly-weather-editor");
 	}
 	static getStubConfig() {
 		return {};
 	}
 	localize(e, t = "", n = "") {
-		return (!this.localizer || this.localizerSettingsChanged) && (this.localizer = Co(this.config?.language, this.hass?.locale?.language), this.localizerLastSettings.configuredLanguage = this.config?.language, this.localizerLastSettings.haServerLanguage = this.hass?.locale?.language, this.labelsLocalized = !1, this.directionsLocalized = !1), this.localizer(e, t, n);
+		return (!this.localizer || this.localizerSettingsChanged) && (this.localizer = Ao(this.config?.language, this.hass?.locale?.language), this.localizerLastSettings.configuredLanguage = this.config?.language, this.localizerLastSettings.haServerLanguage = this.hass?.locale?.language, this.labelsLocalized = !1, this.directionsLocalized = !1), this.localizer(e, t, n);
 	}
 	get localizerSettingsChanged() {
 		return this.localizerLastSettings.configuredLanguage !== this.config?.language || this.localizerLastSettings.haServerLanguage !== this.hass?.locale?.language;
 	}
 	get labels() {
-		return (!this.labelsLocalized || this.localizerSettingsChanged) && (this._labels = Object.fromEntries(Object.entries($n).map(([e, t]) => [e, this.localize(t)])), this.labelsLocalized = !0), this._labels;
+		return (!this.labelsLocalized || this.localizerSettingsChanged) && (this._labels = Object.fromEntries(Object.entries(Zn).map(([e, t]) => [e, this.localize(t)])), this.labelsLocalized = !0), this._labels;
 	}
 	get directions() {
-		return (!this.directionsLocalized || this.localizerSettingsChanged) && (this._directions = Object.values(nr).map((e) => this.localize(e)), this._directions.push(this._directions[0]), this.directionsLocalized = !0), this._directions;
+		return (!this.directionsLocalized || this.localizerSettingsChanged) && (this._directions = Object.values(er).map((e) => this.localize(e)), this._directions.push(this._directions[0]), this.directionsLocalized = !0), this._directions;
 	}
 	unsubscribeForecastEvents() {
-		this.subscribedToForecast && (this.subscribedToForecast.then((e) => e()), this.subscribedToForecast = void 0);
+		if (this.subscribedToForecast) {
+			let e = this.subscribedToForecast;
+			this.subscribedToForecast = void 0, Promise.resolve(e).then((e) => e()).catch(() => void 0);
+		}
+	}
+	hasUsableForecast(e) {
+		return Array.isArray(e) && e.length > 0;
+	}
+	acceptForecastEvent(e) {
+		return this.hasUsableForecast(e?.forecast) ? (this.forecastEvent = e, this.lastValidForecastAt = Date.now(), this.scheduleForecastRecovery(Ju), !0) : (this.scheduleForecastRecovery(this.getForecastRecoveryDelay()), !1);
+	}
+	getForecastRecoveryDelay() {
+		if (this.lastValidForecastAt === void 0) return Ku;
+		let e = Date.now() - this.lastValidForecastAt;
+		return Math.max(0, Ju - e);
+	}
+	stopForecastRecovery() {
+		this.forecastRecoveryTimer !== void 0 && (window.clearTimeout(this.forecastRecoveryTimer), this.forecastRecoveryTimer = void 0);
+	}
+	scheduleForecastRecovery(e) {
+		this.stopForecastRecovery(), this.isConnected && this.hass && this.config?.entity && this.hassSupportsForecastEvents() && (this.forecastRecoveryTimer = window.setTimeout(() => {
+			this.forecastRecoveryTimer = void 0, this.recoverForecast();
+		}, e));
+	}
+	async recoverForecast() {
+		if (this.forecastRecoveryPending || !this.isConnected || !this.hass?.callWS || !this.config?.entity) return;
+		this.subscribedToForecast || await this.subscribeToForecastEvents();
+		let e = this.getForecastRecoveryDelay();
+		if (this.lastValidForecastAt !== void 0 && e > 0) {
+			this.scheduleForecastRecovery(e);
+			return;
+		}
+		let t = this.config.entity, n = this.getIdealForecastType();
+		this.forecastRecoveryPending = !0;
+		try {
+			let e = await this.hass.callWS({
+				type: "call_service",
+				domain: "weather",
+				service: "get_forecasts",
+				service_data: { type: n },
+				target: { entity_id: t },
+				return_response: !0
+			}), r = (e.response ?? e.service_response)?.[t]?.forecast;
+			if (this.hasUsableForecast(r)) {
+				this.acceptForecastEvent({
+					type: n,
+					forecast: r
+				});
+				return;
+			}
+		} catch (e) {
+			console.warn("[hourly-weather] forecast recovery failed", e);
+		} finally {
+			this.forecastRecoveryPending = !1;
+		}
+		this.scheduleForecastRecovery(qu);
 	}
 	async subscribeToForecastEvents() {
 		if (this.unsubscribeForecastEvents(), !this.isConnected || !this.hass || !this.config || !this.config.entity || !this.hassSupportsForecastEvents() || !this.config.entity.startsWith("weather.")) return;
 		let e = this.getIdealForecastType();
-		this.subscribedToForecast = this.hass.connection.subscribeMessage((e) => this.forecastEvent = e, {
-			type: "weather/subscribe_forecast",
-			forecast_type: e,
-			entity_id: this.config.entity
-		});
+		try {
+			let t = this.hass.connection.subscribeMessage((e) => this.acceptForecastEvent(e), {
+				type: "weather/subscribe_forecast",
+				forecast_type: e,
+				entity_id: this.config.entity
+			});
+			this.subscribedToForecast = t, t.catch((e) => {
+				this.subscribedToForecast === t && (this.subscribedToForecast = void 0), console.warn("[hourly-weather] forecast subscription failed", e), this.scheduleForecastRecovery(0);
+			}), this.scheduleForecastRecovery(this.hasUsableForecast(this.forecastEvent?.forecast) ? this.getForecastRecoveryDelay() : Ku);
+		} catch (e) {
+			console.warn("[hourly-weather] could not subscribe to forecast updates", e), this.scheduleForecastRecovery(0);
+		}
 	}
 	getIdealForecastType() {
 		if (this.config?.forecast_type) return this.config.forecast_type;
@@ -5266,7 +5515,7 @@ var Iu = Pu = class extends un {
 			let t = parseInt(e.label_spacing, 10);
 			if (!Number.isNaN(t) && t < 1) throw Error(this.localize("errors.must_be_positive_int"));
 		}
-		e.test_gui && E().setEditMode(!0), this.config = {
+		e.test_gui && y().setEditMode(!0), this.config = {
 			name: this.localize("common.title"),
 			...e
 		}, this.triggerConfigRender();
@@ -5297,21 +5546,27 @@ var Iu = Pu = class extends un {
 		});
 	}
 	connectedCallback() {
-		super.connectedCallback(), this.hasUpdated && this.subscribeToForecastEvents();
+		super.connectedCallback(), typeof ResizeObserver < "u" && (this.resizeObserver = new ResizeObserver((e) => {
+			let t = Math.round(e[0]?.contentRect.width ?? 0);
+			t > 0 && t !== this.observedWidth && (this.observedWidth = t);
+		}), this.resizeObserver.observe(this)), this.hasUpdated && this.subscribeToForecastEvents();
 	}
 	disconnectedCallback() {
-		super.disconnectedCallback(), this.unsubscribeForecastEvents();
+		super.disconnectedCallback(), this.resizeObserver?.disconnect(), this.resizeObserver = void 0, this.stopForecastRecovery(), this.unsubscribeForecastEvents();
 	}
 	shouldUpdate(e) {
 		if (!this.config) return !1;
+		if (e.has("observedWidth")) return !0;
 		if (e.has("hass")) {
 			let t = e.get("hass");
 			if (t && this.hass && JSON.stringify(t.locale) !== JSON.stringify(this.hass.locale)) return !0;
 		}
-		return o(this, e, !1);
+		return a(this, e, !1);
 	}
 	updated(e) {
-		super.updated(e), this.hass?.connection && this.configRenderPending && (this.configRenderPending = !1, this.triggerConfigRender()), (!this.subscribedToForecast || e.has("config") && this.config?.entity !== e.get("config")?.entity) && this.subscribeToForecastEvents();
+		super.updated(e), this.hass?.connection && this.configRenderPending && (this.configRenderPending = !1, this.triggerConfigRender());
+		let t = e.get("config"), n = e.has("config") && this.config?.entity !== t?.entity, r = e.has("config") && this.config?.forecast_type !== t?.forecast_type;
+		(n || r) && (this.forecastEvent = void 0, this.lastValidForecastAt = void 0), (!this.subscribedToForecast || n || r) && this.subscribeToForecastEvents();
 	}
 	getForecast() {
 		let e = !this.forecastEvent?.forecast && this.hassSupportsForecastEvents();
@@ -5324,28 +5579,30 @@ var Iu = Pu = class extends un {
 		return !!this.hass?.services?.weather?.get_forecasts || !!this.hass?.services?.weather?.get_forecast;
 	}
 	render() {
-		return R`${Kn(this.renderCore(), R``)}`;
+		return z`${Wn(this.renderCore(), z``)}`;
 	}
 	async renderCore() {
 		let e = await this.renderedConfig;
 		if (!e) return;
-		let t = e.entity, n = this.hass.states[t], { forecast: r, pending: i } = this.getForecast(), o = n.attributes.wind_speed_unit ?? "", s = n.attributes.precipitation_unit ?? "", c = parseInt(e.num_segments ?? e.num_hours ?? "12", 10), l = parseInt(e.offset ?? "0", 10), u = parseInt(e.label_spacing ?? "2", 10), d = !r || !r.length, f = e.icon_fill, p = !!e.hide_minutes, m = !!e.round_temperatures;
-		if (c < 1) return await this._showError(this.localize("errors.offset_must_be_positive_int", "offset", "num_segments"));
-		if (l < 0) return await this._showError(this.localize("errors.offset_must_be_positive_int"));
-		if (!d && c > r.length - l) return i ? void 0 : await this._showError(this.localize("errors.too_many_segments_requested"));
-		if (u < 1) return await this._showError(this.localize("errors.offset_must_be_positive_int", "offset", "label_spacing"));
-		if (f) {
+		let t = e.entity, n = this.hass.states[t];
+		if (!n) return await this._showError(this.localize("errors.check_entity"));
+		let { forecast: r, pending: a } = this.getForecast(), o = e.show_current ? this.getCurrentWeatherSegment(n, r) : void 0, s = r && o ? r.filter((e) => this.isAfterCurrentWeather(e, o)) : r, c = !!(s && o), l = c ? [o, ...s] : s, u = n.attributes.wind_speed_unit ?? "", f = n.attributes.precipitation_unit ?? "", p = this.parseInteger(e.num_segments ?? e.num_hours ?? 12), m = this.parseInteger(e.offset ?? 0), h = this.parseInteger(e.label_spacing ?? 2), g = e.auto_label_spacing ? Math.max(h, this.getResponsiveLabelSpacing(p)) : h, _ = !l || !l.length, v = e.icon_fill, y = !!e.hide_minutes, b = !!e.round_temperatures;
+		if (!Number.isInteger(p) || p < 1) return await this._showError(this.localize("errors.offset_must_be_positive_int", "offset", "num_segments"));
+		if (!Number.isInteger(m) || m < 0) return await this._showError(this.localize("errors.offset_must_be_positive_int"));
+		if (!_ && p > l.length - m) return a ? this.renderPendingCard(e) : await this._showError(this.localize("errors.too_many_segments_requested"));
+		if (!Number.isInteger(h) || h < 1) return await this._showError(this.localize("errors.offset_must_be_positive_int", "offset", "label_spacing"));
+		if (v) {
 			let t = e.icon_fill === "full", n = e.icon_fill === "single", r = Number(e.icon_fill);
 			if (!t && !n && !(Number.isInteger(r) && r > 0)) return await this._showError(this.localize("errors.invalid_value_icon_fill"));
 		}
-		let h = e.show_wind;
-		if (typeof h == "boolean" && (h = h ? "true" : "false"), d) return i ? void 0 : R`
+		let x = e.show_wind;
+		if (typeof x == "boolean" && (x = x ? "true" : "false"), _) return a ? this.renderPendingCard(e) : z`
         <ha-card
           .header=${e.name}
           @action=${this._handleAction}
-          .actionHandler=${Qn({
-			hasHold: a(e.hold_action),
-			hasDoubleClick: a(e.double_tap_action)
+          .actionHandler=${Xn({
+			hasHold: i(e.hold_action),
+			hasDoubleClick: i(e.double_tap_action)
 		})}
           tabindex="0"
           .label=${`Hourly Weather: ${e.entity || "No Entity Defined"}`}
@@ -5355,42 +5612,60 @@ var Iu = Pu = class extends un {
             <p>${this.localize("errors.check_entity")}</p>
           </div>
         </ha-card>`;
-		let g = this.getConditionListFromForecast(r, c, l), _ = this.getTemperatures(r, c, l, p, m), v = this.getWind(r, c, l, o, p), y = this.getPrecipitation(r, c, l, s, p, u), b = this.getColorSettings(e.colors);
-		return R`
+		let S = this.getConditionListFromForecast(l, p, m), C = this.getTemperatures(l, p, m, y, b), w = this.getWind(l, p, m, u, y), T = this.getPrecipitation(l, p, m, f, y, g, c && m === 0), E = this.getColorSettings(e.colors);
+		return z`
       <ha-card
         .header=${e.name}
         @action=${this._handleAction}
-        .actionHandler=${Qn({
-			hasHold: a(e.hold_action),
-			hasDoubleClick: a(e.double_tap_action)
+        .actionHandler=${Xn({
+			hasHold: i(e.hold_action),
+			hasDoubleClick: i(e.double_tap_action)
 		})}
         tabindex="0"
         .label=${`Hourly Weather: ${e.entity || "No Entity Defined"}`}
       >
         <div class="card-content">
-          ${b.warnings.length ? this._showWarning(this.localize("errors.invalid_colors") + " " + b.warnings.join(", ")) : ""}
+          ${E.warnings.length ? this._showWarning(this.localize("errors.invalid_colors") + " " + E.warnings.join(", ")) : ""}
           <!-- @ts-ignore -->
           <weather-bar
-            .conditions=${g}
-            .temperatures=${_}
-            .wind=${v}
-            .precipitation=${y}
+            .conditions=${S}
+            .temperatures=${C}
+            .wind=${w}
+            .precipitation=${T}
             .icons=${!!e.icons}
             .icon_map=${e.icon_map}
-            .colors=${b.validColors}
+            .colors=${E.validColors}
             .hide_hours=${!!e.hide_hours}
             .hide_temperatures=${!!e.hide_temperatures}
             .hide_bar=${!!e.hide_bar}
             .icon_fill=${e.icon_fill}
-            .show_wind=${h}
+            .show_wind=${x}
             .show_precipitation_amounts=${!!e.show_precipitation_amounts}
             .show_precipitation_probability=${!!e.show_precipitation_probability}
+            .has_current_segment=${c && m === 0}
+            .current_label=${this.localize("card.now")}
+            .current_time=${o ? d(new Date(o.datetime), this.hass.locale) : ""}
             .show_date=${e.show_date}
-            .label_spacing=${u}
+            .label_spacing=${g}
             .labels=${this.labels}></weather-bar>
         </div>
       </ha-card>
     `;
+	}
+	getResponsiveLabelSpacing(e) {
+		if (this.observedWidth <= 0 || e <= 0) return 1;
+		let t = Math.max(this.observedWidth - Gu, 1);
+		return Math.max(1, Math.ceil(e * Wu / t));
+	}
+	renderPendingCard(e) {
+		return z`
+      <ha-card
+        .header=${e.name}
+        tabindex="0"
+        .label=${`Hourly Weather: ${e.entity || "No Entity Defined"}`}
+      >
+        <div class="card-content forecast-pending" aria-busy="true"></div>
+      </ha-card>`;
 	}
 	getConditionListFromForecast(e, t, n) {
 		let r = this.getDisplayCondition(e[n]), i = 0, a = [[r, 1]];
@@ -5400,15 +5675,44 @@ var Iu = Pu = class extends un {
 		}
 		return a;
 	}
+	parseInteger(e) {
+		if (typeof e == "number") return Number.isInteger(e) ? e : NaN;
+		if (typeof e != "string" || e.trim() === "") return NaN;
+		let t = Number(e);
+		return Number.isInteger(t) ? t : NaN;
+	}
+	getCurrentWeatherSegment(e, t) {
+		let n = e.attributes, r = Number(n.temperature);
+		if (!(e.state in Qn) || !Number.isFinite(r)) return;
+		let i = new Date(e.last_updated || Date.now()).getTime(), a = t?.filter((e) => {
+			let t = new Date(e.datetime).getTime();
+			return !Number.isNaN(t) && t <= i;
+		}) ?? [], o = a[a.length - 1], s = Number(n.precipitation), c = Number(n.precipitation_probability);
+		return {
+			clouds: Number(n.cloud_coverage ?? n.clouds ?? NaN),
+			condition: e.state,
+			datetime: e.last_updated || (/* @__PURE__ */ new Date()).toISOString(),
+			precipitation: Number.isFinite(s) ? s : Number(o?.precipitation ?? NaN),
+			precipitation_probability: Number.isFinite(c) ? c : Number(o?.precipitation_probability ?? NaN),
+			pressure: Number(n.pressure ?? NaN),
+			temperature: r,
+			wind_bearing: n.wind_bearing ?? NaN,
+			wind_speed: Number(n.wind_speed ?? NaN)
+		};
+	}
+	isAfterCurrentWeather(e, t) {
+		let n = new Date(e.datetime).getTime(), r = new Date(t.datetime).getTime();
+		return Number.isNaN(n) || Number.isNaN(r) ? !0 : n > r;
+	}
 	getDisplayCondition(e) {
-		let t = tr[e.condition];
+		let t = $n[e.condition];
 		if (!t) return e.condition;
 		let { latitude: n, longitude: r } = this.hass?.config ?? {};
 		if (typeof n != "number" || typeof r != "number") return e.condition;
 		let i = new Date(e.datetime);
 		if (Number.isNaN(i.getTime())) return e.condition;
 		let [a, o] = t;
-		return Go(i, n, r) ? a : o;
+		return Qo(i, n, r) ? a : o;
 	}
 	getTemperatures(e, t, n, r, i) {
 		let a = [];
@@ -5417,31 +5721,31 @@ var Iu = Pu = class extends un {
 			a.push({
 				date: l(n, this.hass.locale),
 				hour: this.formatHour(n, this.hass.locale, r),
-				temperature: g(s, this.hass.locale)
+				temperature: h(s, this.hass.locale)
 			});
 		}
 		return a;
 	}
-	getPrecipitation(e, t, n, r, i, a) {
-		let o = [];
-		for (let s = 0; s < t; s++) {
-			let c = e[n + s];
-			if (s % a === 0) {
-				let l = e.slice(n + s, Math.min(n + s + a, n + t)), u = l.reduce((e, t) => e + (Number(t.precipitation) || 0), 0), d = 100 * (1 - l.reduce((e, t) => e * (1 - (Number(t.precipitation_probability) || 0) / 100), 1)), f = Math.round(d);
-				o.push({
-					hour: this.formatHour(new Date(c.datetime), this.hass.locale, i),
-					precipitationAmount: u > 0 ? `${g(u, this.hass.locale)} ${r}`.trim() : "",
-					precipitationProbability: f > 0 ? `${g(f, this.hass.locale)}%` : "",
-					precipitationProbabilityText: f > 0 ? this.localize("card.chance_of_precipitation", "{0}", String(f)) : ""
+	getPrecipitation(e, t, n, r, i, a, o) {
+		let s = [];
+		for (let c = 0; c < t; c++) {
+			let l = e[n + c], u = o ? c - 1 : c, d = o && c === 0;
+			if (d || u % a === 0) {
+				let o = d ? [l] : e.slice(n + c, Math.min(n + c + a, n + t)), u = o.reduce((e, t) => e + (Number(t.precipitation) || 0), 0), f = 100 * (1 - o.reduce((e, t) => e * (1 - (Number(t.precipitation_probability) || 0) / 100), 1)), p = Math.round(f);
+				s.push({
+					hour: this.formatHour(new Date(l.datetime), this.hass.locale, i),
+					precipitationAmount: u > 0 ? `${h(u, this.hass.locale)} ${r}`.trim() : "",
+					precipitationProbability: p > 0 ? `${h(p, this.hass.locale)}%` : "",
+					precipitationProbabilityText: p > 0 ? this.localize("card.chance_of_precipitation", "{0}", String(p)) : ""
 				});
-			} else o.push({
-				hour: this.formatHour(new Date(c.datetime), this.hass.locale, i),
+			} else s.push({
+				hour: this.formatHour(new Date(l.datetime), this.hass.locale, i),
 				precipitationAmount: "",
 				precipitationProbability: "",
 				precipitationProbabilityText: ""
 			});
 		}
-		return o;
+		return s;
 	}
 	getWind(e, t, n, r, i) {
 		let a = [];
@@ -5460,7 +5764,7 @@ var Iu = Pu = class extends un {
 	formatWindDir(e) {
 		if (typeof e == "string") {
 			let t = e.toLowerCase();
-			return t in nr ? this.localize(nr[t]) : e;
+			return t in er ? this.localize(er[t]) : e;
 		}
 		return this.directions[Math.floor((e + 11.25) / 22.5)];
 	}
@@ -5476,7 +5780,7 @@ var Iu = Pu = class extends un {
 		return -1;
 	}
 	formatHour(e, t, n) {
-		let r = f(e, t);
+		let r = d(e, t);
 		return n || r.includes("AM") || r.includes("PM") ? r.replace(":00", "") : r;
 	}
 	getColorSettings(e) {
@@ -5486,21 +5790,21 @@ var Iu = Pu = class extends un {
 		};
 		let t = /* @__PURE__ */ new Map(), n = [];
 		return Object.entries(e).forEach(([e, r]) => {
-			this.isValidColorDefinition(e, r) ? t.set(e, Pu.toColorObject(r)) : n.push(`${e}: ${JSON.stringify(r, null, 2)}`);
+			this.isValidColorDefinition(e, r) ? t.set(e, Hu.toColorObject(r)) : n.push(`${e}: ${JSON.stringify(r, null, 2)}`);
 		}), {
 			validColors: t,
 			warnings: n
 		};
 	}
 	isValidColorDefinition(e, t) {
-		if (!(e in er)) return !1;
+		if (!(e in Qn)) return !1;
 		if (typeof t == "string") {
-			if (!Pu.isValidColor(t)) return !1;
-		} else if (!t.background && !t.foreground || t.background && !Pu.isValidColor(t.background) || t.foreground && !Pu.isValidColor(t.foreground)) return !1;
+			if (!Hu.isValidColor(t)) return !1;
+		} else if (!t.background && !t.foreground || t.background && !Hu.isValidColor(t.background) || t.foreground && !Hu.isValidColor(t.foreground)) return !1;
 		return !0;
 	}
 	static isValidColor(e) {
-		return !!(Te(e) || Pu.isValidColorVar(e));
+		return !!(Ce(e) || Hu.isValidColorVar(e));
 	}
 	static isValidCustomPropertyName(e) {
 		if (typeof e != "string" || !e.startsWith("--")) return !1;
@@ -5511,10 +5815,10 @@ var Iu = Pu = class extends un {
 		if (typeof e != "string") return !1;
 		let t = e.trim();
 		if (!t.startsWith("var(") || !t.endsWith(")")) return !1;
-		let [n, r] = t.slice(4, -1).trim().split(","), i = n.trim();
-		if (!Pu.isValidCustomPropertyName(i)) return !1;
-		let a = r?.trim();
-		return !(a && !Pu.isValidColor(a));
+		let n = t.slice(4, -1).trim(), r = n.indexOf(","), i = r === -1 ? n : n.slice(0, r), a = r === -1 ? void 0 : n.slice(r + 1), o = i.trim();
+		if (!Hu.isValidCustomPropertyName(o)) return !1;
+		let s = a?.trim();
+		return !(s && !Hu.isValidColor(s));
 	}
 	static toColorObject(e) {
 		return typeof e == "string" ? { background: e } : e;
@@ -5523,7 +5827,7 @@ var Iu = Pu = class extends un {
 		this.hass && this.config && e.detail.action && T(this, this.hass, this.config, e.detail.action);
 	}
 	_showWarning(e) {
-		return R` <hui-warning>${e}</hui-warning> `;
+		return z` <hui-warning>${e}</hui-warning> `;
 	}
 	async _showError(e) {
 		await new Promise((e) => setTimeout(e, 0));
@@ -5532,12 +5836,21 @@ var Iu = Pu = class extends un {
 			type: "error",
 			error: e,
 			origConfig: this.config
-		}), R` ${t} `;
+		}), z` ${t} `;
 	}
 	static get styles() {
-		return Vt``;
+		return zt`
+      :host {
+        /* Give ResizeObserver a block box that fills the available card width;
+           non-replaced inline elements do not report a usable observed width. */
+        display: block;
+      }
+      .forecast-pending {
+        min-height: 24px;
+      }
+    `;
 	}
 };
-Q([H({ attribute: !1 })], Iu.prototype, "hass", void 0), Q([bn()], Iu.prototype, "config", void 0), Q([bn()], Iu.prototype, "renderedConfig", void 0), Q([bn()], Iu.prototype, "forecastEvent", void 0), Q([bn()], Iu.prototype, "subscribedToForecast", void 0), Iu = Pu = Q([hn("hourly-weather")], Iu);
+Q([U({ attribute: !1 })], Yu.prototype, "hass", void 0), Q([vn()], Yu.prototype, "config", void 0), Q([vn()], Yu.prototype, "renderedConfig", void 0), Q([vn()], Yu.prototype, "forecastEvent", void 0), Q([vn()], Yu.prototype, "subscribedToForecast", void 0), Q([vn()], Yu.prototype, "observedWidth", void 0), Yu = Hu = Q([pn("hourly-weather")], Yu);
 //#endregion
-export { Iu as HourlyWeatherCard };
+export { Yu as HourlyWeatherCard };

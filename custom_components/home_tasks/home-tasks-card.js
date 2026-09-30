@@ -5,14 +5,27 @@
  * Security: All user-controlled content is set via textContent or DOM properties,
  * never via innerHTML with unsanitized data.
  */
-console.info("%c HOME-TASKS-CARD %c v2.2.2 ", "color: white; background: #03a9f4; font-weight: bold;", "color: #03a9f4; background: white; font-weight: bold;");
+console.info("%c HOME-TASKS-CARD %c v2.3.0 ", "color: white; background: #03a9f4; font-weight: bold;", "color: #03a9f4; background: white; font-weight: bold;");
 
 const _TRANSLATIONS = {
   en: {
+    ed_default_priority: "Default priority",
+    ed_default_tags: "Default tags",
+    ed_default_section: "Default section",
+    ed_default_none: "– None –",
+    ed_group_card: "Card",
+    ed_person_off: "Off",
+    ed_person_name: "Name",
+    ed_person_both: "Picture and name",
+    ed_group_header: "Header",
+    ed_group_tasks: "Tasks",
+    ed_show_person_avatar: "Profile picture",
     voice_failed: "Voice input failed",
     voice_input: "Voice input", voice_stop: "Stop recording", img_label: "Image", img_generate: "Generate", img_regenerate: "Regenerate", img_generating: "Generating…", img_from_media: "From media library", img_remove: "Remove image", img_generate_failed: "Image generation failed: ", img_save_failed: "Saving image failed: ", mb_title: "Media library", mb_loading: "Loading…", mb_root: "Media", mb_back: "Back", mb_empty: "No files", mb_error: "Error: ",
     my_tasks: "My Tasks",
     add_placeholder: "Add new task...",
+    add_failed: "Could not add task",
+    duplicate_failed: "Could not duplicate task",
     dialog_cancel: "Cancel", dialog_add: "Add",
     filter_all: "All",
     filter_open: "Open",
@@ -59,8 +72,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "Delete completed immediately",
     ed_confirm_complete: "Confirm before completing",
     ed_show_add_due: "Due date when adding",
-    ed_max_height: "Max height (px, 0 = unlimited)", ed_badge_priority: "Priority chips", ed_badge_progress: "Progress chips", ed_badge_due: "Due chips", ed_badge_recurrence: "Recurrence chips", ed_badge_person: "Person chips", ed_badge_tags: "Tag chips", ed_badge_reminders: "Reminder chips",
+    ed_max_height: "Max height (px, 0 = unlimited)", ed_badge_priority: "Priority chips", ed_badge_progress: "Progress chips", ed_badge_due: "Due chips", ed_badge_recurrence: "Recurrence chips", ed_badge_person: "Person", ed_badge_tags: "Tag chips", ed_badge_reminders: "Reminder chips",
     ed_sec_defaults: "Defaults",
+    ed_sec_images: "Images",
+    ed_share_images: "Share images with other lists",
+    ed_share_images_hint: "Off keeps this list's pictures to itself — the same task title on another list gets its own image.",
+    ed_queue_empty: "Nothing waiting for a picture.",
+    ed_queue_pending: "Waiting for a picture: {0}",
+    ed_queue_cancel: "Cancel",
+    ed_ai_image_hint: "Applies to the whole card, not just this column.",
+    ed_queue_running: "generating…",
+    ed_queue_title: "Generation queue",
     ed_default_assignee: "Default assignee",
     ed_defaults_hint: "Applied to every new task in this list \u2014 no matter how it is created (card, service, voice, todo). Changes are saved immediately.", ed_defaults_saved: "Saved", ed_defaults_load_failed: "Could not load defaults", ed_defaults_save_failed: "Save failed",
     confirm_complete_msg: "Mark \"{0}\" as completed?",
@@ -88,6 +110,7 @@ const _TRANSLATIONS = {
     ed_show_tag_chips: "Tag filter",
     ed_show_person_chips: "Person filter",
     ed_show_voice: "Voice input",
+    ed_task_search: "Task search",
     ed_auto_image: "Auto-generate image",
     ed_show_priority: "Priorities",
     ed_default_sort: "Default sort",
@@ -159,18 +182,30 @@ const _TRANSLATIONS = {
     ed_preset_assignees: "Limit to assignees",
     ed_preset_labels: "Limit to tags",
     ed_ms_add: "Add…",
-    ed_ai_image_section: "AI Image Generation",
     ed_ai_image_entity: "AI entity for image generation",
     ed_ai_image_entity_placeholder: "e.g. ai_task.openai",
     ed_ai_prompt_prefix: "Prompt prefix (optional)",
     ed_ai_prompt_prefix_placeholder: "e.g. Minimalist icon of",
   },
   nl: {
+    ed_default_priority: "Standaardprioriteit",
+    ed_default_tags: "Standaardtags",
+    ed_default_section: "Standaardsectie",
+    ed_default_none: "– Geen –",
+    ed_group_card: "Kaart",
+    ed_person_off: "Uit",
+    ed_person_name: "Naam",
+    ed_person_both: "Foto en naam",
+    ed_group_header: "Koptekst",
+    ed_group_tasks: "Taken",
+    ed_show_person_avatar: "Profielfoto",
     voice_failed: "Spraakinvoer mislukt",
-    confirm_delete_section: "Deze sectie verwijderen? Taken erin worden ongesorteerd.", done_section_header: "Klaar", duplicate_task: "Dupliceren", move_task: "Verplaatsen", move_task_msg: "\u201e{0}\u201d verplaatsen naar:", ed_show_move: "Verplaatsknop", ed_add_section: "+ Sectie toevoegen", ed_ai_image_entity: "AI-entiteit voor beeldgeneratie", ed_ai_image_entity_placeholder: "bijv. ai_task.openai", ed_ai_image_section: "AI-beeldgeneratie", ed_ai_prompt_prefix: "Prompt-prefix (optioneel)", ed_ai_prompt_prefix_placeholder: "bijv. Minimalistisch icoon van", ed_auto_image: "Afbeelding automatisch genereren", ed_delete_section: "Sectie verwijderen", ed_external_lists: "Extern", ed_loading: "Laden…", ed_move_down: "Omlaag verplaatsen", ed_move_up: "Omhoog verplaatsen", ed_sec_sections: "Secties", ed_section_icon: "Pictogram", ed_section_name: "Naam", ed_section_name_prompt: "Sectienaam:", ed_sections_empty: "Nog geen secties — taken worden plat weergegeven.", ed_sections_select_list_hint: "Selecteer eerst een lijst om de secties te beheren.", ed_show_filters: "Statusfilter", ed_show_images: "Afbeeldingen", ed_show_person_chips: "Persoonfilter", ed_show_tag_chips: "Tagfilter", ed_show_tile_title: "Titel in tegels", ed_show_voice: "Spraakinvoer", ed_tile_help: "Tegelweergave:\n• Klikken = voltooien\n• Vasthouden = bewerken\n• Slepen = volgorde wijzigen", ed_view_mode: "Weergavemodus", ed_view_mode_list: "Lijst", ed_view_mode_tiles: "Tegels",
+    confirm_delete_section: "Deze sectie verwijderen? Taken erin worden ongesorteerd.", done_section_header: "Klaar", duplicate_task: "Dupliceren", move_task: "Verplaatsen", move_task_msg: "\u201e{0}\u201d verplaatsen naar:", ed_show_move: "Verplaatsknop", ed_add_section: "+ Sectie toevoegen", ed_ai_image_entity: "AI-entiteit voor beeldgeneratie", ed_ai_image_entity_placeholder: "bijv. ai_task.openai", ed_ai_prompt_prefix: "Prompt-prefix (optioneel)", ed_ai_prompt_prefix_placeholder: "bijv. Minimalistisch icoon van", ed_auto_image: "Afbeelding automatisch genereren", ed_delete_section: "Sectie verwijderen", ed_external_lists: "Extern", ed_loading: "Laden…", ed_move_down: "Omlaag verplaatsen", ed_move_up: "Omhoog verplaatsen", ed_sec_sections: "Secties", ed_section_icon: "Pictogram", ed_section_name: "Naam", ed_section_name_prompt: "Sectienaam:", ed_sections_empty: "Nog geen secties — taken worden plat weergegeven.", ed_sections_select_list_hint: "Selecteer eerst een lijst om de secties te beheren.", ed_show_filters: "Statusfilter", ed_show_images: "Afbeeldingen", ed_show_person_chips: "Persoonfilter", ed_show_tag_chips: "Tagfilter", ed_show_tile_title: "Titel in tegels", ed_show_voice: "Spraakinvoer", ed_task_search: "Taken zoeken", ed_tile_help: "Tegelweergave:\n• Klikken = voltooien\n• Vasthouden = bewerken\n• Slepen = volgorde wijzigen", ed_view_mode: "Weergavemodus", ed_view_mode_list: "Lijst", ed_view_mode_tiles: "Tegels",
     voice_input: "Spraakinvoer", voice_stop: "Opname stoppen", img_label: "Afbeelding", img_generate: "Genereren", img_regenerate: "Opnieuw genereren", img_generating: "Genereren…", img_from_media: "Uit mediabibliotheek", img_remove: "Afbeelding verwijderen", img_generate_failed: "Genereren van afbeelding mislukt: ", img_save_failed: "Afbeelding opslaan mislukt: ", mb_title: "Mediabibliotheek", mb_loading: "Laden…", mb_root: "Media", mb_back: "Terug", mb_empty: "Geen bestanden", mb_error: "Fout: ",
     my_tasks: "Mijn taken",
     add_placeholder: "Nieuwe taak toevoegen...",
+    add_failed: "Taak kon niet worden toegevoegd",
+    duplicate_failed: "Taak kon niet worden gedupliceerd",
     dialog_cancel: "Annuleren", dialog_add: "Toevoegen",
     filter_all: "Alle", filter_open: "Open", filter_done: "Klaar", filter_due_soon: "Binnenkort",
     ed_show_due_soon_filter: "Binnenkort-filter", ed_due_soon_days: "Dagen vooruit", ed_hide_overdue: "Verlopen verbergen",
@@ -197,8 +232,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "Voltooide meteen verwijderen", ed_compact: "Compact", ed_show_tags: "Tags",
     ed_confirm_complete: "Bevestigen voor afronden",
     ed_show_add_due: "Vervaldatum bij toevoegen",
-    ed_max_height: "Max. hoogte (px, 0 = onbeperkt)", ed_badge_priority: "Prioriteitschips", ed_badge_progress: "Voortgangschips", ed_badge_due: "Vervaldatumchips", ed_badge_recurrence: "Herhalingschips", ed_badge_person: "Persoonchips", ed_badge_tags: "Tagchips", ed_badge_reminders: "Herinneringschips",
+    ed_max_height: "Max. hoogte (px, 0 = onbeperkt)", ed_badge_priority: "Prioriteitschips", ed_badge_progress: "Voortgangschips", ed_badge_due: "Vervaldatumchips", ed_badge_recurrence: "Herhalingschips", ed_badge_person: "Persoon", ed_badge_tags: "Tagchips", ed_badge_reminders: "Herinneringschips",
     ed_sec_defaults: "Standaardwaarden",
+    ed_sec_images: "Afbeeldingen",
+    ed_share_images: "Afbeeldingen delen met andere lijsten",
+    ed_share_images_hint: "Uit houdt de afbeeldingen van deze lijst apart — dezelfde taaktitel op een andere lijst krijgt een eigen afbeelding.",
+    ed_queue_empty: "Niets wacht op een afbeelding.",
+    ed_queue_pending: "Wacht op een afbeelding: {0}",
+    ed_queue_cancel: "Annuleren",
+    ed_ai_image_hint: "Geldt voor de hele kaart, niet alleen voor deze kolom.",
+    ed_queue_running: "wordt gemaakt…",
+    ed_queue_title: "Wachtrij",
     ed_default_assignee: "Standaard toegewezene",
     ed_defaults_hint: "Geldt voor elke nieuwe taak in deze lijst \u2014 ongeacht hoe die wordt aangemaakt. Wijzigingen worden direct opgeslagen.", ed_defaults_saved: "Opgeslagen", ed_defaults_load_failed: "Standaardwaarden konden niet worden geladen", ed_defaults_save_failed: "Opslaan mislukt",
     confirm_complete_msg: "\u201e{0}\u201d als afgerond markeren?",
@@ -245,11 +289,24 @@ const _TRANSLATIONS = {
     due_ago_hours: "{0} u {1} min geleden", due_ago_minutes: "{0} min geleden", due_ago_seconds: "Zojuist",
   },
   it: {
+    ed_default_priority: "Priorità predefinita",
+    ed_default_tags: "Tag predefiniti",
+    ed_default_section: "Sezione predefinita",
+    ed_default_none: "– Nessuna –",
+    ed_group_card: "Scheda",
+    ed_person_off: "Disattivato",
+    ed_person_name: "Nome",
+    ed_person_both: "Foto e nome",
+    ed_group_header: "Intestazione",
+    ed_group_tasks: "Attività",
+    ed_show_person_avatar: "Foto del profilo",
     voice_failed: "Input vocale non riuscito",
-    confirm_delete_section: "Eliminare questa sezione? Le attività al suo interno diventeranno non ordinate.", done_section_header: "Fatto", duplicate_task: "Duplica", move_task: "Sposta", move_task_msg: "Sposta \u201c{0}\u201d in:", ed_show_move: "Pulsante Sposta", ed_add_section: "+ Aggiungi sezione", ed_ai_image_entity: "Entità IA per la generazione di immagini", ed_ai_image_entity_placeholder: "es. ai_task.openai", ed_ai_image_section: "Generazione immagini IA", ed_ai_prompt_prefix: "Prefisso prompt (facoltativo)", ed_ai_prompt_prefix_placeholder: "es. Icona minimalista di", ed_auto_image: "Genera immagine automaticamente", ed_delete_section: "Elimina sezione", ed_external_lists: "Esterna", ed_loading: "Caricamento…", ed_move_down: "Sposta giù", ed_move_up: "Sposta su", ed_sec_sections: "Sezioni", ed_section_icon: "Icona", ed_section_name: "Nome", ed_section_name_prompt: "Nome sezione:", ed_sections_empty: "Nessuna sezione — le attività verranno mostrate senza raggruppamenti.", ed_sections_select_list_hint: "Seleziona prima un elenco per gestirne le sezioni.", ed_show_filters: "Filtro stato", ed_show_images: "Immagini", ed_show_person_chips: "Filtro persone", ed_show_tag_chips: "Filtro tag", ed_show_tile_title: "Titolo nelle caselle", ed_show_voice: "Input vocale", ed_tile_help: "Vista a caselle:\n• Clic = completa\n• Tieni premuto = modifica\n• Trascina = riordina", ed_view_mode: "Modalità di visualizzazione", ed_view_mode_list: "Elenco", ed_view_mode_tiles: "Caselle",
+    confirm_delete_section: "Eliminare questa sezione? Le attività al suo interno diventeranno non ordinate.", done_section_header: "Fatto", duplicate_task: "Duplica", move_task: "Sposta", move_task_msg: "Sposta \u201c{0}\u201d in:", ed_show_move: "Pulsante Sposta", ed_add_section: "+ Aggiungi sezione", ed_ai_image_entity: "Entità IA per la generazione di immagini", ed_ai_image_entity_placeholder: "es. ai_task.openai", ed_ai_prompt_prefix: "Prefisso prompt (facoltativo)", ed_ai_prompt_prefix_placeholder: "es. Icona minimalista di", ed_auto_image: "Genera immagine automaticamente", ed_delete_section: "Elimina sezione", ed_external_lists: "Esterna", ed_loading: "Caricamento…", ed_move_down: "Sposta giù", ed_move_up: "Sposta su", ed_sec_sections: "Sezioni", ed_section_icon: "Icona", ed_section_name: "Nome", ed_section_name_prompt: "Nome sezione:", ed_sections_empty: "Nessuna sezione — le attività verranno mostrate senza raggruppamenti.", ed_sections_select_list_hint: "Seleziona prima un elenco per gestirne le sezioni.", ed_show_filters: "Filtro stato", ed_show_images: "Immagini", ed_show_person_chips: "Filtro persone", ed_show_tag_chips: "Filtro tag", ed_show_tile_title: "Titolo nelle caselle", ed_show_voice: "Input vocale", ed_task_search: "Ricerca attività", ed_tile_help: "Vista a caselle:\n• Clic = completa\n• Tieni premuto = modifica\n• Trascina = riordina", ed_view_mode: "Modalità di visualizzazione", ed_view_mode_list: "Elenco", ed_view_mode_tiles: "Caselle",
     voice_input: "Input vocale", voice_stop: "Interrompi registrazione", img_label: "Immagine", img_generate: "Genera", img_regenerate: "Rigenera", img_generating: "Generazione…", img_from_media: "Dalla libreria multimediale", img_remove: "Rimuovi immagine", img_generate_failed: "Generazione immagine non riuscita: ", img_save_failed: "Salvataggio immagine non riuscito: ", mb_title: "Libreria multimediale", mb_loading: "Caricamento…", mb_root: "Media", mb_back: "Indietro", mb_empty: "Nessun file", mb_error: "Errore: ",
     my_tasks: "Le mie attivit\u00e0",
     add_placeholder: "Aggiungi nuova attivit\u00e0...",
+    add_failed: "Impossibile aggiungere l'attività",
+    duplicate_failed: "Impossibile duplicare l'attività",
     dialog_cancel: "Annulla", dialog_add: "Aggiungi",
     filter_all: "Tutte", filter_open: "Aperte", filter_done: "Completate", filter_due_soon: "In scadenza",
     ed_show_due_soon_filter: "Filtro in scadenza", ed_due_soon_days: "Giorni avanti", ed_hide_overdue: "Nascondi scadute",
@@ -276,8 +333,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "Elimina completate immediatamente", ed_compact: "Compatto", ed_show_tags: "Tag",
     ed_confirm_complete: "Conferma prima di completare",
     ed_show_add_due: "Scadenza alla creazione",
-    ed_max_height: "Altezza max (px, 0 = illimitata)", ed_badge_priority: "Chip priorit\u00e0", ed_badge_progress: "Chip avanzamento", ed_badge_due: "Chip scadenza", ed_badge_recurrence: "Chip ricorrenza", ed_badge_person: "Chip persona", ed_badge_tags: "Chip tag", ed_badge_reminders: "Chip promemoria",
+    ed_max_height: "Altezza max (px, 0 = illimitata)", ed_badge_priority: "Chip priorit\u00e0", ed_badge_progress: "Chip avanzamento", ed_badge_due: "Chip scadenza", ed_badge_recurrence: "Chip ricorrenza", ed_badge_person: "Persona", ed_badge_tags: "Chip tag", ed_badge_reminders: "Chip promemoria",
     ed_sec_defaults: "Predefiniti",
+    ed_sec_images: "Immagini",
+    ed_share_images: "Condividi le immagini con altri elenchi",
+    ed_share_images_hint: "Disattivato mantiene le immagini di questo elenco separate — lo stesso titolo in un altro elenco riceve un'immagine propria.",
+    ed_queue_empty: "Nessuna attesa di immagine.",
+    ed_queue_pending: "In attesa di un'immagine: {0}",
+    ed_queue_cancel: "Annulla",
+    ed_ai_image_hint: "Vale per l'intera scheda, non solo per questa colonna.",
+    ed_queue_running: "in creazione…",
+    ed_queue_title: "Coda di generazione",
     ed_default_assignee: "Assegnatario predefinito",
     ed_defaults_hint: "Si applica a ogni nuova attivit\u00e0 di questo elenco, comunque venga creata. Le modifiche vengono salvate immediatamente.", ed_defaults_saved: "Salvato", ed_defaults_load_failed: "Impossibile caricare i valori predefiniti", ed_defaults_save_failed: "Salvataggio non riuscito",
     confirm_complete_msg: "Segnare \u201c{0}\u201d come completata?",
@@ -324,11 +390,24 @@ const _TRANSLATIONS = {
     due_ago_hours: "{0} h {1} min fa", due_ago_minutes: "{0} min fa", due_ago_seconds: "Proprio ora",
   },
   pl: {
+    ed_default_priority: "Domyślny priorytet",
+    ed_default_tags: "Domyślne tagi",
+    ed_default_section: "Domyślna sekcja",
+    ed_default_none: "– Brak –",
+    ed_group_card: "Karta",
+    ed_person_off: "Wyłączone",
+    ed_person_name: "Imię",
+    ed_person_both: "Zdjęcie i imię",
+    ed_group_header: "Nagłówek",
+    ed_group_tasks: "Zadania",
+    ed_show_person_avatar: "Zdjęcie profilowe",
     voice_failed: "Wprowadzanie głosowe nie powiodło się",
-    confirm_delete_section: "Usunąć tę sekcję? Zadania w niej staną się nieposortowane.", done_section_header: "Gotowe", duplicate_task: "Duplikuj", move_task: "Przenie\u015b", move_task_msg: "Przenie\u015b \u201e{0}\u201d do:", ed_show_move: "Przycisk przenoszenia", ed_add_section: "+ Dodaj sekcję", ed_ai_image_entity: "Encja AI do generowania obrazów", ed_ai_image_entity_placeholder: "np. ai_task.openai", ed_ai_image_section: "Generowanie obrazów AI", ed_ai_prompt_prefix: "Prefiks promptu (opcjonalnie)", ed_ai_prompt_prefix_placeholder: "np. Minimalistyczna ikona", ed_auto_image: "Automatycznie generuj obraz", ed_delete_section: "Usuń sekcję", ed_external_lists: "Zewnętrzna", ed_loading: "Ładowanie…", ed_move_down: "Przenieś w dół", ed_move_up: "Przenieś w górę", ed_sec_sections: "Sekcje", ed_section_icon: "Ikona", ed_section_name: "Nazwa", ed_section_name_prompt: "Nazwa sekcji:", ed_sections_empty: "Brak sekcji — zadania będą wyświetlane płasko.", ed_sections_select_list_hint: "Najpierw wybierz listę, aby zarządzać jej sekcjami.", ed_show_filters: "Filtr statusu", ed_show_images: "Obrazy", ed_show_person_chips: "Filtr os\u00f3b", ed_show_tag_chips: "Filtr tag\u00f3w", ed_show_tile_title: "Tytuł na kafelkach", ed_show_voice: "Wprowadzanie głosowe", ed_tile_help: "Widok kafelków:\n• Kliknięcie = ukończ\n• Przytrzymanie = edycja\n• Przeciągnięcie = zmiana kolejności", ed_view_mode: "Tryb widoku", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Kafelki",
+    confirm_delete_section: "Usunąć tę sekcję? Zadania w niej staną się nieposortowane.", done_section_header: "Gotowe", duplicate_task: "Duplikuj", move_task: "Przenie\u015b", move_task_msg: "Przenie\u015b \u201e{0}\u201d do:", ed_show_move: "Przycisk przenoszenia", ed_add_section: "+ Dodaj sekcję", ed_ai_image_entity: "Encja AI do generowania obrazów", ed_ai_image_entity_placeholder: "np. ai_task.openai", ed_ai_prompt_prefix: "Prefiks promptu (opcjonalnie)", ed_ai_prompt_prefix_placeholder: "np. Minimalistyczna ikona", ed_auto_image: "Automatycznie generuj obraz", ed_delete_section: "Usuń sekcję", ed_external_lists: "Zewnętrzna", ed_loading: "Ładowanie…", ed_move_down: "Przenieś w dół", ed_move_up: "Przenieś w górę", ed_sec_sections: "Sekcje", ed_section_icon: "Ikona", ed_section_name: "Nazwa", ed_section_name_prompt: "Nazwa sekcji:", ed_sections_empty: "Brak sekcji — zadania będą wyświetlane płasko.", ed_sections_select_list_hint: "Najpierw wybierz listę, aby zarządzać jej sekcjami.", ed_show_filters: "Filtr statusu", ed_show_images: "Obrazy", ed_show_person_chips: "Filtr os\u00f3b", ed_show_tag_chips: "Filtr tag\u00f3w", ed_show_tile_title: "Tytuł na kafelkach", ed_show_voice: "Wprowadzanie głosowe", ed_task_search: "Wyszukiwanie zadań", ed_tile_help: "Widok kafelków:\n• Kliknięcie = ukończ\n• Przytrzymanie = edycja\n• Przeciągnięcie = zmiana kolejności", ed_view_mode: "Tryb widoku", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Kafelki",
     voice_input: "Wprowadzanie głosowe", voice_stop: "Zatrzymaj nagrywanie", img_label: "Obraz", img_generate: "Generuj", img_regenerate: "Generuj ponownie", img_generating: "Generowanie…", img_from_media: "Z biblioteki multimediów", img_remove: "Usuń obraz", img_generate_failed: "Generowanie obrazu nie powiodło się: ", img_save_failed: "Zapisywanie obrazu nie powiodło się: ", mb_title: "Biblioteka multimediów", mb_loading: "Ładowanie…", mb_root: "Multimedia", mb_back: "Wstecz", mb_empty: "Brak plików", mb_error: "Błąd: ",
     my_tasks: "Moje zadania",
     add_placeholder: "Dodaj nowe zadanie...",
+    add_failed: "Nie udało się dodać zadania",
+    duplicate_failed: "Nie udało się zduplikować zadania",
     dialog_cancel: "Anuluj", dialog_add: "Dodaj",
     filter_all: "Wszystkie", filter_open: "Otwarte", filter_done: "Uko\u0144czone", filter_due_soon: "Wkr\u00f3tce",
     ed_show_due_soon_filter: "Filtr wkr\u00f3tce", ed_due_soon_days: "Dni naprz\u00f3d", ed_hide_overdue: "Ukryj zaleg\u0142e",
@@ -355,8 +434,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "Natychmiast usu\u0144 uko\u0144czone", ed_compact: "Kompaktowy", ed_show_tags: "Tagi",
     ed_confirm_complete: "Potwierd\u017a przed uko\u0144czeniem",
     ed_show_add_due: "Termin przy dodawaniu",
-    ed_max_height: "Maks. wysoko\u015b\u0107 (px, 0 = bez limitu)", ed_badge_priority: "Znaczniki priorytetu", ed_badge_progress: "Znaczniki post\u0119pu", ed_badge_due: "Znaczniki terminu", ed_badge_recurrence: "Znaczniki powtarzania", ed_badge_person: "Znaczniki osoby", ed_badge_tags: "Znaczniki tag\u00f3w", ed_badge_reminders: "Znaczniki przypomnie\u0144",
+    ed_max_height: "Maks. wysoko\u015b\u0107 (px, 0 = bez limitu)", ed_badge_priority: "Znaczniki priorytetu", ed_badge_progress: "Znaczniki post\u0119pu", ed_badge_due: "Znaczniki terminu", ed_badge_recurrence: "Znaczniki powtarzania", ed_badge_person: "Osoba", ed_badge_tags: "Znaczniki tag\u00f3w", ed_badge_reminders: "Znaczniki przypomnie\u0144",
     ed_sec_defaults: "Domy\u015blne",
+    ed_sec_images: "Obrazy",
+    ed_share_images: "Współdziel obrazy z innymi listami",
+    ed_share_images_hint: "Wyłączone zachowuje obrazy tej listy osobno — ten sam tytuł na innej liście otrzyma własny obraz.",
+    ed_queue_empty: "Nic nie czeka na obraz.",
+    ed_queue_pending: "Czeka na obraz: {0}",
+    ed_queue_cancel: "Anuluj",
+    ed_ai_image_hint: "Dotyczy całej karty, nie tylko tej kolumny.",
+    ed_queue_running: "generowanie…",
+    ed_queue_title: "Kolejka generowania",
     ed_default_assignee: "Domy\u015blny przypisany",
     ed_defaults_hint: "Dotyczy ka\u017cdego nowego zadania na tej li\u015bcie \u2014 niezale\u017cnie od sposobu utworzenia. Zmiany s\u0105 zapisywane natychmiast.", ed_defaults_saved: "Zapisano", ed_defaults_load_failed: "Nie uda\u0142o si\u0119 wczyta\u0107 ustawie\u0144 domy\u015blnych", ed_defaults_save_failed: "Zapis nie powi\u00f3d\u0142 si\u0119",
     confirm_complete_msg: "Oznaczy\u0107 \u201e{0}\u201d jako uko\u0144czone?",
@@ -403,11 +491,24 @@ const _TRANSLATIONS = {
     due_ago_hours: "{0} godz. {1} min temu", due_ago_minutes: "{0} min temu", due_ago_seconds: "W\u0142a\u015bnie",
   },
   sv: {
+    ed_default_priority: "Standardprioritet",
+    ed_default_tags: "Standardtaggar",
+    ed_default_section: "Standardavsnitt",
+    ed_default_none: "– Ingen –",
+    ed_group_card: "Kort",
+    ed_person_off: "Av",
+    ed_person_name: "Namn",
+    ed_person_both: "Bild och namn",
+    ed_group_header: "Sidhuvud",
+    ed_group_tasks: "Uppgifter",
+    ed_show_person_avatar: "Profilbild",
     voice_failed: "Röstinmatning misslyckades",
-    confirm_delete_section: "Ta bort det här avsnittet? Uppgifter i det blir osorterade.", done_section_header: "Klar", duplicate_task: "Duplicera", move_task: "Flytta", move_task_msg: "Flytta \u201d{0}\u201d till:", ed_show_move: "Flytta-knapp", ed_add_section: "+ Lägg till avsnitt", ed_ai_image_entity: "AI-entitet för bildgenerering", ed_ai_image_entity_placeholder: "t.ex. ai_task.openai", ed_ai_image_section: "AI-bildgenerering", ed_ai_prompt_prefix: "Promptprefix (valfritt)", ed_ai_prompt_prefix_placeholder: "t.ex. Minimalistisk ikon av", ed_auto_image: "Generera bild automatiskt", ed_delete_section: "Ta bort avsnitt", ed_external_lists: "Extern", ed_loading: "Läser in…", ed_move_down: "Flytta ned", ed_move_up: "Flytta upp", ed_sec_sections: "Avsnitt", ed_section_icon: "Ikon", ed_section_name: "Namn", ed_section_name_prompt: "Avsnittsnamn:", ed_sections_empty: "Inga avsnitt än — uppgifter visas platt.", ed_sections_select_list_hint: "Välj en lista först för att hantera dess avsnitt.", ed_show_filters: "Statusfilter", ed_show_images: "Bilder", ed_show_person_chips: "Personfilter", ed_show_tag_chips: "Taggfilter", ed_show_tile_title: "Titel i rutor", ed_show_voice: "Röstinmatning", ed_tile_help: "Rutvy:\n• Klick = slutför\n• Håll = redigera\n• Dra = ändra ordning", ed_view_mode: "Visningsläge", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Rutor",
+    confirm_delete_section: "Ta bort det här avsnittet? Uppgifter i det blir osorterade.", done_section_header: "Klar", duplicate_task: "Duplicera", move_task: "Flytta", move_task_msg: "Flytta \u201d{0}\u201d till:", ed_show_move: "Flytta-knapp", ed_add_section: "+ Lägg till avsnitt", ed_ai_image_entity: "AI-entitet för bildgenerering", ed_ai_image_entity_placeholder: "t.ex. ai_task.openai", ed_ai_prompt_prefix: "Promptprefix (valfritt)", ed_ai_prompt_prefix_placeholder: "t.ex. Minimalistisk ikon av", ed_auto_image: "Generera bild automatiskt", ed_delete_section: "Ta bort avsnitt", ed_external_lists: "Extern", ed_loading: "Läser in…", ed_move_down: "Flytta ned", ed_move_up: "Flytta upp", ed_sec_sections: "Avsnitt", ed_section_icon: "Ikon", ed_section_name: "Namn", ed_section_name_prompt: "Avsnittsnamn:", ed_sections_empty: "Inga avsnitt än — uppgifter visas platt.", ed_sections_select_list_hint: "Välj en lista först för att hantera dess avsnitt.", ed_show_filters: "Statusfilter", ed_show_images: "Bilder", ed_show_person_chips: "Personfilter", ed_show_tag_chips: "Taggfilter", ed_show_tile_title: "Titel i rutor", ed_show_voice: "Röstinmatning", ed_task_search: "Uppgiftssökning", ed_tile_help: "Rutvy:\n• Klick = slutför\n• Håll = redigera\n• Dra = ändra ordning", ed_view_mode: "Visningsläge", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Rutor",
     voice_input: "Röstinmatning", voice_stop: "Stoppa inspelning", img_label: "Bild", img_generate: "Generera", img_regenerate: "Generera igen", img_generating: "Genererar…", img_from_media: "Från mediabibliotek", img_remove: "Ta bort bild", img_generate_failed: "Bildgenerering misslyckades: ", img_save_failed: "Det gick inte att spara bilden: ", mb_title: "Mediabibliotek", mb_loading: "Läser in…", mb_root: "Media", mb_back: "Tillbaka", mb_empty: "Inga filer", mb_error: "Fel: ",
     my_tasks: "Mina uppgifter",
     add_placeholder: "L\u00e4gg till ny uppgift...",
+    add_failed: "Kunde inte lägga till uppgiften",
+    duplicate_failed: "Kunde inte duplicera uppgiften",
     dialog_cancel: "Avbryt", dialog_add: "L\u00e4gg till",
     filter_all: "Alla", filter_open: "\u00d6ppna", filter_done: "Klara", filter_due_soon: "Snart",
     ed_show_due_soon_filter: "Snart-filter", ed_due_soon_days: "Dagar fram\u00e5t", ed_hide_overdue: "D\u00f6lj f\u00f6rsenade",
@@ -434,8 +535,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "Ta bort slutf\u00f6rda omedelbart", ed_compact: "Kompakt", ed_show_tags: "Taggar",
     ed_confirm_complete: "Bekr\u00e4fta innan slutf\u00f6rande",
     ed_show_add_due: "F\u00f6rfallodatum vid till\u00e4gg",
-    ed_max_height: "Maxh\u00f6jd (px, 0 = obegr\u00e4nsad)", ed_badge_priority: "Prioritetschips", ed_badge_progress: "F\u00f6rloppschips", ed_badge_due: "F\u00f6rfallochips", ed_badge_recurrence: "Upprepningschips", ed_badge_person: "Personchips", ed_badge_tags: "Taggchips", ed_badge_reminders: "P\u00e5minnelsechips",
+    ed_max_height: "Maxh\u00f6jd (px, 0 = obegr\u00e4nsad)", ed_badge_priority: "Prioritetschips", ed_badge_progress: "F\u00f6rloppschips", ed_badge_due: "F\u00f6rfallochips", ed_badge_recurrence: "Upprepningschips", ed_badge_person: "Person", ed_badge_tags: "Taggchips", ed_badge_reminders: "P\u00e5minnelsechips",
     ed_sec_defaults: "Standardv\u00e4rden",
+    ed_sec_images: "Bilder",
+    ed_share_images: "Dela bilder med andra listor",
+    ed_share_images_hint: "Av håller listans bilder för sig själv — samma uppgiftstitel i en annan lista får en egen bild.",
+    ed_queue_empty: "Inget väntar på en bild.",
+    ed_queue_pending: "Väntar på en bild: {0}",
+    ed_queue_cancel: "Avbryt",
+    ed_ai_image_hint: "Gäller hela kortet, inte bara den här kolumnen.",
+    ed_queue_running: "skapas…",
+    ed_queue_title: "Genereringskö",
     ed_default_assignee: "Standardtilldelad",
     ed_defaults_hint: "G\u00e4ller varje ny uppgift i listan \u2014 oavsett hur den skapas. \u00c4ndringar sparas direkt.", ed_defaults_saved: "Sparat", ed_defaults_load_failed: "Det gick inte att l\u00e4sa in standardv\u00e4rdena", ed_defaults_save_failed: "Det gick inte att spara",
     confirm_complete_msg: "Markera \u201d{0}\u201d som slutf\u00f6rd?",
@@ -482,11 +592,24 @@ const _TRANSLATIONS = {
     due_ago_hours: "{0} tim {1} min sedan", due_ago_minutes: "{0} min sedan", due_ago_seconds: "Just nu",
   },
   fr: {
+    ed_default_priority: "Priorité par défaut",
+    ed_default_tags: "Étiquettes par défaut",
+    ed_default_section: "Section par défaut",
+    ed_default_none: "– Aucune –",
+    ed_group_card: "Carte",
+    ed_person_off: "Désactivé",
+    ed_person_name: "Nom",
+    ed_person_both: "Photo et nom",
+    ed_group_header: "En-tête",
+    ed_group_tasks: "Tâches",
+    ed_show_person_avatar: "Photo de profil",
     voice_failed: "Échec de la saisie vocale",
-    confirm_delete_section: "Supprimer cette section ? Les tâches qu'elle contient ne seront plus triées.", done_section_header: "Terminé", duplicate_task: "Dupliquer", move_task: "D\u00e9placer", move_task_msg: "D\u00e9placer \u00ab\u202f{0}\u202f\u00bb vers\u00a0:", ed_show_move: "Bouton D\u00e9placer", ed_add_section: "+ Ajouter une section", ed_ai_image_entity: "Entité IA pour la génération d'images", ed_ai_image_entity_placeholder: "ex. ai_task.openai", ed_ai_image_section: "Génération d'images par IA", ed_ai_prompt_prefix: "Préfixe d'invite (facultatif)", ed_ai_prompt_prefix_placeholder: "ex. Icône minimaliste de", ed_auto_image: "Générer l'image automatiquement", ed_delete_section: "Supprimer la section", ed_external_lists: "Externe", ed_loading: "Chargement…", ed_move_down: "Déplacer vers le bas", ed_move_up: "Déplacer vers le haut", ed_sec_sections: "Sections", ed_section_icon: "Icône", ed_section_name: "Nom", ed_section_name_prompt: "Nom de la section :", ed_sections_empty: "Aucune section pour l'instant — les tâches s'affichent à plat.", ed_sections_select_list_hint: "Sélectionnez d'abord une liste pour gérer ses sections.", ed_show_filters: "Filtre d'\u00e9tat", ed_show_images: "Images", ed_show_person_chips: "Filtre de personnes", ed_show_tag_chips: "Filtre d'\u00e9tiquettes", ed_show_tile_title: "Titre sur les tuiles", ed_show_voice: "Saisie vocale", ed_tile_help: "Vue en tuiles :\n• Clic = terminer\n• Maintenir = modifier\n• Glisser = réorganiser", ed_view_mode: "Mode d'affichage", ed_view_mode_list: "Liste", ed_view_mode_tiles: "Tuiles",
+    confirm_delete_section: "Supprimer cette section ? Les tâches qu'elle contient ne seront plus triées.", done_section_header: "Terminé", duplicate_task: "Dupliquer", move_task: "D\u00e9placer", move_task_msg: "D\u00e9placer \u00ab\u202f{0}\u202f\u00bb vers\u00a0:", ed_show_move: "Bouton D\u00e9placer", ed_add_section: "+ Ajouter une section", ed_ai_image_entity: "Entité IA pour la génération d'images", ed_ai_image_entity_placeholder: "ex. ai_task.openai", ed_ai_prompt_prefix: "Préfixe d'invite (facultatif)", ed_ai_prompt_prefix_placeholder: "ex. Icône minimaliste de", ed_auto_image: "Générer l'image automatiquement", ed_delete_section: "Supprimer la section", ed_external_lists: "Externe", ed_loading: "Chargement…", ed_move_down: "Déplacer vers le bas", ed_move_up: "Déplacer vers le haut", ed_sec_sections: "Sections", ed_section_icon: "Icône", ed_section_name: "Nom", ed_section_name_prompt: "Nom de la section :", ed_sections_empty: "Aucune section pour l'instant — les tâches s'affichent à plat.", ed_sections_select_list_hint: "Sélectionnez d'abord une liste pour gérer ses sections.", ed_show_filters: "Filtre d'\u00e9tat", ed_show_images: "Images", ed_show_person_chips: "Filtre de personnes", ed_show_tag_chips: "Filtre d'\u00e9tiquettes", ed_show_tile_title: "Titre sur les tuiles", ed_show_voice: "Saisie vocale", ed_task_search: "Recherche de tâches", ed_tile_help: "Vue en tuiles :\n• Clic = terminer\n• Maintenir = modifier\n• Glisser = réorganiser", ed_view_mode: "Mode d'affichage", ed_view_mode_list: "Liste", ed_view_mode_tiles: "Tuiles",
     voice_input: "Saisie vocale", voice_stop: "Arrêter l'enregistrement", img_label: "Image", img_generate: "Générer", img_regenerate: "Régénérer", img_generating: "Génération…", img_from_media: "Depuis la médiathèque", img_remove: "Supprimer l'image", img_generate_failed: "Échec de la génération de l'image : ", img_save_failed: "Échec de l'enregistrement de l'image : ", mb_title: "Médiathèque", mb_loading: "Chargement…", mb_root: "Médias", mb_back: "Retour", mb_empty: "Aucun fichier", mb_error: "Erreur : ",
     my_tasks: "Mes t\u00e2ches",
     add_placeholder: "Ajouter une nouvelle t\u00e2che...",
+    add_failed: "Impossible d'ajouter la tâche",
+    duplicate_failed: "Impossible de dupliquer la tâche",
     dialog_cancel: "Annuler", dialog_add: "Ajouter",
     filter_all: "Toutes", filter_open: "Ouvertes", filter_done: "Termin\u00e9es", filter_due_soon: "Bient\u00f4t",
     ed_show_due_soon_filter: "Filtre bient\u00f4t", ed_due_soon_days: "Jours \u00e0 venir", ed_hide_overdue: "Masquer en retard",
@@ -513,8 +636,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "Supprimer les termin\u00e9es imm\u00e9diatement", ed_compact: "Compact", ed_show_tags: "\u00c9tiquettes",
     ed_confirm_complete: "Confirmer avant de terminer",
     ed_show_add_due: "\u00c9ch\u00e9ance \u00e0 la cr\u00e9ation",
-    ed_max_height: "Hauteur max (px, 0 = illimit\u00e9e)", ed_badge_priority: "Puces priorit\u00e9", ed_badge_progress: "Puces progression", ed_badge_due: "Puces \u00e9ch\u00e9ance", ed_badge_recurrence: "Puces r\u00e9currence", ed_badge_person: "Puces personne", ed_badge_tags: "Puces \u00e9tiquettes", ed_badge_reminders: "Puces rappel",
+    ed_max_height: "Hauteur max (px, 0 = illimit\u00e9e)", ed_badge_priority: "Puces priorit\u00e9", ed_badge_progress: "Puces progression", ed_badge_due: "Puces \u00e9ch\u00e9ance", ed_badge_recurrence: "Puces r\u00e9currence", ed_badge_person: "Personne", ed_badge_tags: "Puces \u00e9tiquettes", ed_badge_reminders: "Puces rappel",
     ed_sec_defaults: "Valeurs par d\u00e9faut",
+    ed_sec_images: "Images",
+    ed_share_images: "Partager les images avec d'autres listes",
+    ed_share_images_hint: "Désactivé garde les images de cette liste pour elle — le même titre dans une autre liste obtient sa propre image.",
+    ed_queue_empty: "Rien n'attend d'image.",
+    ed_queue_pending: "En attente d'une image : {0}",
+    ed_queue_cancel: "Annuler",
+    ed_ai_image_hint: "S'applique à toute la carte, pas seulement à cette colonne.",
+    ed_queue_running: "en cours…",
+    ed_queue_title: "File de génération",
     ed_default_assignee: "Assign\u00e9 par d\u00e9faut",
     ed_defaults_hint: "S'applique \u00e0 chaque nouvelle t\u00e2che de cette liste, quelle que soit sa cr\u00e9ation. Les modifications sont enregistr\u00e9es imm\u00e9diatement.", ed_defaults_saved: "Enregistr\u00e9", ed_defaults_load_failed: "Impossible de charger les valeurs par d\u00e9faut", ed_defaults_save_failed: "\u00c9chec de l'enregistrement",
     confirm_complete_msg: "Marquer \u00ab\u202f{0}\u202f\u00bb comme termin\u00e9e\u202f?",
@@ -561,11 +693,24 @@ const _TRANSLATIONS = {
     due_ago_hours: "Il y a {0} h {1} min", due_ago_minutes: "Il y a {0} min", due_ago_seconds: "\u00c0 l'instant",
   },
   pt: {
+    ed_default_priority: "Prioridade padrão",
+    ed_default_tags: "Etiquetas padrão",
+    ed_default_section: "Seção padrão",
+    ed_default_none: "– Nenhuma –",
+    ed_group_card: "Cartão",
+    ed_person_off: "Desativado",
+    ed_person_name: "Nome",
+    ed_person_both: "Foto e nome",
+    ed_group_header: "Cabeçalho",
+    ed_group_tasks: "Tarefas",
+    ed_show_person_avatar: "Foto do perfil",
     voice_failed: "Falha na entrada de voz",
-    confirm_delete_section: "Excluir esta seção? As tarefas dentro dela ficarão sem ordenação.", done_section_header: "Concluído", duplicate_task: "Duplicar", move_task: "Mover", move_task_msg: "Mover \u201c{0}\u201d para:", ed_show_move: "Bot\u00e3o Mover", ed_add_section: "+ Adicionar seção", ed_ai_image_entity: "Entidade de IA para geração de imagens", ed_ai_image_entity_placeholder: "ex. ai_task.openai", ed_ai_image_section: "Geração de imagens por IA", ed_ai_prompt_prefix: "Prefixo do prompt (opcional)", ed_ai_prompt_prefix_placeholder: "ex. Ícone minimalista de", ed_auto_image: "Gerar imagem automaticamente", ed_delete_section: "Excluir seção", ed_external_lists: "Externa", ed_loading: "Carregando…", ed_move_down: "Mover para baixo", ed_move_up: "Mover para cima", ed_sec_sections: "Seções", ed_section_icon: "Ícone", ed_section_name: "Nome", ed_section_name_prompt: "Nome da seção:", ed_sections_empty: "Nenhuma seção ainda — as tarefas serão exibidas sem agrupamento.", ed_sections_select_list_hint: "Selecione uma lista primeiro para gerenciar suas seções.", ed_show_filters: "Filtro de estado", ed_show_images: "Imagens", ed_show_person_chips: "Filtro de pessoas", ed_show_tag_chips: "Filtro de etiquetas", ed_show_tile_title: "Título nos blocos", ed_show_voice: "Entrada de voz", ed_tile_help: "Visualização em blocos:\n• Clique = concluir\n• Segurar = editar\n• Arrastar = reordenar", ed_view_mode: "Modo de exibição", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Blocos",
+    confirm_delete_section: "Excluir esta seção? As tarefas dentro dela ficarão sem ordenação.", done_section_header: "Concluído", duplicate_task: "Duplicar", move_task: "Mover", move_task_msg: "Mover \u201c{0}\u201d para:", ed_show_move: "Bot\u00e3o Mover", ed_add_section: "+ Adicionar seção", ed_ai_image_entity: "Entidade de IA para geração de imagens", ed_ai_image_entity_placeholder: "ex. ai_task.openai", ed_ai_prompt_prefix: "Prefixo do prompt (opcional)", ed_ai_prompt_prefix_placeholder: "ex. Ícone minimalista de", ed_auto_image: "Gerar imagem automaticamente", ed_delete_section: "Excluir seção", ed_external_lists: "Externa", ed_loading: "Carregando…", ed_move_down: "Mover para baixo", ed_move_up: "Mover para cima", ed_sec_sections: "Seções", ed_section_icon: "Ícone", ed_section_name: "Nome", ed_section_name_prompt: "Nome da seção:", ed_sections_empty: "Nenhuma seção ainda — as tarefas serão exibidas sem agrupamento.", ed_sections_select_list_hint: "Selecione uma lista primeiro para gerenciar suas seções.", ed_show_filters: "Filtro de estado", ed_show_images: "Imagens", ed_show_person_chips: "Filtro de pessoas", ed_show_tag_chips: "Filtro de etiquetas", ed_show_tile_title: "Título nos blocos", ed_show_voice: "Entrada de voz", ed_task_search: "Pesquisa de tarefas", ed_tile_help: "Visualização em blocos:\n• Clique = concluir\n• Segurar = editar\n• Arrastar = reordenar", ed_view_mode: "Modo de exibição", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Blocos",
     voice_input: "Entrada de voz", voice_stop: "Parar gravação", img_label: "Imagem", img_generate: "Gerar", img_regenerate: "Gerar novamente", img_generating: "Gerando…", img_from_media: "Da biblioteca de mídia", img_remove: "Remover imagem", img_generate_failed: "Falha ao gerar imagem: ", img_save_failed: "Falha ao salvar imagem: ", mb_title: "Biblioteca de mídia", mb_loading: "Carregando…", mb_root: "Mídia", mb_back: "Voltar", mb_empty: "Sem arquivos", mb_error: "Erro: ",
     my_tasks: "Minhas tarefas",
     add_placeholder: "Adicionar nova tarefa...",
+    add_failed: "Não foi possível adicionar a tarefa",
+    duplicate_failed: "Não foi possível duplicar a tarefa",
     dialog_cancel: "Cancelar", dialog_add: "Adicionar",
     filter_all: "Todas", filter_open: "Abertas", filter_done: "Conclu\u00eddas", filter_due_soon: "Em breve",
     ed_show_due_soon_filter: "Filtro em breve", ed_due_soon_days: "Dias \u00e0 frente", ed_hide_overdue: "Ocultar atrasadas",
@@ -592,8 +737,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "Excluir conclu\u00eddas imediatamente", ed_compact: "Compacto", ed_show_tags: "Etiquetas",
     ed_confirm_complete: "Confirmar antes de concluir",
     ed_show_add_due: "Prazo ao adicionar",
-    ed_max_height: "Altura m\u00e1x. (px, 0 = ilimitada)", ed_badge_priority: "Chips de prioridade", ed_badge_progress: "Chips de progresso", ed_badge_due: "Chips de prazo", ed_badge_recurrence: "Chips de recorr\u00eancia", ed_badge_person: "Chips de pessoa", ed_badge_tags: "Chips de etiquetas", ed_badge_reminders: "Chips de lembrete",
+    ed_max_height: "Altura m\u00e1x. (px, 0 = ilimitada)", ed_badge_priority: "Chips de prioridade", ed_badge_progress: "Chips de progresso", ed_badge_due: "Chips de prazo", ed_badge_recurrence: "Chips de recorr\u00eancia", ed_badge_person: "Pessoa", ed_badge_tags: "Chips de etiquetas", ed_badge_reminders: "Chips de lembrete",
     ed_sec_defaults: "Padr\u00f5es",
+    ed_sec_images: "Imagens",
+    ed_share_images: "Partilhar imagens com outras listas",
+    ed_share_images_hint: "Desligado mantém as imagens desta lista separadas — o mesmo título noutra lista recebe a sua própria imagem.",
+    ed_queue_empty: "Nada à espera de imagem.",
+    ed_queue_pending: "À espera de uma imagem: {0}",
+    ed_queue_cancel: "Cancelar",
+    ed_ai_image_hint: "Aplica-se a todo o cartão, não apenas a esta coluna.",
+    ed_queue_running: "a gerar…",
+    ed_queue_title: "Fila de geração",
     ed_default_assignee: "Respons\u00e1vel padr\u00e3o",
     ed_defaults_hint: "Aplica-se a cada nova tarefa desta lista, seja como for criada. As altera\u00e7\u00f5es s\u00e3o guardadas imediatamente.", ed_defaults_saved: "Guardado", ed_defaults_load_failed: "N\u00e3o foi poss\u00edvel carregar as predefini\u00e7\u00f5es", ed_defaults_save_failed: "Falha ao guardar",
     confirm_complete_msg: "Marcar \u201c{0}\u201d como conclu\u00edda?",
@@ -640,11 +794,24 @@ const _TRANSLATIONS = {
     due_ago_hours: "H\u00e1 {0} h {1} min", due_ago_minutes: "H\u00e1 {0} min", due_ago_seconds: "Agora mesmo",
   },
   es: {
+    ed_default_priority: "Prioridad predeterminada",
+    ed_default_tags: "Etiquetas predeterminadas",
+    ed_default_section: "Sección predeterminada",
+    ed_default_none: "– Ninguna –",
+    ed_group_card: "Tarjeta",
+    ed_person_off: "Desactivado",
+    ed_person_name: "Nombre",
+    ed_person_both: "Foto y nombre",
+    ed_group_header: "Encabezado",
+    ed_group_tasks: "Tareas",
+    ed_show_person_avatar: "Foto de perfil",
     voice_failed: "Error en la entrada de voz",
-    confirm_delete_section: "¿Eliminar esta sección? Las tareas que contiene quedarán sin ordenar.", done_section_header: "Hecho", duplicate_task: "Duplicar", move_task: "Mover", move_task_msg: "Mover \u201c{0}\u201d a:", ed_show_move: "Bot\u00f3n Mover", ed_add_section: "+ Añadir sección", ed_ai_image_entity: "Entidad de IA para la generación de imágenes", ed_ai_image_entity_placeholder: "p. ej. ai_task.openai", ed_ai_image_section: "Generación de imágenes con IA", ed_ai_prompt_prefix: "Prefijo del prompt (opcional)", ed_ai_prompt_prefix_placeholder: "p. ej. Icono minimalista de", ed_auto_image: "Generar imagen automáticamente", ed_delete_section: "Eliminar sección", ed_external_lists: "Externa", ed_loading: "Cargando…", ed_move_down: "Mover abajo", ed_move_up: "Mover arriba", ed_sec_sections: "Secciones", ed_section_icon: "Icono", ed_section_name: "Nombre", ed_section_name_prompt: "Nombre de la sección:", ed_sections_empty: "Aún no hay secciones: las tareas se mostrarán sin agrupar.", ed_sections_select_list_hint: "Selecciona primero una lista para gestionar sus secciones.", ed_show_filters: "Filtro de estado", ed_show_images: "Imágenes", ed_show_person_chips: "Filtro de personas", ed_show_tag_chips: "Filtro de etiquetas", ed_show_tile_title: "Título en mosaicos", ed_show_voice: "Entrada de voz", ed_tile_help: "Vista de mosaicos:\n• Clic = completar\n• Mantener = editar\n• Arrastrar = reordenar", ed_view_mode: "Modo de vista", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Mosaicos",
+    confirm_delete_section: "¿Eliminar esta sección? Las tareas que contiene quedarán sin ordenar.", done_section_header: "Hecho", duplicate_task: "Duplicar", move_task: "Mover", move_task_msg: "Mover \u201c{0}\u201d a:", ed_show_move: "Bot\u00f3n Mover", ed_add_section: "+ Añadir sección", ed_ai_image_entity: "Entidad de IA para la generación de imágenes", ed_ai_image_entity_placeholder: "p. ej. ai_task.openai", ed_ai_prompt_prefix: "Prefijo del prompt (opcional)", ed_ai_prompt_prefix_placeholder: "p. ej. Icono minimalista de", ed_auto_image: "Generar imagen automáticamente", ed_delete_section: "Eliminar sección", ed_external_lists: "Externa", ed_loading: "Cargando…", ed_move_down: "Mover abajo", ed_move_up: "Mover arriba", ed_sec_sections: "Secciones", ed_section_icon: "Icono", ed_section_name: "Nombre", ed_section_name_prompt: "Nombre de la sección:", ed_sections_empty: "Aún no hay secciones: las tareas se mostrarán sin agrupar.", ed_sections_select_list_hint: "Selecciona primero una lista para gestionar sus secciones.", ed_show_filters: "Filtro de estado", ed_show_images: "Imágenes", ed_show_person_chips: "Filtro de personas", ed_show_tag_chips: "Filtro de etiquetas", ed_show_tile_title: "Título en mosaicos", ed_show_voice: "Entrada de voz", ed_task_search: "Búsqueda de tareas", ed_tile_help: "Vista de mosaicos:\n• Clic = completar\n• Mantener = editar\n• Arrastrar = reordenar", ed_view_mode: "Modo de vista", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Mosaicos",
     voice_input: "Entrada de voz", voice_stop: "Detener grabación", img_label: "Imagen", img_generate: "Generar", img_regenerate: "Regenerar", img_generating: "Generando…", img_from_media: "Desde la biblioteca multimedia", img_remove: "Eliminar imagen", img_generate_failed: "Error al generar la imagen: ", img_save_failed: "Error al guardar la imagen: ", mb_title: "Biblioteca multimedia", mb_loading: "Cargando…", mb_root: "Multimedia", mb_back: "Atrás", mb_empty: "Sin archivos", mb_error: "Error: ",
     my_tasks: "Mis tareas",
     add_placeholder: "A\u00f1adir nueva tarea...",
+    add_failed: "No se pudo añadir la tarea",
+    duplicate_failed: "No se pudo duplicar la tarea",
     dialog_cancel: "Cancelar", dialog_add: "Agregar",
     filter_all: "Todas", filter_open: "Abiertas", filter_done: "Completadas", filter_due_soon: "Pr\u00f3ximamente",
     ed_show_due_soon_filter: "Filtro pr\u00f3ximo", ed_due_soon_days: "D\u00edas adelante", ed_hide_overdue: "Ocultar vencidas",
@@ -671,8 +838,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "Eliminar completadas inmediatamente", ed_compact: "Compacto", ed_show_tags: "Etiquetas",
     ed_confirm_complete: "Confirmar antes de completar",
     ed_show_add_due: "Fecha l\u00edmite al a\u00f1adir",
-    ed_max_height: "Altura m\u00e1x. (px, 0 = ilimitada)", ed_badge_priority: "Chips de prioridad", ed_badge_progress: "Chips de progreso", ed_badge_due: "Chips de vencimiento", ed_badge_recurrence: "Chips de repetici\u00f3n", ed_badge_person: "Chips de persona", ed_badge_tags: "Chips de etiquetas", ed_badge_reminders: "Chips de recordatorio",
+    ed_max_height: "Altura m\u00e1x. (px, 0 = ilimitada)", ed_badge_priority: "Chips de prioridad", ed_badge_progress: "Chips de progreso", ed_badge_due: "Chips de vencimiento", ed_badge_recurrence: "Chips de repetici\u00f3n", ed_badge_person: "Persona", ed_badge_tags: "Chips de etiquetas", ed_badge_reminders: "Chips de recordatorio",
     ed_sec_defaults: "Predeterminados",
+    ed_sec_images: "Imágenes",
+    ed_share_images: "Compartir imágenes con otras listas",
+    ed_share_images_hint: "Desactivado mantiene las imágenes de esta lista aparte: el mismo título en otra lista obtiene su propia imagen.",
+    ed_queue_empty: "Nada esperando imagen.",
+    ed_queue_pending: "Esperando una imagen: {0}",
+    ed_queue_cancel: "Cancelar",
+    ed_ai_image_hint: "Se aplica a toda la tarjeta, no solo a esta columna.",
+    ed_queue_running: "generando…",
+    ed_queue_title: "Cola de generación",
     ed_default_assignee: "Asignado por defecto",
     ed_defaults_hint: "Se aplica a cada nueva tarea de esta lista, sin importar c\u00f3mo se cree. Los cambios se guardan inmediatamente.", ed_defaults_saved: "Guardado", ed_defaults_load_failed: "No se pudieron cargar los valores predeterminados", ed_defaults_save_failed: "Error al guardar",
     confirm_complete_msg: "\u00bfMarcar \u00ab{0}\u00bb como completada?",
@@ -719,11 +895,24 @@ const _TRANSLATIONS = {
     due_ago_hours: "Hace {0} h {1} min", due_ago_minutes: "Hace {0} min", due_ago_seconds: "Ahora mismo",
   },
   ru: {
+    ed_default_priority: "Приоритет по умолчанию",
+    ed_default_tags: "Теги по умолчанию",
+    ed_default_section: "Раздел по умолчанию",
+    ed_default_none: "– Нет –",
+    ed_group_card: "Карточка",
+    ed_person_off: "Выкл.",
+    ed_person_name: "Имя",
+    ed_person_both: "Фото и имя",
+    ed_group_header: "Заголовок",
+    ed_group_tasks: "Задачи",
+    ed_show_person_avatar: "Фото профиля",
     voice_failed: "Сбой голосового ввода",
-    confirm_delete_section: "Удалить этот раздел? Задачи в нём станут несортированными.", done_section_header: "Готово", duplicate_task: "Дублировать", move_task: "\u041f\u0435\u0440\u0435\u043c\u0435\u0441\u0442\u0438\u0442\u044c", move_task_msg: "\u041f\u0435\u0440\u0435\u043c\u0435\u0441\u0442\u0438\u0442\u044c \u00ab{0}\u00bb \u0432:", ed_show_move: "\u041a\u043d\u043e\u043f\u043a\u0430 \u043f\u0435\u0440\u0435\u043c\u0435\u0449\u0435\u043d\u0438\u044f", ed_add_section: "+ Добавить раздел", ed_ai_image_entity: "ИИ-сущность для генерации изображений", ed_ai_image_entity_placeholder: "напр. ai_task.openai", ed_ai_image_section: "Генерация изображений ИИ", ed_ai_prompt_prefix: "Префикс запроса (необязательно)", ed_ai_prompt_prefix_placeholder: "напр. Минималистичная иконка", ed_auto_image: "Автоматически генерировать изображение", ed_delete_section: "Удалить раздел", ed_external_lists: "Внешний", ed_loading: "Загрузка…", ed_move_down: "Переместить вниз", ed_move_up: "Переместить вверх", ed_sec_sections: "Разделы", ed_section_icon: "Значок", ed_section_name: "Имя", ed_section_name_prompt: "Название раздела:", ed_sections_empty: "Разделов пока нет — задачи отображаются списком.", ed_sections_select_list_hint: "Сначала выберите список, чтобы управлять его разделами.", ed_show_filters: "\u0424\u0438\u043b\u044c\u0442\u0440 \u0441\u0442\u0430\u0442\u0443\u0441\u0430", ed_show_images: "Изображения", ed_show_person_chips: "\u0424\u0438\u043b\u044c\u0442\u0440 \u043b\u044e\u0434\u0435\u0439", ed_show_tag_chips: "\u0424\u0438\u043b\u044c\u0442\u0440 \u0442\u0435\u0433\u043e\u0432", ed_show_tile_title: "Заголовок на плитках", ed_show_voice: "Голосовой ввод", ed_tile_help: "Режим плиток:\n• Клик = выполнить\n• Удержание = редактировать\n• Перетаскивание = изменить порядок", ed_view_mode: "Режим отображения", ed_view_mode_list: "Список", ed_view_mode_tiles: "Плитки",
+    confirm_delete_section: "Удалить этот раздел? Задачи в нём станут несортированными.", done_section_header: "Готово", duplicate_task: "Дублировать", move_task: "\u041f\u0435\u0440\u0435\u043c\u0435\u0441\u0442\u0438\u0442\u044c", move_task_msg: "\u041f\u0435\u0440\u0435\u043c\u0435\u0441\u0442\u0438\u0442\u044c \u00ab{0}\u00bb \u0432:", ed_show_move: "\u041a\u043d\u043e\u043f\u043a\u0430 \u043f\u0435\u0440\u0435\u043c\u0435\u0449\u0435\u043d\u0438\u044f", ed_add_section: "+ Добавить раздел", ed_ai_image_entity: "ИИ-сущность для генерации изображений", ed_ai_image_entity_placeholder: "напр. ai_task.openai", ed_ai_prompt_prefix: "Префикс запроса (необязательно)", ed_ai_prompt_prefix_placeholder: "напр. Минималистичная иконка", ed_auto_image: "Автоматически генерировать изображение", ed_delete_section: "Удалить раздел", ed_external_lists: "Внешний", ed_loading: "Загрузка…", ed_move_down: "Переместить вниз", ed_move_up: "Переместить вверх", ed_sec_sections: "Разделы", ed_section_icon: "Значок", ed_section_name: "Имя", ed_section_name_prompt: "Название раздела:", ed_sections_empty: "Разделов пока нет — задачи отображаются списком.", ed_sections_select_list_hint: "Сначала выберите список, чтобы управлять его разделами.", ed_show_filters: "\u0424\u0438\u043b\u044c\u0442\u0440 \u0441\u0442\u0430\u0442\u0443\u0441\u0430", ed_show_images: "Изображения", ed_show_person_chips: "\u0424\u0438\u043b\u044c\u0442\u0440 \u043b\u044e\u0434\u0435\u0439", ed_show_tag_chips: "\u0424\u0438\u043b\u044c\u0442\u0440 \u0442\u0435\u0433\u043e\u0432", ed_show_tile_title: "Заголовок на плитках", ed_show_voice: "Голосовой ввод", ed_task_search: "Поиск задач", ed_tile_help: "Режим плиток:\n• Клик = выполнить\n• Удержание = редактировать\n• Перетаскивание = изменить порядок", ed_view_mode: "Режим отображения", ed_view_mode_list: "Список", ed_view_mode_tiles: "Плитки",
     voice_input: "Голосовой ввод", voice_stop: "Остановить запись", img_label: "Изображение", img_generate: "Сгенерировать", img_regenerate: "Сгенерировать заново", img_generating: "Генерация…", img_from_media: "Из медиатеки", img_remove: "Удалить изображение", img_generate_failed: "Не удалось сгенерировать изображение: ", img_save_failed: "Не удалось сохранить изображение: ", mb_title: "Медиатека", mb_loading: "Загрузка…", mb_root: "Медиа", mb_back: "Назад", mb_empty: "Нет файлов", mb_error: "Ошибка: ",
     my_tasks: "\u041c\u043e\u0438 \u0437\u0430\u0434\u0430\u0447\u0438",
     add_placeholder: "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043d\u043e\u0432\u0443\u044e \u0437\u0430\u0434\u0430\u0447\u0443...",
+    add_failed: "Не удалось добавить задачу",
+    duplicate_failed: "Не удалось дублировать задачу",
     dialog_cancel: "\u041e\u0442\u043c\u0435\u043d\u0430", dialog_add: "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c",
     filter_all: "\u0412\u0441\u0435", filter_open: "\u041e\u0442\u043a\u0440\u044b\u0442\u044b\u0435", filter_done: "\u0412\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u043d\u044b\u0435", filter_due_soon: "\u0421\u043a\u043e\u0440\u043e",
     ed_show_due_soon_filter: "\u0424\u0438\u043b\u044c\u0442\u0440 \u0441\u043a\u043e\u0440\u043e", ed_due_soon_days: "\u0414\u043d\u0435\u0439 \u0432\u043f\u0435\u0440\u0451\u0434", ed_hide_overdue: "\u0421\u043a\u0440\u044b\u0442\u044c \u043f\u0440\u043e\u0441\u0440\u043e\u0447\u0435\u043d\u043d\u044b\u0435",
@@ -750,8 +939,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "\u0421\u0440\u0430\u0437\u0443 \u0443\u0434\u0430\u043b\u044f\u0442\u044c \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u043d\u044b\u0435", ed_compact: "\u041a\u043e\u043c\u043f\u0430\u043a\u0442\u043d\u044b\u0439", ed_show_tags: "\u0422\u0435\u0433\u0438",
     ed_confirm_complete: "\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0430\u0442\u044c \u043f\u0435\u0440\u0435\u0434 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0438\u0435\u043c",
     ed_show_add_due: "\u0421\u0440\u043e\u043a \u043f\u0440\u0438 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0438\u0438",
-    ed_max_height: "\u041c\u0430\u043a\u0441. \u0432\u044b\u0441\u043e\u0442\u0430 (px, 0 = \u0431\u0435\u0437 \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0438\u044f)", ed_badge_priority: "\u0427\u0438\u043f\u044b \u043f\u0440\u0438\u043e\u0440\u0438\u0442\u0435\u0442\u0430", ed_badge_progress: "\u0427\u0438\u043f\u044b \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441\u0430", ed_badge_due: "\u0427\u0438\u043f\u044b \u0441\u0440\u043e\u043a\u0430", ed_badge_recurrence: "\u0427\u0438\u043f\u044b \u043f\u043e\u0432\u0442\u043e\u0440\u0435\u043d\u0438\u044f", ed_badge_person: "\u0427\u0438\u043f\u044b \u0447\u0435\u043b\u043e\u0432\u0435\u043a\u0430", ed_badge_tags: "\u0427\u0438\u043f\u044b \u0442\u0435\u0433\u043e\u0432", ed_badge_reminders: "\u0427\u0438\u043f\u044b \u043d\u0430\u043f\u043e\u043c\u0438\u043d\u0430\u043d\u0438\u0439",
+    ed_max_height: "\u041c\u0430\u043a\u0441. \u0432\u044b\u0441\u043e\u0442\u0430 (px, 0 = \u0431\u0435\u0437 \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0438\u044f)", ed_badge_priority: "\u0427\u0438\u043f\u044b \u043f\u0440\u0438\u043e\u0440\u0438\u0442\u0435\u0442\u0430", ed_badge_progress: "\u0427\u0438\u043f\u044b \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441\u0430", ed_badge_due: "\u0427\u0438\u043f\u044b \u0441\u0440\u043e\u043a\u0430", ed_badge_recurrence: "\u0427\u0438\u043f\u044b \u043f\u043e\u0432\u0442\u043e\u0440\u0435\u043d\u0438\u044f", ed_badge_person: "Человек", ed_badge_tags: "\u0427\u0438\u043f\u044b \u0442\u0435\u0433\u043e\u0432", ed_badge_reminders: "\u0427\u0438\u043f\u044b \u043d\u0430\u043f\u043e\u043c\u0438\u043d\u0430\u043d\u0438\u0439",
     ed_sec_defaults: "\u0417\u043d\u0430\u0447\u0435\u043d\u0438\u044f \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e",
+    ed_sec_images: "Изображения",
+    ed_share_images: "Делиться изображениями с другими списками",
+    ed_share_images_hint: "Выключено — изображения этого списка остаются только в нём: одинаковое название в другом списке получит своё изображение.",
+    ed_queue_empty: "Ничто не ждёт изображения.",
+    ed_queue_pending: "Ждут изображения: {0}",
+    ed_queue_cancel: "Отмена",
+    ed_ai_image_hint: "Действует для всей карточки, а не только для этого столбца.",
+    ed_queue_running: "создаётся…",
+    ed_queue_title: "Очередь генерации",
     ed_default_assignee: "\u041e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0439 \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e",
     ed_defaults_hint: "\u041f\u0440\u0438\u043c\u0435\u043d\u044f\u0435\u0442\u0441\u044f \u043a \u043a\u0430\u0436\u0434\u043e\u0439 \u043d\u043e\u0432\u043e\u0439 \u0437\u0430\u0434\u0430\u0447\u0435 \u044d\u0442\u043e\u0433\u043e \u0441\u043f\u0438\u0441\u043a\u0430. \u0418\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f \u0441\u043e\u0445\u0440\u0430\u043d\u044f\u044e\u0442\u0441\u044f \u0441\u0440\u0430\u0437\u0443.", ed_defaults_saved: "\u0421\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u043e", ed_defaults_load_failed: "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u044f \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e", ed_defaults_save_failed: "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c",
     confirm_complete_msg: "\u041e\u0442\u043c\u0435\u0442\u0438\u0442\u044c \u00ab{0}\u00bb \u043a\u0430\u043a \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u043d\u0443\u044e?",
@@ -798,11 +996,24 @@ const _TRANSLATIONS = {
     due_ago_hours: "{0} \u0447 {1} \u043c\u0438\u043d \u043d\u0430\u0437\u0430\u0434", due_ago_minutes: "{0} \u043c\u0438\u043d \u043d\u0430\u0437\u0430\u0434", due_ago_seconds: "\u0422\u043e\u043b\u044c\u043a\u043e \u0447\u0442\u043e",
   },
   cs: {
+    ed_default_priority: "Výchozí priorita",
+    ed_default_tags: "Výchozí štítky",
+    ed_default_section: "Výchozí sekce",
+    ed_default_none: "– Žádná –",
+    ed_group_card: "Karta",
+    ed_person_off: "Vypnuto",
+    ed_person_name: "Jméno",
+    ed_person_both: "Fotka a jméno",
+    ed_group_header: "Záhlaví",
+    ed_group_tasks: "Úkoly",
+    ed_show_person_avatar: "Profilová fotka",
     voice_failed: "Hlasový vstup selhal",
-    confirm_delete_section: "Odstranit tuto sekci? Úkoly v ní zůstanou neseřazené.", done_section_header: "Hotovo", duplicate_task: "Duplikovat", move_task: "P\u0159esunout", move_task_msg: "P\u0159esunout \u201e{0}\u201c do:", ed_show_move: "Tla\u010d\u00edtko p\u0159esunut\u00ed", ed_add_section: "+ Přidat sekci", ed_ai_image_entity: "Entita AI pro generování obrázků", ed_ai_image_entity_placeholder: "např. ai_task.openai", ed_ai_image_section: "Generování obrázků pomocí AI", ed_ai_prompt_prefix: "Předpona promptu (volitelné)", ed_ai_prompt_prefix_placeholder: "např. Minimalistická ikona", ed_auto_image: "Automaticky generovat obrázek", ed_delete_section: "Odstranit sekci", ed_external_lists: "Externí", ed_loading: "Načítání…", ed_move_down: "Posunout dolů", ed_move_up: "Posunout nahoru", ed_sec_sections: "Sekce", ed_section_icon: "Ikona", ed_section_name: "Název", ed_section_name_prompt: "Název sekce:", ed_sections_empty: "Zatím žádné sekce — úkoly se zobrazí bez seskupení.", ed_sections_select_list_hint: "Nejprve vyberte seznam pro správu jeho sekcí.", ed_show_filters: "Filtr stavu", ed_show_images: "Obrázky", ed_show_person_chips: "Filtr osob", ed_show_tag_chips: "Filtr \u0161t\u00edtk\u016f", ed_show_tile_title: "Název na dlaždicích", ed_show_voice: "Hlasový vstup", ed_tile_help: "Zobrazení dlaždic:\n• Kliknutí = dokončit\n• Podržení = upravit\n• Přetažení = změnit pořadí", ed_view_mode: "Režim zobrazení", ed_view_mode_list: "Seznam", ed_view_mode_tiles: "Dlaždice",
+    confirm_delete_section: "Odstranit tuto sekci? Úkoly v ní zůstanou neseřazené.", done_section_header: "Hotovo", duplicate_task: "Duplikovat", move_task: "P\u0159esunout", move_task_msg: "P\u0159esunout \u201e{0}\u201c do:", ed_show_move: "Tla\u010d\u00edtko p\u0159esunut\u00ed", ed_add_section: "+ Přidat sekci", ed_ai_image_entity: "Entita AI pro generování obrázků", ed_ai_image_entity_placeholder: "např. ai_task.openai", ed_ai_prompt_prefix: "Předpona promptu (volitelné)", ed_ai_prompt_prefix_placeholder: "např. Minimalistická ikona", ed_auto_image: "Automaticky generovat obrázek", ed_delete_section: "Odstranit sekci", ed_external_lists: "Externí", ed_loading: "Načítání…", ed_move_down: "Posunout dolů", ed_move_up: "Posunout nahoru", ed_sec_sections: "Sekce", ed_section_icon: "Ikona", ed_section_name: "Název", ed_section_name_prompt: "Název sekce:", ed_sections_empty: "Zatím žádné sekce — úkoly se zobrazí bez seskupení.", ed_sections_select_list_hint: "Nejprve vyberte seznam pro správu jeho sekcí.", ed_show_filters: "Filtr stavu", ed_show_images: "Obrázky", ed_show_person_chips: "Filtr osob", ed_show_tag_chips: "Filtr \u0161t\u00edtk\u016f", ed_show_tile_title: "Název na dlaždicích", ed_show_voice: "Hlasový vstup", ed_task_search: "Hledání úkolů", ed_tile_help: "Zobrazení dlaždic:\n• Kliknutí = dokončit\n• Podržení = upravit\n• Přetažení = změnit pořadí", ed_view_mode: "Režim zobrazení", ed_view_mode_list: "Seznam", ed_view_mode_tiles: "Dlaždice",
     voice_input: "Hlasový vstup", voice_stop: "Zastavit nahrávání", img_label: "Obrázek", img_generate: "Vygenerovat", img_regenerate: "Vygenerovat znovu", img_generating: "Generování…", img_from_media: "Z knihovny médií", img_remove: "Odebrat obrázek", img_generate_failed: "Generování obrázku se nezdařilo: ", img_save_failed: "Uložení obrázku se nezdařilo: ", mb_title: "Knihovna médií", mb_loading: "Načítání…", mb_root: "Média", mb_back: "Zpět", mb_empty: "Žádné soubory", mb_error: "Chyba: ",
     my_tasks: "Moje \u00fakoly",
     add_placeholder: "P\u0159idat nov\u00fd \u00fakol...",
+    add_failed: "Úkol se nepodařilo přidat",
+    duplicate_failed: "Úkol se nepodařilo duplikovat",
     dialog_cancel: "Zru\u0161it", dialog_add: "P\u0159idat",
     filter_all: "V\u0161e", filter_open: "Otev\u0159en\u00e9", filter_done: "Dokon\u010den\u00e9", filter_due_soon: "Brzy",
     ed_show_due_soon_filter: "Filtr brzy", ed_due_soon_days: "Dn\u016f dop\u0159edu", ed_hide_overdue: "Skr\u00fdt po term\u00ednu",
@@ -829,8 +1040,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "Okam\u017eit\u011b smazat dokon\u010den\u00e9", ed_compact: "Kompaktn\u00ed", ed_show_tags: "\u0160t\u00edtky",
     ed_confirm_complete: "Potvrdit p\u0159ed dokon\u010den\u00edm",
     ed_show_add_due: "Term\u00edn p\u0159i p\u0159id\u00e1n\u00ed",
-    ed_max_height: "Max. v\u00fd\u0161ka (px, 0 = bez limitu)", ed_badge_priority: "\u010cipy priority", ed_badge_progress: "\u010cipy pr\u016fb\u011bhu", ed_badge_due: "\u010cipy term\u00ednu", ed_badge_recurrence: "\u010cipy opakov\u00e1n\u00ed", ed_badge_person: "\u010cipy osoby", ed_badge_tags: "\u010cipy \u0161t\u00edtk\u016f", ed_badge_reminders: "\u010cipy p\u0159ipomenut\u00ed",
+    ed_max_height: "Max. v\u00fd\u0161ka (px, 0 = bez limitu)", ed_badge_priority: "\u010cipy priority", ed_badge_progress: "\u010cipy pr\u016fb\u011bhu", ed_badge_due: "\u010cipy term\u00ednu", ed_badge_recurrence: "\u010cipy opakov\u00e1n\u00ed", ed_badge_person: "Osoba", ed_badge_tags: "\u010cipy \u0161t\u00edtk\u016f", ed_badge_reminders: "\u010cipy p\u0159ipomenut\u00ed",
     ed_sec_defaults: "V\u00fdchoz\u00ed hodnoty",
+    ed_sec_images: "Obrázky",
+    ed_share_images: "Sdílet obrázky s jinými seznamy",
+    ed_share_images_hint: "Vypnuto ponechá obrázky tohoto seznamu jen jemu — stejný název v jiném seznamu dostane vlastní obrázek.",
+    ed_queue_empty: "Nic nečeká na obrázek.",
+    ed_queue_pending: "Čeká na obrázek: {0}",
+    ed_queue_cancel: "Zrušit",
+    ed_ai_image_hint: "Platí pro celou kartu, nejen pro tento sloupec.",
+    ed_queue_running: "generuje se…",
+    ed_queue_title: "Fronta generování",
     ed_default_assignee: "V\u00fdchoz\u00ed p\u0159i\u0159azen\u00ed",
     ed_defaults_hint: "Plat\u00ed pro ka\u017ed\u00fd nov\u00fd \u00fakol v tomto seznamu. Zm\u011bny se ukl\u00e1daj\u00ed okam\u017eit\u011b.", ed_defaults_saved: "Ulo\u017eeno", ed_defaults_load_failed: "V\u00fdchoz\u00ed hodnoty se nepoda\u0159ilo na\u010d\u00edst", ed_defaults_save_failed: "Ulo\u017een\u00ed se nezda\u0159ilo",
     confirm_complete_msg: "Ozna\u010dit \u201e{0}\u201c jako dokon\u010den\u00e9?",
@@ -877,11 +1097,24 @@ const _TRANSLATIONS = {
     due_ago_hours: "P\u0159ed {0} hod {1} min", due_ago_minutes: "P\u0159ed {0} min", due_ago_seconds: "Pr\u00e1v\u011b te\u010f",
   },
   da: {
+    ed_default_priority: "Standardprioritet",
+    ed_default_tags: "Standardtags",
+    ed_default_section: "Standardafsnit",
+    ed_default_none: "– Ingen –",
+    ed_group_card: "Kort",
+    ed_person_off: "Fra",
+    ed_person_name: "Navn",
+    ed_person_both: "Billede og navn",
+    ed_group_header: "Sidehoved",
+    ed_group_tasks: "Opgaver",
+    ed_show_person_avatar: "Profilbillede",
     voice_failed: "Stemmeinput mislykkedes",
-    confirm_delete_section: "Slet dette afsnit? Opgaver i det bliver usorterede.", done_section_header: "Færdig", duplicate_task: "Dupliker", move_task: "Flyt", move_task_msg: "Flyt \u201d{0}\u201d til:", ed_show_move: "Flyt-knap", ed_add_section: "+ Tilføj afsnit", ed_ai_image_entity: "AI-entitet til billedgenerering", ed_ai_image_entity_placeholder: "f.eks. ai_task.openai", ed_ai_image_section: "AI-billedgenerering", ed_ai_prompt_prefix: "Prompt-præfiks (valgfrit)", ed_ai_prompt_prefix_placeholder: "f.eks. Minimalistisk ikon af", ed_auto_image: "Generér billede automatisk", ed_delete_section: "Slet afsnit", ed_external_lists: "Ekstern", ed_loading: "Indlæser…", ed_move_down: "Flyt ned", ed_move_up: "Flyt op", ed_sec_sections: "Afsnit", ed_section_icon: "Ikon", ed_section_name: "Navn", ed_section_name_prompt: "Afsnitsnavn:", ed_sections_empty: "Ingen afsnit endnu — opgaver vises fladt.", ed_sections_select_list_hint: "Vælg først en liste for at administrere dens afsnit.", ed_show_filters: "Statusfilter", ed_show_images: "Billeder", ed_show_person_chips: "Personfilter", ed_show_tag_chips: "Tagfilter", ed_show_tile_title: "Titel i fliser", ed_show_voice: "Stemmeinput", ed_tile_help: "Flisevisning:\n• Klik = fuldfør\n• Hold = rediger\n• Træk = omarrangér", ed_view_mode: "Visningstilstand", ed_view_mode_list: "Liste", ed_view_mode_tiles: "Fliser",
+    confirm_delete_section: "Slet dette afsnit? Opgaver i det bliver usorterede.", done_section_header: "Færdig", duplicate_task: "Dupliker", move_task: "Flyt", move_task_msg: "Flyt \u201d{0}\u201d til:", ed_show_move: "Flyt-knap", ed_add_section: "+ Tilføj afsnit", ed_ai_image_entity: "AI-entitet til billedgenerering", ed_ai_image_entity_placeholder: "f.eks. ai_task.openai", ed_ai_prompt_prefix: "Prompt-præfiks (valgfrit)", ed_ai_prompt_prefix_placeholder: "f.eks. Minimalistisk ikon af", ed_auto_image: "Generér billede automatisk", ed_delete_section: "Slet afsnit", ed_external_lists: "Ekstern", ed_loading: "Indlæser…", ed_move_down: "Flyt ned", ed_move_up: "Flyt op", ed_sec_sections: "Afsnit", ed_section_icon: "Ikon", ed_section_name: "Navn", ed_section_name_prompt: "Afsnitsnavn:", ed_sections_empty: "Ingen afsnit endnu — opgaver vises fladt.", ed_sections_select_list_hint: "Vælg først en liste for at administrere dens afsnit.", ed_show_filters: "Statusfilter", ed_show_images: "Billeder", ed_show_person_chips: "Personfilter", ed_show_tag_chips: "Tagfilter", ed_show_tile_title: "Titel i fliser", ed_show_voice: "Stemmeinput", ed_task_search: "Opgavesøgning", ed_tile_help: "Flisevisning:\n• Klik = fuldfør\n• Hold = rediger\n• Træk = omarrangér", ed_view_mode: "Visningstilstand", ed_view_mode_list: "Liste", ed_view_mode_tiles: "Fliser",
     voice_input: "Stemmeinput", voice_stop: "Stop optagelse", img_label: "Billede", img_generate: "Generér", img_regenerate: "Generér igen", img_generating: "Genererer…", img_from_media: "Fra mediebibliotek", img_remove: "Fjern billede", img_generate_failed: "Billedgenerering mislykkedes: ", img_save_failed: "Kunne ikke gemme billede: ", mb_title: "Mediebibliotek", mb_loading: "Indlæser…", mb_root: "Medier", mb_back: "Tilbage", mb_empty: "Ingen filer", mb_error: "Fejl: ",
     my_tasks: "Mine opgaver",
     add_placeholder: "Tilf\u00f8j ny opgave...",
+    add_failed: "Opgaven kunne ikke tilføjes",
+    duplicate_failed: "Opgaven kunne ikke duplikeres",
     dialog_cancel: "Annull\u00e9r", dialog_add: "Tilf\u00f8j",
     filter_all: "Alle", filter_open: "\u00c5bne", filter_done: "F\u00e6rdige", filter_due_soon: "Snart",
     ed_show_due_soon_filter: "Snart-filter", ed_due_soon_days: "Dage frem", ed_hide_overdue: "Skjul forfaldne",
@@ -908,8 +1141,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "Slet f\u00e6rdige \u00f8jeblikkeligt", ed_compact: "Kompakt", ed_show_tags: "Tags",
     ed_confirm_complete: "Bekr\u00e6ft f\u00f8r fuldf\u00f8relse",
     ed_show_add_due: "Forfaldsdato ved tilf\u00f8jelse",
-    ed_max_height: "Maks. h\u00f8jde (px, 0 = ubegr\u00e6nset)", ed_badge_priority: "Prioritetschips", ed_badge_progress: "Fremdriftschips", ed_badge_due: "Forfaldschips", ed_badge_recurrence: "Gentagelseschips", ed_badge_person: "Personchips", ed_badge_tags: "Tagchips", ed_badge_reminders: "P\u00e5mindelseschips",
+    ed_max_height: "Maks. h\u00f8jde (px, 0 = ubegr\u00e6nset)", ed_badge_priority: "Prioritetschips", ed_badge_progress: "Fremdriftschips", ed_badge_due: "Forfaldschips", ed_badge_recurrence: "Gentagelseschips", ed_badge_person: "Person", ed_badge_tags: "Tagchips", ed_badge_reminders: "P\u00e5mindelseschips",
     ed_sec_defaults: "Standarder",
+    ed_sec_images: "Billeder",
+    ed_share_images: "Del billeder med andre lister",
+    ed_share_images_hint: "Fra holder listens billeder for sig selv — samme opgavetitel på en anden liste får sit eget billede.",
+    ed_queue_empty: "Intet venter på et billede.",
+    ed_queue_pending: "Venter på et billede: {0}",
+    ed_queue_cancel: "Annullér",
+    ed_ai_image_hint: "Gælder hele kortet, ikke kun denne kolonne.",
+    ed_queue_running: "genereres…",
+    ed_queue_title: "Genereringskø",
     ed_default_assignee: "Standardtildelt",
     ed_defaults_hint: "G\u00e6lder for hver ny opgave p\u00e5 listen \u2014 uanset hvordan den oprettes. \u00c6ndringer gemmes med det samme.", ed_defaults_saved: "Gemt", ed_defaults_load_failed: "Standardv\u00e6rdierne kunne ikke indl\u00e6ses", ed_defaults_save_failed: "Kunne ikke gemme",
     confirm_complete_msg: "Mark\u00e9r \u201d{0}\u201d som fuldf\u00f8rt?",
@@ -956,11 +1198,24 @@ const _TRANSLATIONS = {
     due_ago_hours: "{0} t {1} min siden", due_ago_minutes: "{0} min siden", due_ago_seconds: "Lige nu",
   },
   no: {
+    ed_default_priority: "Standardprioritet",
+    ed_default_tags: "Standardtagger",
+    ed_default_section: "Standardseksjon",
+    ed_default_none: "– Ingen –",
+    ed_group_card: "Kort",
+    ed_person_off: "Av",
+    ed_person_name: "Navn",
+    ed_person_both: "Bilde og navn",
+    ed_group_header: "Topptekst",
+    ed_group_tasks: "Oppgaver",
+    ed_show_person_avatar: "Profilbilde",
     voice_failed: "Taleinndata mislyktes",
-    confirm_delete_section: "Slette denne seksjonen? Oppgaver i den blir usorterte.", done_section_header: "Ferdig", duplicate_task: "Dupliser", move_task: "Flytt", move_task_msg: "Flytt \u201d{0}\u201d til:", ed_show_move: "Flytt-knapp", ed_add_section: "+ Legg til seksjon", ed_ai_image_entity: "AI-entitet for bildegenerering", ed_ai_image_entity_placeholder: "f.eks. ai_task.openai", ed_ai_image_section: "AI-bildegenerering", ed_ai_prompt_prefix: "Ledetekst-prefiks (valgfritt)", ed_ai_prompt_prefix_placeholder: "f.eks. Minimalistisk ikon av", ed_auto_image: "Generer bilde automatisk", ed_delete_section: "Slett seksjon", ed_external_lists: "Ekstern", ed_loading: "Laster…", ed_move_down: "Flytt ned", ed_move_up: "Flytt opp", ed_sec_sections: "Seksjoner", ed_section_icon: "Ikon", ed_section_name: "Navn", ed_section_name_prompt: "Seksjonsnavn:", ed_sections_empty: "Ingen seksjoner ennå — oppgaver vises flatt.", ed_sections_select_list_hint: "Velg en liste først for å administrere seksjonene.", ed_show_filters: "Statusfilter", ed_show_images: "Bilder", ed_show_person_chips: "Personfilter", ed_show_tag_chips: "Taggfilter", ed_show_tile_title: "Tittel i fliser", ed_show_voice: "Taleinndata", ed_tile_help: "Flisevisning:\n• Klikk = fullfør\n• Hold = rediger\n• Dra = endre rekkefølge", ed_view_mode: "Visningsmodus", ed_view_mode_list: "Liste", ed_view_mode_tiles: "Fliser",
+    confirm_delete_section: "Slette denne seksjonen? Oppgaver i den blir usorterte.", done_section_header: "Ferdig", duplicate_task: "Dupliser", move_task: "Flytt", move_task_msg: "Flytt \u201d{0}\u201d til:", ed_show_move: "Flytt-knapp", ed_add_section: "+ Legg til seksjon", ed_ai_image_entity: "AI-entitet for bildegenerering", ed_ai_image_entity_placeholder: "f.eks. ai_task.openai", ed_ai_prompt_prefix: "Ledetekst-prefiks (valgfritt)", ed_ai_prompt_prefix_placeholder: "f.eks. Minimalistisk ikon av", ed_auto_image: "Generer bilde automatisk", ed_delete_section: "Slett seksjon", ed_external_lists: "Ekstern", ed_loading: "Laster…", ed_move_down: "Flytt ned", ed_move_up: "Flytt opp", ed_sec_sections: "Seksjoner", ed_section_icon: "Ikon", ed_section_name: "Navn", ed_section_name_prompt: "Seksjonsnavn:", ed_sections_empty: "Ingen seksjoner ennå — oppgaver vises flatt.", ed_sections_select_list_hint: "Velg en liste først for å administrere seksjonene.", ed_show_filters: "Statusfilter", ed_show_images: "Bilder", ed_show_person_chips: "Personfilter", ed_show_tag_chips: "Taggfilter", ed_show_tile_title: "Tittel i fliser", ed_show_voice: "Taleinndata", ed_task_search: "Oppgavesøk", ed_tile_help: "Flisevisning:\n• Klikk = fullfør\n• Hold = rediger\n• Dra = endre rekkefølge", ed_view_mode: "Visningsmodus", ed_view_mode_list: "Liste", ed_view_mode_tiles: "Fliser",
     voice_input: "Taleinndata", voice_stop: "Stopp opptak", img_label: "Bilde", img_generate: "Generer", img_regenerate: "Generer på nytt", img_generating: "Genererer…", img_from_media: "Fra mediebibliotek", img_remove: "Fjern bilde", img_generate_failed: "Bildegenerering mislyktes: ", img_save_failed: "Kunne ikke lagre bilde: ", mb_title: "Mediebibliotek", mb_loading: "Laster…", mb_root: "Medier", mb_back: "Tilbake", mb_empty: "Ingen filer", mb_error: "Feil: ",
     my_tasks: "Mine oppgaver",
     add_placeholder: "Legg til ny oppgave...",
+    add_failed: "Kunne ikke legge til oppgaven",
+    duplicate_failed: "Oppgaven kunne ikke dupliseres",
     dialog_cancel: "Avbryt", dialog_add: "Legg til",
     filter_all: "Alle", filter_open: "\u00c5pne", filter_done: "Ferdige", filter_due_soon: "Snart",
     ed_show_due_soon_filter: "Snart-filter", ed_due_soon_days: "Dager fremover", ed_hide_overdue: "Skjul forfalte",
@@ -987,8 +1242,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "Slett ferdige umiddelbart", ed_compact: "Kompakt", ed_show_tags: "Tagger",
     ed_confirm_complete: "Bekreft f\u00f8r fullf\u00f8ring",
     ed_show_add_due: "Forfallsdato ved tillegg",
-    ed_max_height: "Maks. h\u00f8yde (px, 0 = ubegrenset)", ed_badge_priority: "Prioritetschips", ed_badge_progress: "Fremdriftschips", ed_badge_due: "Forfallschips", ed_badge_recurrence: "Gjentakelseschips", ed_badge_person: "Personchips", ed_badge_tags: "Taggchips", ed_badge_reminders: "P\u00e5minnelseschips",
+    ed_max_height: "Maks. h\u00f8yde (px, 0 = ubegrenset)", ed_badge_priority: "Prioritetschips", ed_badge_progress: "Fremdriftschips", ed_badge_due: "Forfallschips", ed_badge_recurrence: "Gjentakelseschips", ed_badge_person: "Person", ed_badge_tags: "Taggchips", ed_badge_reminders: "P\u00e5minnelseschips",
     ed_sec_defaults: "Standarder",
+    ed_sec_images: "Bilder",
+    ed_share_images: "Del bilder med andre lister",
+    ed_share_images_hint: "Av holder listens bilder for seg selv — samme oppgavetittel i en annen liste får sitt eget bilde.",
+    ed_queue_empty: "Ingenting venter på et bilde.",
+    ed_queue_pending: "Venter på et bilde: {0}",
+    ed_queue_cancel: "Avbryt",
+    ed_ai_image_hint: "Gjelder hele kortet, ikke bare denne kolonnen.",
+    ed_queue_running: "genereres…",
+    ed_queue_title: "Genereringskø",
     ed_default_assignee: "Standardtildelt",
     ed_defaults_hint: "Gjelder hver ny oppgave i listen \u2014 uansett hvordan den opprettes. Endringer lagres umiddelbart.", ed_defaults_saved: "Lagret", ed_defaults_load_failed: "Kunne ikke laste standardverdiene", ed_defaults_save_failed: "Kunne ikke lagre",
     confirm_complete_msg: "Merke \u00ab{0}\u00bb som fullf\u00f8rt?",
@@ -1035,11 +1299,24 @@ const _TRANSLATIONS = {
     due_ago_hours: "{0} t {1} min siden", due_ago_minutes: "{0} min siden", due_ago_seconds: "Akkurat n\u00e5",
   },
   fi: {
+    ed_default_priority: "Oletusprioriteetti",
+    ed_default_tags: "Oletustunnisteet",
+    ed_default_section: "Oletusosio",
+    ed_default_none: "– Ei mitään –",
+    ed_group_card: "Kortti",
+    ed_person_off: "Pois",
+    ed_person_name: "Nimi",
+    ed_person_both: "Kuva ja nimi",
+    ed_group_header: "Yläosa",
+    ed_group_tasks: "Tehtävät",
+    ed_show_person_avatar: "Profiilikuva",
     voice_failed: "Puhesyöttö epäonnistui",
-    confirm_delete_section: "Poistetaanko tämä osio? Sen tehtävät muuttuvat lajittelemattomiksi.", done_section_header: "Valmis", duplicate_task: "Monista", move_task: "Siirr\u00e4", move_task_msg: "Siirr\u00e4 \u201d{0}\u201d kohteeseen:", ed_show_move: "Siirr\u00e4-painike", ed_add_section: "+ Lisää osio", ed_ai_image_entity: "Tekoälyentiteetti kuvien luontiin", ed_ai_image_entity_placeholder: "esim. ai_task.openai", ed_ai_image_section: "Tekoälykuvien luonti", ed_ai_prompt_prefix: "Kehotteen etuliite (valinnainen)", ed_ai_prompt_prefix_placeholder: "esim. Minimalistinen kuvake", ed_auto_image: "Luo kuva automaattisesti", ed_delete_section: "Poista osio", ed_external_lists: "Ulkoinen", ed_loading: "Ladataan…", ed_move_down: "Siirrä alas", ed_move_up: "Siirrä ylös", ed_sec_sections: "Osiot", ed_section_icon: "Kuvake", ed_section_name: "Nimi", ed_section_name_prompt: "Osion nimi:", ed_sections_empty: "Ei vielä osioita — tehtävät näytetään listana.", ed_sections_select_list_hint: "Valitse ensin lista hallitaksesi sen osioita.", ed_show_filters: "Tilasuodatin", ed_show_images: "Kuvat", ed_show_person_chips: "Henkil\u00f6suodatin", ed_show_tag_chips: "Tunnistesuodatin", ed_show_tile_title: "Otsikko ruuduissa", ed_show_voice: "Puhesyöttö", ed_tile_help: "Ruutunäkymä:\n• Napsautus = valmis\n• Pidä = muokkaa\n• Vedä = järjestä uudelleen", ed_view_mode: "Näkymätila", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Ruudut",
+    confirm_delete_section: "Poistetaanko tämä osio? Sen tehtävät muuttuvat lajittelemattomiksi.", done_section_header: "Valmis", duplicate_task: "Monista", move_task: "Siirr\u00e4", move_task_msg: "Siirr\u00e4 \u201d{0}\u201d kohteeseen:", ed_show_move: "Siirr\u00e4-painike", ed_add_section: "+ Lisää osio", ed_ai_image_entity: "Tekoälyentiteetti kuvien luontiin", ed_ai_image_entity_placeholder: "esim. ai_task.openai", ed_ai_prompt_prefix: "Kehotteen etuliite (valinnainen)", ed_ai_prompt_prefix_placeholder: "esim. Minimalistinen kuvake", ed_auto_image: "Luo kuva automaattisesti", ed_delete_section: "Poista osio", ed_external_lists: "Ulkoinen", ed_loading: "Ladataan…", ed_move_down: "Siirrä alas", ed_move_up: "Siirrä ylös", ed_sec_sections: "Osiot", ed_section_icon: "Kuvake", ed_section_name: "Nimi", ed_section_name_prompt: "Osion nimi:", ed_sections_empty: "Ei vielä osioita — tehtävät näytetään listana.", ed_sections_select_list_hint: "Valitse ensin lista hallitaksesi sen osioita.", ed_show_filters: "Tilasuodatin", ed_show_images: "Kuvat", ed_show_person_chips: "Henkil\u00f6suodatin", ed_show_tag_chips: "Tunnistesuodatin", ed_show_tile_title: "Otsikko ruuduissa", ed_show_voice: "Puhesyöttö", ed_task_search: "Tehtävähaku", ed_tile_help: "Ruutunäkymä:\n• Napsautus = valmis\n• Pidä = muokkaa\n• Vedä = järjestä uudelleen", ed_view_mode: "Näkymätila", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Ruudut",
     voice_input: "Puhesyöttö", voice_stop: "Lopeta nauhoitus", img_label: "Kuva", img_generate: "Luo", img_regenerate: "Luo uudelleen", img_generating: "Luodaan…", img_from_media: "Mediakirjastosta", img_remove: "Poista kuva", img_generate_failed: "Kuvan luonti epäonnistui: ", img_save_failed: "Kuvan tallennus epäonnistui: ", mb_title: "Mediakirjasto", mb_loading: "Ladataan…", mb_root: "Media", mb_back: "Takaisin", mb_empty: "Ei tiedostoja", mb_error: "Virhe: ",
     my_tasks: "Omat teht\u00e4v\u00e4t",
     add_placeholder: "Lis\u00e4\u00e4 uusi teht\u00e4v\u00e4...",
+    add_failed: "Tehtävän lisääminen epäonnistui",
+    duplicate_failed: "Tehtävän monistaminen epäonnistui",
     dialog_cancel: "Peruuta", dialog_add: "Lis\u00e4\u00e4",
     filter_all: "Kaikki", filter_open: "Avoimet", filter_done: "Valmiit", filter_due_soon: "Pian",
     ed_show_due_soon_filter: "Pian-suodatin", ed_due_soon_days: "P\u00e4ivi\u00e4 eteenp\u00e4in", ed_hide_overdue: "Piilota my\u00f6h\u00e4ss\u00e4 olevat",
@@ -1066,8 +1343,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "Poista valmiit v\u00e4litt\u00f6m\u00e4sti", ed_compact: "Kompakti", ed_show_tags: "Tunnisteet",
     ed_confirm_complete: "Vahvista ennen valmiiksi merkitsemist\u00e4",
     ed_show_add_due: "Er\u00e4p\u00e4iv\u00e4 lis\u00e4tt\u00e4ess\u00e4",
-    ed_max_height: "Enimm\u00e4iskorkeus (px, 0 = rajaton)", ed_badge_priority: "Prioriteettimerkit", ed_badge_progress: "Edistymismerkit", ed_badge_due: "Er\u00e4p\u00e4iv\u00e4merkit", ed_badge_recurrence: "Toistomerkit", ed_badge_person: "Henkil\u00f6merkit", ed_badge_tags: "Tunnistemerkit", ed_badge_reminders: "Muistutusmerkit",
+    ed_max_height: "Enimm\u00e4iskorkeus (px, 0 = rajaton)", ed_badge_priority: "Prioriteettimerkit", ed_badge_progress: "Edistymismerkit", ed_badge_due: "Er\u00e4p\u00e4iv\u00e4merkit", ed_badge_recurrence: "Toistomerkit", ed_badge_person: "Henkilö", ed_badge_tags: "Tunnistemerkit", ed_badge_reminders: "Muistutusmerkit",
     ed_sec_defaults: "Oletukset",
+    ed_sec_images: "Kuvat",
+    ed_share_images: "Jaa kuvat muiden listojen kanssa",
+    ed_share_images_hint: "Pois pitää tämän listan kuvat omanaan — sama tehtävän nimi toisessa listassa saa oman kuvansa.",
+    ed_queue_empty: "Mikään ei odota kuvaa.",
+    ed_queue_pending: "Odottaa kuvaa: {0}",
+    ed_queue_cancel: "Peruuta",
+    ed_ai_image_hint: "Koskee koko korttia, ei vain tätä saraketta.",
+    ed_queue_running: "luodaan…",
+    ed_queue_title: "Luontijono",
     ed_default_assignee: "Oletusvastuuhenkil\u00f6",
     ed_defaults_hint: "Koskee jokaista listan uutta teht\u00e4v\u00e4\u00e4 luontitavasta riippumatta. Muutokset tallennetaan heti.", ed_defaults_saved: "Tallennettu", ed_defaults_load_failed: "Oletuksia ei voitu ladata", ed_defaults_save_failed: "Tallennus ep\u00e4onnistui",
     confirm_complete_msg: "Merkit\u00e4\u00e4nk\u00f6 \u201d{0}\u201d valmiiksi?",
@@ -1114,11 +1400,24 @@ const _TRANSLATIONS = {
     due_ago_hours: "{0} t {1} min sitten", due_ago_minutes: "{0} min sitten", due_ago_seconds: "Juuri nyt",
   },
   hu: {
+    ed_default_priority: "Alapértelmezett prioritás",
+    ed_default_tags: "Alapértelmezett címkék",
+    ed_default_section: "Alapértelmezett szakasz",
+    ed_default_none: "– Nincs –",
+    ed_group_card: "Kártya",
+    ed_person_off: "Ki",
+    ed_person_name: "Név",
+    ed_person_both: "Kép és név",
+    ed_group_header: "Fejléc",
+    ed_group_tasks: "Feladatok",
+    ed_show_person_avatar: "Profilkép",
     voice_failed: "A hangbevitel sikertelen",
-    confirm_delete_section: "Törli ezt a szakaszt? A benne lévő feladatok rendezetlenné válnak.", done_section_header: "Kész", duplicate_task: "Másolat", move_task: "\u00c1thelyez\u00e9s", move_task_msg: "\u201e{0}\u201d \u00e1thelyez\u00e9se ide:", ed_show_move: "\u00c1thelyez\u00e9s gomb", ed_add_section: "+ Szakasz hozzáadása", ed_ai_image_entity: "MI-entitás képgeneráláshoz", ed_ai_image_entity_placeholder: "pl. ai_task.openai", ed_ai_image_section: "MI-képgenerálás", ed_ai_prompt_prefix: "Prompt előtag (opcionális)", ed_ai_prompt_prefix_placeholder: "pl. Minimalista ikon", ed_auto_image: "Kép automatikus generálása", ed_delete_section: "Szakasz törlése", ed_external_lists: "Külső", ed_loading: "Betöltés…", ed_move_down: "Mozgatás le", ed_move_up: "Mozgatás fel", ed_sec_sections: "Szakaszok", ed_section_icon: "Ikon", ed_section_name: "Név", ed_section_name_prompt: "Szakasz neve:", ed_sections_empty: "Még nincsenek szakaszok — a feladatok csoportosítás nélkül jelennek meg.", ed_sections_select_list_hint: "Először válassz egy listát a szakaszok kezeléséhez.", ed_show_filters: "\u00c1llapotsz\u0171r\u0151", ed_show_images: "Képek", ed_show_person_chips: "Szem\u00e9lysz\u0171r\u0151", ed_show_tag_chips: "C\u00edmkesz\u0171r\u0151", ed_show_tile_title: "Cím a csempéken", ed_show_voice: "Hangbevitel", ed_tile_help: "Csempenézet:\n• Kattintás = kész\n• Nyomva tartás = szerkesztés\n• Húzás = átrendezés", ed_view_mode: "Nézet mód", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Csempék",
+    confirm_delete_section: "Törli ezt a szakaszt? A benne lévő feladatok rendezetlenné válnak.", done_section_header: "Kész", duplicate_task: "Másolat", move_task: "\u00c1thelyez\u00e9s", move_task_msg: "\u201e{0}\u201d \u00e1thelyez\u00e9se ide:", ed_show_move: "\u00c1thelyez\u00e9s gomb", ed_add_section: "+ Szakasz hozzáadása", ed_ai_image_entity: "MI-entitás képgeneráláshoz", ed_ai_image_entity_placeholder: "pl. ai_task.openai", ed_ai_prompt_prefix: "Prompt előtag (opcionális)", ed_ai_prompt_prefix_placeholder: "pl. Minimalista ikon", ed_auto_image: "Kép automatikus generálása", ed_delete_section: "Szakasz törlése", ed_external_lists: "Külső", ed_loading: "Betöltés…", ed_move_down: "Mozgatás le", ed_move_up: "Mozgatás fel", ed_sec_sections: "Szakaszok", ed_section_icon: "Ikon", ed_section_name: "Név", ed_section_name_prompt: "Szakasz neve:", ed_sections_empty: "Még nincsenek szakaszok — a feladatok csoportosítás nélkül jelennek meg.", ed_sections_select_list_hint: "Először válassz egy listát a szakaszok kezeléséhez.", ed_show_filters: "\u00c1llapotsz\u0171r\u0151", ed_show_images: "Képek", ed_show_person_chips: "Szem\u00e9lysz\u0171r\u0151", ed_show_tag_chips: "C\u00edmkesz\u0171r\u0151", ed_show_tile_title: "Cím a csempéken", ed_show_voice: "Hangbevitel", ed_task_search: "Feladatkeresés", ed_tile_help: "Csempenézet:\n• Kattintás = kész\n• Nyomva tartás = szerkesztés\n• Húzás = átrendezés", ed_view_mode: "Nézet mód", ed_view_mode_list: "Lista", ed_view_mode_tiles: "Csempék",
     voice_input: "Hangbevitel", voice_stop: "Felvétel leállítása", img_label: "Kép", img_generate: "Generálás", img_regenerate: "Újragenerálás", img_generating: "Generálás…", img_from_media: "Médiatárból", img_remove: "Kép eltávolítása", img_generate_failed: "A képgenerálás sikertelen: ", img_save_failed: "A kép mentése sikertelen: ", mb_title: "Médiatár", mb_loading: "Betöltés…", mb_root: "Média", mb_back: "Vissza", mb_empty: "Nincsenek fájlok", mb_error: "Hiba: ",
     my_tasks: "Feladataim",
     add_placeholder: "\u00daj feladat hozz\u00e1ad\u00e1sa...",
+    add_failed: "A feladat hozzáadása nem sikerült",
+    duplicate_failed: "A feladat nem másolható",
     dialog_cancel: "M\u00e9gse", dialog_add: "Hozz\u00e1ad",
     filter_all: "\u00d6sszes", filter_open: "Nyitott", filter_done: "K\u00e9sz", filter_due_soon: "Hamarosan",
     ed_show_due_soon_filter: "Hamarosan sz\u0171r\u0151", ed_due_soon_days: "Napok el\u0151re", ed_hide_overdue: "Lej\u00e1rtak elrejt\u00e9se",
@@ -1145,8 +1444,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "K\u00e9sz feladatok azonnali t\u00f6rl\u00e9se", ed_compact: "Kompakt", ed_show_tags: "C\u00edmk\u00e9k",
     ed_confirm_complete: "Meger\u0151s\u00edt\u00e9s befejez\u00e9s el\u0151tt",
     ed_show_add_due: "Hat\u00e1rid\u0151 hozz\u00e1ad\u00e1skor",
-    ed_max_height: "Max. magass\u00e1g (px, 0 = korl\u00e1tlan)", ed_badge_priority: "Priorit\u00e1s-c\u00edmk\u00e9k", ed_badge_progress: "Folyamat-c\u00edmk\u00e9k", ed_badge_due: "Hat\u00e1rid\u0151-c\u00edmk\u00e9k", ed_badge_recurrence: "Ism\u00e9tl\u00e9s-c\u00edmk\u00e9k", ed_badge_person: "Szem\u00e9ly-c\u00edmk\u00e9k", ed_badge_tags: "C\u00edmke-chipek", ed_badge_reminders: "Eml\u00e9keztet\u0151-c\u00edmk\u00e9k",
+    ed_max_height: "Max. magass\u00e1g (px, 0 = korl\u00e1tlan)", ed_badge_priority: "Priorit\u00e1s-c\u00edmk\u00e9k", ed_badge_progress: "Folyamat-c\u00edmk\u00e9k", ed_badge_due: "Hat\u00e1rid\u0151-c\u00edmk\u00e9k", ed_badge_recurrence: "Ism\u00e9tl\u00e9s-c\u00edmk\u00e9k", ed_badge_person: "Személy", ed_badge_tags: "C\u00edmke-chipek", ed_badge_reminders: "Eml\u00e9keztet\u0151-c\u00edmk\u00e9k",
     ed_sec_defaults: "Alap\u00e9rtelmez\u00e9sek",
+    ed_sec_images: "Képek",
+    ed_share_images: "Képek megosztása más listákkal",
+    ed_share_images_hint: "Kikapcsolva a lista képei csak ehhez a listához tartoznak — ugyanaz a cím egy másik listán saját képet kap.",
+    ed_queue_empty: "Semmi sem vár képre.",
+    ed_queue_pending: "Képre vár: {0}",
+    ed_queue_cancel: "Mégse",
+    ed_ai_image_hint: "Az egész kártyára vonatkozik, nem csak erre az oszlopra.",
+    ed_queue_running: "készül…",
+    ed_queue_title: "Generálási sor",
     ed_default_assignee: "Alap\u00e9rtelmezett felel\u0151s",
     ed_defaults_hint: "A lista minden \u00faj feladat\u00e1ra \u00e9rv\u00e9nyes, b\u00e1rhogyan is j\u00f6n l\u00e9tre. A m\u00f3dos\u00edt\u00e1sok azonnal ment\u00e9sre ker\u00fclnek.", ed_defaults_saved: "Mentve", ed_defaults_load_failed: "Az alap\u00e9rtelmez\u00e9sek bet\u00f6lt\u00e9se sikertelen", ed_defaults_save_failed: "A ment\u00e9s sikertelen",
     confirm_complete_msg: "Megjel\u00f6l\u00f6d \u201e{0}\u201d-t k\u00e9szk\u00e9nt?",
@@ -1193,11 +1501,24 @@ const _TRANSLATIONS = {
     due_ago_hours: "{0} \u00f3 {1} perccel ezel\u0151tt", due_ago_minutes: "{0} perccel ezel\u0151tt", due_ago_seconds: "\u00c9pp most",
   },
   de: {
+    ed_default_priority: "Standard-Priorität",
+    ed_default_tags: "Standard-Tags",
+    ed_default_section: "Standard-Bereich",
+    ed_default_none: "– Keine –",
+    ed_group_card: "Karte",
+    ed_person_off: "Aus",
+    ed_person_name: "Name",
+    ed_person_both: "Bild und Name",
+    ed_group_header: "Kopfzeile",
+    ed_group_tasks: "Aufgaben",
+    ed_show_person_avatar: "Profilbild",
     voice_failed: "Spracheingabe fehlgeschlagen",
     ed_external_lists: "Extern",
     voice_input: "Spracheingabe", voice_stop: "Aufnahme stoppen", img_label: "Bild", img_generate: "Generieren", img_regenerate: "Neu generieren", img_generating: "Generiere…", img_from_media: "Aus Mediathek", img_remove: "Bild entfernen", img_generate_failed: "Bildgenerierung fehlgeschlagen: ", img_save_failed: "Bild speichern fehlgeschlagen: ", mb_title: "Mediathek", mb_loading: "Lädt…", mb_root: "Medien", mb_back: "Zurück", mb_empty: "Keine Dateien", mb_error: "Fehler: ",
     my_tasks: "Meine Aufgaben",
     add_placeholder: "Neue Aufgabe hinzuf\u00fcgen...",
+    add_failed: "Aufgabe konnte nicht hinzugefügt werden",
+    duplicate_failed: "Aufgabe konnte nicht dupliziert werden",
     dialog_cancel: "Abbrechen", dialog_add: "Hinzuf\u00fcgen",
     filter_all: "Alle",
     filter_open: "Offen",
@@ -1245,8 +1566,17 @@ const _TRANSLATIONS = {
     ed_auto_delete: "Erledigte sofort l\u00f6schen",
     ed_confirm_complete: "Vor dem Erledigen nachfragen",
     ed_show_add_due: "F\u00e4lligkeit beim Anlegen",
-    ed_max_height: "Max. H\u00f6he (px, 0 = unbegrenzt)", ed_badge_priority: "Priorit\u00e4ts-Chips", ed_badge_progress: "Fortschritts-Chips", ed_badge_due: "F\u00e4lligkeits-Chips", ed_badge_recurrence: "Wiederholungs-Chips", ed_badge_person: "Personen-Chips", ed_badge_tags: "Tag-Chips", ed_badge_reminders: "Erinnerungs-Chips",
+    ed_max_height: "Max. H\u00f6he (px, 0 = unbegrenzt)", ed_badge_priority: "Priorit\u00e4ts-Chips", ed_badge_progress: "Fortschritts-Chips", ed_badge_due: "F\u00e4lligkeits-Chips", ed_badge_recurrence: "Wiederholungs-Chips", ed_badge_person: "Person", ed_badge_tags: "Tag-Chips", ed_badge_reminders: "Erinnerungs-Chips",
     ed_sec_defaults: "Standardwerte",
+    ed_sec_images: "Bilder",
+    ed_share_images: "Bilder mit anderen Listen teilen",
+    ed_share_images_hint: "Aus behält die Bilder dieser Liste für sich — der gleiche Aufgabentitel auf einer anderen Liste bekommt ein eigenes Bild.",
+    ed_queue_empty: "Nichts wartet auf ein Bild.",
+    ed_queue_pending: "Wartet auf ein Bild: {0}",
+    ed_queue_cancel: "Abbrechen",
+    ed_ai_image_hint: "Gilt für die ganze Karte, nicht nur für diese Spalte.",
+    ed_queue_running: "wird erzeugt…",
+    ed_queue_title: "Warteschlange",
     ed_default_assignee: "Standard-Zust\u00e4ndige(r)",
     ed_defaults_hint: "Gilt f\u00fcr jede neue Aufgabe dieser Liste \u2014 egal wie sie angelegt wird (Karte, Service, Sprache, Todo). \u00c4nderungen werden sofort gespeichert.", ed_defaults_saved: "Gespeichert", ed_defaults_load_failed: "Defaults konnten nicht geladen werden", ed_defaults_save_failed: "Speichern fehlgeschlagen",
     confirm_complete_msg: "„{0}“ als erledigt markieren?",
@@ -1273,6 +1603,7 @@ const _TRANSLATIONS = {
     ed_show_tag_chips: "Tag-Filter",
     ed_show_person_chips: "Personen-Filter",
     ed_show_voice: "Spracheingabe",
+    ed_task_search: "Aufgaben-Suche",
     ed_auto_image: "Bild automatisch generieren",
     ed_default_sort: "Standard-Sortierung",
     reminder: "Erinnerungen",
@@ -1343,7 +1674,6 @@ const _TRANSLATIONS = {
     ed_preset_assignees: "Auf Personen begrenzen",
     ed_preset_labels: "Auf Tags begrenzen",
     ed_ms_add: "Hinzufügen…",
-    ed_ai_image_section: "KI-Bildgenerierung",
     ed_ai_image_entity: "KI-Entität für Bildgenerierung",
     ed_ai_image_entity_placeholder: "z.B. ai_task.openai",
     ed_ai_prompt_prefix: "Prompt-Präfix (optional)",
@@ -1398,6 +1728,22 @@ const personEntries = (hass) =>
       label: (hass.states[eid] && hass.states[eid].attributes && hass.states[eid].attributes.friendly_name) || eid,
     }));
 
+// How a person is shown, in the task row and in the filter row above it.
+// Two switches (chip on/off, picture on/off) could say the same four things,
+// but only if you found both of them - they sat nine rows apart in one grid.
+const PERSON_MODES = ["off", "picture", "name", "both"];
+
+// Initials-circle colours, picked by a hash of the person so the same face
+// keeps the same colour on every card and after every reload. Dark enough
+// for white text in either theme.
+const PERSON_COLORS = [
+  "#185fa5", "#0f6e56", "#993c1d", "#993556", "#534ab7",
+  "#3b6d11", "#854f0b", "#a32d2d", "#5f5e5a",
+];
+
+// Marker for "we stopped waiting", as opposed to "the backend said no".
+const WS_TIMEOUT = "timeout";
+
 // HA todo entity feature bits (TodoListEntityFeature) used for capability gating.
 const TODO_FEATURE = { SET_DUE_DATE: 16, SET_DUE_DATETIME: 32, SET_DESCRIPTION: 64 };
 
@@ -1431,6 +1777,7 @@ class HomeTasksCard extends HTMLElement {
     this._externalLists = [];
     // Per-column state: [{filter, sortBy, sortOpen, tagFilters, personFilters, tasks, newTaskTitle}]
     this._columns = [];
+    this._sourceDefaults = {};    // { entityId: defaults|null } — for the optimistic row
     this._expandedTasks = new Set();
     this._editingTaskId = null;
     this._editingSubTaskId = null;
@@ -1465,7 +1812,9 @@ class HomeTasksCard extends HTMLElement {
   }
 
   _defaultColState() {
-    return { filter: "all", sortBy: "manual", sortOpen: false, tagFilters: new Set(), personFilters: new Set(), tasks: [], sections: [], newTaskTitle: "", newTaskDue: "", newTaskDueTime: "" };
+    // taskSearchQuery holds the text currently typed into the add-task
+    // field (see _buildColumnAddTask / _buildColumnTaskList).
+    return { filter: "all", sortBy: "manual", sortOpen: false, tagFilters: new Set(), personFilters: new Set(), tasks: [], sections: [], newTaskTitle: "", newTaskDue: "", newTaskDueTime: "", taskSearchQuery: "" };
   }
 
   _t(key, ...args) {
@@ -1541,6 +1890,13 @@ class HomeTasksCard extends HTMLElement {
       const col = config.columns[i];
       const prevCol = prevConfig.columns?.[i];
       const colSourceChanged = col.list_id !== prevCol?.list_id || col.entity_id !== prevCol?.entity_id;
+      // A search (and the draft title it mirrors) belongs to the list it was
+      // typed against. Carrying it over to a different list would silently
+      // filter the new list by text the user never typed for it.
+      if (colSourceChanged) {
+        this._columns[i].taskSearchQuery = "";
+        this._columns[i].newTaskTitle = "";
+      }
       if (colSourceChanged || col.default_filter !== prevCol?.default_filter) {
         this._columns[i].filter = col.default_filter || "all";
         if (this._columns[i].filter === "due_soon" && col.show_due_soon_filter !== true) {
@@ -1565,6 +1921,7 @@ class HomeTasksCard extends HTMLElement {
     } else {
       this._render();
     }
+    this._syncImageGenerationConfig();
     // Config may arrive after we're already connected (editor preview);
     // connectedCallback covers the other order. No-op when not connected.
     this._ensureCardMod();
@@ -1672,11 +2029,14 @@ class HomeTasksCard extends HTMLElement {
 
   // --- Data methods ---
 
-  async _callWs(type, data = {}) {
+  // `rethrow` is for callers that have to tell a refusal from our own 5s
+  // race: the backend saying no means the action did not happen, a timeout
+  // means we stopped waiting and it may well have happened anyway.
+  async _callWs(type, data = {}, { rethrow = false } = {}) {
     if (!this._hass) return null;
     try {
       const timeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("timeout")), 5000)
+        setTimeout(() => reject(new Error(WS_TIMEOUT)), 5000)
       );
       return await Promise.race([
         this._hass.callWS({ type, ...data }),
@@ -1684,8 +2044,13 @@ class HomeTasksCard extends HTMLElement {
       ]);
     } catch (err) {
       console.warn(`WS call ${type} failed:`, err.message);
+      if (rethrow) throw err;
       return null;
     }
+  }
+
+  _isWsTimeout(err) {
+    return !!err && err.message === WS_TIMEOUT;
   }
 
   // --- External entity routing helpers ---
@@ -1798,6 +2163,41 @@ class HomeTasksCard extends HTMLElement {
     setTimeout(() => toast.remove(), 4000);
   }
 
+  // A card is the only place auto_generate_image and the ai_task entity are
+  // configured, but the background queue has to work without one being open.
+  // Whenever a card with the option loads, it hands both to the backend.
+  async _syncImageGenerationConfig() {
+    if (!this._hass || !this._config) return;
+    const wanted = (this._config.columns || []).filter(
+      c => c.auto_generate_image === true && c.show_images === true && (c.list_id || c.entity_id)
+    );
+    if (!wanted.length) return;
+    const imgCfg = this._config.image_generation || {};
+    try {
+      if (imgCfg.entity_id) {
+        await this._hass.callWS({
+          type: "home_tasks/sync_image_config",
+          ai_task_entity_id: imgCfg.entity_id,
+          prompt_prefix: imgCfg.prompt_prefix || "",
+        });
+      }
+      for (const col of wanted) {
+        const info = col.entity_id
+          ? (this._externalLists || []).find(l => l.entity_id === col.entity_id)
+          : (this._lists || []).find(l => l.id === col.list_id);
+        if (info && info.auto_generate_images === true) continue;  // already on
+        await this._hass.callWS({
+          type: "home_tasks/set_list_settings",
+          ...(col.entity_id ? { entity_id: col.entity_id } : { list_id: col.list_id }),
+          auto_generate_images: true,
+        });
+        if (info) info.auto_generate_images = true;
+      }
+    } catch (e) {
+      console.warn("Could not sync automatic image generation:", e);
+    }
+  }
+
   async _loadLists() {
     const [nativeResult, externalResult] = await Promise.all([
       this._callWs("home_tasks/get_lists"),
@@ -1830,6 +2230,9 @@ class HomeTasksCard extends HTMLElement {
       }
     }
 
+    // The list metadata the sync needs (share/auto flags) is only here now.
+    this._syncImageGenerationConfig();
+
     // Auto-select first list if no column has a list configured
     const hasAnyList = this._config.columns.some(c => c.list_id || c.entity_id);
     if (!hasAnyList && this._lists.length > 0) {
@@ -1857,10 +2260,22 @@ class HomeTasksCard extends HTMLElement {
     }, delays[attempt]);
   }
 
+  // What a new task on this list starts with. Only external columns need it:
+  // the native path draws the task the store hands back, while the external
+  // one shows a placeholder for a moment and would otherwise show a task
+  // without the tags and priority it is about to get.
+  async _loadListDefaults(entityId) {
+    if (this._sourceDefaults[entityId] !== undefined) return;
+    this._sourceDefaults[entityId] = null;  // in flight, ask once
+    const r = await this._callWs("home_tasks/get_defaults", { entity_id: entityId });
+    this._sourceDefaults[entityId] = (r && r.defaults) || null;
+  }
+
   async _loadAllTasks() {
     await Promise.all(this._config.columns.map(async (col, i) => {
       if (col.entity_id) {
         // External column — fetch from external entity + overlay
+        this._loadListDefaults(col.entity_id);
         const r = await this._callWs("home_tasks/get_external_tasks", { entity_id: col.entity_id });
         this._columns[i].tasks = r?.tasks ?? [];
         this._columns[i].sections = r?.sections ?? [];
@@ -1881,6 +2296,30 @@ class HomeTasksCard extends HTMLElement {
     return this._config.columns[colIdx]?.list_id;
   }
 
+  // Whether the column's list takes part in the cross-list image pool. The
+  // backend decides what is actually stored; the card asks the same question
+  // so its optimistic update does not show an image that will never arrive.
+  _colSharesImages(colIdx) {
+    const col = this._config.columns[colIdx];
+    if (!col) return false;
+    const info = col.entity_id
+      ? (this._externalLists || []).find(l => l.entity_id === col.entity_id)
+      : (this._lists || []).find(l => l.id === col.list_id);
+    return info ? info.share_images !== false : true;
+  }
+
+  // Identity of the list a column shows, for deciding which columns hold the
+  // same task. Task ids are only unique within a list — external providers
+  // hand out their own uids and two of them can collide — so anything that
+  // patches "this task everywhere" must compare source, not just id.
+  _colSourceKey(colIdx) {
+    const col = this._config.columns[colIdx];
+    if (!col) return null;
+    if (col.entity_id) return `ext:${col.entity_id}`;
+    if (col.list_id) return `native:${col.list_id}`;
+    return null;
+  }
+
   // Enter inside the add-row date/time inputs: _render defers rebuilds while
   // a date/time input has focus (its segment state would be lost), which
   // would swallow the render that shows the new task. Hand focus to the
@@ -1896,10 +2335,30 @@ class HomeTasksCard extends HTMLElement {
     return this._addTask(colIdx);
   }
 
+  _nudgeAddInput(colIdx) {
+    const el = this.shadowRoot?.querySelector(
+      `.add-input[data-focus-key="add_task_col_${colIdx}"]`
+    );
+    if (!el) return;
+    try { el.focus(); } catch (_) { /* focus is a nicety, never a failure */ }
+    el.classList.remove("nudge");
+    void el.offsetWidth;  // restart the animation if it is already running
+    el.classList.add("nudge");
+    setTimeout(() => el.classList.remove("nudge"), 700);
+  }
+
   async _addTask(colIdx) {
     const cs = this._columns[colIdx];
     const title = cs.newTaskTitle.trim();
-    if (!title) return;
+    if (!title) {
+      // Pressing + with an empty field used to do nothing at all, which
+      // reads as a dead button (issue #59). Put the cursor where the text
+      // belongs and nudge the field so the eye follows it.
+      this._nudgeAddInput(colIdx);
+      return;
+    }
+    // Adding a task clears any active search.
+    cs.taskSearchQuery = "";
     if (!this._colListId(colIdx) && !this._colEntityId(colIdx)) return;
 
     // Capture add-input position for the entry animation
@@ -1930,12 +2389,20 @@ class HomeTasksCard extends HTMLElement {
       // Optimistic: insert a placeholder task immediately so the user
       // sees it appear without waiting for the API round-trip.
       const tempId = "_pending_" + Date.now();
+      // The list's own defaults, so the row that appears is the row that will
+      // be there after the reload rather than a barer version of it.
+      const listDefaults = this._sourceDefaults[this._colEntityId(colIdx)] || {};
       cs.tasks.push({
         id: tempId, title, completed: false, notes: "", due_date: addDue,
         due_time: addDueTime, sort_order: cs.tasks.length, sub_items: [],
-        priority: null, tags: [], reminders: [], assigned_person: autoAssignPerson,
+        priority: listDefaults.priority ?? null,
+        tags: [...(listDefaults.tags || [])],
+        reminders: [...(listDefaults.reminders || [])],
+        section_id: listDefaults.section_id || null,
+        assigned_person: autoAssignPerson || listDefaults.assignee || null,
         recurrence_enabled: false, _external: true,
       });
+      const typed = { title, due: cs.newTaskDue, dueTime: cs.newTaskDueTime };
       cs.newTaskTitle = "";
       resetAddDue();
       this._justAddedTaskId = tempId;
@@ -1946,20 +2413,46 @@ class HomeTasksCard extends HTMLElement {
       this._applyFlip(before, colIdx, 0.25);
 
       // Send to API in background, then reload to get the real ID
+      let addError = null;
       try {
         const payload = { entity_id: this._colEntityId(colIdx), title };
         if (autoAssignPerson) payload.assigned_person = autoAssignPerson;
         if (addDue) { payload.due_date = addDue; if (addDueTime) payload.due_time = addDueTime; }
-        result = await this._callWs("home_tasks/create_external_task", payload);
+        result = await this._callWs("home_tasks/create_external_task", payload, { rethrow: true });
       } catch (err) {
-        console.warn("Failed to create external task:", err);
+        addError = err;
+      }
+      // Refused: say so, take the placeholder row back off and hand the
+      // typed text back, so the next attempt is one keypress and not a
+      // retype (issue #59). A timeout is not a refusal - the provider may
+      // have created the task, and the reload below will show it.
+      if (!result && !this._isWsTimeout(addError)) {
+        cs.tasks = cs.tasks.filter((t) => t.id !== tempId);
+        cs.newTaskTitle = typed.title;
+        cs.newTaskDue = typed.due;
+        cs.newTaskDueTime = typed.dueTime;
+        this._showError(this._t("add_failed"));
+        this._render();
       }
       this._reloadExternal(colIdx);
+      // C12 for external lists: the provider assigns the uid, and the card
+      // only sees the real task after the reload above — the row on screen is
+      // still the placeholder with a temporary id. Hand the generation the
+      // uid and let it wait for the task to arrive.
+      if (result?.uid && col.auto_generate_image && col.show_images === true
+          && this._config.image_generation?.entity_id) {
+        this._autoGenerateExternalImage(colIdx, String(result.uid));
+      }
     } else {
       const payload = { list_id: this._colListId(colIdx), title };
       if (autoAssignPerson) payload.assigned_person = autoAssignPerson;
       if (addDue) { payload.due_date = addDue; if (addDueTime) payload.due_time = addDueTime; }
-      result = await this._callWs("home_tasks/add_task", payload);
+      let addError = null;
+      try {
+        result = await this._callWs("home_tasks/add_task", payload, { rethrow: true });
+      } catch (err) {
+        addError = err;
+      }
       if (result) {
         cs.newTaskTitle = "";
         resetAddDue();
@@ -1974,11 +2467,37 @@ class HomeTasksCard extends HTMLElement {
             && this._config.image_generation?.entity_id) {
           this._generateTaskImage(result, colIdx);
         }
+      } else if (this._isWsTimeout(addError)) {
+        // We stopped waiting, the store may still have it: show what is
+        // there rather than claiming a failure. The typed title stays.
+        await this._loadAllTasks();
+      } else {
+        this._showError(this._t("add_failed"));
       }
     }
   }
 
+  // Wrapper around the toggle logic: ticking off a task you searched for
+  // ends the search, so the section view comes back instead of leaving you
+  // on a result that is now done. Only when the task was really completed —
+  // _toggleTaskCore returns false when the confirm_complete prompt was
+  // cancelled, and throwing away what the user typed on a tap they just
+  // took back is the opposite of helpful. Reopening keeps the search: the
+  // list you were looking through is still the list you want.
   async _toggleTask(taskId, completed, colIdx) {
+    const cs = this._columns[colIdx];
+    const wasSearching = !!this._activeSearchQuery(colIdx);
+    const toggled = await this._toggleTaskCore(taskId, completed, colIdx);
+    if (wasSearching && toggled && !completed) {
+      cs.taskSearchQuery = "";
+      cs.newTaskTitle = "";
+      this._render();
+    }
+  }
+
+  // Returns whether the task actually changed state (false = the user
+  // cancelled the confirm_complete prompt).
+  async _toggleTaskCore(taskId, completed, colIdx) {
     const col = this._config.columns[colIdx];
     const cs = this._columns[colIdx];
     const newCompleted = !completed;
@@ -1996,14 +2515,14 @@ class HomeTasksCard extends HTMLElement {
       );
       if (!ok) {
         this._render();
-        return;
+        return false;
       }
     }
 
     // auto_delete path → route through _deleteTask to reuse exit animation
     if (newCompleted && col.auto_delete_completed && !hasRecurrence) {
       await this._deleteTask(taskId, colIdx);
-      return;
+      return true;
     }
 
     // Snapshot all visible task positions for FLIP (completion/reopen moves the task)
@@ -2020,7 +2539,7 @@ class HomeTasksCard extends HTMLElement {
         await this._updateTaskRouted(colIdx, taskId, { completed: newCompleted });
         await this._reloadExternal(colIdx);
         this._applyFlip(before, colIdx, 0.28);
-        return;
+        return true;
       }
 
       // Optimistic update for non-recurring external tasks: render new state
@@ -2036,6 +2555,7 @@ class HomeTasksCard extends HTMLElement {
       await this._loadAllTasks();
       this._applyFlip(before, colIdx, 0.28);
     }
+    return true;
   }
 
   async _updateTaskTitle(taskId, title, colIdx) {
@@ -2695,6 +3215,21 @@ class HomeTasksCard extends HTMLElement {
     return this._modalDialog({ message, okLabel, resolveOk: () => true }).then((v) => !!v);
   }
 
+  // Per-column max_height (issues #33 / #34): cap only the task body and let
+  // it scroll internally. Header, add-task row, filters and chips are
+  // siblings above it and therefore stay put. 0 / unset = unlimited.
+  // Every path that builds a column body must go through this — a targeted
+  // refresh (see _refreshTaskListDOM) replaces that node, and without the cap
+  // the list grows out of the card, which clips it in an overflow-hidden or
+  // fixed-row layout.
+  _applyColumnMaxHeight(body, col) {
+    const maxH = this._columnMaxHeight(col);
+    if (maxH) {
+      body.classList.add("scrollable");
+      body.style.maxHeight = `${maxH}px`;
+    }
+  }
+
   // Column max_height in px, or 0 when unset/invalid/non-positive.
   _columnMaxHeight(col) {
     const n = Number(col && col.max_height);
@@ -3025,7 +3560,8 @@ class HomeTasksCard extends HTMLElement {
     const addTask = this._buildColumnAddTask(cs, colIdx);
     const sortBtnWrapper = (col.show_sort !== false) ? this._buildColumnSortControl(col, cs, colIdx) : null;
     const tagChips = col.show_tag_chips === false ? null : this._buildColumnTagChips(col, cs, colIdx);
-    const personChips = col.show_person_chips === false ? null : this._buildColumnPersonChips(col, cs, colIdx);
+    const personChips = this._personMode(colIdx, "filter") === "off"
+      ? null : this._buildColumnPersonChips(col, cs, colIdx);
 
     // Sort button placement: move into first available chips row when filters are hidden
     const sortInTagRow = hideFilters && tagChips !== null && sortBtnWrapper !== null;
@@ -3040,17 +3576,8 @@ class HomeTasksCard extends HTMLElement {
       : personChips;
 
     const isTiles = col.view_mode === "tiles";
-    const taskList = isTiles
-      ? this._buildColumnTileGrid(filteredTasks, colIdx)
-      : this._buildColumnTaskList(filteredTasks, colIdx);
-    // Per-column max_height (issues #33 / #34): cap only the task body and
-    // let it scroll internally. Header, add-task row, filters and chips are
-    // siblings above it and therefore stay put. 0 / unset = unlimited.
-    const maxH = this._columnMaxHeight(col);
-    if (maxH) {
-      taskList.classList.add("scrollable");
-      taskList.style.maxHeight = `${maxH}px`;
-    }
+    const taskList = this._buildColumnBody(filteredTasks, colIdx);
+    this._applyColumnMaxHeight(taskList, col);
 
     const children = [];
     if (header) children.push(header);
@@ -3119,6 +3646,12 @@ class HomeTasksCard extends HTMLElement {
       } else {
         const inp = this.shadowRoot.querySelector(`.add-input[data-focus-key="add_task_col_${colIdx}"]`);
         if (inp) inp.value = text;
+      }
+      // Dictating a title searches exactly like typing it does — otherwise
+      // the same text in the same field would behave differently.
+      if (cs && this._config.columns[colIdx]?.show_task_search !== false) {
+        cs.taskSearchQuery = text.trim();
+        this._refreshTaskListDOM(colIdx);
       }
     };
 
@@ -3340,18 +3873,87 @@ class HomeTasksCard extends HTMLElement {
     }
   }
 
+  // The scrollable body of a column: task list or tile grid. Both the full
+  // render and the targeted refresh below go through here, so a refresh
+  // produces exactly what a re-render would.
+  _buildColumnBody(filteredTasks, colIdx) {
+    const col = this._config.columns[colIdx];
+    if (col.view_mode === "tiles") {
+      const query = this._activeSearchQuery(colIdx);
+      return this._buildColumnTileGrid(
+        query ? this._searchMatches(query, colIdx) : filteredTasks,
+        colIdx,
+      );
+    }
+    return this._buildColumnTaskList(filteredTasks, colIdx);
+  }
+
+  // Updates only the column body, leaving the add-task <input> untouched.
+  //
+  // A full this._render() rebuilds the whole card, and even though focus
+  // and caret position are restored afterwards via data-focus-key, the
+  // <input> DOM node is technically removed and recreated in the process.
+  // On mobile this makes the on-screen keyboard flicker closed and open
+  // again on every keystroke. Replacing only the body container avoids
+  // that, since the <input> is never touched.
+  _refreshTaskListDOM(colIdx) {
+    const col = this._config.columns[colIdx];
+    const selector = col.view_mode === "tiles"
+      ? `.tile-grid-wrap[data-col-idx="${colIdx}"]`
+      : `.task-list[data-col-idx="${colIdx}"]`;
+    const oldBody = this.shadowRoot.querySelector(selector);
+    if (!oldBody || !oldBody.parentNode) {
+      this._render();
+      return;
+    }
+    // Same FLIP as sorting and filtering: every task that survives the new
+    // query slides from where it was to where it now is, instead of the whole
+    // body jumping. Tiles reflow in two dimensions, which is where a hard cut
+    // is most jarring. Shorter than the sort animation (0.3s) because this
+    // runs on every keystroke and must keep up with typing.
+    const before = this._captureListFlip(colIdx);
+    const newBody = this._buildColumnBody(this._filteredTasks(colIdx), colIdx);
+    this._applyColumnMaxHeight(newBody, col);
+    oldBody.replaceWith(newBody);
+    this._applyFlip(before, colIdx, 0.2);
+  }
+
   _buildColumnAddTask(cs, colIdx) {
     const col = this._config.columns[colIdx];
+    // Per-column opt-out via show_task_search (default on); editor switch
+    // lives in HomeTasksCardEditor further below.
+    const searchEnabled = col.show_task_search !== false;
+
     const addInput = this._el("input", {
       type: "text",
       className: "add-input",
       placeholder: this._t("add_placeholder"),
       value: cs.newTaskTitle,
       "data-focus-key": `add_task_col_${colIdx}`,
+      autocomplete: "off",
     });
-    addInput.addEventListener("input", (e) => { cs.newTaskTitle = e.target.value; });
+    addInput.addEventListener("input", (e) => {
+      cs.newTaskTitle = e.target.value;
+      if (searchEnabled) {
+        // Mirror the search text and refresh only the list (see
+        // _refreshTaskListDOM above — no this._render() here, to avoid
+        // the mobile keyboard flicker on every keystroke).
+        cs.taskSearchQuery = e.target.value.trim();
+        this._refreshTaskListDOM(colIdx);
+      }
+    });
     addInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") this._addTask(colIdx);
+      if (e.key === "Enter") {
+        this._addTask(colIdx);
+      } else if (searchEnabled && e.key === "Escape" && cs.taskSearchQuery) {
+        // Escape cancels the search and restores the section view.
+        // Same targeted update as above, for the same reason.
+        e.preventDefault();
+        addInput.value = "";
+        cs.newTaskTitle = "";
+        cs.taskSearchQuery = "";
+        this._refreshTaskListDOM(colIdx);
+      }
     });
     const addBtn = this._el("button", { className: "add-btn", textContent: "+" });
     addBtn.addEventListener("click", () => this._addTask(colIdx));
@@ -3528,11 +4130,23 @@ class HomeTasksCard extends HTMLElement {
     if (this._hass && this._hass.states && this._hass.states[eid]) {
       name = this._hass.states[eid].attributes?.friendly_name || eid;
     }
+    const mode = this._personMode(colIdx, "filter");
+    const withAvatar = mode === "picture" || mode === "both";
+    // Picture alone: no pill, at the size the pill was tall.
+    const avatarOnly = mode === "picture";
     const chip = this._el("button", {
-      className: "person-chip" + (isActive ? " active" : ""),
-      textContent: "\uD83D\uDC64 " + name,
+      className: "person-chip" + (isActive ? " active" : "") + (withAvatar ? " with-avatar" : "")
+        + (avatarOnly ? " avatar-only" : ""),
       "data-eid": eid,
+      title: name,
     });
+    if (avatarOnly) {
+      chip.appendChild(this._buildPersonAvatar(eid, name));
+    } else if (withAvatar) {
+      chip.append(this._buildPersonAvatar(eid, name), this._el("span", { textContent: name }));
+    } else {
+      chip.textContent = "\uD83D\uDC64 " + name;
+    }
     chip.addEventListener("click", () => {
       this._animateFilterChange(colIdx, () => {
         if (cs.personFilters.has(eid)) cs.personFilters.delete(eid);
@@ -3591,9 +4205,53 @@ class HomeTasksCard extends HTMLElement {
       : null;
   }
 
+  // The trimmed search query in effect for a column — "" when nothing is
+  // typed or the column opted out via show_task_search: false.
+  _activeSearchQuery(colIdx) {
+    const col = this._config.columns[colIdx];
+    if (!col || col.show_task_search === false) return "";
+    return (this._columns[colIdx]?.taskSearchQuery || "").trim();
+  }
+
+  // Tasks whose title contains the query, prefix matches first. Deliberately
+  // ignores the All/Open/Done filter and the tag/person chips: the point of
+  // the search is to find a task you already have, wherever it sits.
+  _searchMatches(query, colIdx) {
+    const cs = this._columns[colIdx];
+    const q = query.toLowerCase();
+    return (cs.tasks || [])
+      .filter((t) => t.title && t.title.toLowerCase().includes(q))
+      .sort((a, b) => {
+        const aStarts = a.title.toLowerCase().startsWith(q) ? 0 : 1;
+        const bStarts = b.title.toLowerCase().startsWith(q) ? 0 : 1;
+        if (aStarts !== bStarts) return aStarts - bStarts;
+        return a.title.localeCompare(b.title);
+      });
+  }
+
+  // While searching, replaces the normal section-grouped view with a flat
+  // list of matches (open + completed, across all sections) so section
+  // headers don't eat the whole screen on mobile.
+  _buildTaskSearchResults(query, colIdx) {
+    const matches = this._searchMatches(query, colIdx);
+
+    const children = matches.length === 0
+      ? [this._el("div", { className: "empty-state", textContent: this._t("empty") })]
+      : matches.map((task) => this._buildTask(task, colIdx));
+    return this._el("div", { className: "task-list", "data-col-idx": String(colIdx) }, children);
+  }
+
   _buildColumnTaskList(filteredTasks, colIdx) {
     const cs = this._columns[colIdx];
     const col = this._config.columns[colIdx];
+
+    // Branch off into the search results view when a search is active
+    // (and not disabled via the editor toggle).
+    const activeQuery = this._activeSearchQuery(colIdx);
+    if (activeQuery) {
+      return this._buildTaskSearchResults(activeQuery, colIdx);
+    }
+
     const sections = (cs.sections || []).slice().sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
 
     const taskListChildren = [];
@@ -4408,7 +5066,8 @@ class HomeTasksCard extends HTMLElement {
       const badge = this._buildRecurrenceBadge(task);
       if (badge) meta.push(badge);
     }
-    if ((task.assigned_person || task.assigned_name) && col.show_assigned_person !== false && col.badge_person !== false) {
+    if ((task.assigned_person || task.assigned_name) && col.show_assigned_person !== false
+        && this._personMode(colIdx, "badge") !== "off") {
       meta.push(this._buildAssignedPersonBadge(task, cs, colIdx));
     }
     if (task.tags && task.tags.length > 0 && col.show_tags !== false && col.badge_tags !== false) {
@@ -4485,6 +5144,78 @@ class HomeTasksCard extends HTMLElement {
     return this._el("span", { className: "recurrence-badge", textContent: badgeText });
   }
 
+  // Only Home Assistant's own person picture is ever shown. entity_picture
+  // may hold whatever the person's config puts there; an absolute URL points
+  // at a host we do not control, so it is treated like no picture at all.
+  // HA serves uploaded pictures at 256 and 512 only (image_upload's
+  // VALID_SIZES) - the small one is plenty for an 18px circle.
+  _personPictureUrl(entityId) {
+    const url = this._hass?.states?.[entityId]?.attributes?.entity_picture;
+    if (typeof url !== "string" || !url.startsWith("/")) return null;
+    // Only the size that image_upload itself serves is swapped. A picture
+    // that merely has "512x512" somewhere in its path (a folder named after
+    // a size, say) would turn into a URL that does not exist.
+    if (!url.startsWith("/api/image/serve/")) return url;
+    return url.replace("/512x512", "/256x256");
+  }
+
+  // `which` is "badge" (in the task row) or "filter" (the row above it).
+  // Configs written before the dropdown existed are read through their old
+  // keys, so an update changes nothing on screen.
+  _personMode(colIdx, which) {
+    const col = this._config.columns[colIdx] || {};
+    const chosen = which === "badge" ? col.person_badge : col.person_filter;
+    if (PERSON_MODES.includes(chosen)) return chosen;
+    const chipOn = which === "badge" ? col.badge_person !== false : col.show_person_chips !== false;
+    const picture = col.show_person_avatar === true;
+    if (!chipOn) return picture ? "picture" : "off";
+    return picture ? "both" : "name";
+  }
+
+  _personInitials(name) {
+    // The first *letter* of a word: display names are not always plain
+    // first-and-last, and "Unknown (Alice)" must not put a bracket in the
+    // circle. Words without a letter or digit drop out entirely.
+    const letters = String(name || "")
+      .trim()
+      .split(/\s+/)
+      .map((w) => (w.match(/[\p{L}\p{N}]/u) || [""])[0])
+      .filter(Boolean);
+    if (!letters.length) return "?";
+    const last = letters.length > 1 ? letters[letters.length - 1] : "";
+    return (letters[0] + last).toUpperCase();
+  }
+
+  _personColor(key) {
+    const s = String(key || "");
+    let hash = 0;
+    for (let i = 0; i < s.length; i++) hash = (hash * 31 + s.charCodeAt(i)) | 0;
+    return PERSON_COLORS[Math.abs(hash) % PERSON_COLORS.length];
+  }
+
+  _buildInitialsAvatar(key, name) {
+    const el = this._el("span", {
+      className: "person-avatar initials",
+      textContent: this._personInitials(name),
+    });
+    el.style.background = this._personColor(key);
+    return el;
+  }
+
+  // A picture when the person has one, initials otherwise (issue #48).
+  _buildPersonAvatar(entityId, name) {
+    const url = this._personPictureUrl(entityId);
+    if (!url) return this._buildInitialsAvatar(entityId || name, name);
+    const img = this._el("img", { className: "person-avatar", src: url, alt: "" });
+    // A picture that has gone missing must not leave a hole in the row.
+    img.addEventListener(
+      "error",
+      () => img.replaceWith(this._buildInitialsAvatar(entityId || name, name)),
+      { once: true },
+    );
+    return img;
+  }
+
   _buildAssignedPersonBadge(task, cs, colIdx) {
     let personName;
     if (task.assigned_person && this._hass && this._hass.states && this._hass.states[task.assigned_person]) {
@@ -4497,11 +5228,25 @@ class HomeTasksCard extends HTMLElement {
       personName = task.assigned_person;
     }
     const isActivePerson = cs.personFilters.has(task.assigned_person);
+    const mode = this._personMode(colIdx, "badge");
+    const withAvatar = mode === "picture" || mode === "both";
+    const avatarOnly = mode === "picture";
     const assignedBadge = this._el("span", {
-      className: "assigned-badge" + (isActivePerson ? " active" : ""),
-      textContent: "\uD83D\uDC64 " + personName,
+      className: "assigned-badge" + (isActivePerson ? " active" : "") + (withAvatar ? " with-avatar" : "")
+        + (avatarOnly ? " avatar-only" : ""),
       "data-eid": task.assigned_person,
+      title: personName,
     });
+    if (avatarOnly) {
+      assignedBadge.appendChild(this._buildPersonAvatar(task.assigned_person, personName));
+    } else if (withAvatar) {
+      assignedBadge.append(
+        this._buildPersonAvatar(task.assigned_person, personName),
+        this._el("span", { textContent: personName }),
+      );
+    } else {
+      assignedBadge.textContent = "\uD83D\uDC64 " + personName;
+    }
     assignedBadge.addEventListener("click", (e) => {
       e.stopPropagation();
       this._animateFilterChange(colIdx, () => {
@@ -4667,7 +5412,7 @@ class HomeTasksCard extends HTMLElement {
     if (col.show_reminders !== false) details.push(this._buildRemindersSection(task, colIdx));
     if (col.show_recurrence !== false) details.push(this._buildRecurrenceSection(task, colIdx));
     if (col.show_history) details.push(this._buildHistorySection(task));
-    if (!this._isExternalCol(colIdx) && col.show_images === true) details.push(this._buildImageSection(task, colIdx));
+    if (col.show_images === true) details.push(this._buildImageSection(task, colIdx));
     details.push(this._buildActionsSection(task, colIdx));
 
     const inner = this._el("div", { className: "task-details-inner" }, details);
@@ -5969,8 +6714,9 @@ class HomeTasksCard extends HTMLElement {
     }
 
     // Duplicate: create an identical copy (same assignee, recurrence, tags,
-    // notes, due date — everything). Native lists only.
-    if (!this._isExternalCol(colIdx)) {
+    // notes, due date — everything). Linked lists too: the provider gets the
+    // copy, the overlay keeps what the provider cannot.
+    {
       const dupBtn = this._el("button", {
         className: "duplicate-task-btn",
         textContent: this._t("duplicate_task"),
@@ -6001,9 +6747,29 @@ class HomeTasksCard extends HTMLElement {
   }
 
   async _duplicateTask(task, colIdx) {
-    const listId = this._colListId(colIdx);
+    if (this._isExternalCol(colIdx)) {
+      // A linked list refuses far more often than a native one (read-only
+      // calendar, provider rate limit), so a failure has to be said out
+      // loud. A timeout is not a refusal: the provider may hold the copy,
+      // and the reload will show it either way.
+      let err = null;
+      try {
+        await this._callWs("home_tasks/duplicate_external_task", {
+          entity_id: this._colEntityId(colIdx),
+          task_uid: task.id,
+          assigned_person: task.assigned_person ?? null,
+        }, { rethrow: true });
+      } catch (e) {
+        err = e;
+      }
+      if (err && !this._isWsTimeout(err)) this._showError(this._t("duplicate_failed"));
+      // The provider decides where the copy lands and when its entity
+      // reflects it - same delayed reload as every other linked-list edit.
+      this._reloadExternal(colIdx);
+      return;
+    }
     const newTask = await this._callWs("home_tasks/duplicate_task", {
-      list_id: listId,
+      list_id: this._colListId(colIdx),
       task_id: task.id,
       assigned_person: task.assigned_person ?? null,
     });
@@ -6107,10 +6873,8 @@ class HomeTasksCard extends HTMLElement {
       // Remove image button (×)
       const removeBtn = this._el("button", { className: "task-image-remove", title: this._t("img_remove") });
       removeBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
-      // Reuse _saveImageUrl(null): it clears the image, syncs cs.tasks in EVERY
-      // column from the server result, and refreshes the open sheet + all tiles
-      // (the old inline copy only patched the current column, so the same task in
-      // other columns kept showing the deleted image).
+      // Reuse _saveImageUrl(null): it clears the image in the source column and
+      // refreshes the open sheet + visible tiles without a full render.
       removeBtn.addEventListener("click", () => this._saveImageUrl(task, colIdx, null));
       imgWrap.appendChild(removeBtn);
       children.push(imgWrap);
@@ -6304,6 +7068,26 @@ class HomeTasksCard extends HTMLElement {
     if (body) body.scrollTop = st;
   }
 
+  // Auto-generation for an external column, waiting for the task the provider
+  // just created to reach the card. Polls rather than chaining onto
+  // _reloadExternal, which is a fire-and-forget timer. Gives up quietly: an
+  // automatic extra is not worth an error popup, and the button in the task
+  // details still works.
+  async _autoGenerateExternalImage(colIdx, uid) {
+    const sourceKey = this._colSourceKey(colIdx);
+    for (let attempt = 0; attempt < 12; attempt++) {
+      if (!this.isConnected) return;
+      // The column may have been re-pointed at another list meanwhile.
+      if (this._colSourceKey(colIdx) !== sourceKey) return;
+      const task = this._columns[colIdx]?.tasks?.find(t => String(t.id) === uid);
+      if (task) {
+        if (!task.image_url) await this._generateTaskImage(task, colIdx);
+        return;
+      }
+      await new Promise(r => setTimeout(r, 500));
+    }
+  }
+
   async _generateTaskImage(task, colIdx, force = false) {
     const col = this._config.columns[colIdx];
     const imgCfg = this._config.image_generation || {};
@@ -6313,30 +7097,42 @@ class HomeTasksCard extends HTMLElement {
 
     const payload = {
       type: "home_tasks/generate_task_image",
-      entry_id: col.list_id,
       task_id: task.id,
       force: force,
     };
+    if (col.entity_id) payload.todo_entity_id = col.entity_id;
+    else payload.entry_id = col.list_id;
     if (imgCfg.prompt_prefix) payload.prompt_prefix = imgCfg.prompt_prefix;
     if (imgCfg.entity_id) payload.entity_id = imgCfg.entity_id;
 
     try {
       const result = await this._hass.callWS(payload);
       // Update every column immediately.
-      // • Exact ID match  → full task replacement (the generating task itself).
+      // • Exact ID match in the source column → full task replacement.
       // • Same title, different ID → image_url-only patch (same-title tasks in
       //   other lists that the backend also updated — they share the image but
       //   have their own task objects).
+      // An id match only counts within the same list — external providers can
+      // hand out colliding uids, so replacing a foreign column's task object
+      // by id would corrupt it. Same list in two columns (open | done) still
+      // gets the full replacement in both.
       const newImageUrl = result.task?.image_url;
       const titleKey = (task.title || "").trim().toLowerCase();
+      const sourceKey = this._colSourceKey(colIdx);
+      // A list that keeps its images to itself only shares within itself.
+      const sourceShares = this._colSharesImages(colIdx);
       for (let ci = 0; ci < this._columns.length; ci++) {
         const cs = this._columns[ci];
         if (!cs || !cs.tasks) continue;
+        const sameSource = this._colSourceKey(ci) === sourceKey;
+        const sharesWithSource = sameSource
+          || (sourceShares && this._colSharesImages(ci));
         for (let i = 0; i < cs.tasks.length; i++) {
           const t = cs.tasks[i];
-          if (t.id === task.id) {
+          if (sameSource && t.id === task.id) {
             cs.tasks[i] = result.task;
-          } else if (newImageUrl && titleKey && (t.title || "").trim().toLowerCase() === titleKey) {
+          } else if (sharesWithSource && newImageUrl && titleKey
+                     && (t.title || "").trim().toLowerCase() === titleKey) {
             cs.tasks[i] = { ...t, image_url: newImageUrl };
           }
         }
@@ -6379,17 +7175,38 @@ class HomeTasksCard extends HTMLElement {
   async _saveImageUrl(task, colIdx, url) {
     const col = this._config.columns[colIdx];
     try {
-      const result = await this._hass.callWS({
-        type: "home_tasks/update_task",
-        list_id: col.list_id,
-        task_id: task.id,
-        image_url: url,
-      });
-      // Update every column so the change is visible immediately everywhere.
+      let result;
+      if (col.entity_id) {
+        const overlay = await this._hass.callWS({
+          type: "home_tasks/update_external_overlay",
+          entity_id: col.entity_id,
+          task_uid: task.id,
+          image_url: url,
+        });
+        // Take ONLY the image from the response. The overlay always comes back
+        // complete (every field, defaults included), so spreading it over the
+        // task would reset everything the provider owns — a Todoist task would
+        // lose its due date, notes, priority, tags and sub-items until the next
+        // reload.
+        result = { ...task, image_url: overlay?.image_url ?? url };
+      } else {
+        result = await this._hass.callWS({
+          type: "home_tasks/update_task",
+          list_id: col.list_id,
+          task_id: task.id,
+          image_url: url,
+        });
+      }
+      // Update the task in every column showing the SAME list — the same list
+      // can legitimately appear twice on one card (e.g. open | done), and
+      // leaving the second copy behind means it keeps showing the old image.
+      // Matching by task id alone is not enough: two providers can hand out
+      // the same uid, and patching a foreign list by id would corrupt it.
+      const sourceKey = this._colSourceKey(colIdx);
       for (let ci = 0; ci < this._columns.length; ci++) {
+        if (this._colSourceKey(ci) !== sourceKey) continue;
         const cs = this._columns[ci];
-        if (!cs || !cs.tasks) continue;
-        const idx = cs.tasks.findIndex(t => t.id === task.id);
+        const idx = cs?.tasks?.findIndex(t => t.id === task.id) ?? -1;
         if (idx >= 0) cs.tasks[idx] = result;
       }
       // Update the open sheet + tiles in place (a full _render() would keep the
@@ -6997,6 +7814,14 @@ class HomeTasksCard extends HTMLElement {
         color: var(--todo-text); font-size: 14px; outline: none; font-family: inherit;
       }
       .add-input:focus { border-color: var(--todo-primary); }
+      .add-input.nudge { animation: ht-add-nudge 0.6s ease; }
+      @keyframes ht-add-nudge {
+        0%, 100% { border-color: var(--todo-divider); }
+        25%, 75% { border-color: var(--todo-primary); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .add-input.nudge { animation: none; border-color: var(--todo-primary); }
+      }
       .add-input::placeholder { color: var(--todo-disabled); }
       .add-btn {
         padding: 10px 20px; background: var(--todo-primary); color: #fff;
@@ -7182,6 +8007,25 @@ class HomeTasksCard extends HTMLElement {
         background: rgba(33, 150, 243, 0.15); color: var(--primary-color, #2196f3);
         cursor: pointer; transition: all 0.2s;
       }
+      .assigned-badge.with-avatar { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px 2px 3px; }
+      .person-chip.with-avatar { display: inline-flex; align-items: center; gap: 6px; padding: 3px 12px 3px 4px; }
+      .person-avatar {
+        flex-shrink: 0; border-radius: 50%; object-fit: cover; overflow: hidden;
+        display: inline-flex; align-items: center; justify-content: center;
+        color: #fff; font-weight: 500; line-height: 1;
+      }
+      .assigned-badge.avatar-only, .person-chip.avatar-only {
+        background: none; border: none; padding: 0; border-radius: 50%;
+      }
+      .assigned-badge.avatar-only .person-avatar { width: 20px; height: 20px; font-size: 10px; }
+      .person-chip.avatar-only .person-avatar { width: 24px; height: 24px; font-size: 11px; }
+      .assigned-badge.avatar-only.active .person-avatar,
+      .person-chip.avatar-only.active .person-avatar {
+        box-shadow: 0 0 0 2px var(--todo-primary);
+      }
+      .assigned-badge .person-avatar { width: 16px; height: 16px; font-size: 9px; }
+      .person-chip .person-avatar { width: 18px; height: 18px; font-size: 10px; }
+      .compact .assigned-badge .person-avatar { width: 14px; height: 14px; font-size: 8px; }
       .assigned-badge:hover { opacity: 0.8; }
       .assigned-badge.active { background: var(--primary-color, #2196f3); color: #fff; }
       .tag-badge {
@@ -7867,11 +8711,30 @@ class HomeTasksCardEditor extends HTMLElement {
   // "Defaults" section (issues #44 / #46): list-level default assignee and
   // reminders, stored in the list itself so they apply to every creation
   // path (card, service, WS, voice, todo). Loaded/saved via WS.
-  _buildDefaultsEditor(listId) {
+  _loadSectionState() {
+    try {
+      const raw = localStorage.getItem("ht-editor-sections");
+      const parsed = raw ? JSON.parse(raw) : null;
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (e) {
+      return {};  // private mode, blocked storage - just start folded
+    }
+  }
+
+  _saveSectionState() {
+    try {
+      localStorage.setItem("ht-editor-sections", JSON.stringify(this._sectionOpen));
+    } catch (e) { /* not worth bothering the user about */ }
+  }
+
+  _buildDefaultsEditor(col) {
     const container = this._el("div", { className: "defaults-editor" });
-    const cached = this._listDefaults[listId];
+    const target = this._sectionsTargetPayload(col);
+    const key = this._sourceKeyForCol(col);
+    if (!target) return container;
+    const cached = this._listDefaults[key];
     if (cached) {
-      this._renderDefaultsInto(container, listId, cached);
+      this._renderDefaultsInto(container, col, cached);
       return container;
     }
     container.appendChild(this._el("span", { className: "hint", textContent: this._t("ed_loading") }));
@@ -7879,11 +8742,17 @@ class HomeTasksCardEditor extends HTMLElement {
     // _listMeta: the editor rebuilds its DOM on every structural change, and
     // an uncached fetch would flash "Loading\u2026" and hit the backend each
     // time.
-    this._hass.callWS({ type: "home_tasks/get_defaults", list_id: listId })
+    this._hass.callWS({ type: "home_tasks/get_defaults", ...target })
       .then((r) => {
         const d = (r && r.defaults) || {};
-        this._listDefaults[listId] = { assignee: d.assignee || null, reminders: [...(d.reminders || [])] };
-        this._renderDefaultsInto(container, listId, this._listDefaults[listId]);
+        this._listDefaults[key] = {
+          assignee: d.assignee || null,
+          reminders: [...(d.reminders || [])],
+          tags: [...(d.tags || [])],
+          priority: d.priority ?? null,
+          section_id: d.section_id || null,
+        };
+        this._renderDefaultsInto(container, col, this._listDefaults[key]);
       })
       .catch(() => {
         // Never seed the cache with fabricated empty defaults: an editable
@@ -7896,7 +8765,151 @@ class HomeTasksCardEditor extends HTMLElement {
     return container;
   }
 
-  _renderDefaultsInto(container, listId, defaults) {
+  // Whether this column's LIST takes part in the cross-list image pool.
+  // Unlike the switches above this is not a card option: it belongs to the
+  // list itself, so every card showing it behaves the same and the backend
+  // can honour it for generations triggered anywhere.
+  // What the background generation still has to do. Cancelling a job also
+  // switches its list's automatic generation off - leaving it on would just
+  // put the task back on the next scan and make the button look broken.
+  // The queue runs without a dashboard, so the list has to remember that it
+  // wants images, and the backend has to know which ai_task entity to use.
+  async _syncAutoGenerate(col, on) {
+    const target = col.entity_id ? { entity_id: col.entity_id } : { list_id: col.list_id };
+    if (!target.entity_id && !target.list_id) return;
+    try {
+      const imgCfg = this._config?.image_generation || {};
+      if (on && imgCfg.entity_id) {
+        await this._hass.callWS({
+          type: "home_tasks/sync_image_config",
+          ai_task_entity_id: imgCfg.entity_id,
+          prompt_prefix: imgCfg.prompt_prefix || "",
+        });
+      }
+      await this._hass.callWS({
+        type: "home_tasks/set_list_settings", ...target, auto_generate_images: on,
+      });
+      const info = col.entity_id
+        ? (this._externalLists || []).find(l => l.entity_id === col.entity_id)
+        : (this._lists || []).find(l => l.id === col.list_id);
+      if (info) info.auto_generate_images = on;
+    } catch (e) {
+      console.warn("Could not sync automatic image generation:", e);
+    }
+  }
+
+  _buildQueuePanel() {
+    const wrap = this._el("div", { className: "queue-panel" });
+
+    const cancelBtn = (job) => {
+      const btn = this._el("button", { className: "queue-cancel", textContent: "\u00d7" });
+      btn.title = this._t("ed_queue_cancel");
+      btn.addEventListener("click", async () => {
+        btn.disabled = true;
+        try {
+          await this._hass.callWS({
+            type: "home_tasks/cancel_image_queue",
+            jobs: [{
+              ...(job.list_id ? { list_id: job.list_id } : {}),
+              ...(job.entity_id ? { entity_id: job.entity_id } : {}),
+              task_id: job.task_id,
+            }],
+          });
+        } catch (e) { /* the refresh below shows what actually happened */ }
+        load();
+      });
+      return btn;
+    };
+
+    const render = (current, jobs) => {
+      wrap.innerHTML = "";
+      if (!current && !jobs.length) {
+        wrap.appendChild(this._el("div", {
+          className: "hint", textContent: this._t("ed_queue_empty"),
+        }));
+        return;
+      }
+      if (current) {
+        // The one being generated right now cannot be cancelled - the
+        // provider call is already out.
+        const row = this._el("div", { className: "queue-row current" }, [
+          this._el("span", { className: "queue-pos", textContent: "\u25b6" }),
+          this._el("span", { className: "queue-title", textContent: current.title || current.task_id }),
+          this._el("span", { className: "queue-state", textContent: this._t("ed_queue_running") }),
+        ]);
+        wrap.appendChild(row);
+      }
+      if (jobs.length) {
+        wrap.appendChild(this._el("div", {
+          className: "hint", textContent: this._t("ed_queue_pending", String(jobs.length)),
+        }));
+      }
+      jobs.forEach((job, i) => {
+        const row = this._el("div", { className: "queue-row" }, [
+          // Numbered so the order is not a guess: 1 is generated next.
+          this._el("span", { className: "queue-pos", textContent: `${i + 1}.` }),
+          this._el("span", { className: "queue-title", textContent: job.title || job.task_id }),
+        ]);
+        row.appendChild(cancelBtn(job));
+        wrap.appendChild(row);
+      });
+    };
+
+    // Generation takes seconds, so the panel follows along — but only while
+    // there is something to follow. Once the queue is empty it stops polling
+    // instead of ticking forever behind a closed editor (an interval would
+    // also outlive the panel, and in tests the process with it).
+    let timer = null;
+    const stop = () => { if (timer) { clearTimeout(timer); timer = null; } };
+    const load = async (scheduled = false) => {
+      stop();
+      // The first call runs before the panel has been appended, so only a
+      // tick that scheduled itself may give up on being disconnected.
+      if (scheduled && !wrap.isConnected) return;
+      let current = null;
+      let jobs = [];
+      try {
+        const r = await this._hass.callWS({ type: "home_tasks/get_image_queue" });
+        current = (r && r.current) || null;
+        jobs = (r && r.queue) || [];
+      } catch (e) { /* render the empty state below */ }
+      render(current, jobs);
+      if ((current || jobs.length) && wrap.isConnected) {
+        timer = setTimeout(() => load(true), 3000);
+      }
+    };
+    load();
+    return wrap;
+  }
+
+  _buildListSettingToggle(col, key, labelKey, defaultOn) {
+    const info = col.entity_id
+      ? (this._externalLists || []).find(l => l.entity_id === col.entity_id)
+      : (this._lists || []).find(l => l.id === col.list_id);
+    const sw = document.createElement("ha-switch");
+    sw.checked = info && info[key] !== undefined ? info[key] !== false : defaultOn;
+    sw.disabled = !info;
+    sw.setAttribute("aria-label", this._t(labelKey));
+    sw.addEventListener("change", async () => {
+      const target = col.entity_id ? { entity_id: col.entity_id } : { list_id: col.list_id };
+      try {
+        await this._hass.callWS({
+          type: "home_tasks/set_list_settings", ...target, [key]: sw.checked,
+        });
+        if (info) info[key] = sw.checked;  // keep the cached list in sync
+      } catch (e) {
+        sw.checked = !sw.checked;  // put the switch back if the write failed
+      }
+    });
+    return this._el("div", { className: "toggle-row" }, [
+      this._el("span", { className: "toggle-label", textContent: this._t(labelKey) }),
+      sw,
+    ]);
+  }
+
+  _renderDefaultsInto(container, col, defaults) {
+    const target = this._sectionsTargetPayload(col);
+    const key = this._sourceKeyForCol(col);
     const savedFlash = this._el("span", { className: "def-saved-flash" });
     // Partial saves with in-flight coalescing: each change sends only the
     // field(s) it touched (the backend keeps omitted fields), and changes
@@ -7908,7 +8921,7 @@ class HomeTasksCardEditor extends HTMLElement {
       const patch = pending;
       pending = null;
       saving = true;
-      this._hass.callWS({ type: "home_tasks/set_defaults", list_id: listId, ...patch })
+      this._hass.callWS({ type: "home_tasks/set_defaults", ...target, ...patch })
         .then((r) => {
           // Adopt the server-normalized state (deduped, sorted reminders) so
           // the session cache cannot diverge from the store — but NEVER while
@@ -7918,10 +8931,17 @@ class HomeTasksCardEditor extends HTMLElement {
           if (!pending) {
             const d = (r && r.defaults) || {};
             const norm = d.reminders || [];
+            const normTags = d.tags || [];
             const changed = (d.assignee || null) !== defaults.assignee ||
-              JSON.stringify(norm) !== JSON.stringify(defaults.reminders);
+              (d.priority ?? null) !== defaults.priority ||
+              (d.section_id || null) !== defaults.section_id ||
+              JSON.stringify(norm) !== JSON.stringify(defaults.reminders) ||
+              JSON.stringify(normTags) !== JSON.stringify(defaults.tags);
             defaults.assignee = d.assignee || null;
+            defaults.priority = d.priority ?? null;
+            defaults.section_id = d.section_id || null;
             defaults.reminders.splice(0, defaults.reminders.length, ...norm);
+            defaults.tags.splice(0, defaults.tags.length, ...normTags);
             if (changed) renderInto();
           }
           savedFlash.classList.remove("err");
@@ -7937,7 +8957,7 @@ class HomeTasksCardEditor extends HTMLElement {
           clearTimeout(savedFlash._hideT);
           savedFlash.textContent = "\u2717 " + this._t("ed_defaults_save_failed");
           savedFlash.classList.add("err", "show");
-          delete this._listDefaults[listId];
+          delete this._listDefaults[key];
         })
         .then(() => {
           saving = false;
@@ -7973,6 +8993,59 @@ class HomeTasksCardEditor extends HTMLElement {
         personSelect,
         this._el("span", { textContent: this._t("ed_default_assignee") }),
       ]));
+
+      const prioritySelect = this._el("select", { className: "editor-native-select" });
+      for (const [value, labelKey] of [["", "ed_default_none"], ["1", "pri_low"], ["2", "pri_medium"], ["3", "pri_high"]]) {
+        const opt = this._el("option", { value, textContent: this._t(labelKey) });
+        if (String(defaults.priority ?? "") === value) opt.selected = true;
+        prioritySelect.appendChild(opt);
+      }
+      prioritySelect.addEventListener("change", () => {
+        defaults.priority = prioritySelect.value ? parseInt(prioritySelect.value, 10) : null;
+        save({ priority: defaults.priority });
+      });
+      kids.push(this._el("div", { className: "field-wrap" }, [
+        prioritySelect,
+        this._el("span", { textContent: this._t("ed_default_priority") }),
+      ]));
+
+      // Suggestions come from the tags already in use on this list; the
+      // multi-select takes free text too, same as the preset filters.
+      const known = (key && this._listMeta[key]) || { tags: [] };
+      kids.push(this._buildMultiSelect(
+        this._t("ed_default_tags"),
+        defaults.tags,
+        known.tags,
+        (vals) => {
+          defaults.tags.splice(0, defaults.tags.length, ...vals);
+          save({ tags: [...defaults.tags] });
+        },
+      ));
+
+      // Sections are loaded for the Sections editor in the same render pass;
+      // until they arrive this is just the "no section" entry, and the load
+      // re-renders the editor.
+      const sections = (key && this._listSections[key]) || [];
+      if (sections.length) {
+        const sectionSelect = this._el("select", { className: "editor-native-select" });
+        const noSection = this._el("option", { value: "", textContent: this._t("ed_default_none") });
+        if (!defaults.section_id) noSection.selected = true;
+        sectionSelect.appendChild(noSection);
+        for (const s of [...sections].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))) {
+          const opt = this._el("option", { value: s.id, textContent: s.name });
+          if (s.id === defaults.section_id) opt.selected = true;
+          sectionSelect.appendChild(opt);
+        }
+        sectionSelect.addEventListener("change", () => {
+          defaults.section_id = sectionSelect.value || null;
+          save({ section_id: defaults.section_id });
+        });
+        kids.push(this._el("div", { className: "field-wrap" }, [
+          sectionSelect,
+          this._el("span", { textContent: this._t("ed_default_section") }),
+        ]));
+      }
+
       defaults.reminders.forEach((offset, ri) => {
         const sel = this._el("select", { className: "editor-native-select" });
         for (const opt of reminderOffsetOptions(this, offset)) sel.appendChild(opt);
@@ -8015,7 +9088,12 @@ class HomeTasksCardEditor extends HTMLElement {
     this._listsLoaded = false;
     this._editorTab = 0;
     this._editorCodeMode = {};  // { tabIdx: bool }
-    this._sectionOpen = {};     // { translationKey: bool } — persists across re-renders
+    // { sectionId: bool } — which editor sections are unfolded. Kept in
+    // localStorage because the editor is thrown away every time the dialog
+    // closes, and re-opening it to find everything folded shut again (or
+    // everything open again) is equally annoying. Nothing is open until the
+    // user opens it.
+    this._sectionOpen = this._loadSectionState();
     this._ignoreNextSetConfig = false; // skip the echo setConfig() call after _fireChanged
     this._listSections = {};    // { sourceKey: [{id,name,icon,sort_order}] } — server-loaded sections
     this._listMeta = {};        // { sourceKey: {tags:[], persons:[]} } — derived from the list's tasks
@@ -8246,6 +9324,15 @@ class HomeTasksCardEditor extends HTMLElement {
       .icon-btn:disabled { opacity: 0.3; cursor: default; }
       .icon-btn-spacer { flex: 1; }
       .toggle-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; }
+      .group-label {
+        display: flex; align-items: center; gap: 10px; margin: 14px 0 2px;
+        font-size: 12px; font-weight: 500; color: var(--secondary-text-color, #888);
+        text-transform: uppercase; letter-spacing: 0.06em;
+      }
+      .group-label::before, .group-label::after {
+        content: ""; flex: 1; height: 1px;
+        background: var(--divider-color, rgba(127,127,127,0.3));
+      }
       .visual-editor { display: flex; flex-direction: column; gap: 8px; }
       .field { display: flex; flex-direction: column; gap: 6px; }
       details { border: 1px solid var(--divider-color, rgba(255,255,255,0.12)); border-radius: 8px; overflow: hidden; }
@@ -8264,6 +9351,25 @@ class HomeTasksCardEditor extends HTMLElement {
       .hint { font-size: 12px; color: var(--secondary-text-color); font-style: italic; margin-top: 2px; }
       .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; min-height: 40px; }
       .toggle-label { font-size: 14px; color: var(--primary-text-color); }
+      .queue-panel { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+      .queue-row {
+        display: flex; align-items: center; gap: 8px;
+        padding: 4px 8px; border-radius: 6px;
+        background: var(--secondary-background-color, rgba(127,127,127,0.08));
+      }
+      .queue-row.current { background: var(--primary-color, #03a9f4); background: color-mix(in srgb, var(--primary-color, #03a9f4) 14%, transparent); }
+      .queue-pos {
+        flex-shrink: 0; min-width: 18px; font-size: 12px;
+        color: var(--secondary-text-color); font-variant-numeric: tabular-nums;
+      }
+      .queue-title { flex: 1; min-width: 0; font-size: 13px; word-break: break-word; color: var(--primary-text-color); }
+      .queue-state { flex-shrink: 0; font-size: 12px; font-style: italic; color: var(--secondary-text-color); }
+      .queue-cancel {
+        border: none; background: transparent; cursor: pointer;
+        font-size: 18px; line-height: 1; color: var(--secondary-text-color);
+      }
+      .queue-cancel:hover { color: var(--error-color, #db4437); }
+      .queue-cancel:disabled { opacity: 0.4; cursor: default; }
       .field-wrap { position: relative; width: 100%; }
       .field-wrap input { width: 100%; box-sizing: border-box; padding: 20px 12px 6px; height: 48px; border: 1px solid var(--outline-color, var(--divider-color, rgba(255,255,255,0.12))); border-radius: 4px; background: var(--mdc-text-field-fill-color, var(--input-fill-color, transparent)); color: var(--primary-text-color); font-size: 0.875rem; font-family: inherit; outline: none; }
       .field-wrap input:focus { border: 2px solid var(--primary-color); padding: 19px 11px 5px; }
@@ -8433,12 +9539,16 @@ class HomeTasksCardEditor extends HTMLElement {
       ? this._buildCodeEditor(activeTab)
       : this._buildVisualEditor(activeTab);
 
-    const imgGenSection = this._buildImgGenSection();
-    const editor = this._el("div", { className: "editor" }, [cardTitleRow, tabsRow, controls, tabContent, imgGenSection]);
+    // The AI settings used to sit in their own section at the bottom, which
+    // is not where anyone looks for them — everything about images is in the
+    // column's "Images" section now.
+    const editor = this._el("div", { className: "editor" }, [cardTitleRow, tabsRow, controls, tabContent]);
     root.appendChild(editor);
   }
 
-  _buildImgGenSection() {
+  // The card-level ai_task entity and prompt prefix, rendered inside the
+  // column's Images section. Card-level, but shown where images are.
+  _buildImgGenForm() {
     const imgGen = this._config.image_generation || {};
 
     const form = document.createElement("ha-form");
@@ -8467,25 +9577,7 @@ class HomeTasksCardEditor extends HTMLElement {
       this._fireChanged();
     });
 
-    const det = document.createElement("details");
-    det.style.marginTop = "8px"; // match the .visual-editor inter-section gap
-    if (this._sectionOpen?.imggen) det.open = true;
-    det.addEventListener("toggle", () => {
-      this._sectionOpen = { ...(this._sectionOpen || {}), imggen: det.open };
-    });
-    const sum = document.createElement("summary");
-    const ico = document.createElement("ha-icon");
-    ico.setAttribute("icon", "mdi:image-plus");
-    ico.style.cssText = "--mdc-icon-size:20px;width:20px;height:20px;flex-shrink:0;";
-    const lbl = this._el("span", { textContent: this._t("ed_ai_image_section"), style: "flex:1" });
-    const chev = document.createElement("ha-icon");
-    chev.setAttribute("icon", "mdi:chevron-down");
-    chev.className = "sum-chevron";
-    chev.style.cssText = "--mdc-icon-size:20px;width:20px;height:20px;";
-    sum.append(ico, lbl, chev);
-    det.appendChild(sum);
-    det.appendChild(this._el("div", { className: "section-content" }, [form]));
-    return det;
+    return form;
   }
 
   _buildCodeEditor(tabIdx) {
@@ -8515,6 +9607,11 @@ class HomeTasksCardEditor extends HTMLElement {
       this._fireChanged();
     };
 
+    const groupLabel = (key) =>
+      this._el("div", { className: "group-label" }, [
+        this._el("span", { textContent: this._t(key) }),
+      ]);
+
     const makeSelect = (labelKey, options, currentVal, onChange) => {
       const sel = document.createElement("select");
       sel.className = "editor-native-select";
@@ -8531,6 +9628,38 @@ class HomeTasksCardEditor extends HTMLElement {
         this._el("span", { textContent: this._t(labelKey) }),
       ]);
     };
+
+    // Off / Profile picture / Name / Both, for the filter row and for the
+    // task row. Both keys are written on every change and the three older
+    // ones dropped, so the two can never disagree about the picture.
+    //
+    // Read from the config as it is *now*, never from the `col` captured when
+    // the editor was drawn: the editor ignores the setConfig echo of its own
+    // change and so does not re-render, which would make the second dropdown
+    // write back the value the first one had already replaced.
+    const personMode = (which) => {
+      const current = (this._config.columns || [])[tabIdx] || {};
+      const chosen = which === "badge" ? current.person_badge : current.person_filter;
+      if (["off", "picture", "name", "both"].includes(chosen)) return chosen;
+      const chipOn = which === "badge"
+        ? current.badge_person !== false : current.show_person_chips !== false;
+      const picture = current.show_person_avatar === true;
+      if (!chipOn) return picture ? "picture" : "off";
+      return picture ? "both" : "name";
+    };
+    const makePersonSelect = (which) => makeSelect(
+      which === "badge" ? "ed_badge_person" : "ed_show_person_chips",
+      [["off", "ed_person_off"], ["picture", "ed_show_person_avatar"],
+       ["name", "ed_person_name"], ["both", "ed_person_both"]],
+      personMode(which),
+      (val) => updateCol({
+        person_badge: which === "badge" ? val : personMode("badge"),
+        person_filter: which === "filter" ? val : personMode("filter"),
+        badge_person: undefined,
+        show_person_chips: undefined,
+        show_person_avatar: undefined,
+      }),
+    );
 
     // List select — native lists + linked external entities
     const listSelect = document.createElement("select");
@@ -8643,12 +9772,15 @@ class HomeTasksCardEditor extends HTMLElement {
     );
 
     // Toggle helper — uses ha-switch for native HA look
-    const makeToggle = (_id, labelKey, configKey, defaultOn = true) => {
+    const makeToggle = (_id, labelKey, configKey, defaultOn = true, onChange = null) => {
       const checked = defaultOn ? col[configKey] !== false : col[configKey] === true;
       const sw = document.createElement("ha-switch");
       sw.checked = checked;
       sw.setAttribute("aria-label", this._t(labelKey));
-      sw.addEventListener("change", () => updateCol({ [configKey]: sw.checked }));
+      sw.addEventListener("change", () => {
+        updateCol({ [configKey]: sw.checked });
+        if (onChange) onChange(sw.checked);
+      });
       return this._el("div", { className: "toggle-row" }, [
         this._el("span", { className: "toggle-label", textContent: this._t(labelKey) }),
         sw,
@@ -8657,9 +9789,9 @@ class HomeTasksCardEditor extends HTMLElement {
 
     const hint = this._el("span", { className: "hint", textContent: this._t("ed_hint") });
 
-    const makeSection = (sectionId, icon, titleKey, nodes, defaultOpen = true) => {
+    const makeSection = (sectionId, icon, titleKey, nodes) => {
       const det = document.createElement("details");
-      const isOpen = sectionId in this._sectionOpen ? this._sectionOpen[sectionId] : defaultOpen;
+      const isOpen = this._sectionOpen[sectionId] === true;
       if (isOpen) det.open = true;
       const sum = document.createElement("summary");
       const ico = document.createElement("ha-icon");
@@ -8690,6 +9822,7 @@ class HomeTasksCardEditor extends HTMLElement {
         if (det.open) {
           // Mark closed immediately so any mid-animation re-render preserves state
           this._sectionOpen[sectionId] = false;
+          this._saveSectionState();
           const h = wrap.offsetHeight;
           if (!h) { det.open = false; return; }
           wrap.style.cssText = `overflow:hidden;max-height:${h}px;`;
@@ -8706,6 +9839,7 @@ class HomeTasksCardEditor extends HTMLElement {
         } else {
           // Mark open immediately so any mid-animation re-render preserves state
           this._sectionOpen[sectionId] = true;
+          this._saveSectionState();
           det.open = true;
           wrap.style.cssText = "overflow:hidden;max-height:0;";
           requestAnimationFrame(() => {
@@ -8797,33 +9931,22 @@ class HomeTasksCardEditor extends HTMLElement {
         hint,
       ]),
       makeSection("view", "mdi:eye", "ed_sec_view", [
-        this._el("div", { className: "field" }, [titleInput]),
-        this._el("div", { className: "field" }, [iconPicker]),
+        // Two dozen switches in one grid meant reading every label to find
+        // the one you wanted, and two of them said "person". Three groups
+        // by where the effect shows up: the card as a whole, its header,
+        // the task rows.
+        groupLabel("ed_group_card"),
+        makeSelect(
+          "ed_view_mode",
+          [["list", "ed_view_mode_list"], ["tiles", "ed_view_mode_tiles"]],
+          col.view_mode || "list",
+          (val) => { updateCol({ view_mode: val === "list" ? undefined : val }); this._render(); }
+        ),
+        ...(col.view_mode === "tiles"
+          ? [this._el("div", { className: "hint", textContent: this._t("ed_tile_help"), style: "white-space:pre-line" })]
+          : []),
         this._el("div", { className: "toggle-grid" }, [
-          makeToggle("show-title", "ed_show_title", "show_title", true),
-          makeToggle("show-progress", "ed_show_progress", "show_progress", true),
-          makeToggle("show-add-task", "ed_show_add_task", "show_add_task", true),
-          makeToggle("show-add-due", "ed_show_add_due", "show_add_due", false),
-          makeToggle("auto-delete", "ed_auto_delete", "auto_delete_completed", false),
-          makeToggle("confirm-complete", "ed_confirm_complete", "confirm_complete", false),
-          makeToggle("show-sort", "ed_show_sort", "show_sort", true),
-          makeToggle("show-filters", "ed_show_filters", "show_filters", true),
-          makeToggle("show-tag-chips", "ed_show_tag_chips", "show_tag_chips", true),
-          makeToggle("show-person-chips", "ed_show_person_chips", "show_person_chips", true),
-          makeToggle("show-voice", "ed_show_voice", "show_voice", true),
           makeToggle("compact", "ed_compact", "compact", false),
-          makeToggle("badge-priority", "ed_badge_priority", "badge_priority", true),
-          makeToggle("badge-progress", "ed_badge_progress", "badge_progress", true),
-          makeToggle("badge-due", "ed_badge_due", "badge_due", true),
-          makeToggle("badge-recurrence", "ed_badge_recurrence", "badge_recurrence", true),
-          makeToggle("badge-person", "ed_badge_person", "badge_person", true),
-          makeToggle("badge-tags", "ed_badge_tags", "badge_tags", true),
-          makeToggle("badge-reminders", "ed_badge_reminders", "badge_reminders", true),
-          makeToggle("show-images", "ed_show_images", "show_images", false),
-          makeToggle("auto-image", "ed_auto_image", "auto_generate_image", false),
-          ...(col.view_mode === "tiles"
-            ? [makeToggle("show-tile-title", "ed_show_tile_title", "show_tile_title", true)]
-            : []),
         ]),
         this._el("div", { className: "field" }, [(() => {
           // max_height (px): 0 / empty = unlimited. Caps the task body only.
@@ -8845,20 +9968,44 @@ class HomeTasksCardEditor extends HTMLElement {
             this._el("span", { textContent: this._t("ed_max_height") }),
           ]);
         })()]),
-        sortField,
-        makeSelect(
-          "ed_view_mode",
-          [["list", "ed_view_mode_list"], ["tiles", "ed_view_mode_tiles"]],
-          col.view_mode || "list",
-          (val) => { updateCol({ view_mode: val === "list" ? undefined : val }); this._render(); }
-        ),
-        ...(col.view_mode === "tiles"
-          ? [this._el("div", { className: "hint", textContent: this._t("ed_tile_help"), style: "white-space:pre-line" })]
-          : []),
+        groupLabel("ed_group_header"),
+        this._el("div", { className: "field" }, [titleInput]),
+        this._el("div", { className: "field" }, [iconPicker]),
+        this._el("div", { className: "toggle-grid" }, [
+          makeToggle("show-title", "ed_show_title", "show_title", true),
+          makeToggle("show-progress", "ed_show_progress", "show_progress", true),
+          makeToggle("show-add-task", "ed_show_add_task", "show_add_task", true),
+          // On/off switch for the live search in the add-task field.
+          makeToggle("task-search", "ed_task_search", "show_task_search", true),
+          makeToggle("show-add-due", "ed_show_add_due", "show_add_due", false),
+          makeToggle("show-voice", "ed_show_voice", "show_voice", true),
+          makeToggle("show-sort", "ed_show_sort", "show_sort", true),
+          makeToggle("show-filters", "ed_show_filters", "show_filters", true),
+          makeToggle("show-tag-chips", "ed_show_tag_chips", "show_tag_chips", true),
+        ]),
+        makePersonSelect("filter"),
+        groupLabel("ed_group_tasks"),
+        this._el("div", { className: "toggle-grid" }, [
+          makeToggle("badge-priority", "ed_badge_priority", "badge_priority", true),
+          makeToggle("badge-progress", "ed_badge_progress", "badge_progress", true),
+          makeToggle("badge-due", "ed_badge_due", "badge_due", true),
+          makeToggle("badge-recurrence", "ed_badge_recurrence", "badge_recurrence", true),
+          makeToggle("badge-tags", "ed_badge_tags", "badge_tags", true),
+          makeToggle("badge-reminders", "ed_badge_reminders", "badge_reminders", true),
+          makeToggle("auto-delete", "ed_auto_delete", "auto_delete_completed", false),
+          makeToggle("confirm-complete", "ed_confirm_complete", "confirm_complete", false),
+          ...(col.view_mode === "tiles"
+            ? [makeToggle("show-tile-title", "ed_show_tile_title", "show_tile_title", true)]
+            : []),
+        ]),
+        makePersonSelect("badge"),
       ]),
-      ...(col.list_id ? [makeSection("defaults", "mdi:account-check-outline", "ed_sec_defaults", [
-        this._buildDefaultsEditor(col.list_id),
-      ], false)] : []),
+      makeSection("defaults", "mdi:account-check-outline", "ed_sec_defaults", [
+        sortField,
+        // Defaults live with the list, native or external, so they apply
+        // however the task is created - card, voice, service or todo entity.
+        this._buildDefaultsEditor(col),
+      ]),
       makeSection("filters", "mdi:filter-variant", "ed_sec_filters", [
         filterField,
         dueSoonToggle,
@@ -8889,8 +10036,37 @@ class HomeTasksCardEditor extends HTMLElement {
           makeToggle("show-history", "ed_show_history", "show_history", false),
           makeToggle("show-move", "ed_show_move", "show_move", true),
         ]),
-      ], false),
+      ]),
       this._buildSectionsEditor(col),
+      makeSection("images", "mdi:image-multiple", "ed_sec_images", [
+        this._el("div", { className: "toggle-grid" }, [
+          makeToggle("show-images", "ed_show_images", "show_images", false),
+          // Also tells the integration to generate for this list when no
+          // dashboard is open - one switch, both behaviours.
+          makeToggle("auto-image", "ed_auto_image", "auto_generate_image", false, (on) => {
+            // The list is switched over right away, not on save — so redraw
+            // now as well, or the queue below would only turn up after the
+            // dialog is saved and reopened.
+            this._syncAutoGenerate(col, on);
+            this._render();
+          }),
+          ...(col.list_id || col.entity_id
+            ? [this._buildListSettingToggle(col, "share_images", "ed_share_images", true)]
+            : []),
+        ]),
+        ...(col.list_id || col.entity_id
+          ? [this._el("div", { className: "hint", textContent: this._t("ed_share_images_hint") })]
+          : []),
+        this._buildImgGenForm(),
+        this._el("div", { className: "hint", textContent: this._t("ed_ai_image_hint") }),
+        // Only worth showing once the list actually asks for background
+        // generation - otherwise "nothing waiting" is a sentence without a
+        // subject.
+        ...((col.list_id || col.entity_id) && col.auto_generate_image === true ? [
+          this._el("label", { textContent: this._t("ed_queue_title") }),
+          this._buildQueuePanel(),
+        ] : []),
+      ]),
     ]);
   }
 
@@ -9005,6 +10181,7 @@ class HomeTasksCardEditor extends HTMLElement {
     sum.appendChild(chevWrap);
     sum.addEventListener("click", () => {
       this._sectionOpen.sections = !det.open;
+      this._saveSectionState();
     });
     det.appendChild(sum);
 

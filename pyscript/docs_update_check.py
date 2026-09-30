@@ -13,7 +13,7 @@ Returns: Dictionary with update report details
 import json
 from datetime import datetime
 
-@pyscript.service
+@service
 async def docs_update_check():
     """
     Export current entity state and compare with documentation

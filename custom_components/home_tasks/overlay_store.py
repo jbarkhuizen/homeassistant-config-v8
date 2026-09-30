@@ -29,7 +29,16 @@ from .const import (
     MAX_TITLE_LENGTH,
     VALID_RECURRENCE_UNITS,
 )
-from .store import apply_field_validators, validate_date, validate_text, validate_time
+from .store import (
+    apply_field_validators,
+    validate_assigned_person,
+    validate_date,
+    validate_priority,
+    validate_reminders,
+    validate_tags,
+    validate_text,
+    validate_time,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,9 +73,12 @@ OVERLAY_FIELDS = (
     "history",
     "completed_at",
     "section_id",
+    "image_url",
 )
 
 _MAX_HISTORY = 50
+
+_UNSET = object()  # "field not provided", so a partial update cannot wipe the rest
 
 
 def _empty_overlay() -> dict:
@@ -99,6 +111,7 @@ def _empty_overlay() -> dict:
         "history": [],
         "completed_at": None,
         "section_id": None,
+        "image_url": None,
     }
 
 
@@ -141,11 +154,13 @@ class ExternalTaskOverlayStore:
         """Load overlay data from disk."""
         data = await self._store.async_load()
         if data is None:
-            self._data = {"overlays": {}, "sections": []}
+            self._data = {"overlays": {}, "sections": [], "settings": {}, "defaults": {}}
             await self._async_save()
         else:
             self._data = data
             self._data.setdefault("sections", [])
+            self._data.setdefault("settings", {})
+            self._data.setdefault("defaults", {})
             self._strip_default_overlays()
 
     def _strip_default_overlays(self) -> None:
@@ -178,6 +193,34 @@ class ExternalTaskOverlayStore:
             listener()
 
     # -- read --
+
+    def get_settings(self) -> dict:
+        """Per-list policy settings — mirrors HomeTasksStore.get_settings."""
+        s = self._data.get("settings") or {}
+        return {
+            "share_images": s.get("share_images", True) is not False,
+            "auto_generate_images": s.get("auto_generate_images", False) is True,
+        }
+
+    async def async_set_settings(
+        self, share_images: object = None, auto_generate_images: object = None
+    ) -> dict:
+        """Update per-list settings. None keeps the current value."""
+        if share_images is None and auto_generate_images is None:
+            return self.get_settings()
+        current = self.get_settings()
+        self._data["settings"] = {
+            "share_images": bool(
+                current["share_images"] if share_images is None else share_images
+            ),
+            "auto_generate_images": bool(
+                current["auto_generate_images"]
+                if auto_generate_images is None
+                else auto_generate_images
+            ),
+        }
+        await self._async_save()
+        return self.get_settings()
 
     def get_overlay(self, task_uid: str) -> dict:
         """Return the overlay for *task_uid*, creating a blank one if needed."""
@@ -337,6 +380,61 @@ class ExternalTaskOverlayStore:
         await self._async_save()
         return section
 
+    def get_defaults(self) -> dict:
+        """List-level defaults applied to tasks created on this external list.
+
+        Same shape and meaning as HomeTasksStore.get_defaults, so the card and
+        the WebSocket layer do not care which kind of list they are talking to.
+        """
+        d = self._data.get("defaults") or {}
+        return {
+            "assignee": d.get("assignee") or None,
+            "reminders": list(d.get("reminders") or []),
+            "tags": list(d.get("tags") or []),
+            "priority": d.get("priority"),
+            "section_id": d.get("section_id") or None,
+        }
+
+    async def async_set_defaults(
+        self,
+        assignee: object = _UNSET,
+        reminders: object = _UNSET,
+        tags: object = _UNSET,
+        priority: object = _UNSET,
+        section_id: object = _UNSET,
+    ) -> dict:
+        """Update the defaults; omitted fields keep their current value."""
+        current = self.get_defaults()
+        if assignee is _UNSET:
+            assignee = current["assignee"]
+        elif assignee:
+            assignee = validate_assigned_person(assignee)
+        if reminders is _UNSET:
+            reminders = current["reminders"]
+        else:
+            reminders = validate_reminders(reminders) if reminders else []
+        if tags is _UNSET:
+            tags = current["tags"]
+        else:
+            tags = validate_tags(tags) if tags else []
+        if priority is _UNSET:
+            priority = current["priority"]
+        else:
+            priority = validate_priority(priority)
+        if section_id is _UNSET:
+            section_id = current["section_id"]
+        elif section_id:
+            self._validate_section_id(section_id)
+        self._data["defaults"] = {
+            "assignee": assignee or None,
+            "reminders": reminders,
+            "tags": tags,
+            "priority": priority,
+            "section_id": section_id or None,
+        }
+        await self._async_save()
+        return self.get_defaults()
+
     async def async_delete_section(self, section_id: str) -> None:
         sections = self._data.get("sections", [])
         if not any(s["id"] == section_id for s in sections):
@@ -345,6 +443,11 @@ class ExternalTaskOverlayStore:
         for overlay in self._data.get("overlays", {}).values():
             if overlay.get("section_id") == section_id:
                 overlay["section_id"] = None
+        # A default pointing at the deleted section would send every new task
+        # into a section that is not there any more.
+        defaults = self._data.get("defaults") or {}
+        if defaults.get("section_id") == section_id:
+            defaults["section_id"] = None
         await self._async_save()
 
     async def async_reorder_sections(self, section_ids: list[str]) -> None:

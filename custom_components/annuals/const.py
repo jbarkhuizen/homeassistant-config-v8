@@ -31,6 +31,50 @@ CONF_VIP = "vip"
 # date in one specific year would be meaningless.
 CONF_END_DATE = "end_date"
 
+# Custom events only (TYPE_CUSTOM): a date that is a rule instead of a day -
+# "the first Sunday in September". CONF_MONTH above says which month the
+# rule applies to, so these two are all it takes; CONF_DAY is then not read,
+# and is left exactly as it was, so clearing the rule puts the event back on
+# the date it had.
+#
+# For the observances a public-holiday database does not carry, because they
+# are not public holidays: Mother's Day, Father's Day and the like, which
+# fall on a different date every year. Holidays that *are* in the database
+# keep resolving from it as before (see dates.py) - nothing about importing
+# them changes.
+#
+# Custom only, and enforced as such: every other type is one particular
+# person's or couple's own date, which happened on the day it happened.
+#
+# Both are stored as ints, or as None where there is no rule. Absent
+# entirely on every event created before this existed, which means the
+# same thing.
+CONF_NTH = "nth"
+CONF_WEEKDAY = "weekday"
+
+# "The last <weekday> of the month" - which is not "the fifth": three months
+# in four have no fifth Sunday, so a fifth would quietly produce nothing in
+# most years, while "last Monday in May" means the last one either way.
+# Negative, so it can never be mistaken for a real 1..4.
+NTH_LAST = -1
+
+# What the two selectors offer, as the strings a select selector deals in.
+# What the dropdown offers, and therefore what its translation keys are:
+# hassfest requires every key to match [a-z0-9-_]+ and to not start with a
+# hyphen, so "last" stands in for NTH_LAST here. The stored value, the CSV
+# column and the sensor attribute all keep the number - see _nth_option and
+# _nth_stored in config_flow.
+NTH_LAST_OPTION = "last"
+NTH_OPTIONS = ["1", "2", "3", "4", NTH_LAST_OPTION]
+# What the CSV column accepts, which is the documented number rather than the
+# dropdown's word (see the README's import table).
+NTH_CSV_VALUES = ["1", "2", "3", "4", str(NTH_LAST)]
+
+# Monday..Sunday, numbered as date.weekday() numbers them. In that order
+# because that is the order the numbers have - not the order any one
+# country starts its week in.
+WEEKDAY_OPTIONS = [str(n) for n in range(7)]
+
 # Marks an entry as created by a specific bulk-import mechanism, distinct from
 # CONF_EVENT_TYPE (which holidays already overload for the same "find just
 # these later" purpose - see async_step_remove_holidays). Only ever set to
@@ -41,6 +85,38 @@ CONF_END_DATE = "end_date"
 # handling), so updating a pre-existing event via ICS import doesn't
 # retroactively make it bulk-removable as "an ICS import".
 CONF_IMPORT_SOURCE = "import_source"
+
+# A Home Assistant person whose picture stands for the event - the seven
+# yearly types only, which are one particular person's own date. The
+# sensor carries the picture as its entity_picture (see sensor.py), which
+# is what the dashboard card and the reminder blueprint's notification
+# show in place of the icon. Absent, or None, on every event without one.
+CONF_PERSON = "person"
+
+# Custom events only (TYPE_CUSTOM): repeat every N months or years from the
+# stored day/month/year instead of once a year - a dentist every 6 months,
+# a car inspection every 2 years, a passport every 10. Counted from the
+# stored date, which therefore has to carry its year; the occurrence
+# number is then the number of steps taken since it, the stored date
+# itself being 0. Never combined with a weekday rule (see CONF_WEEKDAY):
+# a rule is a yearly shape and an interval is not. Both None, or absent
+# on every event created before this existed, means once a year as before.
+CONF_INTERVAL = "interval"
+CONF_INTERVAL_UNIT = "interval_unit"
+INTERVAL_MONTHS = "months"
+INTERVAL_YEARS = "years"
+# What the unit dropdown offers - and therefore its translation keys.
+INTERVAL_UNIT_OPTIONS = [INTERVAL_MONTHS, INTERVAL_YEARS]
+
+# One-time events only (TYPE_ONE_TIME): a time of day, "HH:MM", for the
+# concert at 20:00 and the flight at 06:15, and optionally when it ends.
+# The end time falls on the end date where the event has one (see
+# CONF_END_DATE), on the same day otherwise. The sensor's countdown stays
+# a count of days - the time is carried as attributes, and it is the
+# calendar entity and the dashboard card that show it. Absent, or None,
+# on every event without one, which is every all-day event.
+CONF_TIME = "time"
+CONF_END_TIME = "end_time"
 
 TYPE_BIRTHDAY = "birthday"
 TYPE_ANNIVERSARY = "anniversary"
@@ -69,6 +145,48 @@ EVENT_TYPES = [
     TYPE_CUSTOM,
     TYPE_ONE_TIME,
 ]
+
+# The three shapes an event you add yourself can have, and which types
+# belong to each. They differ in what a form can even sensibly ask for -
+# a one-time event needs a year and can have an end date, a custom event
+# can have a recurrence rule (see CONF_WEEKDAY), and the seven yearly
+# types want neither - so "which shape" is asked first, on a menu, and
+# each shape then gets a form carrying only its own fields. A config-flow
+# form cannot show a field conditionally on another field in the same
+# form, which is what made every event form carry every field before, each
+# label having to explain which types it did not apply to.
+#
+# Together these are exactly EVENT_TYPES above, in the same order; the two
+# lists are kept apart because EVENT_TYPES is also what CSV import accepts
+# and what the dashboard card filters by, neither of which cares about the
+# shape of a form.
+GROUP_RECURRING = "recurring"
+GROUP_ONE_TIME = "one_time"
+GROUP_CUSTOM = "custom"
+
+EVENT_TYPE_GROUPS = {
+    GROUP_RECURRING: [
+        TYPE_BIRTHDAY,
+        TYPE_ANNIVERSARY,
+        TYPE_NAME_DAY,
+        TYPE_WEDDING_ANNIVERSARY,
+        TYPE_MEMORIAL,
+        TYPE_PET_BIRTHDAY,
+        TYPE_WORK_ANNIVERSARY,
+    ],
+    GROUP_ONE_TIME: [TYPE_ONE_TIME],
+    GROUP_CUSTOM: [TYPE_CUSTOM],
+}
+
+# The same, read the other way: which shape a stored event has, which is
+# what editing one goes by. Holidays are not in it - they never reach the
+# event form at all (see EVENT_TYPES above) - so a lookup has to carry its
+# own fallback.
+EVENT_TYPE_GROUP = {
+    event_type: group
+    for group, types in EVENT_TYPE_GROUPS.items()
+    for event_type in types
+}
 
 # EVENT_TYPES minus TYPE_ONE_TIME, for the "Annual Settings" milestone-
 # threshold form specifically - a one-time event never recurs, so there's no
@@ -118,7 +236,7 @@ CONF_HOLIDAY_KEY = "holiday_key"
 # nobody has touched carries nothing.
 CONF_NAME_TRANSLATIONS = "name_translations"
 
-# The languages a holiday name can be translated into - the same 15 this
+# The languages a holiday name can be translated into - the same 16 this
 # integration and its dashboard card are themselves translated into (one
 # file each in translations/), so a name can always be provided for whatever
 # language a viewer is actually reading the card in.
@@ -138,6 +256,7 @@ NAME_TRANSLATION_LANGUAGES = [
     "nb",
     "da",
     "tr",
+    "sk",
 ]
 # Whether this entry tracks a holiday's practically-observed (weekend-shifted)
 # date rather than its literal one - see dates.holiday_occurrence_in_year.

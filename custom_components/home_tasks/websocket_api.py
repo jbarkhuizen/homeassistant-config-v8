@@ -1,5 +1,6 @@
 """WebSocket API for Home Tasks - extended features (sub-tasks, reorder, external)."""
 
+import asyncio
 import logging
 import time
 
@@ -8,8 +9,11 @@ import voluptuous as vol
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
 
-from .const import DOMAIN, MAX_IMAGE_URL_LENGTH, MAX_REORDER_IDS, MAX_RECURRENCE_VALUE, MAX_REMINDER_OFFSET_MINUTES, MAX_REMINDERS_PER_TASK, MAX_SUB_TASKS_PER_TASK, MAX_TAGS_PER_TASK, MAX_TITLE_LENGTH, VALID_RECURRENCE_UNITS
-from .overlay_store import ExternalTaskOverlayStore, OVERLAY_FIELDS
+from .image_library import async_get_image_library
+from .image_queue import PLACEHOLDER_IMAGE_URLS, async_get_image_queue
+from .const import DOMAIN, MAX_IMAGE_URL_LENGTH, MAX_REORDER_IDS, MAX_RECURRENCE_VALUE, MAX_REMINDER_OFFSET_MINUTES, MAX_REMINDERS_PER_TASK, MAX_SUB_TASKS_PER_TASK, MAX_TAGS_PER_TASK, MAX_TITLE_LENGTH, RECURRENCE_FIELDS, VALID_RECURRENCE_UNITS
+from .overlay_store import ExternalTaskOverlayStore, OVERLAY_FIELDS, _empty_overlay
+from .store import validate_assigned_person
 from .provider_adapters import ProviderAdapter, GenericAdapter, _get_external_todo_items
 
 _LOGGER = logging.getLogger(__name__)
@@ -51,6 +55,10 @@ def async_register_websocket_commands(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, ws_reorder_sub_tasks)
     websocket_api.async_register_command(hass, ws_move_task)
     websocket_api.async_register_command(hass, ws_move_task_cross)
+    websocket_api.async_register_command(hass, ws_set_list_settings)
+    websocket_api.async_register_command(hass, ws_get_image_queue)
+    websocket_api.async_register_command(hass, ws_cancel_image_queue)
+    websocket_api.async_register_command(hass, ws_sync_image_config)
     websocket_api.async_register_command(hass, ws_get_defaults)
     websocket_api.async_register_command(hass, ws_set_defaults)
     # External list commands
@@ -65,6 +73,7 @@ def async_register_websocket_commands(hass: HomeAssistant) -> None:
     # Adapter-routed external commands
     websocket_api.async_register_command(hass, ws_create_external_task)
     websocket_api.async_register_command(hass, ws_update_external_task)
+    websocket_api.async_register_command(hass, ws_duplicate_external_task)
     websocket_api.async_register_command(hass, ws_reorder_external_tasks)
     # Section commands (work for both native and external lists)
     websocket_api.async_register_command(hass, ws_get_sections)
@@ -74,6 +83,25 @@ def async_register_websocket_commands(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, ws_reorder_sections)
     # Image generation
     websocket_api.async_register_command(hass, ws_generate_task_image)
+
+
+# Which list a command is aimed at: a native list by config entry, or an
+# external one by entity id. Same pair as the section commands use.
+_TARGET = {
+    vol.Exclusive("list_id", "target"): _val_id,
+    vol.Exclusive("entity_id", "target"): _val_entity_id,
+}
+
+DEFAULT_FIELDS = ("assignee", "reminders", "tags", "priority", "section_id")
+
+
+def _get_target_store(hass, msg):
+    """Return the store that holds this target's own data (native or overlay)."""
+    if "list_id" in msg:
+        return _get_store(hass, msg["list_id"])
+    if "entity_id" in msg:
+        return _get_overlay_store(hass, msg["entity_id"])
+    raise ValueError("Either list_id or entity_id is required")
 
 
 def _get_store(hass, entry_id):
@@ -126,6 +154,11 @@ async def ws_get_lists(hass, connection, msg):
                 "name": entry.data.get("name", entry.title),
                 "task_count": len(store.tasks) if store and isinstance(store, HomeTasksStore) else 0,
                 "sensor_entity_id": sensor_entity_id,
+                **(
+                    store.get_settings()
+                    if store and isinstance(store, HomeTasksStore)
+                    else {"share_images": True, "auto_generate_images": False}
+                ),
             })
         connection.send_result(msg["id"], {"lists": lists})
     except Exception as err:
@@ -160,6 +193,10 @@ async def ws_get_tasks(hass, connection, msg):
         vol.Optional("due_date"): _val_date,
         vol.Optional("due_time"): _val_time,
         vol.Optional("reminders"): _val_reminders,
+        vol.Optional("tags"): vol.All(list, vol.Length(max=MAX_TAGS_PER_TASK)),
+        vol.Optional("priority"): vol.Any(vol.In([1, 2, 3]), None),
+        vol.Optional("section_id"): vol.Any(_val_id, None),
+        vol.Optional("notes"): vol.All(str, vol.Length(max=5000)),
     }
 )
 @websocket_api.async_response
@@ -175,8 +212,139 @@ async def ws_add_task(hass, connection, msg):
             due_date=msg.get("due_date"),
             due_time=msg.get("due_time"),
             reminders=msg.get("reminders"),
+            tags=msg.get("tags"),
+            priority=msg.get("priority"),
+            section_id=msg.get("section_id"),
+            notes=msg.get("notes"),
         )
         connection.send_result(msg["id"], task)
+    except Exception as err:
+        _handle_error(connection, msg["id"], err)
+
+
+@websocket_api.websocket_command({vol.Required("type"): "home_tasks/get_image_queue"})
+@websocket_api.async_response
+async def ws_get_image_queue(hass, connection, msg):
+    """What the background image queue still has to do."""
+    queue = async_get_image_queue(hass)
+    if queue is None:
+        connection.send_result(msg["id"], {"current": None, "queue": [], "failed": 0})
+        return
+    connection.send_result(msg["id"], {
+        "current": queue.current,
+        "queue": queue.queue,
+        "failed": len(queue.failed),
+    })
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "home_tasks/cancel_image_queue",
+        vol.Required("jobs"): [
+            {
+                vol.Optional("list_id"): vol.Any(_val_id, None),
+                vol.Optional("entity_id"): vol.Any(_val_entity_id, None),
+                vol.Required("task_id"): _val_task_uid,
+            }
+        ],
+    }
+)
+@websocket_api.async_response
+async def ws_cancel_image_queue(hass, connection, msg):
+    """Drop queued jobs and stop the list that produced them.
+
+    Cancelling a job the user never asked for individually would be futile
+    while the switch that queued it is still on: the next scan would put it
+    straight back. So the lists involved are switched off as well.
+    """
+    try:
+        queue = async_get_image_queue(hass)
+        if queue is None:
+            raise ValueError("Image queue is not running")
+        jobs = msg["jobs"]
+        keys = [(j.get("list_id"), j.get("entity_id"), j["task_id"]) for j in jobs]
+        removed = await queue.async_cancel(keys)
+
+        stopped = []
+        for list_id, entity_id, _task in set((k[0], k[1], None) for k in keys):
+            try:
+                store = _get_store(hass, list_id) if list_id else _get_overlay_store(hass, entity_id)
+            except ValueError:
+                continue
+            if store.get_settings()["auto_generate_images"]:
+                await store.async_set_settings(auto_generate_images=False)
+                stopped.append(list_id or entity_id)
+                # The switch is off now, so nothing else queued for this list
+                # should still be waiting - or still wearing the placeholder.
+                removed += await queue.async_drop_for(list_id, entity_id)
+        connection.send_result(msg["id"], {"removed": removed, "stopped": stopped})
+    except Exception as err:
+        _handle_error(connection, msg["id"], err)
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "home_tasks/sync_image_config",
+        vol.Optional("ai_task_entity_id"): vol.Any(_val_entity_id, None),
+        vol.Optional("prompt_prefix"): vol.All(str, vol.Length(max=200)),
+    }
+)
+@websocket_api.async_response
+async def ws_sync_image_config(hass, connection, msg):
+    """Adopt the card's image-generation settings for background use.
+
+    The queue has no dashboard to read them from, so the card hands them over
+    whenever it loads a configuration that asks for automatic images.
+    """
+    try:
+        queue = async_get_image_queue(hass)
+        if queue is None:
+            raise ValueError("Image queue is not running")
+        cfg = await queue.async_sync_config(
+            ai_task_entity_id=msg.get("ai_task_entity_id"),
+            prompt_prefix=msg.get("prompt_prefix"),
+        )
+        connection.send_result(msg["id"], {"config": cfg})
+    except Exception as err:
+        _handle_error(connection, msg["id"], err)
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "home_tasks/set_list_settings",
+        vol.Optional("list_id"): _val_id,
+        vol.Optional("entity_id"): _val_entity_id,
+        vol.Optional("share_images"): bool,
+        vol.Optional("auto_generate_images"): bool,
+    }
+)
+@websocket_api.async_response
+async def ws_set_list_settings(hass, connection, msg):
+    """Set per-list policy settings for a native or a linked list."""
+    try:
+        list_id = msg.get("list_id")
+        entity_id = msg.get("entity_id")
+        if bool(list_id) == bool(entity_id):
+            raise ValueError("Provide exactly one of list_id or entity_id")
+        store = _get_store(hass, list_id) if list_id else _get_overlay_store(hass, entity_id)
+        kwargs = {k: msg[k] for k in ("share_images", "auto_generate_images") if k in msg}
+        if not kwargs:
+            raise ValueError("No settings given")
+        was_on = store.get_settings()["auto_generate_images"]
+        settings = await store.async_set_settings(**kwargs)
+
+        queue = async_get_image_queue(hass)
+        if queue is not None and "auto_generate_images" in kwargs:
+            if settings["auto_generate_images"] and not was_on:
+                # Switched on: give the tasks that failed before another go —
+                # the placeholder on them would otherwise keep them out for
+                # ever.
+                await queue.async_clear_failed_for(list_id, entity_id)
+                queue.async_kick()
+            elif not settings["auto_generate_images"] and was_on:
+                # Switched off: stop what is still queued for this list.
+                await queue.async_drop_for(list_id, entity_id)
+        connection.send_result(msg["id"], {"settings": settings})
     except Exception as err:
         _handle_error(connection, msg["id"], err)
 
@@ -184,14 +352,17 @@ async def ws_add_task(hass, connection, msg):
 @websocket_api.websocket_command(
     {
         vol.Required("type"): "home_tasks/get_defaults",
-        vol.Required("list_id"): _val_id,
+        **_TARGET,
     }
 )
 @websocket_api.async_response
 async def ws_get_defaults(hass, connection, msg):
-    """Get the list-level defaults for new tasks (issues #44 / #46)."""
+    """Get the list-level defaults for new tasks (issues #44 / #46).
+
+    Native list or external one: both stores answer the same question.
+    """
     try:
-        store = _get_store(hass, msg["list_id"])
+        store = _get_target_store(hass, msg)
         connection.send_result(msg["id"], {"defaults": store.get_defaults()})
     except Exception as err:
         _handle_error(connection, msg["id"], err)
@@ -200,9 +371,12 @@ async def ws_get_defaults(hass, connection, msg):
 @websocket_api.websocket_command(
     {
         vol.Required("type"): "home_tasks/set_defaults",
-        vol.Required("list_id"): _val_id,
         vol.Optional("assignee"): vol.Any(str, None),
         vol.Optional("reminders"): _val_reminders,
+        vol.Optional("tags"): vol.All(list, vol.Length(max=MAX_TAGS_PER_TASK)),
+        vol.Optional("priority"): vol.Any(vol.In([1, 2, 3]), None),
+        vol.Optional("section_id"): vol.Any(_val_id, None),
+        **_TARGET,
     }
 )
 @websocket_api.async_response
@@ -212,15 +386,11 @@ async def ws_set_defaults(hass, connection, msg):
     Partial update: omitted fields keep their current value.
     """
     try:
-        store = _get_store(hass, msg["list_id"])
+        store = _get_target_store(hass, msg)
         # Pass only the fields the client sent: async_set_defaults has
         # partial-update semantics, so an omitted field keeps its value
         # instead of being silently cleared.
-        kwargs = {}
-        if "assignee" in msg:
-            kwargs["assignee"] = msg["assignee"]
-        if "reminders" in msg:
-            kwargs["reminders"] = msg["reminders"]
+        kwargs = {k: msg[k] for k in DEFAULT_FIELDS if k in msg}
         defaults = await store.async_set_defaults(**kwargs)
         connection.send_result(msg["id"], {"defaults": defaults})
     except Exception as err:
@@ -295,18 +465,19 @@ async def ws_update_task(hass, connection, msg):
                 old_image_url = store.get_task(msg["task_id"]).get("image_url")
             except Exception:  # noqa: BLE001
                 old_image_url = None
-        if iu and (
-            iu.startswith("media-source://")
-            or (iu.startswith("/") and not iu.split("?")[0].startswith("/local/home_tasks/"))
-        ):
-            import hashlib
-            import os
-            clean = iu.split("?")[0]
-            ext = os.path.splitext(clean)[1] or ".png"
-            fn = f"{hashlib.sha1(clean.encode()).hexdigest()[:16]}{ext}"
-            kwargs["image_url"] = await _save_image_to_public_media(hass, connection, iu, fn)
+        if iu:
+            kwargs["image_url"] = await _async_publish_image_url(hass, connection, iu)
         task = await store.async_update_task(msg["task_id"], actor=actor, **kwargs)
         if "image_url" in kwargs:
+            await _async_forget_rejected(hass, old_image_url, kwargs.get("image_url"))
+            # A picture picked from the media library is as reusable as a
+            # generated one: without this the library only learns it at the
+            # next backfill, and the same title pays for a generation in
+            # between.
+            await _async_remember_image(
+                hass, task.get("title", ""), kwargs.get("image_url"),
+                store.get_settings()["share_images"],
+            )
             await _cleanup_orphan_image(hass, old_image_url, kwargs.get("image_url"))
         connection.send_result(msg["id"], task)
     except Exception as err:
@@ -573,6 +744,7 @@ async def async_move_task_any(
                 "recurrence_anniversary": item.get("recurrence_anniversary"),
                 "completed_at": item.get("completed_at"),
                 "history": item.get("history", []),
+                "image_url": item.get("image_url"),
             }
         else:
             # Generic path — HA entity + overlay
@@ -608,6 +780,7 @@ async def async_move_task_any(
                 "recurrence_anniversary": overlay.get("recurrence_anniversary"),
                 "completed_at": overlay.get("completed_at"),
                 "history": overlay.get("history", []),
+                "image_url": overlay.get("image_url"),
             }
 
     # --- Create task in target ---
@@ -645,6 +818,10 @@ async def async_move_task_any(
             "assigned_person": task_data.get("assigned_person"),
             "tags": task_data.get("tags", []),
             "history": task_data.get("history", []),
+            # Without this the picture is not just detached from the moved
+            # task: nothing references the file afterwards, so the orphan
+            # cleanup on the source side deletes it.
+            "image_url": task_data.get("image_url"),
             "external_id": None,
             "sync_source": None,
         }
@@ -667,13 +844,7 @@ async def async_move_task_any(
             "assigned_person": task_data.get("assigned_person"),
         }
         if task_data.get("recurrence_enabled"):
-            create_fields["recurrence_enabled"] = True
-            for k in (
-                "recurrence_type", "recurrence_value", "recurrence_unit",
-                "recurrence_weekdays", "recurrence_start_date", "recurrence_time",
-                "recurrence_month_pattern", "recurrence_day_of_month",
-                "recurrence_nth_week", "recurrence_anniversary",
-            ):
+            for k in RECURRENCE_FIELDS:
                 if task_data.get(k) is not None:
                     create_fields[k] = task_data[k]
 
@@ -750,8 +921,11 @@ async def async_move_task_any(
         else:
             generic = GenericAdapter(hass, src_entity_id, {})
             await generic.async_delete_task(task_id)
-        # Clean up overlay
+        # Clean up overlay and delete its image file when the move did not
+        # transfer a reference to the target task.
+        old_image_url = src_overlay.get_overlay(task_id).get("image_url")
         await src_overlay.async_delete_overlay(task_id)
+        await _cleanup_orphan_image(hass, old_image_url, None)
 
 
 
@@ -858,6 +1032,11 @@ def _merge_tasks_with_overlays(
             "assigned_person": overlay.get("assigned_person"),
             "tags": overlay.get("tags", []),
             "history": overlay.get("history", []),
+            "image_url": overlay.get("image_url"),
+            # Sections live in the overlay for external lists; without
+            # this the card reloads after a drop and puts the task
+            # straight back into the unsorted bucket (issue #60).
+            "section_id": overlay.get("section_id"),
             # Mark as external so the card knows how to route CRUD
             "_external": True,
         }
@@ -941,6 +1120,9 @@ def _merge_tasks_with_adapter_data(
             # History & completed_at always from overlay
             "completed_at": overlay.get("completed_at"),
             "history": overlay.get("history", []),
+            "image_url": overlay.get("image_url"),
+            # Sections are ours, never the provider's (issue #60).
+            "section_id": overlay.get("section_id"),
             # Todoist recurrence string for read-only display
             "_todoist_recurrence_string": item.get("_todoist_recurrence_string"),
             # Mark as external
@@ -986,6 +1168,15 @@ async def ws_get_external_lists(hass, connection, msg):
             provider_type = adapter.provider_type if adapter else "generic"
             capabilities = adapter.capabilities.to_dict() if adapter else {}
 
+            settings = {"share_images": True, "auto_generate_images": False}
+            if entity_entry.entity_id in linked_entity_ids:
+                try:
+                    settings = _get_overlay_store(
+                        hass, entity_entry.entity_id
+                    ).get_settings()
+                except ValueError:
+                    pass  # linked but not loaded yet — report the defaults
+
             external.append({
                 "entity_id": entity_entry.entity_id,
                 "name": entity_entry.name or entity_entry.original_name or entity_entry.entity_id,
@@ -993,11 +1184,99 @@ async def ws_get_external_lists(hass, connection, msg):
                 "supported_features": features,
                 "provider_type": provider_type,
                 "capabilities": capabilities,
+                **settings,
             })
 
         connection.send_result(msg["id"], {"external_lists": external})
     except Exception as err:
         _handle_error(connection, msg["id"], err)
+
+
+async def _async_forget_rejected(hass, old_url: str | None, new_url: str | None) -> None:
+    """Clearing or replacing a picture rejects it — drop it from the library.
+
+    Otherwise the next generation for that title would hand back the very
+    image the user just got rid of.
+    """
+    if not _is_real_image(old_url) or old_url == new_url:
+        return
+    library = async_get_image_library(hass)
+    if library is not None:
+        # The file itself is reclaimed by _cleanup_orphan_image right after,
+        # which checks whether any task still uses it.
+        await library.async_forget(old_url, delete_file=False)
+
+
+async def _async_remember_image(hass, title: str, url: str | None, shares: bool) -> None:
+    """Keep a title-to-picture pair for later, if the list shares at all."""
+    if not shares or not title or not _is_real_image(url):
+        return
+    library = async_get_image_library(hass)
+    if library is not None:
+        await library.async_remember(title, url)
+
+
+def _is_real_image(url: str | None) -> bool:
+    """Whether a task image may be handed to a same-titled task.
+
+    The "generating" and "generation failed" placeholders are status, not
+    pictures: sharing one would spread a spinner across the card and, worse,
+    count as "this title already has an image".
+    """
+    return bool(url) and url.split("?")[0] not in PLACEHOLDER_IMAGE_URLS
+
+
+async def _async_all_external_lists(
+    hass, preloaded: tuple[str, list[dict], ExternalTaskOverlayStore] | None = None
+) -> list[tuple[ExternalTaskOverlayStore, list[dict]]]:
+    """Read every linked external list, merged with its overlay.
+
+    Same-title image sharing has to match on titles, and an external task's
+    title lives at the provider — so every linked list has to be read. The
+    caller's own list is passed in as *preloaded* so it is not fetched twice,
+    and a provider that is unreachable is skipped instead of failing the whole
+    operation.
+    """
+    lists: list[tuple[ExternalTaskOverlayStore, list[dict]]] = []
+    seen: set[str] = set()
+    if preloaded:
+        entity_id, tasks, overlay_store = preloaded
+        lists.append((overlay_store, tasks))
+        seen.add(entity_id)
+    for store in list(hass.data.get(DOMAIN, {}).values()):
+        if not isinstance(store, ExternalTaskOverlayStore) or store.entity_id in seen:
+            continue
+        seen.add(store.entity_id)
+        try:
+            tasks, _ = await _async_get_external_tasks(hass, store.entity_id)
+        except Exception as err:  # noqa: BLE001 — one dead provider must not block the rest
+            _LOGGER.debug(
+                "Skipping external list %s while sharing an image: %s", store.entity_id, err
+            )
+            continue
+        lists.append((store, tasks))
+    return lists
+
+
+async def _async_get_external_tasks(hass, entity_id: str) -> tuple[list[dict], ExternalTaskOverlayStore]:
+    """Read an external list and merge provider data with its local overlay."""
+    overlay_store = _get_overlay_store(hass, entity_id)
+    adapter = _get_adapter(hass, entity_id)
+
+    if adapter and not isinstance(adapter, GenericAdapter):
+        external_items = await adapter.async_read_tasks()
+        tasks = _merge_tasks_with_adapter_data(
+            external_items, overlay_store, adapter.capabilities,
+        )
+    else:
+        external_items = _get_external_todo_items(hass, entity_id)
+        features = 0
+        state = hass.states.get(entity_id)
+        if state and state.attributes:
+            features = state.attributes.get("supported_features", 0)
+        provider_owns_order = bool(features & 8)  # MOVE_TODO_ITEM
+        tasks = _merge_tasks_with_overlays(external_items, overlay_store, provider_owns_order)
+    return tasks, overlay_store
 
 
 @websocket_api.websocket_command(
@@ -1010,25 +1289,7 @@ async def ws_get_external_lists(hass, connection, msg):
 async def ws_get_external_tasks(hass, connection, msg):
     """Get tasks from an external todo entity, merged with overlay data."""
     try:
-        entity_id = msg["entity_id"]
-        overlay_store = _get_overlay_store(hass, entity_id)
-        adapter = _get_adapter(hass, entity_id)
-
-        if adapter and not isinstance(adapter, GenericAdapter):
-            # Rich adapter (e.g. Todoist) — read directly from provider API
-            external_items = await adapter.async_read_tasks()
-            tasks = _merge_tasks_with_adapter_data(
-                external_items, overlay_store, adapter.capabilities,
-            )
-        else:
-            # Generic path — read via HA todo entity + overlay
-            external_items = _get_external_todo_items(hass, entity_id)
-            features = 0
-            state = hass.states.get(entity_id)
-            if state and state.attributes:
-                features = state.attributes.get("supported_features", 0)
-            provider_owns_order = bool(features & 8)  # MOVE_TODO_ITEM
-            tasks = _merge_tasks_with_overlays(external_items, overlay_store, provider_owns_order)
+        tasks, overlay_store = await _async_get_external_tasks(hass, msg["entity_id"])
 
         connection.send_result(msg["id"], {"tasks": tasks, "sections": overlay_store.sections})
     except Exception as err:
@@ -1062,6 +1323,9 @@ async def ws_get_external_tasks(hass, connection, msg):
         vol.Optional("recurrence_nth_week"): vol.Any(vol.All(int, vol.Range(min=1, max=4)), "last", None),
         vol.Optional("recurrence_anniversary"): _val_anniversary,
         vol.Optional("section_id"): vol.Any(_val_id, None),
+        vol.Optional("image_url"): vol.Any(
+            vol.All(str, vol.Length(max=MAX_IMAGE_URL_LENGTH)), None
+        ),
     }
 )
 @websocket_api.async_response
@@ -1069,11 +1333,36 @@ async def ws_update_external_overlay(hass, connection, msg):
     """Update overlay fields for an external task."""
     try:
         overlay_store = _get_overlay_store(hass, msg["entity_id"])
+        old_image_url = overlay_store.get_overlay(msg["task_uid"]).get("image_url")
         kwargs = {}
         for key in OVERLAY_FIELDS:
             if key in msg:
                 kwargs[key] = msg[key]
+        if kwargs.get("image_url"):
+            # Same re-publish as the native path: a media-source id or signed
+            # path would otherwise be stored verbatim and render as a broken
+            # image.
+            kwargs["image_url"] = await _async_publish_image_url(
+                hass, connection, kwargs["image_url"]
+            )
         overlay = await overlay_store.async_set_overlay(msg["task_uid"], **kwargs)
+        if "image_url" in kwargs:
+            await _async_forget_rejected(hass, old_image_url, kwargs["image_url"])
+            # Same on an external list; the title comes from the merged view,
+            # since the overlay itself does not hold one.
+            title = ""
+            try:
+                tasks, _ = await _async_get_external_tasks(hass, msg["entity_id"])
+                title = next(
+                    (t["title"] for t in tasks if t["id"] == msg["task_uid"]), ""
+                )
+            except Exception:  # noqa: BLE001 - remembering is a nicety
+                title = ""
+            await _async_remember_image(
+                hass, title, kwargs["image_url"],
+                overlay_store.get_settings()["share_images"],
+            )
+            await _cleanup_orphan_image(hass, old_image_url, kwargs["image_url"])
         connection.send_result(msg["id"], overlay)
     except Exception as err:
         _handle_error(connection, msg["id"], err)
@@ -1234,6 +1523,84 @@ def _fire_external_task_event(
     hass.bus.async_fire(f"{DOMAIN}_{event_type}", data)
 
 
+async def async_create_external_task(
+    hass, entity_id: str, fields: dict, apply_defaults: bool = True
+) -> str | None:
+    """Create a task on a linked external list and return its new uid.
+
+    Shared by the WebSocket command and the add_task service (issue #63):
+    the list's defaults, the adapter, the overlay and the created event all
+    belong to creating a task, wherever the call came from. A copy of an
+    existing task passes apply_defaults=False: it is meant to be that task
+    again, not a new one dressed in the list's defaults.
+    """
+    adapter = _get_adapter(hass, entity_id)
+
+    # List-level defaults, same rule as the native path: fill only what
+    # the caller left out, and do it before the adapter runs so a provider
+    # that syncs labels or priority gets them too.
+    # An unlinked external entity has no overlay store, and no defaults.
+    try:
+        overlay_store = _get_overlay_store(hass, entity_id)
+    except ValueError:
+        overlay_store = None
+    default_section = None
+    if overlay_store is not None and apply_defaults:
+        defaults = overlay_store.get_defaults()
+        if fields.get("assigned_person") is None and defaults["assignee"]:
+            fields["assigned_person"] = defaults["assignee"]
+        # Presence, not truthiness: "reminders": [] is the caller saying
+        # "this one gets none", the same as on a native list.
+        if "reminders" not in fields and defaults["reminders"]:
+            fields["reminders"] = list(defaults["reminders"])
+        if "tags" not in fields and defaults["tags"]:
+            fields["tags"] = list(defaults["tags"])
+        if fields.get("priority") is None and defaults["priority"]:
+            fields["priority"] = defaults["priority"]
+        # Sections are ours alone - no provider knows about them, so this
+        # one goes straight into the overlay below.
+        if defaults["section_id"] and any(
+            s["id"] == defaults["section_id"] for s in overlay_store.sections
+        ):
+            default_section = defaults["section_id"]
+
+    if adapter:
+        new_uid, adapter_unsynced = await adapter.async_create_task(fields)
+    else:
+        # Fallback: generic create via todo.add_item
+        generic = GenericAdapter(hass, entity_id, {})
+        new_uid, adapter_unsynced = await generic.async_create_task(fields)
+
+    # Store overlay fields: the adapter's unsynced set (fields the
+    # provider couldn't accept) PLUS the fields that home_tasks keeps
+    # locally regardless of adapter (reminders for non-reminder-syncing
+    # adapters, recurrence bookkeeping).
+    if new_uid and adapter:  # overlay store only exists for registered externals
+        overlay_store = _get_overlay_store(hass, entity_id)
+        overlay_fields: dict = dict(adapter_unsynced) if adapter_unsynced else {}
+        if not adapter.capabilities.can_sync_reminders and fields.get("reminders"):
+            overlay_fields.setdefault("reminders", fields["reminders"])
+        for key in ("recurrence_end_type", "recurrence_max_count", "recurrence_remaining_count"):
+            if key in fields:
+                overlay_fields.setdefault(key, fields[key])
+        if default_section:
+            overlay_fields.setdefault("section_id", default_section)
+        # Only persist keys the overlay store knows about
+        overlay_kwargs = {k: v for k, v in overlay_fields.items() if k in OVERLAY_FIELDS}
+        if overlay_kwargs:
+            await overlay_store.async_set_overlay(new_uid, **overlay_kwargs)
+    elif adapter_unsynced:
+        _LOGGER.warning(
+            "Created external task on %s but could not discover UID; "
+            "overlay fields lost: %s",
+            entity_id, list(adapter_unsynced.keys()),
+        )
+    # Fire created for every provider — even when the generic adapter can't
+    # resolve a UID, the title + entity are still useful to automations.
+    _fire_external_task_event(hass, "task_created", entity_id, new_uid or "", fields)
+    return new_uid
+
+
 @websocket_api.websocket_command(
     {
         vol.Required("type"): "home_tasks/create_external_task",
@@ -1264,43 +1631,156 @@ def _fire_external_task_event(
 async def ws_create_external_task(hass, connection, msg):
     """Create a task via the provider adapter."""
     try:
-        entity_id = msg["entity_id"]
-        adapter = _get_adapter(hass, entity_id)
-
         fields = {k: v for k, v in msg.items() if k not in ("id", "type", "entity_id")}
+        new_uid = await async_create_external_task(hass, msg["entity_id"], fields)
+        connection.send_result(msg["id"], {"uid": new_uid})
+    except Exception as err:
+        _handle_error(connection, msg["id"], err)
 
-        if adapter:
-            new_uid, adapter_unsynced = await adapter.async_create_task(fields)
-        else:
-            # Fallback: generic create via todo.add_item
-            generic = GenericAdapter(hass, entity_id, {})
-            new_uid, adapter_unsynced = await generic.async_create_task(fields)
 
-        # Store overlay fields: the adapter's unsynced set (fields the
-        # provider couldn't accept) PLUS the fields that home_tasks keeps
-        # locally regardless of adapter (reminders for non-reminder-syncing
-        # adapters, recurrence bookkeeping).
-        if new_uid and adapter:  # overlay store only exists for registered externals
-            overlay_store = _get_overlay_store(hass, entity_id)
-            overlay_fields: dict = dict(adapter_unsynced) if adapter_unsynced else {}
-            if not adapter.capabilities.can_sync_reminders and fields.get("reminders"):
-                overlay_fields.setdefault("reminders", fields["reminders"])
-            for key in ("recurrence_end_type", "recurrence_max_count", "recurrence_remaining_count"):
-                if key in fields:
-                    overlay_fields.setdefault(key, fields[key])
-            # Only persist keys the overlay store knows about
-            overlay_kwargs = {k: v for k, v in overlay_fields.items() if k in OVERLAY_FIELDS}
-            if overlay_kwargs:
-                await overlay_store.async_set_overlay(new_uid, **overlay_kwargs)
-        elif adapter_unsynced:
-            _LOGGER.warning(
-                "Created external task on %s but could not discover UID; "
-                "overlay fields lost: %s",
-                entity_id, list(adapter_unsynced.keys()),
+async def async_update_external_task(hass, entity_id: str, task_uid: str, fields: dict) -> dict:
+    """Apply an update to a task on a linked external list.
+
+    The provider takes what it can; the rest goes to the overlay, and the
+    native-parity events (and overlay-driven recurrence) are fired here so
+    every caller gets them - the card over WebSocket, and the services
+    (issue #63), which used to refuse external lists outright.
+
+    Returns the fields the provider could not take, so a caller can say what
+    was kept locally.
+    """
+    adapter = _get_adapter(hass, entity_id)
+
+    if adapter:
+        unsynced = await adapter.async_update_task(task_uid, fields)
+    else:
+        generic = GenericAdapter(hass, entity_id, {})
+        unsynced = await generic.async_update_task(task_uid, fields)
+
+    # Store unsynced fields in overlay
+    if unsynced:
+        overlay_store = _get_overlay_store(hass, entity_id)
+        overlay_kwargs = {}
+        for key in OVERLAY_FIELDS:
+            if key in unsynced:
+                overlay_kwargs[key] = unsynced[key]
+        if overlay_kwargs:
+            await overlay_store.async_set_overlay(task_uid, **overlay_kwargs)
+
+    # Fire native-parity events so automations work for external lists too
+    # (issue #27): the adapter path bypasses the store's on_task_* callbacks.
+    if "completed" in fields:
+        merged = None
+        try:
+            ostore = _get_overlay_store(hass, entity_id)
+            merged = next(
+                (t for t in _merge_tasks_with_overlays(_get_external_todo_items(hass, entity_id), ostore)
+                 if str(t.get("id")) == str(task_uid)),
+                None,
             )
-        # Fire created for every provider — even when the generic adapter can't
-        # resolve a UID, the title + entity are still useful to automations.
-        _fire_external_task_event(hass, "task_created", entity_id, new_uid or "", fields)
+        except Exception:  # noqa: BLE001
+            merged = None
+        event_type = "task_completed" if fields["completed"] else "task_reopened"
+        _fire_external_task_event(hass, event_type, entity_id, task_uid, fields, task=merged)
+        # Overlay-driven recurrence (issue #27): on completion schedule the
+        # reopen (skipped for providers that own recurrence); on a manual
+        # reopen, cancel any pending reopen timer.
+        from . import _cancel_recurrence, _handle_external_recurrence_completion
+        if fields["completed"]:
+            entry_id = _external_entry_id(hass, entity_id)
+            if entry_id:
+                await _handle_external_recurrence_completion(hass, entry_id, entity_id, task_uid)
+        else:
+            _cancel_recurrence(hass, task_uid)
+            # Clear the recurrence completion stamp so a manually reopened
+            # task isn't seen as still-completed by startup recovery / UI.
+            if merged and merged.get("completed_at"):
+                await _get_overlay_store(hass, entity_id).async_set_overlay(
+                    task_uid, completed_at=None
+                )
+    return unsynced or {}
+
+
+async def async_duplicate_external_task(
+    hass, entity_id: str, task_uid: str, assigned_person: str | None = None
+) -> str | None:
+    """An independent copy of a task on a linked list, optionally reassigned.
+
+    Mirrors HomeTasksStore.async_duplicate_task: everything the source has
+    comes along - title, notes, due, priority, tags, reminders, recurrence,
+    section, picture, and fresh open copies of the sub-tasks - and the copy
+    starts open. The provider decides where it lands; "right after the
+    source" is not a promise a remote list can keep.
+    """
+    tasks, overlay_store = await _async_get_external_tasks(hass, entity_id)
+    source = next((t for t in tasks if str(t.get("id")) == str(task_uid)), None)
+    if source is None:
+        raise ValueError(f"Task {task_uid} not found in {entity_id}")
+
+    # The merged view fills every field the task does not set with its
+    # default (recurrence_type "interval" on a task that never recurs, and
+    # so on). Those are not the source's data and must not become the
+    # copy's overlay.
+    blank = _empty_overlay()
+    fields: dict = {"title": source.get("title") or ""}
+    for key in ("notes", "due_date", "due_time", "priority", "tags", "reminders", *RECURRENCE_FIELDS):
+        value = source.get(key)
+        if value in (None, "", []) or (key in blank and value == blank[key]):
+            continue
+        fields[key] = list(value) if isinstance(value, list) else value
+    if fields.get("recurrence_enabled") and source.get("recurrence_max_count") is not None:
+        fields["recurrence_remaining_count"] = source["recurrence_max_count"]
+    # The explicit assignee wins, including "nobody" - that is what
+    # duplicate-for-someone-else is for.
+    fields["assigned_person"] = validate_assigned_person(assigned_person)
+
+    # No list defaults: a copy is the source again, not a fresh task.
+    new_uid = await async_create_external_task(hass, entity_id, fields, apply_defaults=False)
+    if not new_uid:
+        # The provider has the bare copy but never told us its id, so the
+        # section, picture and sub-tasks cannot follow. Saying "done" here
+        # would hide that; the caller reloads and sees what did arrive.
+        raise ValueError(
+            f"{entity_id} created the copy but did not report its id; "
+            "section, picture and sub-tasks were not copied"
+        )
+
+    # What the create path does not carry: the section and the picture are
+    # ours alone, the sub-tasks go wherever this provider keeps them.
+    extras: dict = {}
+    if source.get("section_id"):
+        extras["section_id"] = source["section_id"]
+    if _is_real_image(source.get("image_url")):
+        extras["image_url"] = source["image_url"]
+    if extras:
+        await overlay_store.async_set_overlay(new_uid, **extras)
+    adapter = _get_adapter(hass, entity_id)
+    for sub in source.get("sub_items") or []:
+        title = sub.get("title")
+        if not title:
+            continue
+        if adapter and adapter.capabilities.can_sync_sub_items:
+            await adapter.async_add_sub_task(new_uid, title)
+        else:
+            await overlay_store.async_add_sub_task(new_uid, title)
+    return new_uid
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "home_tasks/duplicate_external_task",
+        vol.Required("entity_id"): _val_entity_id,
+        vol.Required("task_uid"): _val_task_uid,
+        vol.Optional("assigned_person"): vol.Any(str, None),
+    }
+)
+@websocket_api.async_response
+async def ws_duplicate_external_task(hass, connection, msg):
+    """Duplicate a task on a linked list, optionally reassigning it."""
+    try:
+        new_uid = await async_duplicate_external_task(
+            hass, msg["entity_id"], msg["task_uid"], msg.get("assigned_person")
+        )
         connection.send_result(msg["id"], {"uid": new_uid})
     except Exception as err:
         _handle_error(connection, msg["id"], err)
@@ -1342,60 +1822,11 @@ async def ws_create_external_task(hass, connection, msg):
 async def ws_update_external_task(hass, connection, msg):
     """Update a task via the provider adapter.  Unsynced fields go to overlay."""
     try:
-        entity_id = msg["entity_id"]
-        task_uid = msg["task_uid"]
-        adapter = _get_adapter(hass, entity_id)
-
         fields = {k: v for k, v in msg.items() if k not in ("id", "type", "entity_id", "task_uid")}
-
-        if adapter:
-            unsynced = await adapter.async_update_task(task_uid, fields)
-        else:
-            generic = GenericAdapter(hass, entity_id, {})
-            unsynced = await generic.async_update_task(task_uid, fields)
-
-        # Store unsynced fields in overlay
-        if unsynced:
-            overlay_store = _get_overlay_store(hass, entity_id)
-            overlay_kwargs = {}
-            for key in OVERLAY_FIELDS:
-                if key in unsynced:
-                    overlay_kwargs[key] = unsynced[key]
-            if overlay_kwargs:
-                await overlay_store.async_set_overlay(task_uid, **overlay_kwargs)
-
-        # Fire native-parity events so automations work for external lists too
-        # (issue #27): the adapter path bypasses the store's on_task_* callbacks.
-        if "completed" in fields:
-            merged = None
-            try:
-                ostore = _get_overlay_store(hass, entity_id)
-                merged = next(
-                    (t for t in _merge_tasks_with_overlays(_get_external_todo_items(hass, entity_id), ostore)
-                     if str(t.get("id")) == str(task_uid)),
-                    None,
-                )
-            except Exception:  # noqa: BLE001
-                merged = None
-            event_type = "task_completed" if fields["completed"] else "task_reopened"
-            _fire_external_task_event(hass, event_type, entity_id, task_uid, fields, task=merged)
-            # Overlay-driven recurrence (issue #27): on completion schedule the
-            # reopen (skipped for providers that own recurrence); on a manual
-            # reopen, cancel any pending reopen timer.
-            from . import _cancel_recurrence, _handle_external_recurrence_completion
-            if fields["completed"]:
-                entry_id = _external_entry_id(hass, entity_id)
-                if entry_id:
-                    await _handle_external_recurrence_completion(hass, entry_id, entity_id, task_uid)
-            else:
-                _cancel_recurrence(hass, task_uid)
-                # Clear the recurrence completion stamp so a manually reopened
-                # task isn't seen as still-completed by startup recovery / UI.
-                if merged and merged.get("completed_at"):
-                    await _get_overlay_store(hass, entity_id).async_set_overlay(
-                        task_uid, completed_at=None
-                    )
-        connection.send_result(msg["id"], {"unsynced": list(unsynced.keys()) if unsynced else []})
+        unsynced = await async_update_external_task(
+            hass, msg["entity_id"], msg["task_uid"], fields
+        )
+        connection.send_result(msg["id"], {"unsynced": list(unsynced.keys())})
     except Exception as err:
         _handle_error(connection, msg["id"], err)
 
@@ -1447,7 +1878,9 @@ async def ws_delete_external_overlay(hass, connection, msg):
     """Delete overlay data for an external task (cleanup after deletion)."""
     try:
         overlay_store = _get_overlay_store(hass, msg["entity_id"])
+        old_image_url = overlay_store.get_overlay(msg["task_uid"]).get("image_url")
         await overlay_store.async_delete_overlay(msg["task_uid"])
+        await _cleanup_orphan_image(hass, old_image_url, None)
         # Cancel any pending reminder/recurrence timers so they don't fire (and
         # leak) for a task that no longer exists.
         from . import _cancel_recurrence, _cancel_reminders
@@ -1465,19 +1898,7 @@ _val_icon = vol.Any(vol.All(str, vol.Length(min=1, max=64)), None)
 _val_section_name = vol.All(str, vol.Length(min=1, max=100))
 
 
-def _get_sections_store(hass, msg):
-    """Return the store (native or overlay) that holds sections for this target."""
-    if "list_id" in msg:
-        return _get_store(hass, msg["list_id"])
-    if "entity_id" in msg:
-        return _get_overlay_store(hass, msg["entity_id"])
-    raise ValueError("Either list_id or entity_id is required")
-
-
-_SECTION_TARGET = {
-    vol.Exclusive("list_id", "target"): _val_id,
-    vol.Exclusive("entity_id", "target"): _val_entity_id,
-}
+_SECTION_TARGET = _TARGET
 
 
 @websocket_api.websocket_command(
@@ -1490,7 +1911,7 @@ _SECTION_TARGET = {
 async def ws_get_sections(hass, connection, msg):
     """Return sections for a list."""
     try:
-        store = _get_sections_store(hass, msg)
+        store = _get_target_store(hass, msg)
         connection.send_result(msg["id"], {"sections": store.sections})
     except Exception as err:
         _handle_error(connection, msg["id"], err)
@@ -1508,7 +1929,7 @@ async def ws_get_sections(hass, connection, msg):
 async def ws_add_section(hass, connection, msg):
     """Create a new section."""
     try:
-        store = _get_sections_store(hass, msg)
+        store = _get_target_store(hass, msg)
         section = await store.async_add_section(msg["name"], icon=msg.get("icon"))
         connection.send_result(msg["id"], section)
     except Exception as err:
@@ -1528,7 +1949,7 @@ async def ws_add_section(hass, connection, msg):
 async def ws_update_section(hass, connection, msg):
     """Update a section's name and/or icon."""
     try:
-        store = _get_sections_store(hass, msg)
+        store = _get_target_store(hass, msg)
         kwargs = {}
         if "name" in msg:
             kwargs["name"] = msg["name"]
@@ -1551,7 +1972,7 @@ async def ws_update_section(hass, connection, msg):
 async def ws_delete_section(hass, connection, msg):
     """Delete a section; tasks fall back to section_id=None."""
     try:
-        store = _get_sections_store(hass, msg)
+        store = _get_target_store(hass, msg)
         await store.async_delete_section(msg["section_id"])
         connection.send_result(msg["id"])
     except Exception as err:
@@ -1569,7 +1990,7 @@ async def ws_delete_section(hass, connection, msg):
 async def ws_reorder_sections(hass, connection, msg):
     """Reorder sections."""
     try:
-        store = _get_sections_store(hass, msg)
+        store = _get_target_store(hass, msg)
         await store.async_reorder_sections(msg["section_ids"])
         connection.send_result(msg["id"])
     except Exception as err:
@@ -1617,12 +2038,15 @@ async def _cleanup_orphan_image(hass, old_url: str | None, new_url: str | None) 
     if new_url and _local_image_name(new_url) is None:
         return
     for s in hass.data.get(DOMAIN, {}).values():
-        if not hasattr(s, "tasks"):
+        if isinstance(s, ExternalTaskOverlayStore):
+            tasks = s.get_all_overlays().values()
+        elif hasattr(s, "tasks"):
+            # Membership only — read the raw list instead of the .tasks property,
+            # which builds a freshly-sorted copy on every access.
+            raw = getattr(s, "_data", None)
+            tasks = raw["tasks"] if isinstance(raw, dict) and "tasks" in raw else s.tasks
+        else:
             continue
-        # Membership only — read the raw list instead of the .tasks property,
-        # which builds a freshly-sorted copy on every access.
-        raw = getattr(s, "_data", None)
-        tasks = raw["tasks"] if isinstance(raw, dict) and "tasks" in raw else s.tasks
         for t in tasks:
             if _local_image_name(t.get("image_url")) == old_name:
                 return  # still referenced — keep the file
@@ -1693,6 +2117,30 @@ async def _backfill_thumbnails(hass) -> None:
         await hass.async_add_executor_job(_scan)
     except Exception as err:  # noqa: BLE001
         _LOGGER.debug("Thumbnail backfill failed: %s", err)
+
+
+async def _async_publish_image_url(hass, connection, url: str | None) -> str | None:
+    """Return a public /local URL for a picked image, copying it if needed.
+
+    media-source:// URIs are copied off disk and internal signed paths are
+    downloaded, so the card can load the image without auth and it does not
+    expire with the token that issued it. Values that are already public
+    (/local/home_tasks/...) or external are returned unchanged. Every route
+    that accepts a user-picked image_url has to go through here — native and
+    external alike, or the card ends up rendering an unusable URI.
+    """
+    if not url or not (
+        url.startswith("media-source://")
+        or (url.startswith("/") and not url.split("?")[0].startswith("/local/home_tasks/"))
+    ):
+        return url
+    import hashlib
+    import os
+
+    clean = url.split("?")[0]
+    ext = os.path.splitext(clean)[1] or ".png"
+    fn = f"{hashlib.sha1(clean.encode()).hexdigest()[:16]}{ext}"
+    return await _save_image_to_public_media(hass, connection, url, fn)
 
 
 async def _save_image_to_public_media(hass, connection, image_url: str, filename: str) -> str:
@@ -1785,6 +2233,9 @@ async def _save_image_to_public_media(hass, connection, image_url: str, filename
                     pass
                 is_internal = host in ha_hosts
             if is_internal:
+                if connection is None:
+                    _LOGGER.debug("No websocket connection; cannot download %s", image_url)
+                    return image_url
                 refresh_token = hass.auth.async_get_refresh_token(connection.refresh_token_id)
                 if refresh_token is None:
                     _LOGGER.warning("No refresh token available for internal URL download")
@@ -1803,6 +2254,9 @@ async def _save_image_to_public_media(hass, connection, image_url: str, filename
                 headers = {}
         else:
             # HA-internal path — needs Bearer token + loopback URL
+            if connection is None:
+                _LOGGER.debug("No websocket connection; cannot download %s", image_url)
+                return image_url
             refresh_token = hass.auth.async_get_refresh_token(connection.refresh_token_id)
             if refresh_token is None:
                 _LOGGER.warning("No refresh token available; skipping image re-save")
@@ -1840,12 +2294,314 @@ async def _save_image_to_public_media(hass, connection, image_url: str, filename
     except Exception as exc:  # noqa: BLE001
         _LOGGER.warning("Failed to save image to public media dir: %s", exc)
         return image_url
+DATA_IMAGE_INFLIGHT = f"{DOMAIN}_image_inflight"
+
+
+async def async_generate_task_image(
+    hass: HomeAssistant,
+    connection,
+    *,
+    task_id: str,
+    entry_id: str | None = None,
+    todo_entity_id: str | None = None,
+    prompt_prefix: str = "",
+    ai_entity_id: str | None = None,
+    force: bool = False,
+) -> dict:
+    """Generate the image for one task, once, however many callers ask.
+
+    The card generates for a task the moment it creates it, and the
+    background queue picks the same task up from the created event. Both
+    looked for an existing image, neither had finished yet, and the provider
+    was paid twice for the same picture. The first caller here does the work;
+    the others wait for its result and take it. A forced regeneration is an
+    explicit request and never waits.
+    """
+    inflight = hass.data.setdefault(DATA_IMAGE_INFLIGHT, {})
+    key = (entry_id or todo_entity_id, task_id)
+    pending = inflight.get(key)
+    if pending is not None and not force:
+        # shield: our caller going away must not cancel the generation the
+        # others are waiting on.
+        result = await asyncio.shield(pending)
+        if result is not None:
+            return {"task": result["task"], "reused": True}
+
+    flight: asyncio.Future = hass.loop.create_future()
+    inflight[key] = flight
+    try:
+        result = await _async_generate_task_image(
+            hass, connection, task_id=task_id, entry_id=entry_id,
+            todo_entity_id=todo_entity_id, prompt_prefix=prompt_prefix,
+            ai_entity_id=ai_entity_id, force=force,
+        )
+        if not flight.done():
+            flight.set_result(result)
+        return result
+    finally:
+        if inflight.get(key) is flight:
+            inflight.pop(key, None)
+        if not flight.done():
+            flight.set_result(None)  # failed: the waiters generate for themselves
+
+
+async def _async_generate_task_image(
+    hass: HomeAssistant,
+    connection,
+    *,
+    task_id: str,
+    entry_id: str | None = None,
+    todo_entity_id: str | None = None,
+    prompt_prefix: str = "",
+    ai_entity_id: str | None = None,
+    force: bool = False,
+) -> dict:
+    """Generate (or reuse) the image for one task. Raises on failure.
+
+    Returns {"task": <updated task>, "reused": bool} - reused meaning an
+    image with the same title already existed, so no provider call was
+    made. Callers that pace provider requests need that distinction.
+
+    connection may be None when no websocket client is involved (the
+    background queue): only the download branch for HA-internal signed
+    URLs needs it, and ai_task hands back a media-source id, which is
+    copied off disk instead.
+    """
+    import hashlib
+    entry_id = entry_id
+    todo_entity_id = todo_entity_id
+    if bool(entry_id) == bool(todo_entity_id):
+        raise ValueError("Provide exactly one of entry_id or todo_entity_id")
+
+    store = None
+    overlay_store = None
+    external_tasks: list[dict] = []
+    if todo_entity_id:
+        external_tasks, overlay_store = await _async_get_external_tasks(
+            hass, todo_entity_id
+        )
+        task = next(
+            (candidate for candidate in external_tasks if candidate["id"] == task_id),
+            None,
+        )
+        if task is None:
+            raise ValueError("Task not found")
+    else:
+        store = _get_store(hass, entry_id)
+        task = store.get_task(task_id)
+
+    title = task.get("title", "")
+    title_key = title.strip().lower()
+    title_hash = hashlib.md5(title_key.encode(), usedforsecurity=False).hexdigest()[:16]
+
+    all_stores = hass.data.get(DOMAIN, {})
+
+    # Same-title sharing is per-list opt-out. A list with share_images off
+    # keeps to itself in both directions: it neither takes an image from
+    # another list nor hands one over. Three children with the same chore
+    # on three lists want three pictures, not one.
+    source_store = overlay_store or store
+    shares = source_store.get_settings()["share_images"]
+    if shares:
+        native_stores = [
+            st for st in all_stores.values()
+            if hasattr(st, "tasks") and st.get_settings()["share_images"]
+        ]
+        # Read every linked list once — both the reuse check below and the
+        # fan-out afterwards match on titles the providers hold.
+        external_lists = [
+            (ov, tasks)
+            for ov, tasks in await _async_all_external_lists(
+                hass,
+                (todo_entity_id, external_tasks, overlay_store) if overlay_store else None,
+            )
+            if ov.get_settings()["share_images"]
+        ] if title_key else []
+    else:
+        # Keeping to itself still means sharing *within* this one list:
+        # two identical titles in the same list use one picture.
+        native_stores = [store] if store is not None else []
+        external_lists = [(overlay_store, external_tasks)] if overlay_store else []
+
+    # ------------------------------------------------------------------
+    # 1. Reuse: if any task with the same title already has an image URL,
+    #    skip the service call (bypass with force=True).
+    # ------------------------------------------------------------------
+    if not force and title_key:
+        existing_url: str | None = None
+        for s in native_stores:
+            for t in s.tasks:
+                if (
+                    t.get("title", "").strip().lower() == title_key
+                    and _is_real_image(t.get("image_url"))
+                ):
+                    existing_url = t["image_url"]
+                    break
+            if existing_url:
+                break
+
+        # Nothing open has that title — but something did once. The library
+        # only serves lists that take part in the shared pool; a list that
+        # keeps to itself must not draw from it either.
+        if not existing_url and shares:
+            library = async_get_image_library(hass)
+            if library is not None:
+                remembered = library.find(title)
+                if remembered and _is_real_image(remembered):
+                    existing_url = remembered
+                    await library.async_touch(remembered)
+
+        if not existing_url:
+            for _ov_store, ext_tasks in external_lists:
+                for candidate in ext_tasks:
+                    if (
+                        candidate.get("title", "").strip().lower() == title_key
+                        and _is_real_image(candidate.get("image_url"))
+                    ):
+                        existing_url = candidate["image_url"]
+                        break
+                if existing_url:
+                    break
+
+        if existing_url:
+            # (already in the library, or just found in a live task — remember
+            # either way so the next lookup is a hit)
+            await _async_remember_image(hass, title, existing_url, shares)
+            if overlay_store:
+                await overlay_store.async_set_overlay(
+                    task_id, image_url=existing_url
+                )
+                updated_task = {**task, "image_url": existing_url}
+            else:
+                updated_task = await store.async_update_task(
+                    task_id, image_url=existing_url
+                )
+            return {"task": updated_task, "reused": True}
+
+    # ------------------------------------------------------------------
+    # 2. Generate via ai_task.generate_image (provider-agnostic).
+    # ------------------------------------------------------------------
+    prompt_prefix = prompt_prefix
+    prompt = f"{prompt_prefix}{title}" if prompt_prefix else title
+    # The card renders images in square tiles. ai_task exposes no size
+    # parameter, but gpt-image (and most models) honour an explicit aspect
+    # instruction — so ask for 1:1 to avoid the tiles cropping the result.
+    # For providers that ignore it this is just harmless extra prompt text.
+    instructions = f"{prompt}\n\nThe image must have a square 1:1 aspect ratio."
+
+    entity_id = ai_entity_id
+    if not entity_id:
+        from homeassistant.helpers import entity_registry as er
+        ent_reg = er.async_get(hass)
+        ai_entities = [
+            e.entity_id for e in ent_reg.entities.values()
+            if e.domain == "ai_task" and not e.disabled_by
+        ]
+        if not ai_entities:
+            raise ValueError("No ai_task entity found — configure one in the card editor")
+        entity_id = ai_entities[0]
+
+    try:
+        service_result = await hass.services.async_call(
+            "ai_task",
+            "generate_image",
+            {
+                "task_name": f"home_tasks_{title_hash}",
+                "instructions": instructions,
+                "entity_id": entity_id,
+            },
+            blocking=True,
+            return_response=True,
+        )
+    except Exception as service_err:
+        raise ValueError(f"Image generation failed: {service_err}") from service_err
+
+    _LOGGER.debug("ai_task.generate_image result: %s", service_result)
+    result_dict = service_result or {}
+    # Prefer the media-source id: it lets _save_image_to_public_media copy
+    # the file straight off disk (no auth-dependent HTTP download). The
+    # signed "url" is only a fallback.
+    image_url = (
+        result_dict.get("media_source_id")
+        or result_dict.get("url")
+        or (result_dict.get("image") or {}).get("url")
+    )
+    if not image_url:
+        raise ValueError(
+            f"ai_task.generate_image returned no image URL. Full result: {result_dict}"
+        )
+
+    # Convert auth-required internal URLs to public /media/local/ URLs so
+    # the Lovelace card can display them without auth headers.
+    image_filename = f"{title_hash}.png"
+    image_url = await _save_image_to_public_media(hass, connection, image_url, image_filename)
+
+    # Never persist an unresolved media-source:// URI — the browser can't
+    # render it, so it would show as a permanently broken image. Surface a
+    # clear error instead (e.g. media-source resolution failed above).
+    if image_url and image_url.startswith("media-source://"):
+        raise ValueError(
+            "Generated image could not be resolved to a displayable URL"
+        )
+
+    # Append a cache-busting timestamp so browsers/apps that cache by URL
+    # (including the Android HA app which cannot be hard-refreshed) always
+    # fetch the new image after regeneration.
+    if image_url.startswith("/local/home_tasks/"):
+        image_url = f"{image_url}?v={int(time.time())}"
+
+    # ------------------------------------------------------------------
+    # 3. Propagate the URL to every task with that title, in every list.
+    # ------------------------------------------------------------------
+    updated_task = None
+    # Only fan out to same-title tasks when the title is non-empty — an empty
+    # title would match every blank-title task across all lists and overwrite
+    # their images.
+    if title_key:
+        for s in native_stores:
+            for t in s.tasks:
+                if t.get("title", "").strip().lower() == title_key and t.get("image_url") != image_url:
+                    stamped = await s.async_update_task(t["id"], image_url=image_url)
+                    if t["id"] == task_id:
+                        updated_task = stamped
+
+        # External provider tasks keep Home Tasks-only image metadata in
+        # their overlay; the providers themselves are never edited here.
+        for ov_store, ext_tasks in external_lists:
+            for candidate in ext_tasks:
+                if (
+                    candidate.get("title", "").strip().lower() == title_key
+                    and candidate.get("image_url") != image_url
+                ):
+                    await ov_store.async_set_overlay(
+                        candidate["id"], image_url=image_url
+                    )
+                    # Only the list this request came from can hold the
+                    # requested task — uids are unique per provider, not
+                    # across providers.
+                    if ov_store is overlay_store and candidate["id"] == task_id:
+                        updated_task = {**candidate, "image_url": image_url}
+
+    if updated_task is None:
+        if overlay_store:
+            await overlay_store.async_set_overlay(task_id, image_url=image_url)
+            updated_task = {**task, "image_url": image_url}
+        else:
+            updated_task = await store.async_update_task(
+                task_id, image_url=image_url
+            )
+
+    await _async_remember_image(hass, title, image_url, shares)
+    return {"task": updated_task, "reused": False}
+
+
 
 @websocket_api.websocket_command(
     {
         vol.Required("type"): "home_tasks/generate_task_image",
-        vol.Required("entry_id"): _val_id,
-        vol.Required("task_id"): _val_id,
+        vol.Optional("entry_id"): _val_id,
+        vol.Optional("todo_entity_id"): _val_entity_id,
+        vol.Required("task_id"): _val_task_uid,
         vol.Optional("prompt_prefix"): vol.All(str, vol.Length(max=200)),
         vol.Optional("entity_id"): _val_entity_id,
         vol.Optional("force"): bool,
@@ -1853,142 +2609,18 @@ async def _save_image_to_public_media(hass, connection, image_url: str, filename
 )
 @websocket_api.async_response
 async def ws_generate_task_image(hass: HomeAssistant, connection, msg):
-    """Generate an AI image for a task via HA's ai_task integration.
-
-    Delegates to ai_task.generate_image — works with any configured AI
-    provider (OpenAI, Gemini, Anthropic, local models).  The generated image
-    lands in HA's Media Source; no API key handling or file I/O needed here.
-
-    Tasks with the same normalised title share a single image: before calling
-    the service the stores are checked for an existing URL.  After generation
-    the URL is propagated to every task with the same title across all lists.
-    """
-    import hashlib
-
+    """Websocket entry point - the work happens in the core above."""
     try:
-        store = _get_store(hass, msg["entry_id"])
-        task = store.get_task(msg["task_id"])
-
-        title = task.get("title", "")
-        title_key = title.strip().lower()
-        title_hash = hashlib.md5(title_key.encode(), usedforsecurity=False).hexdigest()[:16]
-
-        all_stores = hass.data.get(DOMAIN, {})
-
-        # ------------------------------------------------------------------
-        # 1. Reuse: if any task with the same title already has an image URL,
-        #    skip the service call (bypass with force=True).
-        # ------------------------------------------------------------------
-        if not msg.get("force", False) and title_key:
-            existing_url: str | None = None
-            for s in all_stores.values():
-                if not hasattr(s, "tasks"):
-                    continue
-                for t in s.tasks:
-                    if t.get("title", "").strip().lower() == title_key and t.get("image_url"):
-                        existing_url = t["image_url"]
-                        break
-                if existing_url:
-                    break
-
-            if existing_url:
-                updated_task = await store.async_update_task(msg["task_id"], image_url=existing_url)
-                connection.send_result(msg["id"], {"task": updated_task})
-                return
-
-        # ------------------------------------------------------------------
-        # 2. Generate via ai_task.generate_image (provider-agnostic).
-        # ------------------------------------------------------------------
-        prompt_prefix = msg.get("prompt_prefix", "")
-        prompt = f"{prompt_prefix}{title}" if prompt_prefix else title
-        # The card renders images in square tiles. ai_task exposes no size
-        # parameter, but gpt-image (and most models) honour an explicit aspect
-        # instruction — so ask for 1:1 to avoid the tiles cropping the result.
-        # For providers that ignore it this is just harmless extra prompt text.
-        instructions = f"{prompt}\n\nThe image must have a square 1:1 aspect ratio."
-
-        entity_id = msg.get("entity_id")
-        if not entity_id:
-            from homeassistant.helpers import entity_registry as er
-            ent_reg = er.async_get(hass)
-            ai_entities = [
-                e.entity_id for e in ent_reg.entities.values()
-                if e.domain == "ai_task" and not e.disabled_by
-            ]
-            if not ai_entities:
-                raise ValueError("No ai_task entity found — configure one in the card editor")
-            entity_id = ai_entities[0]
-
-        try:
-            service_result = await hass.services.async_call(
-                "ai_task",
-                "generate_image",
-                {
-                    "task_name": f"home_tasks_{title_hash}",
-                    "instructions": instructions,
-                    "entity_id": entity_id,
-                },
-                blocking=True,
-                return_response=True,
-            )
-        except Exception as service_err:
-            raise ValueError(f"Image generation failed: {service_err}") from service_err
-
-        _LOGGER.debug("ai_task.generate_image result: %s", service_result)
-        result_dict = service_result or {}
-        # Prefer the media-source id: it lets _save_image_to_public_media copy
-        # the file straight off disk (no auth-dependent HTTP download). The
-        # signed "url" is only a fallback.
-        image_url = (
-            result_dict.get("media_source_id")
-            or result_dict.get("url")
-            or (result_dict.get("image") or {}).get("url")
+        result = await async_generate_task_image(
+            hass,
+            connection,
+            task_id=msg["task_id"],
+            entry_id=msg.get("entry_id"),
+            todo_entity_id=msg.get("todo_entity_id"),
+            prompt_prefix=msg.get("prompt_prefix", ""),
+            ai_entity_id=msg.get("entity_id"),
+            force=msg.get("force", False),
         )
-        if not image_url:
-            raise ValueError(
-                f"ai_task.generate_image returned no image URL. Full result: {result_dict}"
-            )
-
-        # Convert auth-required internal URLs to public /media/local/ URLs so
-        # the Lovelace card can display them without auth headers.
-        image_filename = f"{title_hash}.png"
-        image_url = await _save_image_to_public_media(hass, connection, image_url, image_filename)
-
-        # Never persist an unresolved media-source:// URI — the browser can't
-        # render it, so it would show as a permanently broken image. Surface a
-        # clear error instead (e.g. media-source resolution failed above).
-        if image_url and image_url.startswith("media-source://"):
-            raise ValueError(
-                "Generated image could not be resolved to a displayable URL"
-            )
-
-        # Append a cache-busting timestamp so browsers/apps that cache by URL
-        # (including the Android HA app which cannot be hard-refreshed) always
-        # fetch the new image after regeneration.
-        if image_url.startswith("/local/home_tasks/"):
-            image_url = f"{image_url}?v={int(time.time())}"
-
-        # ------------------------------------------------------------------
-        # 3. Propagate URL to every task with the same title across all lists.
-        # ------------------------------------------------------------------
-        updated_task = None
-        # Only fan out to same-title tasks when the title is non-empty — an empty
-        # title would match every blank-title task across all lists and overwrite
-        # their images.
-        if title_key:
-            for s in all_stores.values():
-                if not hasattr(s, "tasks"):
-                    continue
-                for t in s.tasks:
-                    if t.get("title", "").strip().lower() == title_key and t.get("image_url") != image_url:
-                        stamped = await s.async_update_task(t["id"], image_url=image_url)
-                        if t["id"] == msg["task_id"]:
-                            updated_task = stamped
-
-        if updated_task is None:
-            updated_task = await store.async_update_task(msg["task_id"], image_url=image_url)
-
-        connection.send_result(msg["id"], {"task": updated_task})
-
+        connection.send_result(msg["id"], {"task": result["task"]})
     except Exception as err:
         _handle_error(connection, msg["id"], err)

@@ -54,6 +54,22 @@
     "button": {
       "rescan": {
         "name": "Reescanear Dispositivos con Batería"
+      },
+      "battery_changed": {
+        "name": "Batería cambiada"
+      }
+    },
+    "sensor": {
+      "last_battery_change": {
+        "name": "Último cambio de batería"
+      }
+    },
+    "select": {
+      "battery_type": {
+        "name": "Tipo de batería"
+      },
+      "battery_number": {
+        "name": "Número de baterías"
       }
     }
   },

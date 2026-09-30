@@ -14875,7 +14875,6 @@ const style = i$3 `
         position: relative;
         aspect-ratio: 16/8;
         height: auto;
-        max-height: 200px;
         width: 100%;
         will-change: transform;
         transform: translateZ(0);       /* helps WKWebView compositing */
@@ -15506,7 +15505,7 @@ AstroWeatherCardEditor = __decorate([
 ], AstroWeatherCardEditor);
 
 var AstroWeatherCard_1;
-const CARD_VERSION = "v0.80.0";
+const CARD_VERSION = "v0.80.1";
 console.info(`%c  ASTROWEATHER-CARD  \n%c Version ${CARD_VERSION}  `, "color: yellow; font-weight: bold; background: navy", "color: white; font-weight: bold; background: black");
 // This puts your card into the UI card picker dialog
 window.customCards = window.customCards || [];

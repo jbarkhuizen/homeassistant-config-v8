@@ -7,7 +7,6 @@ import logging
 import os
 from pathlib import Path
 import shutil
-import tempfile
 from typing import Any, NotRequired, TypedDict, cast
 from urllib.parse import SplitResult, unquote, urlsplit
 
@@ -27,6 +26,13 @@ from custom_components.powercalc.const import (
 )
 from custom_components.powercalc.helpers import async_cache, clear_async_cache
 from custom_components.powercalc.power_profile.error import LibraryLoadingError, ProfileDownloadError
+from custom_components.powercalc.power_profile.loader.profile_cache import (
+    InstalledProfile,
+    create_staging_directory,
+    install_profile,
+    read_installed_profile,
+    save_resource,
+)
 from custom_components.powercalc.power_profile.loader.protocol import Loader, ModelMetadata
 from custom_components.powercalc.power_profile.power_profile import DeviceType, DiscoveryBy
 
@@ -36,7 +42,6 @@ ENDPOINT_LIBRARY = f"{API_URL}/library"
 ENDPOINT_DOWNLOAD = f"{API_URL}/download"
 
 TIMEOUT_SECONDS = 30
-MODEL_JSON_RETRY_LIMIT = 2
 
 ALLOWED_RESOURCE_HOSTS = frozenset({"github.com", "raw.githubusercontent.com"})
 # Profile resources are only ever served from the profile library of the Powercalc repository.
@@ -47,6 +52,9 @@ LIBRARY_REPOSITORY_SEGMENTS = ("bramstroker", "homeassistant-powercalc")
 LIBRARY_RESOURCE_DIRECTORY = "profile_library"
 MAX_RESOURCE_SIZE = 10 * 1024 * 1024
 MAX_MANIFEST_SIZE = 1024 * 1024
+MAX_LIBRARY_SIZE = 10 * 1024 * 1024
+MAX_PROFILE_RESOURCES = 256
+MAX_PROFILE_DOWNLOAD_SIZE = 25 * 1024 * 1024
 DOWNLOAD_CHUNK_SIZE = 64 * 1024
 
 
@@ -104,6 +112,48 @@ async def _read_capped(response: aiohttp.ClientResponse, limit: int, description
     return b"".join(chunks)
 
 
+def _validate_path_segment(value: object, description: str) -> str:
+    """Validate a library identifier before using it as one directory component."""
+    if (
+        not isinstance(value, str)
+        or not value
+        or value in {".", ".."}
+        or any(character in value for character in ("/", "\\", ":", "\0"))
+    ):
+        raise ProfileDownloadError(f"Library index contains an invalid {description}")
+    return value
+
+
+def _validate_library_contents(contents: object) -> dict[str, Any]:
+    """Validate the parts of library.json that determine local storage paths."""
+    if not isinstance(contents, dict) or not isinstance(manufacturers := contents.get("manufacturers"), list):
+        raise ProfileDownloadError("Library index contains invalid manufacturers")
+
+    for manufacturer in manufacturers:
+        if not isinstance(manufacturer, dict):
+            raise ProfileDownloadError("Library index contains an invalid manufacturer")
+        _validate_path_segment(manufacturer.get("dir_name"), "manufacturer directory")
+
+        models = manufacturer.get("models", [])
+        if not isinstance(models, list):
+            raise ProfileDownloadError("Library index contains invalid models")
+        for model in models:
+            if not isinstance(model, dict):
+                raise ProfileDownloadError("Library index contains an invalid model")
+            _validate_path_segment(model.get("id"), "model ID")
+
+    return cast(dict[str, Any], contents)
+
+
+def _decode_library_json(data: bytes, description: str) -> dict[str, Any]:
+    """Decode and validate a downloaded library index."""
+    try:
+        contents = json.loads(data)
+    except (JSONDecodeError, UnicodeDecodeError, RecursionError) as err:
+        raise ProfileDownloadError(f"{description} is not valid JSON") from err
+    return _validate_library_contents(contents)
+
+
 def _resolve_resource_path(storage_path: str, resource_path: object) -> Path:
     """Resolve and validate a resource path within the profile storage directory."""
     if not isinstance(resource_path, str) or not resource_path or "\0" in resource_path:
@@ -127,6 +177,10 @@ def _validate_resources(resources: object, storage_path: str) -> list[tuple[str,
     """Validate all resources in a remote profile response."""
     if not isinstance(resources, list) or not all(isinstance(resource, dict) for resource in resources):
         raise ProfileDownloadError("Remote profile response contains invalid resources")
+    if len(resources) > MAX_PROFILE_RESOURCES:
+        raise ProfileDownloadError(
+            f"Remote profile contains more than the maximum of {MAX_PROFILE_RESOURCES} resources",
+        )
 
     return [
         (_validate_resource_url(resource.get("url")), _resolve_resource_path(storage_path, resource.get("path")))
@@ -134,49 +188,10 @@ def _validate_resources(resources: object, storage_path: str) -> list[tuple[str,
     ]
 
 
-def _sync_directory(directory: Path) -> None:
-    """Persist a directory entry, so a completed rename survives an unclean shutdown."""
-    try:
-        directory_descriptor = os.open(directory, os.O_RDONLY)
-    except OSError:  # pragma: no cover - directories cannot be opened on all platforms
-        return
-    try:
-        os.fsync(directory_descriptor)
-    except OSError:  # pragma: no cover - directory fsync is not supported on all platforms
-        pass
-    finally:
-        os.close(directory_descriptor)
-
-
-def _save_resource(data: bytes, path: Path) -> None:
-    """Atomically save a downloaded resource to the local profile storage directory.
-
-    The contents are flushed to disk before the rename, and the directory entry is flushed
-    after it. Without both, a power loss shortly after an update can leave the new file name
-    pointing at unwritten data, which is how a cached profile ends up as invalid JSON.
-    """
-    os.makedirs(path.parent, exist_ok=True)
-    file_descriptor, temporary_name = tempfile.mkstemp(
-        dir=path.parent,
-        prefix=f".{path.name}.",
-        suffix=".tmp",
-    )
-    temporary_path = Path(temporary_name)
-    try:
-        with os.fdopen(file_descriptor, "wb") as file_handle:
-            file_handle.write(data)
-            file_handle.flush()
-            os.fsync(file_handle.fileno())
-        os.replace(temporary_path, path)
-        _sync_directory(path.parent)
-    finally:
-        temporary_path.unlink(missing_ok=True)
-
-
 def _save_resources(resources: list[tuple[bytes, Path]]) -> None:
     """Save all downloaded resources after every response has completed successfully."""
     for data, path in resources:
-        _save_resource(data, path)
+        save_resource(data, path)
 
 
 class LibraryModel(TypedDict):
@@ -208,6 +223,9 @@ class RemoteLoader(Loader):
         self.model_lookup: dict[str, dict[str, list[LibraryModel]]] = {}
         self.manufacturer_lookup: dict[str, set[str]] = {}
         self.profile_hashes: dict[str, str] = {}
+        self.installed_profiles: dict[str, InstalledProfile] = {}
+        self.powercalc_version = AwesomeVersion("0.0.0")
+        self._fallback_models: set[str] = set()
         self._model_load_locks: dict[tuple[str, str], asyncio.Lock] = {}
 
     async def initialize(self, prefer_cached: bool = False) -> None:
@@ -218,12 +236,14 @@ class RemoteLoader(Loader):
         """
 
         integration = await async_get_integration(self.hass, DOMAIN)
-        powercalc_version = AwesomeVersion(str(integration.version))
+        self.powercalc_version = AwesomeVersion(str(integration.version))
 
         self._clear_caches()
-        self.library_contents = await self.load_library_json(prefer_cached)
+        self.library_contents = _validate_library_contents(await self.load_library_json(prefer_cached))
         self.profile_hashes = await self.hass.async_add_executor_job(self._load_profile_hashes)
 
+        self.installed_profiles = await self.hass.async_add_executor_job(self._load_installed_profiles)
+        self._fallback_models.clear()
         self.model_infos.clear()
         self.model_lookup.clear()
         self.manufacturer_models.clear()
@@ -232,7 +252,32 @@ class RemoteLoader(Loader):
         manufacturers: list[LibraryManufacturer] = self.library_contents.get("manufacturers", [])
 
         for manufacturer in manufacturers:
-            self._index_manufacturer(manufacturer, powercalc_version)
+            self._index_manufacturer(manufacturer, self.powercalc_version)
+
+    def _load_installed_profiles(self) -> dict[str, InstalledProfile]:
+        """Read cached revisions before applying remote compatibility filters."""
+        models = {
+            (manufacturer["dir_name"], model["id"])
+            for manufacturer in self.library_contents["manufacturers"]
+            for model in manufacturer.get("models", [])
+        }
+        storage_root = Path(self.hass.config.path(STORAGE_DIR, BUILT_IN_LIBRARY_DIR))
+        installed = {}
+        # Most library models are never downloaded. Only inspect directories present on this installation.
+        for directory in storage_root.glob("*/*"):
+            manufacturer, model = directory.parent.name, directory.name
+            if (manufacturer, model) not in models:
+                continue
+            key = f"{manufacturer}/{model}"
+            profile = read_installed_profile(
+                Path(self.get_storage_path(manufacturer, model)),
+                model,
+                self.profile_hashes.get(key),
+                self.powercalc_version,
+            )
+            if profile is not None:
+                installed[key] = profile
+        return installed
 
     def get_discovery_low_priority_domains(self) -> set[str]:
         """Get the low priority discovery integration domains declared by library metadata."""
@@ -254,10 +299,16 @@ class RemoteLoader(Loader):
 
         for model in models:
             model_id = str(model.get("id"))
-            self.model_infos[f"{manufacturer_name}/{model_id}"] = model
-
+            key = f"{manufacturer_name}/{model_id}"
+            self.model_infos[key] = model
             if self._is_unsupported_version(manufacturer_name, model_id, model, powercalc_version):
-                continue
+                installed = self.installed_profiles.get(key)
+                if installed is None:
+                    continue
+                model = cast(LibraryModel, installed.metadata)
+                self.model_infos[key] = model
+                self._fallback_models.add(key)
+                _LOGGER.debug("Using installed compatible profile for %s", key)
 
             kept_models.append(model)
             self._add_model_to_lookup(lookup, model, model_id.lower())
@@ -342,9 +393,12 @@ class RemoteLoader(Loader):
         if not os.path.exists(local_path):
             return None
         try:
-            with open(local_path) as f:
-                return cast(dict[str, Any], json.load(f))
-        except (JSONDecodeError, OSError) as err:
+            with open(local_path, "rb") as f:
+                data = f.read(MAX_LIBRARY_SIZE + 1)
+            if len(data) > MAX_LIBRARY_SIZE:
+                raise ProfileDownloadError(f"Local library is larger than the maximum of {MAX_LIBRARY_SIZE} bytes")
+            return _decode_library_json(data, "Local library")
+        except (OSError, ProfileDownloadError) as err:
             _LOGGER.warning("Local library.json is unusable (%s), discarding it and downloading a fresh copy", err)
             return None
 
@@ -372,14 +426,15 @@ class RemoteLoader(Loader):
                         f"Failed to download library.json, unexpected status code: {resp.status}",
                     )
 
-                data = await resp.read()
+                data = await _read_capped(resp, MAX_LIBRARY_SIZE, "Remote library")
 
         except (TimeoutError, ClientError) as err:
             raise ProfileDownloadError(f"Failed to download library.json: {err}") from err
 
-        await self.hass.async_add_executor_job(_save_resource, data, Path(local_path))
+        library_contents = _decode_library_json(data, "Remote library")
+        await self.hass.async_add_executor_job(save_resource, data, Path(local_path))
 
-        return cast(dict[str, Any], json.loads(data))
+        return library_contents
 
     @async_cache
     async def get_manufacturer_listing(
@@ -492,54 +547,37 @@ class RemoteLoader(Loader):
         manufacturer: str,
         model: str,
         force_update: bool = False,
-        retry_count: int = 0,
     ) -> tuple[dict[str, Any], str] | None:
         """Load a model, downloading it if necessary, with retry logic."""
         lock = self._model_load_locks.setdefault((manufacturer, model), asyncio.Lock())
         async with lock:
-            return await self._load_model_locked(manufacturer, model, force_update, retry_count)
+            return await self._load_model_locked(manufacturer, model, force_update)
 
     async def _load_model_locked(
         self,
         manufacturer: str,
         model: str,
         force_update: bool,
-        retry_count: int,
     ) -> tuple[dict[str, Any], str] | None:
         """Load a model while holding its per-profile lock."""
         model_info = self._get_library_model(manufacturer, model)
+        key = f"{manufacturer}/{model}"
+        if self._is_unsupported_version(manufacturer, model, model_info, self.powercalc_version):
+            raise LibraryLoadingError(f"Profile {key} requires Powercalc {model_info['min_version']}")
         storage_path = self.get_storage_path(manufacturer, model)
-        model_path = os.path.join(storage_path, "model.json")
-
-        while True:
-            if await self._needs_update(model_info, manufacturer, model, model_path, force_update):
-                await self._download_profile_with_retry(manufacturer, model, storage_path, model_path)
-
-            try:
-                json_data = await self._load_model_json(model_path)
-            except JSONDecodeError as error:
-                if retry_count >= MODEL_JSON_RETRY_LIMIT:
-                    _LOGGER.error(
-                        "model.json remains invalid after %d redownload attempts for manufacturer: %s, model: %s",
-                        MODEL_JSON_RETRY_LIMIT,
-                        manufacturer,
-                        model,
-                    )
-                    raise LibraryLoadingError("Failed to load model.json file") from error
-
-                retry_count += 1
-                force_update = True
-                _LOGGER.warning(
-                    "model.json is not valid JSON for manufacturer: %s, model: %s; redownloading profile "
-                    "(attempt %d of %d)",
-                    manufacturer,
-                    model,
-                    retry_count,
-                    MODEL_JSON_RETRY_LIMIT,
-                )
-                continue
-
-            return json_data, storage_path
+        installed = await self.hass.async_add_executor_job(
+            read_installed_profile,
+            Path(storage_path),
+            model,
+            self.profile_hashes.get(key),
+            self.powercalc_version,
+        )
+        if key in self._fallback_models:
+            if installed is None:
+                raise LibraryLoadingError(f"No compatible installed profile for {key}")
+        elif force_update or installed is None or installed.metadata.get("hash") != model_info.get("hash"):
+            installed = await self._download_profile_with_retry(manufacturer, model, storage_path, installed)
+        return await self._load_model_json(str(installed.directory / "model.json")), str(installed.directory)
 
     def _get_library_model(self, manufacturer: str, model: str) -> LibraryModel:
         """Retrieve model info, or raise an error if not found."""
@@ -548,57 +586,52 @@ class RemoteLoader(Loader):
             raise LibraryLoadingError(f"Model not found in library: {manufacturer}/{model}")
         return model_info
 
-    async def _needs_update(
-        self,
-        model_info: LibraryModel,
-        manufacturer: str,
-        model: str,
-        model_path: str,
-        force_update: bool,
-    ) -> bool:
-        """Check if the model needs to be updated."""
-        if force_update:
-            return True
-
-        path_exists = await self.hass.async_add_executor_job(os.path.exists, model_path)
-        if not path_exists:
-            return True
-
-        existing_hash = self.profile_hashes.get(f"{manufacturer}/{model}")
-        new_hash = model_info.get("hash")
-        return existing_hash != new_hash
-
     async def _download_profile_with_retry(
         self,
         manufacturer: str,
         model: str,
         storage_path: str,
-        model_path: str,
-    ) -> None:
-        """Attempt to download the profile, with retry logic and error handling."""
+        installed: InstalledProfile | None,
+    ) -> InstalledProfile:
+        """Update a profile, falling back only to a validated compatible installed copy."""
         try:
             model_info = self._get_library_model(manufacturer, model)
-            model_hash = str(model_info.get("hash"))
-            callback = partial(self.download_profile, manufacturer, model, storage_path, model_hash)
+            callback = partial(self._download_and_install_profile, manufacturer, model, storage_path, model_info)
             await self.download_with_retry(callback)
-            self.profile_hashes[f"{manufacturer}/{model}"] = model_hash
+            self.profile_hashes[f"{manufacturer}/{model}"] = str(model_info.get("hash"))
             await self.hass.async_add_executor_job(self._write_profile_hashes, dict(self.profile_hashes))
-        except ProfileDownloadError as e:
-            path_exists, storage_path_exists = await self.hass.async_add_executor_job(
-                self._profile_paths_exist,
-                model_path,
-                storage_path,
-            )
-            if not path_exists:
-                if storage_path_exists:
-                    await self.hass.async_add_executor_job(shutil.rmtree, storage_path)  # pragma: no cover
-                raise e
+            return self.installed_profiles[f"{manufacturer}/{model}"]
+        except ProfileDownloadError:
+            if installed is None:
+                raise
             _LOGGER.debug("Failed to download profile, falling back to local profile")
+            return installed
 
-    @staticmethod
-    def _profile_paths_exist(model_path: str, storage_path: str) -> tuple[bool, bool]:
-        """Check profile paths from the executor."""
-        return os.path.exists(model_path), os.path.exists(storage_path)
+    async def _download_and_install_profile(
+        self,
+        manufacturer: str,
+        model: str,
+        storage_path: str,
+        model_info: LibraryModel,
+    ) -> None:
+        """Stage files and metadata so failed updates leave the installed revision untouched."""
+        staging: Path | None = None
+        try:
+            staging = await self.hass.async_add_executor_job(create_staging_directory, Path(storage_path))
+            await self.download_profile(manufacturer, model, str(staging), str(model_info.get("hash")))
+            installed = await self.hass.async_add_executor_job(
+                install_profile,
+                Path(storage_path),
+                staging,
+                dict(model_info),
+                self.powercalc_version,
+            )
+            self.installed_profiles[f"{manufacturer}/{model}"] = installed
+        except OSError as err:
+            raise ProfileDownloadError(f"Failed to install profile: {manufacturer}/{model}") from err
+        finally:
+            if staging is not None:
+                await self.hass.async_add_executor_job(shutil.rmtree, staging, True)
 
     async def _load_model_json(self, model_path: str) -> dict[str, Any]:
         """Load the JSON data from the model file."""
@@ -611,7 +644,16 @@ class RemoteLoader(Loader):
 
     def get_storage_path(self, manufacturer: str, model: str) -> str:
         """Retrieve the storage path for a given manufacturer and model."""
-        return str(self.hass.config.path(STORAGE_DIR, BUILT_IN_LIBRARY_DIR, manufacturer, model))
+        manufacturer = _validate_path_segment(manufacturer, "manufacturer directory")
+        model = _validate_path_segment(model, "model ID")
+        storage_root = Path(self.hass.config.path(STORAGE_DIR, BUILT_IN_LIBRARY_DIR)).resolve()
+        try:
+            storage_path = (storage_root / manufacturer / model).resolve()
+        except (OSError, RuntimeError, ValueError) as err:
+            raise ProfileDownloadError("Remote profile has an invalid storage path") from err
+        if not storage_path.is_relative_to(storage_root):
+            raise ProfileDownloadError("Remote profile storage path is outside the profile library")
+        return str(storage_path)
 
     async def download_with_retry(
         self,
@@ -672,12 +714,30 @@ class RemoteLoader(Loader):
 
                 # Download the files
                 downloaded_resources: list[tuple[bytes, Path]] = []
+                downloaded_size = 0
                 for url, destination in validated_resources:
                     async with session.get(url, allow_redirects=False) as resp:
                         if resp.status != 200:
                             raise ProfileDownloadError(f"Failed to download github URL: {url}")
 
-                        contents = await _read_capped(resp, MAX_RESOURCE_SIZE, f"Remote profile resource {url}")
+                        remaining_size = MAX_PROFILE_DOWNLOAD_SIZE - downloaded_size
+                        if remaining_size <= 0:
+                            raise ProfileDownloadError(
+                                f"Remote profile is larger than the maximum of {MAX_PROFILE_DOWNLOAD_SIZE} bytes",
+                            )
+                        try:
+                            contents = await _read_capped(
+                                resp,
+                                min(MAX_RESOURCE_SIZE, remaining_size),
+                                f"Remote profile resource {url}",
+                            )
+                        except ProfileDownloadError as err:
+                            if remaining_size < MAX_RESOURCE_SIZE:
+                                raise ProfileDownloadError(
+                                    f"Remote profile is larger than the maximum of {MAX_PROFILE_DOWNLOAD_SIZE} bytes",
+                                ) from err
+                            raise
+                        downloaded_size += len(contents)
                         downloaded_resources.append((contents, destination))
 
                 await self.hass.async_add_executor_job(_save_resources, downloaded_resources)
@@ -710,4 +770,4 @@ class RemoteLoader(Loader):
         """Write profile hashes to local storage, atomically."""
 
         path = self._get_profile_hashes_path()
-        _save_resource(json.dumps(hashes, indent=4).encode(), Path(path))
+        save_resource(json.dumps(hashes, indent=4).encode(), Path(path))

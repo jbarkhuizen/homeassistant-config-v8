@@ -11,19 +11,38 @@ weekday of month" holidays, ...). Their date is instead resolved live, every
 time it's needed, from the `holidays` PyPI library - so there is nothing to
 go stale and nothing to migrate when a year turns over, unlike a naive
 "cache the date we last computed" approach would require.
+
+A custom event can carry a rule of the same shape - "the first Sunday in
+September", see CONF_WEEKDAY in const.py - for the observances that library
+does not carry because they are not public holidays. It keeps its stored
+day/month, which the rule simply supersedes while it is set, and it too is
+resolved per year rather than stored. event_occurrence_in_year below is the
+one place that tells the two apart.
 """
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date, time, timedelta
 from functools import lru_cache
 
 import holidays as holidays_lib
 
 from .const import (
+    CONF_DAY,
+    CONF_END_TIME,
     CONF_HOLIDAY_BLOCK,
     CONF_HOLIDAY_DAY,
     CONF_HOLIDAY_SPAN,
+    CONF_INTERVAL,
+    CONF_INTERVAL_UNIT,
+    CONF_MONTH,
+    CONF_NTH,
+    CONF_TIME,
+    CONF_WEEKDAY,
+    CONF_YEAR,
+    INTERVAL_MONTHS,
+    INTERVAL_YEARS,
+    NTH_LAST,
     SPAN_DAY,
     SPAN_END,
     SPAN_START,
@@ -42,11 +61,59 @@ def occurrence_in_year(month: int, day: int, year: int) -> date:
         return date(year, 2, 28)
 
 
-def next_occurrence(month: int, day: int, today: date) -> date:
-    """The next occurrence of the event's month/day on or after today."""
-    candidate = occurrence_in_year(month, day, today.year)
+def weekday_rule(data: dict) -> tuple[int, int] | None:
+    """The (weekday, nth) a custom event recurs by, or None if it has a date.
+
+    One place decides what counts as "this event is a rule", so the sensor,
+    the calendar and the config flow can never drift apart on it. Both halves
+    have to be there - half a rule is not one - and without them the event's
+    stored day/month is what it falls back to, exactly as before.
+    """
+    weekday = data.get(CONF_WEEKDAY)
+    nth = data.get(CONF_NTH)
+    if weekday is None or nth is None:
+        return None
+    return int(weekday), int(nth)
+
+
+def nth_weekday_in_year(month: int, weekday: int, nth: int, year: int) -> date:
+    """The nth <weekday> of <month> in the given year.
+
+    weekday is Monday=0..Sunday=6, as date.weekday() has it; nth is 1..4 or
+    NTH_LAST. No leap-year special case is needed the way occurrence_in_year
+    has one: a rule always lands on a day the month actually has.
+    """
+    if nth == NTH_LAST:
+        # Counted back from the first of the next month rather than forward
+        # from the first of this one, so month lengths and February never
+        # come into it.
+        after = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
+        last = after - timedelta(days=1)
+        return last - timedelta(days=(last.weekday() - weekday) % 7)
+
+    first = date(year, month, 1)
+    first_match = first + timedelta(days=(weekday - first.weekday()) % 7)
+    return first_match + timedelta(weeks=nth - 1)
+
+
+def event_occurrence_in_year(data: dict, year: int) -> date:
+    """Where a yearly-recurring event falls in the given year.
+
+    The one entry point for both shapes an event can have: its rule if it
+    carries one, its stored day/month otherwise.
+    """
+    rule = weekday_rule(data)
+    if rule is None:
+        return occurrence_in_year(data[CONF_MONTH], data[CONF_DAY], year)
+    weekday, nth = rule
+    return nth_weekday_in_year(data[CONF_MONTH], weekday, nth, year)
+
+
+def next_event_occurrence(data: dict, today: date) -> date:
+    """The same, for the next occurrence on or after today."""
+    candidate = event_occurrence_in_year(data, today.year)
     if candidate < today:
-        candidate = occurrence_in_year(month, day, today.year + 1)
+        candidate = event_occurrence_in_year(data, today.year + 1)
     return candidate
 
 
@@ -92,6 +159,103 @@ def one_time_span(year: int, month: int, day: int, end_date: str | None) -> tupl
     start = one_time_date(year, month, day)
     end = parse_iso_date(end_date)
     return start, end if end is not None and end > start else start
+
+
+def interval_rule(data: dict) -> tuple[int, str] | None:
+    """The (count, unit) a custom event repeats by - every 6 months, every
+    2 years - or None where it repeats once a year like everything else.
+
+    One place decides what counts as "this event has an interval", the
+    way weekday_rule does for a rule: a count, a known unit and the year
+    the stored date starts in, all three, since an interval is counted
+    from that date and a date without a year has nothing to count from.
+    """
+    count = data.get(CONF_INTERVAL)
+    unit = data.get(CONF_INTERVAL_UNIT)
+    if not count or unit not in (INTERVAL_MONTHS, INTERVAL_YEARS) or data.get(CONF_YEAR) is None:
+        return None
+    return int(count), unit
+
+
+def add_interval(start: date, count: int, unit: str, steps: int) -> date:
+    """`start` moved `steps` intervals along - a whole number of months or
+    years, so the day of the month stays put. Where the month it lands in
+    has no such day (the 31st, or Feb 29), the last day of that month is
+    taken, the same way occurrence_in_year handles a leap day.
+    """
+    if unit == INTERVAL_YEARS:
+        return occurrence_in_year(start.month, start.day, start.year + count * steps)
+    total = start.month - 1 + count * steps
+    year, month = start.year + total // 12, total % 12 + 1
+    after = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
+    last_day = (after - timedelta(days=1)).day
+    return date(year, month, min(start.day, last_day))
+
+
+def interval_occurrence(data: dict, today: date) -> tuple[date, int]:
+    """An interval event's next occurrence on or after `today`, and which
+    step that is - 0 on the stored date itself, 1 one interval later.
+
+    The step is what the occurrence number reports for these events
+    (see sensor.py): "the 3rd inspection since the first". Today before
+    the stored date is the stored date, step 0.
+    """
+    count, unit = interval_rule(data)
+    start = date(int(data[CONF_YEAR]), int(data[CONF_MONTH]), int(data[CONF_DAY]))
+    if today <= start:
+        return start, 0
+    # A near-enough estimate, then walked to the first step not behind us.
+    if unit == INTERVAL_YEARS:
+        steps = max(0, (today.year - start.year) // count)
+    else:
+        months = (today.year - start.year) * 12 + today.month - start.month
+        steps = max(0, months // count)
+    candidate = add_interval(start, count, unit, steps)
+    while candidate < today:
+        steps += 1
+        candidate = add_interval(start, count, unit, steps)
+    while steps > 0 and add_interval(start, count, unit, steps - 1) >= today:
+        steps -= 1
+        candidate = add_interval(start, count, unit, steps)
+    return candidate, steps
+
+
+def interval_occurrences_between(data: dict, first: date, last: date) -> list[tuple[date, int]]:
+    """Every occurrence of an interval event from `first` to `last`
+    inclusive, with its step - what the calendar entity lists for a range,
+    where a six-monthly event can fall twice in one year and a five-yearly
+    one not at all.
+    """
+    count, unit = interval_rule(data)
+    start = date(int(data[CONF_YEAR]), int(data[CONF_MONTH]), int(data[CONF_DAY]))
+    candidate, steps = interval_occurrence(data, first)
+    found: list[tuple[date, int]] = []
+    while candidate <= last:
+        found.append((candidate, steps))
+        steps += 1
+        candidate = add_interval(start, count, unit, steps)
+    return found
+
+
+def parse_time(value: str | None) -> time | None:
+    """A stored "HH:MM" (or the selector's "HH:MM:SS") as a time - None for
+    anything empty or unparseable, which leaves the event all-day the way
+    parse_iso_date leaves it single-day.
+    """
+    if not value:
+        return None
+    try:
+        return time.fromisoformat(str(value).strip())
+    except ValueError:
+        return None
+
+
+def time_text(value: str | None) -> str | None:
+    """The stored form of a time, "HH:MM" - seconds dropped, since the
+    selector hands them over and nobody sets a concert for 20:00:00.
+    """
+    parsed = parse_time(value)
+    return None if parsed is None else parsed.strftime("%H:%M")
 
 
 def occurrence_number(year: int | None, occurrence: date) -> int | None:

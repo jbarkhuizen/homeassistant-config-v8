@@ -15,6 +15,9 @@ from homeassistant.core import HassJob, HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
+
+from .image_library import async_get_image_library, async_register_image_library
+from .image_queue import async_register_image_queue
 from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN, RECURRENCE_UNIT_SECONDS
@@ -27,9 +30,9 @@ from .websocket_api import async_move_task_any, async_register_websocket_command
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["todo", "sensor", "binary_sensor", "calendar"]
-# External entries only get a calendar entity; their todo/sensor data is owned
-# by the source integration.
-EXTERNAL_PLATFORMS = ["calendar"]
+# A linked list gets the same entities as a native one, except the todo
+# entity - that one is the provider's own.
+EXTERNAL_PLATFORMS = ["calendar", "sensor", "binary_sensor"]
 CARD_URL = "/home_tasks/home-tasks-card.js"
 DATA_SETUP_DONE = f"{DOMAIN}_setup_done"
 DATA_RESOURCE_UNSUB = f"{DOMAIN}_resource_unsub"
@@ -52,11 +55,46 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     await _async_register_card(hass)
     _async_register_services(hass)
     _async_register_due_checker(hass)
+    async_register_image_library(hass)
+    async_register_image_queue(hass)
+    hass.async_create_task(_async_load_image_library(hass))
     # One-time: generate thumbnails for any pre-existing task images so tile
     # grids load fast without re-saving each image. Runs in the background.
     from .websocket_api import _backfill_thumbnails
     hass.async_create_task(_backfill_thumbnails(hass))
     return True
+
+
+BACKFILL_RETRIES = 5
+BACKFILL_RETRY_DELAY = 300
+
+
+async def _async_load_image_library(hass: HomeAssistant) -> None:
+    """Read the title-to-picture library from disk once, then learn.
+
+    The backfill waits: config entries are set up after async_setup, so at
+    this point there are no lists to read pictures from yet.
+    """
+    library = async_get_image_library(hass)
+    if library is None:
+        return
+    await library.async_load()
+
+    # A linked list whose provider is still loading a minute after boot is
+    # not readable yet; try those again a few times before giving up.
+    tries_left = [BACKFILL_RETRIES]
+
+    async def _run() -> None:
+        await library.async_backfill()
+        if library.unread_lists and tries_left[0] > 0:
+            tries_left[0] -= 1
+            async_call_later(hass, BACKFILL_RETRY_DELAY, _backfill)
+
+    @callback
+    def _backfill(_now) -> None:
+        hass.async_create_task(_run())
+
+    async_call_later(hass, 60, _backfill)
 
 
 async def _async_register_card(hass: HomeAssistant) -> None:
@@ -81,6 +119,16 @@ async def _async_register_card(hass: HomeAssistant) -> None:
             # revalidations on flaky reconnects (companion-app warm resume) —
             # without it the module import fails and the dashboard shows
             # "Custom element doesn't exist" until a full reload (#37).
+            cache_headers=True,
+        ),
+        StaticPathConfig(
+            f"/{DOMAIN}/generation_failed.svg",
+            f"{comp_path}/generation_failed.svg",
+            cache_headers=True,
+        ),
+        StaticPathConfig(
+            f"/{DOMAIN}/generating.svg",
+            f"{comp_path}/generating.svg",
             cache_headers=True,
         ),
         StaticPathConfig(
@@ -1351,6 +1399,109 @@ def _recover_external_recurrence_timers(hass: HomeAssistant, entry_id: str, enti
 #  Services
 # ---------------------------------------------------------------------------
 
+def _entry_for_name(hass: HomeAssistant, list_name: str):
+    """The config entry whose list is called *list_name*, native or linked.
+
+    A native list wins a name it shares with a linked one. That is how the
+    name has always resolved, and one name must not mean two different lists
+    depending on which service happens to read it.
+    """
+    matches = [
+        entry for entry in hass.config_entries.async_entries(DOMAIN)
+        if (entry.data.get("name", entry.title) or "").lower() == list_name.lower()
+    ]
+    stores = hass.data.get(DOMAIN, {})
+    for entry in matches:
+        if isinstance(stores.get(entry.entry_id), HomeTasksStore):
+            return entry
+    return matches[0] if matches else None
+
+
+def _resolve_target(hass: HomeAssistant, data: dict) -> tuple[str, str, object]:
+    """Resolve a service call's list to work on.
+
+    Returns ``(kind, ident, store)`` where kind is "native" (ident is the
+    config entry id, store is the HomeTasksStore) or "external" (ident is the
+    todo entity id, store is its overlay store).
+
+    Linked lists used to fall through here and be reported as missing, so an
+    automation could tag a task the card could tag (issue #63).
+    """
+    from .overlay_store import ExternalTaskOverlayStore
+
+    stores = hass.data.get(DOMAIN, {})
+
+    given = [key for key in ("list_name", "entry_id", "entity_id") if data.get(key)]
+    if len(given) > 1:
+        # Silently letting one win means an automation that still carries an
+        # old entity_id keeps writing to the old list while reading as if it
+        # targets the new one.
+        raise vol.Invalid(
+            "Provide exactly one of list_name, entry_id or entity_id (got: "
+            + ", ".join(given) + ")"
+        )
+
+    entity_id = data.get("entity_id")
+    if entity_id:
+        for store in stores.values():
+            if isinstance(store, ExternalTaskOverlayStore) and store.entity_id == entity_id:
+                return "external", entity_id, store
+        raise vol.Invalid(
+            f"{entity_id} is not a linked list — add it under Settings → Devices & "
+            f"services → Home Tasks first"
+        )
+
+    entry_id = data.get("entry_id")
+    if entry_id:
+        store = stores.get(entry_id)
+        if isinstance(store, HomeTasksStore):
+            return "native", entry_id, store
+        if isinstance(store, ExternalTaskOverlayStore):
+            return "external", store.entity_id, store
+        raise vol.Invalid(f"No list found with entry_id: {entry_id}")
+
+    list_name = data.get("list_name")
+    if list_name:
+        entry = _entry_for_name(hass, list_name)
+        store = stores.get(entry.entry_id) if entry else None
+        if isinstance(store, HomeTasksStore):
+            return "native", entry.entry_id, store
+        if isinstance(store, ExternalTaskOverlayStore):
+            return "external", store.entity_id, store
+        raise vol.Invalid(f"No list found with name: {list_name}")
+
+    raise vol.Invalid("Either entry_id, list_name or entity_id must be provided")
+
+
+async def _resolve_external_task(hass: HomeAssistant, entity_id: str, data: dict) -> dict:
+    """Find a task on a linked list by task_id or task_title."""
+    tasks = await _external_tasks(hass, entity_id)
+    task_id = data.get("task_id")
+    if task_id:
+        for task in tasks:
+            if str(task.get("id")) == str(task_id):
+                return task
+        raise ValueError(f"No task found with id: {task_id}")
+
+    task_title = data.get("task_title")
+    if task_title:
+        matches = [t for t in tasks if (t.get("title") or "").lower() == task_title.lower()]
+        if not matches:
+            raise ValueError(f"No task found with title: {task_title}")
+        incomplete = [t for t in matches if not t.get("completed")]
+        return incomplete[0] if incomplete else matches[0]
+
+    raise ValueError("Either task_id or task_title must be provided")
+
+
+async def _external_tasks(hass: HomeAssistant, entity_id: str) -> list[dict]:
+    """The merged view of a linked list, the same one the card reads."""
+    from .websocket_api import _async_get_external_tasks
+
+    tasks, _overlay = await _async_get_external_tasks(hass, entity_id)
+    return tasks
+
+
 def _resolve_store(hass: HomeAssistant, data: dict) -> tuple[str, HomeTasksStore]:
     """Find the store by entry_id or list_name."""
     entry_id = data.get("entry_id")
@@ -1363,13 +1514,14 @@ def _resolve_store(hass: HomeAssistant, data: dict) -> tuple[str, HomeTasksStore
         return entry_id, store
 
     if list_name:
-        entries = hass.config_entries.async_entries(DOMAIN)
-        for entry in entries:
-            name = entry.data.get("name", entry.title)
-            if name.lower() == list_name.lower():
-                store = hass.data.get(DOMAIN, {}).get(entry.entry_id)
-                if store and isinstance(store, HomeTasksStore):
-                    return entry.entry_id, store
+        entry = _entry_for_name(hass, list_name)
+        store = hass.data.get(DOMAIN, {}).get(entry.entry_id) if entry else None
+        if isinstance(store, HomeTasksStore):
+            return entry.entry_id, store
+        if entry is not None:
+            raise vol.Invalid(
+                f"{list_name} is a linked external list; this field needs a native one"
+            )
         raise vol.Invalid(f"No list found with name: {list_name}")
 
     raise vol.Invalid("Either entry_id or list_name must be provided")
@@ -1439,14 +1591,47 @@ async def _resolve_actor(hass: HomeAssistant, call: ServiceCall) -> str | None:
         return None
 
 
+async def _update_external(
+    hass: HomeAssistant, entity_id: str, data: dict, fields: dict, task: dict | None = None
+) -> None:
+    """Apply service fields to a task on a linked list.
+
+    Routes through the same code the card uses, so the provider takes what it
+    can and the overlay keeps the rest — and the completion events and
+    recurrence handling come along with it.
+
+    Pass *task* when the caller already has it: resolving it again means
+    reading the whole list off the provider once more, which on a bulk
+    operation is one round trip per task.
+    """
+    from .websocket_api import async_update_external_task
+
+    if task is None:
+        task = await _resolve_external_task(hass, entity_id, data)
+    await async_update_external_task(hass, entity_id, task["id"], fields)
+
+
 def _async_register_services(hass: HomeAssistant) -> None:
     """Register integration services (once globally)."""
     if hass.services.has_service(DOMAIN, "add_task"):
         return
 
     async def async_handle_add_task(call: ServiceCall) -> None:
-        entry_id, store = _resolve_store(hass, call.data)
+        kind, ident, store = _resolve_target(hass, call.data)
         actor = await _resolve_actor(hass, call)
+        if kind == "external":
+            from .websocket_api import async_create_external_task
+
+            fields = {"title": call.data["title"]}
+            for key in ("assigned_person", "due_date", "due_time", "notes", "priority"):
+                if key in call.data:
+                    fields[key] = call.data[key]
+            if "reminders" in call.data:
+                fields["reminders"] = call.data["reminders"]
+            if "tags" in call.data:
+                fields["tags"] = _parse_service_tags(call.data["tags"])
+            await async_create_external_task(hass, ident, fields)
+            return
         # Everything goes in at creation (one task_created event, one
         # 'created' history entry, no intermediate bare state); the store
         # fires task_assigned itself for tasks born with an assignee, so the
@@ -1461,21 +1646,18 @@ def _async_register_services(hass: HomeAssistant) -> None:
             reminders=call.data.get("reminders"),
             notes=call.data.get("notes"),
             priority=call.data.get("priority"),
+            # Comma parsing stays service-side, but the tags themselves go in
+            # at creation: as a follow-up update they arrived after
+            # task_created had already fired with the list's default tags, and
+            # left an "updated tags" entry in the history of a brand-new task.
+            tags=_parse_service_tags(call.data["tags"]) if "tags" in call.data else None,
         )
-        # Only tags remain a follow-up update (comma parsing stays service-
-        # side); everything else goes in at creation so the task_created
-        # event and history carry it.
-        if "tags" in call.data:
-            await store.async_update_task(
-                task["id"], actor=actor, tags=_parse_service_tags(call.data["tags"])
-            )
 
     async def async_handle_update_task(call: ServiceCall) -> None:
         """Update fields of an existing task (issue #42) — find it by task_id
         or task_title, then apply whatever fields the call provides."""
-        _entry_id, store = _resolve_store(hass, call.data)
+        kind, ident, store = _resolve_target(hass, call.data)
         actor = await _resolve_actor(hass, call)
-        task = _resolve_task(store, call.data)
         kwargs: dict = {}
         for key in ("title", "due_date", "due_time", "notes", "assigned_person", "priority"):
             if key in call.data:
@@ -1484,8 +1666,13 @@ def _async_register_services(hass: HomeAssistant) -> None:
             kwargs["tags"] = _parse_service_tags(call.data["tags"])
         if "reminders" in call.data:
             kwargs["reminders"] = call.data["reminders"]
-        if kwargs:
-            await store.async_update_task(task["id"], actor=actor, **kwargs)
+        if not kwargs:
+            return
+        if kind == "external":
+            await _update_external(hass, ident, call.data, kwargs)
+            return
+        task = _resolve_task(store, call.data)
+        await store.async_update_task(task["id"], actor=actor, **kwargs)
 
     async def async_handle_move_task(call: ServiceCall) -> None:
         """Move a task to another list — parity with the card's Move button.
@@ -1501,9 +1688,15 @@ def _async_register_services(hass: HomeAssistant) -> None:
         if src_entity:
             task_id = call.data.get("task_id")
             if not task_id:
-                raise ServiceValidationError(
-                    "task_id is required when source_entity_id is used"
-                )
+                # By title, like every other service and like a native source.
+                if not call.data.get("task_title"):
+                    raise ServiceValidationError(
+                        "task_id or task_title is required when source_entity_id is used"
+                    )
+                try:
+                    task_id = (await _resolve_external_task(hass, src_entity, call.data))["id"]
+                except ValueError as err:
+                    raise ServiceValidationError(str(err)) from err
             src_list_id = None
         else:
             src_list_id, store = _resolve_store(hass, call.data)
@@ -1534,9 +1727,25 @@ def _async_register_services(hass: HomeAssistant) -> None:
             raise ServiceValidationError(str(err)) from err
 
     async def async_handle_complete_task(call: ServiceCall) -> None:
-        _entry_id, store = _resolve_store(hass, call.data)
+        kind, ident, store = _resolve_target(hass, call.data)
         actor = await _resolve_actor(hass, call)
         tag = call.data.get("tag")
+
+        if kind == "external":
+            if tag:
+                wanted = tag.strip().lower()
+                for task in await _external_tasks(hass, ident):
+                    if task.get("completed"):
+                        continue
+                    if wanted in (t.lower() for t in task.get("tags", [])):
+                        await _update_external(
+                            hass, ident, {}, {"completed": True}, task=task
+                        )
+                return
+            task = await _resolve_external_task(hass, ident, call.data)
+            if not task.get("completed"):
+                await _update_external(hass, ident, {}, {"completed": True}, task=task)
+            return
 
         if tag:
             tag = tag.strip().lower()
@@ -1552,13 +1761,18 @@ def _async_register_services(hass: HomeAssistant) -> None:
                 await store.async_update_task(task["id"], actor=actor, completed=True)
 
     async def async_handle_assign_task(call: ServiceCall) -> None:
-        _entry_id, store = _resolve_store(hass, call.data)
+        kind, ident, store = _resolve_target(hass, call.data)
         actor = await _resolve_actor(hass, call)
+        if kind == "external":
+            await _update_external(
+                hass, ident, call.data, {"assigned_person": call.data["person"]}
+            )
+            return
         task = _resolve_task(store, call.data)
         await store.async_update_task(task["id"], actor=actor, assigned_person=call.data["person"])
 
     async def async_handle_reopen_task(call: ServiceCall) -> None:
-        _entry_id, store = _resolve_store(hass, call.data)
+        kind, ident, store = _resolve_target(hass, call.data)
         actor = await _resolve_actor(hass, call)
         task_id = call.data.get("task_id")
         task_title = call.data.get("task_title")
@@ -1575,6 +1789,26 @@ def _async_register_services(hass: HomeAssistant) -> None:
             required_tags = {tag.strip().lower()}
         else:
             required_tags = set()
+
+        if kind == "external":
+            if task_id or task_title:
+                one_task = await _resolve_external_task(hass, ident, call.data)
+                candidates = [one_task] if one_task.get("completed") else []
+            elif assigned_person or required_tags:
+                candidates = [
+                    t for t in await _external_tasks(hass, ident)
+                    if t.get("completed")
+                    and (not assigned_person or t.get("assigned_person") == assigned_person)
+                    and (not required_tags
+                         or required_tags.issubset({x.lower() for x in t.get("tags", [])}))
+                ]
+            else:
+                raise vol.Invalid(
+                    "Either task_id, task_title, assigned_person, tag, or tags must be provided"
+                )
+            for task in candidates:
+                await _update_external(hass, ident, {}, {"completed": False}, task=task)
+            return
 
         if task_id or task_title:
             # Reopen a single task
@@ -1604,6 +1838,7 @@ def _async_register_services(hass: HomeAssistant) -> None:
         schema=vol.Schema({
             vol.Optional("entry_id"): cv.string,
             vol.Optional("list_name"): cv.string,
+            vol.Optional("entity_id"): cv.string,
             vol.Required("title"): cv.string,
             vol.Optional("assigned_person"): cv.string,
             vol.Optional("due_date"): cv.string,
@@ -1619,6 +1854,7 @@ def _async_register_services(hass: HomeAssistant) -> None:
         schema=vol.Schema({
             vol.Optional("entry_id"): cv.string,
             vol.Optional("list_name"): cv.string,
+            vol.Optional("entity_id"): cv.string,
             vol.Optional("task_id"): cv.string,
             vol.Optional("task_title"): cv.string,
             vol.Optional("title"): cv.string,
@@ -1649,6 +1885,7 @@ def _async_register_services(hass: HomeAssistant) -> None:
         schema=vol.Schema({
             vol.Optional("entry_id"): cv.string,
             vol.Optional("list_name"): cv.string,
+            vol.Optional("entity_id"): cv.string,
             vol.Optional("task_id"): cv.string,
             vol.Optional("task_title"): cv.string,
             vol.Optional("tag"): cv.string,
@@ -1659,6 +1896,7 @@ def _async_register_services(hass: HomeAssistant) -> None:
         schema=vol.Schema({
             vol.Optional("entry_id"): cv.string,
             vol.Optional("list_name"): cv.string,
+            vol.Optional("entity_id"): cv.string,
             vol.Optional("task_id"): cv.string,
             vol.Optional("task_title"): cv.string,
             vol.Required("person"): cv.string,
@@ -1669,6 +1907,7 @@ def _async_register_services(hass: HomeAssistant) -> None:
         schema=vol.Schema({
             vol.Optional("entry_id"): cv.string,
             vol.Optional("list_name"): cv.string,
+            vol.Optional("entity_id"): cv.string,
             vol.Optional("task_id"): cv.string,
             vol.Optional("task_title"): cv.string,
             vol.Optional("assigned_person"): cv.string,
@@ -1676,6 +1915,7 @@ def _async_register_services(hass: HomeAssistant) -> None:
             vol.Optional("tags"): cv.string,
         }),
     )
+
     _LOGGER.info("Home Tasks services registered")
 
 
@@ -1761,9 +2001,9 @@ async def _async_setup_external_entry(hass: HomeAssistant, entry: ConfigEntry) -
         entity_id,
         adapter.provider_type,
     )
-    # External entries don't forward todo/sensor/binary_sensor (those are owned
-    # by the source integration) — but they DO get a calendar entity that
-    # projects their due/recurring tasks (#27).
+    # External entries don't forward the todo platform (the provider owns that
+    # entity) — but they DO get a calendar entity that projects their
+    # due/recurring tasks (#27) and the open-tasks / overdue sensors.
     await hass.config_entries.async_forward_entry_setups(entry, EXTERNAL_PLATFORMS)
 
     _schedule_startup_due_check(hass)

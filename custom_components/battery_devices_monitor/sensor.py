@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from homeassistant.components.sensor import SensorEntity
+from datetime import datetime
+
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from homeassistant.core import callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -29,6 +32,7 @@ from .const import (
     STATE_WARNING,
 )
 from .coordinator import BatteryMonitorCoordinator
+from .tracking import BatteryTrackingEntity
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -43,7 +47,46 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Battery Devices Monitor sensor."""
+    coordinator = config_entry.runtime_data
+    known_tracking_ids: set[str] = set()
+
+    @callback
+    def async_add_last_change_entities() -> None:
+        """Add a battery-change timestamp for every discovered device."""
+        new_tracking_ids = set(coordinator.active_tracking_ids) - known_tracking_ids
+        if not new_tracking_ids:
+            return
+        known_tracking_ids.update(new_tracking_ids)
+        async_add_entities(
+            LastBatteryChangeSensor(coordinator, tracking_id)
+            for tracking_id in sorted(new_tracking_ids)
+        )
+
     async_add_entities([BatteryMonitorSensor(config_entry)])
+    async_add_last_change_entities()
+    config_entry.async_on_unload(
+        coordinator.async_add_listener(async_add_last_change_entities)
+    )
+
+
+class LastBatteryChangeSensor(BatteryTrackingEntity, SensorEntity):
+    """Report when a device's battery was last changed."""
+
+    _attr_translation_key = "last_battery_change"
+    _attr_icon = "mdi:battery-clock"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+
+    def __init__(
+        self, coordinator: BatteryMonitorCoordinator, tracking_id: str
+    ) -> None:
+        """Initialize the last battery change sensor."""
+        super().__init__(coordinator, tracking_id)
+        self._attr_unique_id = f"{DOMAIN}_{tracking_id}_battery_age"
+
+    @property
+    def native_value(self) -> datetime | None:
+        """Return the timestamp of the last recorded battery replacement."""
+        return self.coordinator.last_battery_change(self.tracking_id)
 
 
 class BatteryMonitorSensor(CoordinatorEntity[BatteryMonitorCoordinator], SensorEntity):

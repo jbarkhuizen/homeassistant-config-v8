@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
@@ -19,6 +20,7 @@ from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import (
+    BATTERY_HYSTERESIS,
     CONF_BAD_STATES,
     CONF_BATTERY_ENTITY_MAP,
     CONF_BATTERY_THRESHOLD,
@@ -50,7 +52,9 @@ from .const import (
     EVENT_STALE,
     EVENT_STALE_RECOVERED,
     SCAN_INTERVAL,
+    SIGNAL_HYSTERESIS,
     SIGNAL_NETWORK_TYPES,
+    STALENESS_HYSTERESIS,
     STARTUP_GRACE_PERIOD,
     STORAGE_KEY_PREFIX,
     STORAGE_VERSION,
@@ -115,7 +119,16 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
         self._last_update: datetime | None = None
         self._startup_time: datetime | None = None
         self._unsub_state_change: CALLBACK_TYPE | None = None
-        self._debounce_cancel_map: dict[str, CALLBACK_TYPE] = {}
+        # Single group-wide trailing-edge debounce for coalescing state-change
+        # bursts into ONE refresh. Replaces the old per-entity timer dict, which
+        # scheduled a separate full O(N) refresh per changed entity — so K entities
+        # flapping in one window triggered K full scans (O(N*K) ~ O(N^2)). The
+        # timer resets on each in-window event; when it fires, exactly one refresh
+        # runs. _refresh_again captures any event that lands DURING an in-flight
+        # refresh so the trailing refresh is never dropped (see _run_coalesced_refresh).
+        self._refresh_timer: CALLBACK_TYPE | None = None
+        self._refresh_task: asyncio.Task | None = None
+        self._refresh_again: bool = False
         self._device_states: dict[str, DeviceState] = {}
         self._suppressed: dict[str, datetime | None] = {}
         self._update_count: int = 0
@@ -272,9 +285,14 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
         if self._unsub_state_change is not None:
             self._unsub_state_change()
             self._unsub_state_change = None
-        for cancel in self._debounce_cancel_map.values():
-            cancel()
-        self._debounce_cancel_map.clear()
+        # Cancel any pending debounce timer and stop the coalesced-refresh loop
+        # from re-running (_refresh_again=False). An in-flight refresh task is
+        # left to complete its current pass — it is short-lived and nulls
+        # _refresh_task itself in its finally, so we do not await it here.
+        if self._refresh_timer is not None:
+            self._refresh_timer()
+            self._refresh_timer = None
+        self._refresh_again = False
         # Final save
         if self._dirty:
             _LOGGER.debug("[%s] Saving dirty storage on shutdown", self.group_name)
@@ -473,7 +491,7 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
 
     @callback
     def _handle_state_change(self, event: Event) -> None:
-        """Handle state change for a monitored entity (debounced per entity)."""
+        """Handle a monitored entity's state change (coalesced group refresh)."""
         entity_id = event.data.get("entity_id", "unknown")
         new_state = event.data.get("new_state")
         old_state = event.data.get("old_state")
@@ -495,25 +513,55 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                     ts = ts.replace(tzinfo=timezone.utc)
                 self._device_states[entity_id].last_changed = ts
             self._dirty = True
-        # Per-entity debounce: cancel only this entity's pending timer.
-        # A shared group-wide timer would drop all but the last entity's
-        # state change when multiple entities change within the debounce window.
-        existing = self._debounce_cancel_map.get(entity_id)
-        if existing is not None:
-            existing()
-
-        @callback
-        def _debounced_refresh(_now: Any) -> None:
-            """Trigger a coordinator refresh after debounce."""
-            self._debounce_cancel_map.pop(entity_id, None)
-            # Schedule refresh as a background task. Using async_refresh() directly
-            # instead of async_request_refresh() avoids the Debouncer's execute-lock
-            # guard which silently drops calls made while a refresh is already running.
-            self.hass.async_create_task(self.async_refresh())
-
-        self._debounce_cancel_map[entity_id] = async_call_later(
-            self.hass, _STATE_CHANGE_DEBOUNCE, _debounced_refresh
+        # Coalesce bursts: a single group-wide trailing-edge timer. Cancel the
+        # one pending timer (if any) and re-arm it, so N entities changing within
+        # the debounce window trigger exactly ONE refresh instead of N. The
+        # per-entity last_changed capture above already ran synchronously, so no
+        # entity's data is lost by sharing the timer.
+        if self._refresh_timer is not None:
+            self._refresh_timer()
+        self._refresh_timer = async_call_later(
+            self.hass, _STATE_CHANGE_DEBOUNCE, self._debounced_group_refresh
         )
+
+    @callback
+    def _debounced_group_refresh(self, _now: Any) -> None:
+        """Launch a coalesced refresh after the debounce window settles.
+
+        If a refresh is already in flight, set a flag instead of launching a
+        second one — _run_coalesced_refresh re-runs once when it finishes, so an
+        event that arrives mid-refresh is never dropped (the drop-window that
+        makes HA's Debouncer(immediate=False) unsafe here). Refreshes are thus
+        strictly serialized, never overlapping.
+        """
+        self._refresh_timer = None
+        if self._refresh_task is not None and not self._refresh_task.done():
+            self._refresh_again = True
+            return
+        self._refresh_task = self.hass.async_create_task(self._run_coalesced_refresh())
+
+    async def _run_coalesced_refresh(self) -> None:
+        """Run refreshes serially, re-running once if events arrived mid-refresh.
+
+        Using async_refresh() (not async_request_refresh()) keeps HA's Debouncer
+        execute-lock out of the path; the trailing guarantee comes from the
+        _refresh_again flag set in _debounced_group_refresh.
+
+        Serialization is safe on HA's single-threaded loop: there is no await
+        between the _refresh_again check and the finally, so no timer callback can
+        run in that gap to spawn a second task that the finally would then orphan.
+        _debounced_group_refresh only spawns a task when _refresh_task is None or
+        done — never while this loop is between iterations.
+        """
+        try:
+            while True:
+                await self.async_refresh()
+                if self._refresh_again:
+                    self._refresh_again = False
+                    continue
+                break
+        finally:
+            self._refresh_task = None
 
     async def _async_update_data(self) -> EntityAvailabilityData:
         """Update device states and availability."""
@@ -533,7 +581,18 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
         # Maximum reasonable elapsed is 2x the scan interval
         elapsed = min(elapsed, SCAN_INTERVAL * 2)
 
-        pending_events: list[tuple[str, dict]] = []
+        # (event_name, payload, category) — category in {"offline","stale",
+        # "low_battery","poor_signal"}. The count/entities keys for each category
+        # are stamped in AFTER the loop from a single O(N) scan per touched
+        # category, instead of one scan per transition inside the loop (that was
+        # O(N·M) — the second starvation source under a flap storm).
+        pending_events: list[tuple[str, dict, str]] = []
+        # ponytail: full O(N) sweep every tick recomputes every device even when
+        # only K flapped. A dirty-set event path (refresh only changed entities on
+        # the debounced run, keep the 30s tick as the full time-based sweep) would
+        # cut per-flap cost to O(K). Deferred — the coalesced single-timer refresh
+        # already removes the O(N²) fan-out; add the dirty-set if profiling on very
+        # large groups still shows the per-tick O(N) scan dominating.
 
         for entity_id in self._entities:
             state = self.hass.states.get(entity_id)
@@ -546,6 +605,19 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
 
             # Set non-essential flag (must be before suppressed continue so both flags are set)
             device.is_non_essential = entity_id in self._non_essential
+
+            # Collapse provenance: WHICH sensor supplies battery/signal (static config,
+            # not a live value). Must be set BEFORE the suppressed continue below, else
+            # a suppressed same-device sibling keeps stale/None sources and mis-splits
+            # from its unsuppressed twin for a cycle. Also set the signal unit here for
+            # the same reason (it rides the collapse decision).
+            device.battery_source = (
+                self._get_battery_source(entity_id)
+                if self._battery_threshold > 0
+                else None
+            )
+            device.signal_source = self._get_signal_source(entity_id)
+            device.signal_unit = self._signal_unit_of(entity_id)
 
             # Restore suppression from loaded data
             if entity_id in self._suppressed and not device.is_suppressed:
@@ -604,21 +676,27 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                 and device.battery_level is not None
                 and device.battery_level < self._battery_threshold
             )
+            # De-jitter: once low, stay low until the level clears the threshold by
+            # BATTERY_HYSTERESIS — a reading resting on the boundary won't flip the
+            # flag (and its recorded count) every poll.
+            if (
+                device.is_low_battery
+                and self._battery_threshold > 0
+                and device.battery_level is not None
+                and device.battery_level < self._battery_threshold + BATTERY_HYSTERESIS
+            ):
+                battery_low = True
 
             # Signal check — clear level when sensor unavailable (same as battery: no stale value)
             if self._signal_enabled:
-                mapping = self._signal_map.get(entity_id)
                 fresh_signal = self._get_signal_level(entity_id)
                 device.signal_level = fresh_signal
-                if mapping:
-                    nt = mapping.get("network_type", "generic")
-                    device.signal_unit = SIGNAL_NETWORK_TYPES.get(
-                        nt, SIGNAL_NETWORK_TYPES["generic"]
-                    )["unit"]
-                else:
-                    device.signal_unit = None
+                # signal_unit already set above (before the suppressed continue) so it
+                # stays consistent with signal_source for the collapse decision.
                 device.signal_quality = (
-                    self._classify_signal(entity_id, fresh_signal)
+                    self._classify_signal(
+                        entity_id, fresh_signal, device.signal_quality
+                    )
                     if fresh_signal is not None
                     else None
                 )
@@ -648,7 +726,16 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                     if stale_ts.tzinfo is None:  # pragma: no cover
                         stale_ts = stale_ts.replace(tzinfo=timezone.utc)
                     age = (now - stale_ts).total_seconds() / 60
-                    if age > self._staleness_threshold:
+                    # De-jitter: enter stale above threshold; once stale, stay stale
+                    # until age falls below the exit threshold, so an age hovering on
+                    # the boundary won't flip the flag every poll. The band is capped
+                    # at half the threshold so it can never reach 0 (which would trap a
+                    # freshly-recovered entity, age≈0, as permanently stale).
+                    band = min(STALENESS_HYSTERESIS, self._staleness_threshold / 2)
+                    exit_threshold = self._staleness_threshold - band
+                    if age > self._staleness_threshold or (
+                        device.is_stale and age > exit_threshold
+                    ):
                         is_stale = True
                         _LOGGER.debug(
                             "[%s] %s is stale: last activity %.1f min ago (threshold=%d min)",
@@ -692,7 +779,6 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                         device.offline_since = device.cooldown_start
                         device.recently_offline_at = now
                         device.offline_event_count += 1
-                        offline_ids = self._offline_entity_ids()
                         pending_events.append(
                             (
                                 EVENT_OFFLINE,
@@ -703,9 +789,8 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                                     "offline_since": device.offline_since.isoformat()
                                     if device.offline_since
                                     else None,
-                                    "offline_count": len(offline_ids),
-                                    "offline_entities": offline_ids,
                                 },
+                                "offline",
                             )
                         )
                     elif in_grace:
@@ -745,7 +830,6 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                     device.is_offline = False
                     device.offline_since = None
                     device.recently_offline_at = None
-                    recovered_offline_ids = self._offline_entity_ids()
                     pending_events.append(
                         (
                             EVENT_RECOVERED,
@@ -754,9 +838,8 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                                 "group": self.group_name,
                                 "entry_id": self.entry.entry_id,
                                 "downtime_seconds": device.last_downtime_seconds,
-                                "offline_count": len(recovered_offline_ids),
-                                "offline_entities": recovered_offline_ids,
                             },
+                            "offline",
                         )
                     )
                 device.cooldown_start = None
@@ -775,7 +858,6 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
             # Degraded = not offline but battery low or stale
             if is_stale and not device.is_stale:
                 device.is_stale = True
-                stale_ids = self._stale_entity_ids()
                 pending_events.append(
                     (
                         EVENT_STALE,
@@ -784,14 +866,12 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                             "group": self.group_name,
                             "entry_id": self.entry.entry_id,
                             "stale_since": (stale_ts or now).isoformat(),
-                            "stale_count": len(stale_ids),
-                            "stale_entities": stale_ids,
                         },
+                        "stale",
                     )
                 )
             elif not is_stale and device.is_stale:
                 device.is_stale = False
-                stale_ids = self._stale_entity_ids()
                 pending_events.append(
                     (
                         EVENT_STALE_RECOVERED,
@@ -799,17 +879,15 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                             "entity_id": entity_id,
                             "group": self.group_name,
                             "entry_id": self.entry.entry_id,
-                            "stale_count": len(stale_ids),
-                            "stale_entities": stale_ids,
                             "stale_since": (stale_ts or now).isoformat(),
                         },
+                        "stale",
                     )
                 )
             else:
                 device.is_stale = is_stale
             if battery_low and not device.is_low_battery:
                 device.is_low_battery = True
-                low_battery_ids = self._low_battery_entity_ids()
                 pending_events.append(
                     (
                         EVENT_LOW_BATTERY,
@@ -818,14 +896,12 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                             "group": self.group_name,
                             "entry_id": self.entry.entry_id,
                             "battery_level": device.battery_level,
-                            "low_battery_count": len(low_battery_ids),
-                            "low_battery_entities": low_battery_ids,
                         },
+                        "low_battery",
                     )
                 )
             elif not battery_low and device.is_low_battery:
                 device.is_low_battery = False
-                low_battery_ids = self._low_battery_entity_ids()
                 pending_events.append(
                     (
                         EVENT_BATTERY_OK,
@@ -834,9 +910,8 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                             "group": self.group_name,
                             "entry_id": self.entry.entry_id,
                             "battery_level": device.battery_level,
-                            "low_battery_count": len(low_battery_ids),
-                            "low_battery_entities": low_battery_ids,
                         },
+                        "low_battery",
                     )
                 )
             else:
@@ -848,7 +923,6 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                 signal_poor = device.signal_quality == "poor"
                 was_poor = device.prev_signal_poor
                 if signal_poor and not was_poor:
-                    poor_ids = self._poor_signal_entity_ids()
                     pending_events.append(
                         (
                             EVENT_POOR_SIGNAL,
@@ -858,16 +932,11 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                                 "entry_id": self.entry.entry_id,
                                 "signal_level": device.signal_level,
                                 "signal_quality": device.signal_quality,
-                                "poor_signal_count": len(poor_ids),
-                                "poor_signal_entities": poor_ids,
                             },
+                            "poor_signal",
                         )
                     )
                 elif not signal_poor and was_poor:
-                    # device.signal_quality is already updated above, so
-                    # _poor_signal_entity_ids() correctly excludes this entity —
-                    # poor_signal_count in the OK payload reflects post-recovery state.
-                    poor_ids = self._poor_signal_entity_ids()
                     pending_events.append(
                         (
                             EVENT_SIGNAL_OK,
@@ -877,9 +946,8 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                                 "entry_id": self.entry.entry_id,
                                 "signal_level": device.signal_level,
                                 "signal_quality": device.signal_quality,
-                                "poor_signal_count": len(poor_ids),
-                                "poor_signal_entities": poor_ids,
                             },
+                            "poor_signal",
                         )
                     )
                 device.prev_signal_poor = signal_poor
@@ -898,8 +966,31 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
             finally:
                 self._update_count = 0
 
+        # Stamp per-category count/entities once per touched category, then fire.
+        # Each list reflects FINAL device_states (all transitions in this sweep
+        # applied) — for a single transition per sweep this is byte-identical to
+        # the old per-site build; for multiple transitions in one sweep the lists
+        # are now consistent across every event rather than reflecting whichever
+        # partial mid-loop state existed at each site.
+        touched = {cat for _, _, cat in pending_events}
+        category_ids: dict[str, list[str]] = {}
+        if "offline" in touched:
+            category_ids["offline"] = self._offline_entity_ids()
+        if "stale" in touched:
+            category_ids["stale"] = self._stale_entity_ids()
+        if "low_battery" in touched:
+            category_ids["low_battery"] = self._low_battery_entity_ids()
+        if "poor_signal" in touched:
+            category_ids["poor_signal"] = self._poor_signal_entity_ids()
+        for _event_name, payload, cat in pending_events:
+            ids = category_ids[cat]
+            payload[f"{cat}_count"] = len(ids)
+            # Copy per payload: sibling events of the same category must not alias
+            # one list object (a consumer mutating a fired payload would corrupt them).
+            payload[f"{cat}_entities"] = list(ids)
+
         try:
-            for event_name, payload in pending_events:
+            for event_name, payload, _cat in pending_events:
                 self.hass.bus.async_fire(event_name, payload)
         except Exception:  # pragma: no cover
             _LOGGER.warning("[%s] Failed to fire event", self.group_name, exc_info=True)
@@ -1091,9 +1182,13 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
         # Auto-detection fallback: no map or entity not in map
         state = self.hass.states.get(entity_id)
         if state and state.attributes:
-            battery = state.attributes.get("battery_level") or state.attributes.get(
-                "battery"
-            )
+            # `is not None`, not `or`: a real 0% reading (dead battery) is falsy and
+            # must NOT fall through to a sibling/guessed sensor (that would silently
+            # report another sensor's level for a flat battery). Also keeps this branch
+            # aligned with _get_battery_source, so value and provenance can't diverge.
+            battery = state.attributes.get("battery_level")
+            if battery is None:
+                battery = state.attributes.get("battery")
             if battery is not None:
                 level = self._parse_battery_state(str(battery).replace("%", ""))
                 _LOGGER.debug(
@@ -1141,32 +1236,51 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
         except (ValueError, TypeError):
             return None
 
-    def _get_battery_from_device_registry(self, entity_id: str) -> int | None:
-        """Look up battery level via the device registry."""
-        ent_reg = er.async_get(self.hass)
+    def _battery_sibling_of(
+        self, entity_id: str, *, require_usable_state: bool = False
+    ) -> str | None:
+        """Return the entity_id of a device_class=battery sibling on the same device.
 
+        Single sibling-selection path shared by the value getter (registry branch) and
+        the source getter, so the two can't drift onto different sensors. Iterates the
+        device's entities in registry order and returns the first battery sibling.
+
+        ``require_usable_state=True`` (value path) skips a sibling whose state is
+        unavailable/unknown/None or doesn't parse to a level, so the level actually
+        comes back — matching where a usable reading lives. ``False`` (source path,
+        default) is provenance-only and availability-blind: which sensor supplies the
+        battery doesn't change because it blipped unavailable, and a source flipping to
+        None mid-blip would wildcard-merge and flap the identity this collapse
+        stabilizes. Returns the sibling's entity_id, or None.
+        """
+        ent_reg = er.async_get(self.hass)
         entry = ent_reg.async_get(entity_id)
         if not entry or not entry.device_id:
             return None
-
-        # Find all entities on the same device with battery device class
         for ent in er.async_entries_for_device(ent_reg, entry.device_id):
             if ent.entity_id == entity_id:
                 continue
-            if ent.original_device_class == SensorDeviceClass.BATTERY or (
-                ent.device_class == SensorDeviceClass.BATTERY
+            if ent.original_device_class != SensorDeviceClass.BATTERY and (
+                ent.device_class != SensorDeviceClass.BATTERY
             ):
+                continue
+            if require_usable_state:
                 bat_state = self.hass.states.get(ent.entity_id)
-                if bat_state and bat_state.state not in (
-                    "unavailable",
-                    "unknown",
-                    None,
-                ):
-                    level = self._parse_battery_state(bat_state.state)
-                    if level is not None:
-                        return level
-
+                if not bat_state or bat_state.state in ("unavailable", "unknown", None):
+                    continue
+                if self._parse_battery_state(bat_state.state) is None:
+                    continue
+            return ent.entity_id
         return None
+
+    def _get_battery_from_device_registry(self, entity_id: str) -> int | None:
+        """Look up battery level via the device registry (shared sibling selection)."""
+        sibling = self._battery_sibling_of(entity_id, require_usable_state=True)
+        if sibling is None:
+            return None
+        bat_state = self.hass.states.get(sibling)
+        # Selection already guaranteed a usable, parseable state.
+        return self._parse_battery_state(bat_state.state)
 
     def _get_signal_level(self, entity_id: str) -> int | None:
         """Get signal level from the configured signal sensor for an entity."""
@@ -1184,17 +1298,99 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
         except (ValueError, TypeError):
             return None
 
-    def _classify_signal(self, entity_id: str, level: int) -> SignalQuality:
+    def _get_battery_source(self, entity_id: str) -> str | None:
+        """Return WHICH sensor supplies this entity's battery (collapse provenance).
+
+        Mirrors _get_battery_level's precedence branch-for-branch so the source always
+        matches the value's origin (drift between the two would resurface the wrong-merge
+        bug this prevents): own device_class=battery state → own id; explicit map → the
+        mapped sensor; own battery_level/battery attribute → own id; a sibling
+        device_class=battery entity on the same device → that sibling; the guessed
+        ``sensor.<slug>_battery`` entity → that guess. None means "no known source" and
+        acts as a wildcard in the collapse meet — so two DISTINCT batteries on one device
+        each resolve to a concrete, different id and never wrongly merge into one row.
+
+        Provenance is deliberately NOT gated on the source being currently available
+        (unlike the value path, which must clear on unavailable): which sensor supplies
+        the battery doesn't change because that sensor blipped unavailable for one poll,
+        and a source flipping to None mid-blip would wildcard-merge the row and flap the
+        exact identity this collapse stabilizes. So the sibling lookup here is
+        availability-blind (``require_usable_state=False``) while the value path's is
+        usable-state-gated. On a device with two battery siblings where the first is
+        chronically unavailable, source names that first sibling while the value comes
+        from the second (usable) one — an accepted cosmetic provenance mismatch, NOT a
+        merge hazard: both members of the device compute the same (first) sibling, so the
+        row identity stays stable and never flaps.
+        """
+        state = self.hass.states.get(entity_id)
+        if state and state.attributes.get("device_class") == "battery":
+            return entity_id
+        battery_map = self.entry.data.get(CONF_BATTERY_ENTITY_MAP)
+        if battery_map is not None and entity_id in battery_map:
+            return battery_map[entity_id] or None
+        if (
+            state
+            and state.attributes
+            and (
+                state.attributes.get("battery_level") is not None
+                or state.attributes.get("battery") is not None
+            )
+        ):
+            return entity_id
+        sibling = self._battery_sibling_of(entity_id)
+        if sibling is not None:
+            return sibling
+        parts = entity_id.split(".", 1)
+        if len(parts) == 2:  # pragma: no branch
+            guessed = f"sensor.{parts[1]}_battery"
+            if self.hass.states.get(guessed) is not None:
+                return guessed
+        return None
+
+    def _get_signal_source(self, entity_id: str) -> str | None:
+        """Return WHICH sensor supplies this entity's signal (collapse provenance).
+
+        Signal is map-only, so the source is the mapped sensor id, or None (wildcard).
+        """
+        if not self._signal_enabled:
+            return None
+        mapping = self._signal_map.get(entity_id)
+        if not mapping:
+            return None
+        return mapping.get("sensor") or None
+
+    def _signal_unit_of(self, entity_id: str) -> str | None:
+        """Return the signal unit for an entity from its mapping, or None."""
+        if not self._signal_enabled:
+            return None
+        mapping = self._signal_map.get(entity_id)
+        if not mapping:
+            return None
+        nt = mapping.get("network_type", "generic")
+        return SIGNAL_NETWORK_TYPES.get(nt, SIGNAL_NETWORK_TYPES["generic"])["unit"]
+
+    def _classify_signal(
+        self, entity_id: str, level: int, prev: SignalQuality | None = None
+    ) -> SignalQuality:
         """Classify signal level as 'good', 'ok', or 'poor' based on network type.
 
         >= works for both higher-is-better (LQI/%) and lower-is-better (dBm) scales.
+        De-jitter, POOR/OK BOUNDARY ONLY: if the entity was already 'poor', the level
+        must clear the poor/ok boundary by SIGNAL_HYSTERESIS to leave 'poor', so a level
+        resting on that boundary won't flip 'poor' (the sole quality feeding a recorded
+        count) every poll. The shift is toward 'ok' on the >= scale for both directions.
+        The good/ok boundary is intentionally NOT de-jittered — it feeds no recorded
+        count, so a good/ok wobble is display-only, not write amplification.
         """
         mapping = self._signal_map.get(entity_id, {})
         nt = mapping.get("network_type", "generic")
         thresholds = SIGNAL_NETWORK_TYPES.get(nt, SIGNAL_NETWORK_TYPES["generic"])
         if level >= thresholds["good"]:
             return "good"
-        if level >= thresholds["ok"]:
+        ok_threshold = thresholds["ok"]
+        if prev == "poor":
+            ok_threshold += SIGNAL_HYSTERESIS
+        if level >= ok_threshold:
             return "ok"
         return "poor"
 

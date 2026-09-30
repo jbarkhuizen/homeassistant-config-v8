@@ -54,6 +54,22 @@
     "button": {
       "rescan": {
         "name": "Batteriegeräte neu scannen"
+      },
+      "battery_changed": {
+        "name": "Batterie gewechselt"
+      }
+    },
+    "sensor": {
+      "last_battery_change": {
+        "name": "Letzter Batteriewechsel"
+      }
+    },
+    "select": {
+      "battery_type": {
+        "name": "Batterietyp"
+      },
+      "battery_number": {
+        "name": "Anzahl der Batterien"
       }
     }
   },

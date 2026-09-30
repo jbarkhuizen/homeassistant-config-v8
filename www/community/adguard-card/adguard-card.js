@@ -1,3 +1,7 @@
+
+function $parcel$interopDefault(a) {
+  return a && a.__esModule ? a.default : a;
+}
 /******************************************************************************
 Copyright (c) Microsoft Corporation.
 
@@ -11,35 +15,35 @@ INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
 LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
-***************************************************************************** */ /* global Reflect, Promise, SuppressedError, Symbol, Iterator */ var $24c52f343453d62d$var$extendStatics = function(d, b) {
-    $24c52f343453d62d$var$extendStatics = Object.setPrototypeOf || ({
+***************************************************************************** */ /* global Reflect, Promise, SuppressedError, Symbol, Iterator */ var $e710f43c4558477c$var$extendStatics = function(d, b) {
+    $e710f43c4558477c$var$extendStatics = Object.setPrototypeOf || ({
         __proto__: []
     }) instanceof Array && function(d, b) {
         d.__proto__ = b;
     } || function(d, b) {
         for(var p in b)if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
     };
-    return $24c52f343453d62d$var$extendStatics(d, b);
+    return $e710f43c4558477c$var$extendStatics(d, b);
 };
-function $24c52f343453d62d$export$a8ba968b8961cb8a(d, b) {
+function $e710f43c4558477c$export$a8ba968b8961cb8a(d, b) {
     if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-    $24c52f343453d62d$var$extendStatics(d, b);
+    $e710f43c4558477c$var$extendStatics(d, b);
     function __() {
         this.constructor = d;
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 }
-var $24c52f343453d62d$export$18ce0697a983be9b = function() {
-    $24c52f343453d62d$export$18ce0697a983be9b = Object.assign || function __assign(t) {
+var $e710f43c4558477c$export$18ce0697a983be9b = function() {
+    $e710f43c4558477c$export$18ce0697a983be9b = Object.assign || function __assign(t) {
         for(var s, i = 1, n = arguments.length; i < n; i++){
             s = arguments[i];
             for(var p in s)if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
         }
         return t;
     };
-    return $24c52f343453d62d$export$18ce0697a983be9b.apply(this, arguments);
+    return $e710f43c4558477c$export$18ce0697a983be9b.apply(this, arguments);
 };
-function $24c52f343453d62d$export$3c9a16f847548506(s, e) {
+function $e710f43c4558477c$export$3c9a16f847548506(s, e) {
     var t = {};
     for(var p in s)if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0) t[p] = s[p];
     if (s != null && typeof Object.getOwnPropertySymbols === "function") {
@@ -47,18 +51,18 @@ function $24c52f343453d62d$export$3c9a16f847548506(s, e) {
     }
     return t;
 }
-function $24c52f343453d62d$export$29e00dfd3077644b(decorators, target, key, desc) {
+function $e710f43c4558477c$export$29e00dfd3077644b(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
-function $24c52f343453d62d$export$d5ad3fd78186038f(paramIndex, decorator) {
+function $e710f43c4558477c$export$d5ad3fd78186038f(paramIndex, decorator) {
     return function(target, key) {
         decorator(target, key, paramIndex);
     };
 }
-function $24c52f343453d62d$export$3a84e1ae4e97e9b0(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
+function $e710f43c4558477c$export$3a84e1ae4e97e9b0(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
     function accept(f) {
         if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
         return f;
@@ -93,25 +97,25 @@ function $24c52f343453d62d$export$3a84e1ae4e97e9b0(ctor, descriptorIn, decorator
     if (target) Object.defineProperty(target, contextIn.name, descriptor);
     done = true;
 }
-function $24c52f343453d62d$export$d831c04e792af3d(thisArg, initializers, value) {
+function $e710f43c4558477c$export$d831c04e792af3d(thisArg, initializers, value) {
     var useValue = arguments.length > 2;
     for(var i = 0; i < initializers.length; i++)value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
     return useValue ? value : void 0;
 }
-function $24c52f343453d62d$export$6a2a36740a146cb8(x) {
+function $e710f43c4558477c$export$6a2a36740a146cb8(x) {
     return typeof x === "symbol" ? x : "".concat(x);
 }
-function $24c52f343453d62d$export$d1a06452d3489bc7(f, name, prefix) {
+function $e710f43c4558477c$export$d1a06452d3489bc7(f, name, prefix) {
     if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
     return Object.defineProperty(f, "name", {
         configurable: true,
         value: prefix ? "".concat(prefix, " ", name) : name
     });
 }
-function $24c52f343453d62d$export$f1db080c865becb9(metadataKey, metadataValue) {
+function $e710f43c4558477c$export$f1db080c865becb9(metadataKey, metadataValue) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
 }
-function $24c52f343453d62d$export$1050f835b63b671e(thisArg, _arguments, P, generator) {
+function $e710f43c4558477c$export$1050f835b63b671e(thisArg, _arguments, P, generator) {
     function adopt(value) {
         return value instanceof P ? value : new P(function(resolve) {
             resolve(value);
@@ -138,7 +142,7 @@ function $24c52f343453d62d$export$1050f835b63b671e(thisArg, _arguments, P, gener
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 }
-function $24c52f343453d62d$export$67ebef60e6f28a6(thisArg, body) {
+function $e710f43c4558477c$export$67ebef60e6f28a6(thisArg, body) {
     var _ = {
         label: 0,
         sent: function() {
@@ -229,7 +233,7 @@ function $24c52f343453d62d$export$67ebef60e6f28a6(thisArg, body) {
         };
     }
 }
-var $24c52f343453d62d$export$45d3717a4c69092e = Object.create ? function(o, m, k, k2) {
+var $e710f43c4558477c$export$45d3717a4c69092e = Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
     if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) desc = {
@@ -243,10 +247,10 @@ var $24c52f343453d62d$export$45d3717a4c69092e = Object.create ? function(o, m, k
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
 };
-function $24c52f343453d62d$export$f33643c0debef087(m, o) {
-    for(var p in m)if (p !== "default" && !Object.prototype.hasOwnProperty.call(o, p)) $24c52f343453d62d$export$45d3717a4c69092e(o, m, p);
+function $e710f43c4558477c$export$f33643c0debef087(m, o) {
+    for(var p in m)if (p !== "default" && !Object.prototype.hasOwnProperty.call(o, p)) $e710f43c4558477c$export$45d3717a4c69092e(o, m, p);
 }
-function $24c52f343453d62d$export$19a8beecd37a4c45(o) {
+function $e710f43c4558477c$export$19a8beecd37a4c45(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
     if (o && typeof o.length === "number") return {
@@ -260,7 +264,7 @@ function $24c52f343453d62d$export$19a8beecd37a4c45(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 }
-function $24c52f343453d62d$export$8d051b38c9118094(o, n) {
+function $e710f43c4558477c$export$8d051b38c9118094(o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
     if (!m) return o;
     var i = m.call(o), r, ar = [], e;
@@ -279,16 +283,16 @@ function $24c52f343453d62d$export$8d051b38c9118094(o, n) {
     }
     return ar;
 }
-function $24c52f343453d62d$export$afc72e2116322959() {
-    for(var ar = [], i = 0; i < arguments.length; i++)ar = ar.concat($24c52f343453d62d$export$8d051b38c9118094(arguments[i]));
+function $e710f43c4558477c$export$afc72e2116322959() {
+    for(var ar = [], i = 0; i < arguments.length; i++)ar = ar.concat($e710f43c4558477c$export$8d051b38c9118094(arguments[i]));
     return ar;
 }
-function $24c52f343453d62d$export$6388937ca91ccae8() {
+function $e710f43c4558477c$export$6388937ca91ccae8() {
     for(var s = 0, i = 0, il = arguments.length; i < il; i++)s += arguments[i].length;
     for(var r = Array(s), k = 0, i = 0; i < il; i++)for(var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)r[k] = a[j];
     return r;
 }
-function $24c52f343453d62d$export$1216008129fb82ed(to, from, pack) {
+function $e710f43c4558477c$export$1216008129fb82ed(to, from, pack) {
     if (pack || arguments.length === 2) {
         for(var i = 0, l = from.length, ar; i < l; i++)if (ar || !(i in from)) {
             if (!ar) ar = Array.prototype.slice.call(from, 0, i);
@@ -297,10 +301,10 @@ function $24c52f343453d62d$export$1216008129fb82ed(to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 }
-function $24c52f343453d62d$export$10c90e4f7922046c(v) {
-    return this instanceof $24c52f343453d62d$export$10c90e4f7922046c ? (this.v = v, this) : new $24c52f343453d62d$export$10c90e4f7922046c(v);
+function $e710f43c4558477c$export$10c90e4f7922046c(v) {
+    return this instanceof $e710f43c4558477c$export$10c90e4f7922046c ? (this.v = v, this) : new $e710f43c4558477c$export$10c90e4f7922046c(v);
 }
-function $24c52f343453d62d$export$e427f37a30a4de9b(thisArg, _arguments, generator) {
+function $e710f43c4558477c$export$e427f37a30a4de9b(thisArg, _arguments, generator) {
     if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
     var g = generator.apply(thisArg, _arguments || []), i, q = [];
     return i = Object.create((typeof AsyncIterator === "function" ? AsyncIterator : Object).prototype), verb("next"), verb("throw"), verb("return", awaitReturn), i[Symbol.asyncIterator] = function() {
@@ -334,7 +338,7 @@ function $24c52f343453d62d$export$e427f37a30a4de9b(thisArg, _arguments, generato
         }
     }
     function step(r) {
-        r.value instanceof $24c52f343453d62d$export$10c90e4f7922046c ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r);
+        r.value instanceof $e710f43c4558477c$export$10c90e4f7922046c ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r);
     }
     function fulfill(value) {
         resume("next", value);
@@ -346,7 +350,7 @@ function $24c52f343453d62d$export$e427f37a30a4de9b(thisArg, _arguments, generato
         if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]);
     }
 }
-function $24c52f343453d62d$export$bbd80228419bb833(o) {
+function $e710f43c4558477c$export$bbd80228419bb833(o) {
     var i, p;
     return i = {}, verb("next"), verb("throw", function(e) {
         throw e;
@@ -356,16 +360,16 @@ function $24c52f343453d62d$export$bbd80228419bb833(o) {
     function verb(n, f) {
         i[n] = o[n] ? function(v) {
             return (p = !p) ? {
-                value: $24c52f343453d62d$export$10c90e4f7922046c(o[n](v)),
+                value: $e710f43c4558477c$export$10c90e4f7922046c(o[n](v)),
                 done: false
             } : f ? f(v) : v;
         } : f;
     }
 }
-function $24c52f343453d62d$export$e3b29a3d6162315f(o) {
+function $e710f43c4558477c$export$e3b29a3d6162315f(o) {
     if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
     var m = o[Symbol.asyncIterator], i;
-    return m ? m.call(o) : (o = typeof $24c52f343453d62d$export$19a8beecd37a4c45 === "function" ? $24c52f343453d62d$export$19a8beecd37a4c45(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function() {
+    return m ? m.call(o) : (o = typeof $e710f43c4558477c$export$19a8beecd37a4c45 === "function" ? $e710f43c4558477c$export$19a8beecd37a4c45(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function() {
         return this;
     }, i);
     function verb(n) {
@@ -384,14 +388,14 @@ function $24c52f343453d62d$export$e3b29a3d6162315f(o) {
         }, reject);
     }
 }
-function $24c52f343453d62d$export$4fb47efe1390b86f(cooked, raw) {
+function $e710f43c4558477c$export$4fb47efe1390b86f(cooked, raw) {
     if (Object.defineProperty) Object.defineProperty(cooked, "raw", {
         value: raw
     });
     else cooked.raw = raw;
     return cooked;
 }
-var $24c52f343453d62d$var$__setModuleDefault = Object.create ? function(o, v) {
+var $e710f43c4558477c$var$__setModuleDefault = Object.create ? function(o, v) {
     Object.defineProperty(o, "default", {
         enumerable: true,
         value: v
@@ -399,44 +403,44 @@ var $24c52f343453d62d$var$__setModuleDefault = Object.create ? function(o, v) {
 } : function(o, v) {
     o["default"] = v;
 };
-var $24c52f343453d62d$var$ownKeys = function(o) {
-    $24c52f343453d62d$var$ownKeys = Object.getOwnPropertyNames || function(o) {
+var $e710f43c4558477c$var$ownKeys = function(o) {
+    $e710f43c4558477c$var$ownKeys = Object.getOwnPropertyNames || function(o) {
         var ar = [];
         for(var k in o)if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
         return ar;
     };
-    return $24c52f343453d62d$var$ownKeys(o);
+    return $e710f43c4558477c$var$ownKeys(o);
 };
-function $24c52f343453d62d$export$c21735bcef00d192(mod) {
+function $e710f43c4558477c$export$c21735bcef00d192(mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
     if (mod != null) {
-        for(var k = $24c52f343453d62d$var$ownKeys(mod), i = 0; i < k.length; i++)if (k[i] !== "default") $24c52f343453d62d$export$45d3717a4c69092e(result, mod, k[i]);
+        for(var k = $e710f43c4558477c$var$ownKeys(mod), i = 0; i < k.length; i++)if (k[i] !== "default") $e710f43c4558477c$export$45d3717a4c69092e(result, mod, k[i]);
     }
-    $24c52f343453d62d$var$__setModuleDefault(result, mod);
+    $e710f43c4558477c$var$__setModuleDefault(result, mod);
     return result;
 }
-function $24c52f343453d62d$export$da59b14a69baef04(mod) {
+function $e710f43c4558477c$export$da59b14a69baef04(mod) {
     return mod && mod.__esModule ? mod : {
         default: mod
     };
 }
-function $24c52f343453d62d$export$d5dcaf168c640c35(receiver, state, kind, f) {
+function $e710f43c4558477c$export$d5dcaf168c640c35(receiver, state, kind, f) {
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 }
-function $24c52f343453d62d$export$d40a35129aaff81f(receiver, state, value, kind, f) {
+function $e710f43c4558477c$export$d40a35129aaff81f(receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), value;
 }
-function $24c52f343453d62d$export$81fdc39f203e4e04(state, receiver) {
+function $e710f43c4558477c$export$81fdc39f203e4e04(state, receiver) {
     if (receiver === null || typeof receiver !== "object" && typeof receiver !== "function") throw new TypeError("Cannot use 'in' operator on non-object");
     return typeof state === "function" ? receiver === state : state.has(receiver);
 }
-function $24c52f343453d62d$export$88ac25d8e944e405(env, value, async) {
+function $e710f43c4558477c$export$88ac25d8e944e405(env, value, async) {
     if (value !== null && value !== void 0) {
         if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
         var dispose, inner;
@@ -467,13 +471,13 @@ function $24c52f343453d62d$export$88ac25d8e944e405(env, value, async) {
     });
     return value;
 }
-var $24c52f343453d62d$var$_SuppressedError = typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
+var $e710f43c4558477c$var$_SuppressedError = typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
     var e = new Error(message);
     return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
 };
-function $24c52f343453d62d$export$8f076105dc360e92(env) {
+function $e710f43c4558477c$export$8f076105dc360e92(env) {
     function fail(e) {
-        env.error = env.hasError ? new $24c52f343453d62d$var$_SuppressedError(e, env.error, "An error was suppressed during disposal.") : e;
+        env.error = env.hasError ? new $e710f43c4558477c$var$_SuppressedError(e, env.error, "An error was suppressed during disposal.") : e;
         env.hasError = true;
     }
     var r, s = 0;
@@ -495,45 +499,45 @@ function $24c52f343453d62d$export$8f076105dc360e92(env) {
     }
     return next();
 }
-function $24c52f343453d62d$export$889dfb5d17574b0b(path, preserveJsx) {
+function $e710f43c4558477c$export$889dfb5d17574b0b(path, preserveJsx) {
     if (typeof path === "string" && /^\.\.?\//.test(path)) return path.replace(/\.(tsx)$|((?:\.d)?)((?:\.[^./]+?)?)\.([cm]?)ts$/i, function(m, tsx, d, ext, cm) {
         return tsx ? preserveJsx ? ".jsx" : ".js" : d && (!ext || !cm) ? m : d + ext + "." + cm.toLowerCase() + "js";
     });
     return path;
 }
-var $24c52f343453d62d$export$2e2bcd8739ae039 = {
-    __extends: $24c52f343453d62d$export$a8ba968b8961cb8a,
-    __assign: $24c52f343453d62d$export$18ce0697a983be9b,
-    __rest: $24c52f343453d62d$export$3c9a16f847548506,
-    __decorate: $24c52f343453d62d$export$29e00dfd3077644b,
-    __param: $24c52f343453d62d$export$d5ad3fd78186038f,
-    __esDecorate: $24c52f343453d62d$export$3a84e1ae4e97e9b0,
-    __runInitializers: $24c52f343453d62d$export$d831c04e792af3d,
-    __propKey: $24c52f343453d62d$export$6a2a36740a146cb8,
-    __setFunctionName: $24c52f343453d62d$export$d1a06452d3489bc7,
-    __metadata: $24c52f343453d62d$export$f1db080c865becb9,
-    __awaiter: $24c52f343453d62d$export$1050f835b63b671e,
-    __generator: $24c52f343453d62d$export$67ebef60e6f28a6,
-    __createBinding: $24c52f343453d62d$export$45d3717a4c69092e,
-    __exportStar: $24c52f343453d62d$export$f33643c0debef087,
-    __values: $24c52f343453d62d$export$19a8beecd37a4c45,
-    __read: $24c52f343453d62d$export$8d051b38c9118094,
-    __spread: $24c52f343453d62d$export$afc72e2116322959,
-    __spreadArrays: $24c52f343453d62d$export$6388937ca91ccae8,
-    __spreadArray: $24c52f343453d62d$export$1216008129fb82ed,
-    __await: $24c52f343453d62d$export$10c90e4f7922046c,
-    __asyncGenerator: $24c52f343453d62d$export$e427f37a30a4de9b,
-    __asyncDelegator: $24c52f343453d62d$export$bbd80228419bb833,
-    __asyncValues: $24c52f343453d62d$export$e3b29a3d6162315f,
-    __makeTemplateObject: $24c52f343453d62d$export$4fb47efe1390b86f,
-    __importStar: $24c52f343453d62d$export$c21735bcef00d192,
-    __importDefault: $24c52f343453d62d$export$da59b14a69baef04,
-    __classPrivateFieldGet: $24c52f343453d62d$export$d5dcaf168c640c35,
-    __classPrivateFieldSet: $24c52f343453d62d$export$d40a35129aaff81f,
-    __classPrivateFieldIn: $24c52f343453d62d$export$81fdc39f203e4e04,
-    __addDisposableResource: $24c52f343453d62d$export$88ac25d8e944e405,
-    __disposeResources: $24c52f343453d62d$export$8f076105dc360e92,
-    __rewriteRelativeImportExtension: $24c52f343453d62d$export$889dfb5d17574b0b
+var $e710f43c4558477c$export$2e2bcd8739ae039 = {
+    __extends: $e710f43c4558477c$export$a8ba968b8961cb8a,
+    __assign: $e710f43c4558477c$export$18ce0697a983be9b,
+    __rest: $e710f43c4558477c$export$3c9a16f847548506,
+    __decorate: $e710f43c4558477c$export$29e00dfd3077644b,
+    __param: $e710f43c4558477c$export$d5ad3fd78186038f,
+    __esDecorate: $e710f43c4558477c$export$3a84e1ae4e97e9b0,
+    __runInitializers: $e710f43c4558477c$export$d831c04e792af3d,
+    __propKey: $e710f43c4558477c$export$6a2a36740a146cb8,
+    __setFunctionName: $e710f43c4558477c$export$d1a06452d3489bc7,
+    __metadata: $e710f43c4558477c$export$f1db080c865becb9,
+    __awaiter: $e710f43c4558477c$export$1050f835b63b671e,
+    __generator: $e710f43c4558477c$export$67ebef60e6f28a6,
+    __createBinding: $e710f43c4558477c$export$45d3717a4c69092e,
+    __exportStar: $e710f43c4558477c$export$f33643c0debef087,
+    __values: $e710f43c4558477c$export$19a8beecd37a4c45,
+    __read: $e710f43c4558477c$export$8d051b38c9118094,
+    __spread: $e710f43c4558477c$export$afc72e2116322959,
+    __spreadArrays: $e710f43c4558477c$export$6388937ca91ccae8,
+    __spreadArray: $e710f43c4558477c$export$1216008129fb82ed,
+    __await: $e710f43c4558477c$export$10c90e4f7922046c,
+    __asyncGenerator: $e710f43c4558477c$export$e427f37a30a4de9b,
+    __asyncDelegator: $e710f43c4558477c$export$bbd80228419bb833,
+    __asyncValues: $e710f43c4558477c$export$e3b29a3d6162315f,
+    __makeTemplateObject: $e710f43c4558477c$export$4fb47efe1390b86f,
+    __importStar: $e710f43c4558477c$export$c21735bcef00d192,
+    __importDefault: $e710f43c4558477c$export$da59b14a69baef04,
+    __classPrivateFieldGet: $e710f43c4558477c$export$d5dcaf168c640c35,
+    __classPrivateFieldSet: $e710f43c4558477c$export$d40a35129aaff81f,
+    __classPrivateFieldIn: $e710f43c4558477c$export$81fdc39f203e4e04,
+    __addDisposableResource: $e710f43c4558477c$export$88ac25d8e944e405,
+    __disposeResources: $e710f43c4558477c$export$8f076105dc360e92,
+    __rewriteRelativeImportExtension: $e710f43c4558477c$export$889dfb5d17574b0b
 };
 
 
@@ -1223,83 +1227,89 @@ class $107bb7d062dde330$export$befdefbdce210f91 {
 const $81267a1185dd4399$export$57bf213be019eeb0 = (config, section)=>!config.exclude_sections?.includes(section);
 
 
+var $d8229c453ce2530e$exports = {};
+"use strict";
+Object.defineProperty($d8229c453ce2530e$exports, "__esModule", {
+    value: true
+});
+$d8229c453ce2530e$exports.fireEvent = void 0;
+var $5c300232e2fb99f1$exports = {};
+"use strict";
+Object.defineProperty($5c300232e2fb99f1$exports, "__esModule", {
+    value: true
+});
+
+
 /**
- * https://github.com/home-assistant/frontend/blob/dev/src/common/dom/fire_event.ts
- */ // Polymer legacy event helpers used courtesy of the Polymer project.
-//
-// Copyright (c) 2017 The Polymer Authors. All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//    * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//    * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//    * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-const $9c83ab07519e6203$export$43835e9acf248a15 = (node, type, detail, options)=>{
+ * Dispatches a custom event with an optional detail value.
+ *
+ * @param {string} type Name of event type.
+ * @param {*=} detail Detail value containing event-specific
+ *   payload.
+ * @param {{ bubbles: (boolean|undefined),
+ *           cancelable: (boolean|undefined),
+ *           composed: (boolean|undefined) }=}
+ *  options Object specifying options.  These may include:
+ *  `bubbles` (boolean, defaults to `true`),
+ *  `cancelable` (boolean, defaults to false), and
+ *  `node` on which to fire the event (HTMLElement, defaults to `this`).
+ * @return {Event} The new event that was fired.
+ */ const $d8229c453ce2530e$var$fireEvent = (node, type, detail, options)=>{
     options = options || {};
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- upstream HA
     // @ts-ignore
-    detail = detail ?? {};
+    detail = detail === null || detail === undefined ? {} : detail;
     const event = new Event(type, {
-        bubbles: options.bubbles ?? true,
+        bubbles: options.bubbles === undefined ? true : options.bubbles,
         cancelable: Boolean(options.cancelable),
-        composed: options.composed ?? true
+        composed: options.composed === undefined ? true : options.composed
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- upstream HA Event detail
     event.detail = detail;
     node.dispatchEvent(event);
     return event;
 };
+$d8229c453ce2530e$exports.fireEvent = $d8229c453ce2530e$var$fireEvent;
 
 
+var $505f309a99680a49$exports = {};
+"use strict";
 /**
  * https://github.com/home-assistant/frontend/blob/dev/src/panels/lovelace/common/directives/action-handler-directive.ts
- */ 
+ */ Object.defineProperty($505f309a99680a49$exports, "__esModule", {
+    value: true
+});
+$505f309a99680a49$exports.actionHandler = $505f309a99680a49$exports.actionHandlerBind = void 0;
 
 
 
-const $69fb27e443983086$var$getActionHandler = ()=>{
+
+const $505f309a99680a49$var$getActionHandler = ()=>{
     const body = document.body;
     if (body.querySelector('action-handler')) return body.querySelector('action-handler');
     const actionhandler = document.createElement('action-handler');
     body.appendChild(actionhandler);
     return actionhandler;
 };
-const $69fb27e443983086$export$520aee61eb0a2770 = (element, options)=>{
-    const actionhandler = $69fb27e443983086$var$getActionHandler();
+const $505f309a99680a49$var$actionHandlerBind = (element, options)=>{
+    const actionhandler = $505f309a99680a49$var$getActionHandler();
     if (!actionhandler) return;
     actionhandler.bind(element, options);
 };
-const $69fb27e443983086$export$8a44987212de21b = (0, $107bb7d062dde330$export$99b43ad1ed32e735)(class extends (0, $107bb7d062dde330$export$befdefbdce210f91) {
+$505f309a99680a49$exports.actionHandlerBind = $505f309a99680a49$var$actionHandlerBind;
+$505f309a99680a49$exports.actionHandler = (0, $107bb7d062dde330$export$99b43ad1ed32e735)(class extends $107bb7d062dde330$export$befdefbdce210f91 {
     update(part, [options]) {
-        $69fb27e443983086$export$520aee61eb0a2770(part.element, options);
-        return 0, $f58f44579a4747ac$export$9c068ae9cc5db4e8;
+        (0, $505f309a99680a49$exports.actionHandlerBind)(part.element, options);
+        return $f58f44579a4747ac$export$9c068ae9cc5db4e8;
     }
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     render(_options) {}
 });
 
 
 const $57febad8376708f1$export$8a44987212de21b = (config)=>{
     const isActionEnabled = (actionConfig)=>actionConfig?.action !== 'none' && actionConfig?.action !== undefined;
-    return (0, $69fb27e443983086$export$8a44987212de21b)({
+    return (0, $505f309a99680a49$exports.actionHandler)({
         hasDoubleClick: isActionEnabled(config?.double_tap_action),
         hasHold: isActionEnabled(config?.hold_action)
     });
@@ -1320,8 +1330,7 @@ const $57febad8376708f1$export$3d3654ce4577c53d = (element, sectionConfig, entit
                 entity: entity.entity_id,
                 ...sectionConfig || {}
             };
-            // @ts-ignore
-            (0, $9c83ab07519e6203$export$43835e9acf248a15)(element, 'hass-action', {
+            (0, $d8229c453ce2530e$exports.fireEvent)(element, 'hass-action', {
                 config: config,
                 action: action
             });
@@ -1341,8 +1350,7 @@ const $57febad8376708f1$export$5dd91bc989d0761d = (element, actionConfigs)=>{
             if (!action) return;
             // Process each action configuration
             actionConfigs.forEach((config)=>{
-                // @ts-ignore
-                (0, $9c83ab07519e6203$export$43835e9acf248a15)(element, 'hass-action', {
+                (0, $d8229c453ce2530e$exports.fireEvent)(element, 'hass-action', {
                     config: config,
                     action: action
                 });
@@ -1352,56 +1360,84 @@ const $57febad8376708f1$export$5dd91bc989d0761d = (element, actionConfigs)=>{
 };
 
 
+var $46dabcff6df1e992$exports = {};
+"use strict";
 /**
  * https://github.com/home-assistant/frontend/blob/dev/src/common/entity/state_active.ts
- */ /**
- * https://github.com/home-assistant/frontend/blob/dev/src/data/entity.ts
- */ /**
- * https://github.com/home-assistant/frontend/blob/dev/src/common/array/literal-includes.ts#L6
- */ /**
+ */ Object.defineProperty($46dabcff6df1e992$exports, "__esModule", {
+    value: true
+});
+$46dabcff6df1e992$exports.stateActive = $46dabcff6df1e992$var$stateActive;
+var $d25e6b86739c3dd6$exports = {};
+"use strict";
+/**
+ * https://github.com/home-assistant/frontend/blob/dev/src/data/entity/entity.ts
+ */ Object.defineProperty($d25e6b86739c3dd6$exports, "__esModule", {
+    value: true
+});
+$d25e6b86739c3dd6$exports.isOffState = $d25e6b86739c3dd6$exports.isUnavailableState = $d25e6b86739c3dd6$exports.OFF_STATES = $d25e6b86739c3dd6$exports.UNAVAILABLE_STATES = $d25e6b86739c3dd6$exports.OFF = $d25e6b86739c3dd6$exports.ON = $d25e6b86739c3dd6$exports.UNKNOWN = $d25e6b86739c3dd6$exports.UNAVAILABLE = void 0;
+var $f4456c331bb6c271$exports = {};
+"use strict";
+/**
+ * https://github.com/home-assistant/frontend/blob/dev/src/common/array/literal-includes.ts
+ */ Object.defineProperty($f4456c331bb6c271$exports, "__esModule", {
+    value: true
+});
+$f4456c331bb6c271$exports.arrayLiteralIncludes = void 0;
+/**
  * Creates a type predicate function for determining if an array literal includes a given value
  * @param array - The array to check
  * @returns A type predicate function
- */ const $2dcc326b5e422db7$export$2fff862a498eed4d = (array)=>(searchElement, fromIndex)=>array.includes(searchElement, fromIndex);
+ */ const $f4456c331bb6c271$var$arrayLiteralIncludes = (array)=>(searchElement, fromIndex)=>array.includes(searchElement, fromIndex);
+$f4456c331bb6c271$exports.arrayLiteralIncludes = $f4456c331bb6c271$var$arrayLiteralIncludes;
 
 
-const $fa460070836bbf6d$export$f2d101b977a134fd = 'unavailable';
-const $fa460070836bbf6d$export$78244dbb77cfa6b6 = 'unknown';
-const $fa460070836bbf6d$export$8a4b4288adcd729e = 'on';
-const $fa460070836bbf6d$export$173de64b5ad0d5b4 = 'off';
-const $fa460070836bbf6d$export$565a86226f245f0b = [
-    $fa460070836bbf6d$export$f2d101b977a134fd,
-    $fa460070836bbf6d$export$78244dbb77cfa6b6
+$d25e6b86739c3dd6$exports.UNAVAILABLE = 'unavailable';
+$d25e6b86739c3dd6$exports.UNKNOWN = 'unknown';
+$d25e6b86739c3dd6$exports.ON = 'on';
+$d25e6b86739c3dd6$exports.OFF = 'off';
+$d25e6b86739c3dd6$exports.UNAVAILABLE_STATES = [
+    $d25e6b86739c3dd6$exports.UNAVAILABLE,
+    $d25e6b86739c3dd6$exports.UNKNOWN
 ];
-const $fa460070836bbf6d$export$8ccd97e727a09c65 = [
-    $fa460070836bbf6d$export$f2d101b977a134fd,
-    $fa460070836bbf6d$export$78244dbb77cfa6b6,
-    $fa460070836bbf6d$export$173de64b5ad0d5b4
+$d25e6b86739c3dd6$exports.OFF_STATES = [
+    $d25e6b86739c3dd6$exports.UNAVAILABLE,
+    $d25e6b86739c3dd6$exports.UNKNOWN,
+    $d25e6b86739c3dd6$exports.OFF
 ];
-const $fa460070836bbf6d$export$dea4173a348a2153 = (0, $2dcc326b5e422db7$export$2fff862a498eed4d)($fa460070836bbf6d$export$565a86226f245f0b);
-const $fa460070836bbf6d$export$3473ff6928139ced = (0, $2dcc326b5e422db7$export$2fff862a498eed4d)($fa460070836bbf6d$export$8ccd97e727a09c65);
+$d25e6b86739c3dd6$exports.isUnavailableState = (0, $f4456c331bb6c271$exports.arrayLiteralIncludes)($d25e6b86739c3dd6$exports.UNAVAILABLE_STATES);
+$d25e6b86739c3dd6$exports.isOffState = (0, $f4456c331bb6c271$exports.arrayLiteralIncludes)($d25e6b86739c3dd6$exports.OFF_STATES);
 
 
+var $9be1c046bd0bdc20$exports = {};
+"use strict";
 /**
  * https://github.com/home-assistant/frontend/blob/dev/src/common/entity/compute_domain.ts
- */ const $e7dc90bb09bfe22d$export$2044bdc9670769ab = (entityId)=>entityId.substring(0, entityId.indexOf('.'));
+ */ Object.defineProperty($9be1c046bd0bdc20$exports, "__esModule", {
+    value: true
+});
+$9be1c046bd0bdc20$exports.computeDomain = void 0;
+const $9be1c046bd0bdc20$var$computeDomain = (entityId)=>entityId.substring(0, entityId.indexOf('.'));
+$9be1c046bd0bdc20$exports.computeDomain = $9be1c046bd0bdc20$var$computeDomain;
 
 
-function $043ab5348dd51237$export$c0e85c3982a3daa6(stateObj, state) {
-    const domain = (0, $e7dc90bb09bfe22d$export$2044bdc9670769ab)(stateObj.entity_id);
+function $46dabcff6df1e992$var$stateActive(stateObj, state) {
+    const domain = (0, $9be1c046bd0bdc20$exports.computeDomain)(stateObj.entity_id);
     const compareState = state ?? stateObj?.state;
     if ([
         'button',
         'event',
+        'infrared',
         'input_button',
+        'radio_frequency',
         'scene'
-    ].includes(domain)) return compareState !== (0, $fa460070836bbf6d$export$f2d101b977a134fd);
-    if ((0, $fa460070836bbf6d$export$dea4173a348a2153)(compareState)) return false;
+    ].includes(domain)) return compareState !== $d25e6b86739c3dd6$exports.UNAVAILABLE;
+    if (compareState === $d25e6b86739c3dd6$exports.UNAVAILABLE || compareState === $d25e6b86739c3dd6$exports.UNKNOWN) return false;
     // The "off" check is relevant for most domains, but there are exceptions
     // such as "alert" where "off" is still a somewhat active state and
     // therefore gets a custom color and "idle" is instead the state that
     // matches what most other domains consider inactive.
-    if (compareState === (0, $fa460070836bbf6d$export$173de64b5ad0d5b4) && domain !== 'alert') return false;
+    if (compareState === $d25e6b86739c3dd6$exports.OFF && domain !== 'alert') return false;
     // Custom cases
     switch(domain){
         case 'alarm_control_panel':
@@ -1415,14 +1451,18 @@ function $043ab5348dd51237$export$c0e85c3982a3daa6(stateObj, state) {
         case 'person':
             return compareState !== 'not_home';
         case 'lawn_mower':
-            return [
-                'mowing',
-                'error'
+            return ![
+                'docked',
+                'paused'
             ].includes(compareState);
         case 'lock':
             return compareState !== 'locked';
         case 'media_player':
-            return compareState !== 'standby';
+            // Upstream treats paused as active; cards treat paused like standby (inactive).
+            return ![
+                'standby',
+                'paused'
+            ].includes(compareState);
         case 'vacuum':
             return ![
                 'idle',
@@ -1451,31 +1491,31 @@ function $043ab5348dd51237$export$c0e85c3982a3daa6(stateObj, state) {
 
 
 var $116f7515b52a2ba4$exports = {};
-$116f7515b52a2ba4$exports = JSON.parse('{"card":{"stats":{"total_queries":"DNS \u0437\u0430\u044F\u0432\u043A\u0438","safe_searches":"{number} safe searches","queries_blocked":"\u0411\u043B\u043E\u043A\u0438\u0440\u0430\u043D\u0438 \u043E\u0442 \u0444\u0438\u043B\u0442\u0440\u0438","list_blocked_queries":"\u0421\u043F\u0438\u0441\u044A\u043A \u0441 \u0431\u043B\u043E\u043A\u0438\u0440\u0430\u043D\u0438 \u0437\u0430\u044F\u0432\u043A\u0438","percentage_blocked":"\u041F\u0440\u043E\u0446\u0435\u043D\u0442 \u0431\u043B\u043E\u043A\u0438\u0440\u0430\u043D\u0438","list_all_queries":"\u0421\u043F\u0438\u0441\u044A\u043A \u0441 \u0432\u0441\u0438\u0447\u043A\u0438 \u0437\u0430\u044F\u0432\u043A\u0438","average_processing_speed":"\u0421\u043A\u043E\u0440\u043E\u0441\u0442 \u043D\u0430 \u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430","processing_speed_info":"\u0412\u0440\u0435\u043C\u0435 \u0437\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430"},"sections":{"switches":"\u041A\u043B\u044E\u0447\u043E\u0432\u0435"},"units":{"seconds":"\u0441\u0435\u043A\u0443\u043D\u0434\u0438","second":"\u0441\u0435\u043A\u0443\u043D\u0434\u0430","minutes":"\u043C\u0438\u043D\u0443\u0442\u0438","minute":"\u043C\u0438\u043D\u0443\u0442\u0430","hours":"\u0447\u0430\u0441\u043E\u0432\u0435","hour":"\u0447\u0430\u0441"},"ui":{"partial":"\u0427\u0430\u0441\u0442\u0438\u0447\u0435\u043D"}},"editor":{"space_around":"\u041F\u0440\u043E\u0441\u0442\u0440\u0430\u043D\u0441\u0442\u0432\u043E \u043E\u043A\u043E\u043B\u043E","space_between":"\u041F\u0440\u043E\u0441\u0442\u0440\u0430\u043D\u0441\u0442\u0432\u043E \u043C\u0435\u0436\u0434\u0443","header":"\u0413\u043E\u0440\u043D\u0430 \u0447\u0430\u0441\u0442","statistics":"\u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430","sensors":"\u0421\u0435\u043D\u0437\u043E\u0440\u0438","switches":"\u041A\u043B\u044E\u0447\u043E\u0432\u0435","tap_action":"\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0435 \u043F\u0440\u0438 \u043D\u0430\u0442\u0438\u0441\u043A\u0430\u043D\u0435","hold_action":"\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0435 \u043F\u0440\u0438 \u0437\u0430\u0434\u044A\u0440\u0436\u0430\u043D\u0435","double_tap_action":"\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0435 \u043F\u0440\u0438 \u0434\u0432\u043E\u0439\u043D\u043E \u043D\u0430\u0442\u0438\u0441\u043A\u0430\u043D\u0435","content":"\u0421\u044A\u0434\u044A\u0440\u0436\u0430\u043D\u0438\u0435","card_title":"\u0417\u0430\u0433\u043B\u0430\u0432\u0438\u0435 \u043D\u0430 \u043A\u0430\u0440\u0442\u0430\u0442\u0430","card_icon":"\u0418\u043A\u043E\u043D\u0430 \u043D\u0430 \u043A\u0430\u0440\u0442\u0430\u0442\u0430","layout":"\u041F\u043E\u0434\u0440\u0435\u0434\u0431\u0430","sections_to_exclude":"\u0421\u0435\u043A\u0446\u0438\u0438 \u0437\u0430 \u0438\u0437\u043A\u043B\u044E\u0447\u0432\u0430\u043D\u0435","sections_collapsed_by_default":"\u0421\u0432\u0438\u0442\u0438 \u0441\u0435\u043A\u0446\u0438\u0438 \u043F\u043E \u043F\u043E\u0434\u0440\u0430\u0437\u0431\u0438\u0440\u0430\u043D\u0435","style_for_switches":"\u0421\u0442\u0438\u043B \u043D\u0430 \u043A\u043B\u044E\u0447\u043E\u0432\u0435","entities_to_exclude":"\u041E\u0431\u0435\u043A\u0442\u0438 \u0437\u0430 \u0438\u0437\u043A\u043B\u044E\u0447\u0432\u0430\u043D\u0435","styles":{"label":"\u0421\u0442\u0438\u043B\u043E\u0432\u0435","css_styles":"\u0412\u0430\u0448\u0438\u0442\u0435 CSS \u0441\u0442\u0438\u043B\u043E\u0432\u0435","card_styles":"\u0421\u0442\u0438\u043B\u043E\u0432\u0435 \u043D\u0430 \u043A\u0430\u0440\u0442\u0430\u0442\u0430","section_styles":"\u0421\u0442\u0438\u043B\u043E\u0432\u0435 \u043D\u0430 \u0441\u0435\u043A\u0446\u0438\u044F\u0442\u0430"},"switch_spacing":"\u0420\u0430\u0437\u0441\u0442\u043E\u044F\u043D\u0438\u0435 \u043C\u0435\u0436\u0434\u0443 \u043A\u043B\u044E\u0447\u043E\u0432\u0435\u0442\u0435","interactions":"\u0412\u0437\u0430\u0438\u043C\u043E\u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F","badge":"\u0417\u043D\u0430\u0447\u043A\u0430","status":"\u0421\u0442\u0430\u0442\u0443\u0441","information":"\u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F","adguard_device":"AdGuard \u0443\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432\u043E","entity_display_order":"\u0420\u0435\u0434 \u043D\u0430 \u043F\u043E\u043A\u0430\u0437\u0432\u0430\u043D\u0435 \u043D\u0430 \u043E\u0431\u0435\u043A\u0442\u0438\u0442\u0435 (\u043A\u043B\u0438\u043A\u0432\u0430\u043D\u0435 \u0432 \u0440\u0435\u0434)","flex_default":"Flex (\u043F\u043E \u043F\u043E\u0434\u0440\u0430\u0437\u0431\u0438\u0440\u0430\u043D\u0435)"}}');
-
-
-var $71f67b2c94b2fafe$exports = {};
-$71f67b2c94b2fafe$exports = JSON.parse('{"card":{"stats":{"total_queries":"DNS \u03B5\u03C1\u03C9\u03C4\u03AE\u03BC\u03B1\u03C4\u03B1","safe_searches":"{number} safe searches","queries_blocked":"\u0391\u03C0\u03BF\u03BA\u03BB\u03B5\u03B9\u03C3\u03BC\u03AD\u03BD\u03B1 \u03B1\u03C0\u03CC \u03C6\u03AF\u03BB\u03C4\u03C1\u03B1","list_blocked_queries":"\u039B\u03AF\u03C3\u03C4\u03B1 \u03B1\u03C0\u03BF\u03BA\u03BB\u03B5\u03B9\u03C3\u03BC\u03AD\u03BD\u03C9\u03BD \u03B5\u03C1\u03C9\u03C4\u03B7\u03BC\u03AC\u03C4\u03C9\u03BD","percentage_blocked":"\u03A0\u03BF\u03C3\u03BF\u03C3\u03C4\u03CC \u03C0\u03BF\u03C5 \u03B1\u03C0\u03BF\u03BA\u03BB\u03B5\u03AF\u03C3\u03C4\u03B7\u03BA\u03B5","list_all_queries":"\u039B\u03AF\u03C3\u03C4\u03B1 \u03CC\u03BB\u03C9\u03BD \u03C4\u03C9\u03BD \u03B5\u03C1\u03C9\u03C4\u03B7\u03BC\u03AC\u03C4\u03C9\u03BD","average_processing_speed":"\u03A4\u03B1\u03C7\u03CD\u03C4\u03B7\u03C4\u03B1 \u0395\u03C0\u03B5\u03BE\u03B5\u03C1\u03B3\u03B1\u03C3\u03AF\u03B1\u03C2","processing_speed_info":"\u03A7\u03C1\u03CC\u03BD\u03BF\u03C2 \u03B5\u03C0\u03B5\u03BE\u03B5\u03C1\u03B3\u03B1\u03C3\u03AF\u03B1\u03C2"},"sections":{"switches":"\u0394\u03B9\u03B1\u03BA\u03CC\u03C0\u03C4\u03B5\u03C2"},"units":{"seconds":"\u03B4\u03B5\u03C5\u03C4\u03B5\u03C1\u03CC\u03BB\u03B5\u03C0\u03C4\u03B1","second":"\u03B4\u03B5\u03C5\u03C4\u03B5\u03C1\u03CC\u03BB\u03B5\u03C0\u03C4\u03BF","minutes":"\u03BB\u03B5\u03C0\u03C4\u03AC","minute":"\u03BB\u03B5\u03C0\u03C4\u03CC","hours":"\u03CE\u03C1\u03B5\u03C2","hour":"\u03CE\u03C1\u03B1"},"ui":{"partial":"\u039C\u03B5\u03C1\u03B9\u03BA\u03CC"}},"editor":{"space_around":"\u03A7\u03CE\u03C1\u03BF\u03C2 \u0393\u03CD\u03C1\u03C9","space_between":"\u03A7\u03CE\u03C1\u03BF\u03C2 \u0391\u03BD\u03AC\u03BC\u03B5\u03C3\u03B1","header":"\u039A\u03B5\u03C6\u03B1\u03BB\u03AF\u03B4\u03B1","statistics":"\u03A3\u03C4\u03B1\u03C4\u03B9\u03C3\u03C4\u03B9\u03BA\u03AC","sensors":"\u0391\u03B9\u03C3\u03B8\u03B7\u03C4\u03AE\u03C1\u03B5\u03C2","switches":"\u0394\u03B9\u03B1\u03BA\u03CC\u03C0\u03C4\u03B5\u03C2","tap_action":"\u0395\u03BD\u03AD\u03C1\u03B3\u03B5\u03B9\u03B1 \u0391\u03C6\u03AE\u03C2","hold_action":"\u0395\u03BD\u03AD\u03C1\u03B3\u03B5\u03B9\u03B1 \u039A\u03C1\u03AC\u03C4\u03B7\u03C3\u03B7\u03C2","double_tap_action":"\u0395\u03BD\u03AD\u03C1\u03B3\u03B5\u03B9\u03B1 \u0394\u03B9\u03C0\u03BB\u03AE\u03C2 \u0391\u03C6\u03AE\u03C2","content":"\u03A0\u03B5\u03C1\u03B9\u03B5\u03C7\u03CC\u03BC\u03B5\u03BD\u03BF","card_title":"\u03A4\u03AF\u03C4\u03BB\u03BF\u03C2 \u039A\u03AC\u03C1\u03C4\u03B1\u03C2","card_icon":"\u0395\u03B9\u03BA\u03BF\u03BD\u03AF\u03B4\u03B9\u03BF \u039A\u03AC\u03C1\u03C4\u03B1\u03C2","layout":"\u0394\u03B9\u03AC\u03C4\u03B1\u03BE\u03B7","sections_to_exclude":"\u0395\u03BD\u03CC\u03C4\u03B7\u03C4\u03B5\u03C2 \u03C0\u03C1\u03BF\u03C2 \u03B5\u03BE\u03B1\u03AF\u03C1\u03B5\u03C3\u03B7","sections_collapsed_by_default":"\u0395\u03BD\u03CC\u03C4\u03B7\u03C4\u03B5\u03C2 \u03C0\u03BF\u03C5 \u03C3\u03C5\u03BC\u03C0\u03C4\u03CD\u03C3\u03C3\u03BF\u03BD\u03C4\u03B1\u03B9 \u03B1\u03C0\u03CC \u03C0\u03C1\u03BF\u03B5\u03C0\u03B9\u03BB\u03BF\u03B3\u03AE","style_for_switches":"\u03A3\u03C4\u03C5\u03BB \u03B3\u03B9\u03B1 \u03B4\u03B9\u03B1\u03BA\u03CC\u03C0\u03C4\u03B5\u03C2","entities_to_exclude":"\u039F\u03BD\u03C4\u03CC\u03C4\u03B7\u03C4\u03B5\u03C2 \u03C0\u03C1\u03BF\u03C2 \u03B5\u03BE\u03B1\u03AF\u03C1\u03B5\u03C3\u03B7","styles":{"label":"\u03A3\u03C4\u03C5\u03BB","css_styles":"\u03A4\u03B1 CSS \u03A3\u03C4\u03C5\u03BB \u03C3\u03B1\u03C2","card_styles":"\u03A3\u03C4\u03C5\u03BB \u039A\u03AC\u03C1\u03C4\u03B1\u03C2","section_styles":"\u03A3\u03C4\u03C5\u03BB \u0395\u03BD\u03CC\u03C4\u03B7\u03C4\u03B1\u03C2"},"switch_spacing":"\u0394\u03B9\u03AC\u03C3\u03C4\u03B7\u03BC\u03B1 \u0394\u03B9\u03B1\u03BA\u03BF\u03C0\u03C4\u03CE\u03BD","interactions":"\u0391\u03BB\u03BB\u03B7\u03BB\u03B5\u03C0\u03B9\u03B4\u03C1\u03AC\u03C3\u03B5\u03B9\u03C2","badge":"\u03A3\u03AE\u03BC\u03B1","status":"\u039A\u03B1\u03C4\u03AC\u03C3\u03C4\u03B1\u03C3\u03B7","information":"\u03A0\u03BB\u03B7\u03C1\u03BF\u03C6\u03BF\u03C1\u03AF\u03B5\u03C2","adguard_device":"\u03A3\u03C5\u03C3\u03BA\u03B5\u03C5\u03AE AdGuard","entity_display_order":"\u03A3\u03B5\u03B9\u03C1\u03AC \u03B5\u03BC\u03C6\u03AC\u03BD\u03B9\u03C3\u03B7\u03C2 \u03BF\u03BD\u03C4\u03BF\u03C4\u03AE\u03C4\u03C9\u03BD (\u03BA\u03AC\u03BD\u03C4\u03B5 \u03BA\u03BB\u03B9\u03BA \u03BC\u03B5 \u03C3\u03B5\u03B9\u03C1\u03AC)","flex_default":"Flex (\u03C0\u03C1\u03BF\u03B5\u03C0\u03B9\u03BB\u03BF\u03B3\u03AE)"}}');
-
-
-var $9a28a77a5af263d9$exports = {};
-$9a28a77a5af263d9$exports = JSON.parse("{\"card\":{\"stats\":{\"total_queries\":\"DNS Queries\",\"safe_searches\":\"{number} safe searches\",\"queries_blocked\":\"Blocked by Filters\",\"list_blocked_queries\":\"List blocked queries\",\"percentage_blocked\":\"Percentage Blocked\",\"list_all_queries\":\"List all queries\",\"average_processing_speed\":\"Processing Speed\",\"processing_speed_info\":\"Processing time\"},\"sections\":{\"switches\":\"Switches\"},\"units\":{\"seconds\":\"seconds\",\"second\":\"second\",\"minutes\":\"minutes\",\"minute\":\"minute\",\"hours\":\"hours\",\"hour\":\"hour\"},\"ui\":{\"partial\":\"Partial\"}},\"editor\":{\"space_around\":\"Space Around\",\"space_between\":\"Space Between\",\"header\":\"Header\",\"statistics\":\"Statistics\",\"sensors\":\"Sensors\",\"switches\":\"Switches\",\"tap_action\":\"Tap Action\",\"hold_action\":\"Hold Action\",\"double_tap_action\":\"Double Tap Action\",\"content\":\"Content\",\"card_title\":\"Card Title\",\"card_icon\":\"Card Icon\",\"layout\":\"Layout\",\"sections_to_exclude\":\"Sections to exclude\",\"sections_collapsed_by_default\":\"Sections collapsed by default\",\"style_for_switches\":\"Style for switches\",\"entities_to_exclude\":\"Entities to exclude\",\"styles\":{\"label\":\"Styles\",\"css_styles\":\"Your CSS Styles\",\"card_styles\":\"Card Styles\",\"section_styles\":\"Section Styles\"},\"switch_spacing\":\"Switch Spacing\",\"interactions\":\"Interactions\",\"badge\":\"Badge\",\"status\":\"Status\",\"information\":\"Information\",\"adguard_device\":\"AdGuard Device\",\"entity_display_order\":\"Entity display order (click in order)\",\"flex_default\":\"Flex (default)\"}}");
-
-
-var $ac00f57d502abb29$exports = {};
-$ac00f57d502abb29$exports = JSON.parse('{"card":{"stats":{"total_queries":"Consultas DNS","safe_searches":"{number} safe searches","queries_blocked":"Bloqueadas por filtros","list_blocked_queries":"Listar peticiones bloqueadas","percentage_blocked":"Porcentaje bloqueos","list_all_queries":"Listar todas las peticiones","average_processing_speed":"Velocidad de Procesamiento","processing_speed_info":"Tiempo de procesamiento"},"sections":{"switches":"Interruptores"},"units":{"seconds":"segundos","second":"segundo","minutes":"minutos","minute":"minuto","hours":"horas","hour":"hora"},"ui":{"partial":"Parcial"}},"editor":{"space_around":"Espacio Alrededor","space_between":"Espacio Entre","header":"Encabezado","statistics":"Estad\xedsticas","sensors":"Sensores","switches":"Interruptores","tap_action":"Acci\xf3n de Toque","hold_action":"Acci\xf3n de Mantener","double_tap_action":"Acci\xf3n de Doble Toque","content":"Contenido","card_title":"T\xedtulo de la Tarjeta","card_icon":"Icono de la Tarjeta","layout":"Dise\xf1o","sections_to_exclude":"Secciones a excluir","sections_collapsed_by_default":"Secciones colapsadas por defecto","style_for_switches":"Estilo para interruptores","entities_to_exclude":"Entidades a excluir","styles":{"label":"Estilos","css_styles":"Tus Estilos CSS","card_styles":"Estilos de Tarjeta","section_styles":"Estilos de Secci\xf3n"},"switch_spacing":"Espaciado de Interruptores","interactions":"Interacciones","badge":"Insignia","status":"Estado","information":"Informaci\xf3n","adguard_device":"Dispositivo AdGuard","entity_display_order":"Orden de visualizaci\xf3n de entidades (hacer clic en orden)","flex_default":"Flex (predeterminado)"}}');
+$116f7515b52a2ba4$exports = JSON.parse('{"card":{"stats":{"total_queries":"DNS \u0437\u0430\u044F\u0432\u043A\u0438","safe_searches":"{number} safe searches","queries_blocked":"\u0411\u043B\u043E\u043A\u0438\u0440\u0430\u043D\u0438 \u043E\u0442 \u0444\u0438\u043B\u0442\u0440\u0438","list_blocked_queries":"\u0421\u043F\u0438\u0441\u044A\u043A \u0441 \u0431\u043B\u043E\u043A\u0438\u0440\u0430\u043D\u0438 \u0437\u0430\u044F\u0432\u043A\u0438","percentage_blocked":"\u041F\u0440\u043E\u0446\u0435\u043D\u0442 \u0431\u043B\u043E\u043A\u0438\u0440\u0430\u043D\u0438","list_all_queries":"\u0421\u043F\u0438\u0441\u044A\u043A \u0441 \u0432\u0441\u0438\u0447\u043A\u0438 \u0437\u0430\u044F\u0432\u043A\u0438","average_processing_speed":"\u0421\u043A\u043E\u0440\u043E\u0441\u0442 \u043D\u0430 \u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430","processing_speed_info":"\u0412\u0440\u0435\u043C\u0435 \u0437\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430"},"sections":{"switches":"\u041A\u043B\u044E\u0447\u043E\u0432\u0435"},"units":{"seconds":"\u0441\u0435\u043A\u0443\u043D\u0434\u0438","second":"\u0441\u0435\u043A\u0443\u043D\u0434\u0430","minutes":"\u043C\u0438\u043D\u0443\u0442\u0438","minute":"\u043C\u0438\u043D\u0443\u0442\u0430","hours":"\u0447\u0430\u0441\u043E\u0432\u0435","hour":"\u0447\u0430\u0441"},"ui":{"partial":"\u0427\u0430\u0441\u0442\u0438\u0447\u0435\u043D"}},"editor":{"space_around":"\u041F\u0440\u043E\u0441\u0442\u0440\u0430\u043D\u0441\u0442\u0432\u043E \u043E\u043A\u043E\u043B\u043E","space_between":"\u041F\u0440\u043E\u0441\u0442\u0440\u0430\u043D\u0441\u0442\u0432\u043E \u043C\u0435\u0436\u0434\u0443","header":"\u0413\u043E\u0440\u043D\u0430 \u0447\u0430\u0441\u0442","footer":"\u0414\u043E\u043B\u043D\u0430 \u0447\u0430\u0441\u0442","statistics":"\u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430","sensors":"\u0421\u0435\u043D\u0437\u043E\u0440\u0438","switches":"\u041A\u043B\u044E\u0447\u043E\u0432\u0435","tap_action":"\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0435 \u043F\u0440\u0438 \u043D\u0430\u0442\u0438\u0441\u043A\u0430\u043D\u0435","hold_action":"\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0435 \u043F\u0440\u0438 \u0437\u0430\u0434\u044A\u0440\u0436\u0430\u043D\u0435","double_tap_action":"\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0435 \u043F\u0440\u0438 \u0434\u0432\u043E\u0439\u043D\u043E \u043D\u0430\u0442\u0438\u0441\u043A\u0430\u043D\u0435","content":"\u0421\u044A\u0434\u044A\u0440\u0436\u0430\u043D\u0438\u0435","card_title":"\u0417\u0430\u0433\u043B\u0430\u0432\u0438\u0435 \u043D\u0430 \u043A\u0430\u0440\u0442\u0430\u0442\u0430","card_icon":"\u0418\u043A\u043E\u043D\u0430 \u043D\u0430 \u043A\u0430\u0440\u0442\u0430\u0442\u0430","layout":"\u041F\u043E\u0434\u0440\u0435\u0434\u0431\u0430","sections_to_exclude":"\u0421\u0435\u043A\u0446\u0438\u0438 \u0437\u0430 \u0438\u0437\u043A\u043B\u044E\u0447\u0432\u0430\u043D\u0435","sections_collapsed_by_default":"\u0421\u0432\u0438\u0442\u0438 \u0441\u0435\u043A\u0446\u0438\u0438 \u043F\u043E \u043F\u043E\u0434\u0440\u0430\u0437\u0431\u0438\u0440\u0430\u043D\u0435","style_for_switches":"\u0421\u0442\u0438\u043B \u043D\u0430 \u043A\u043B\u044E\u0447\u043E\u0432\u0435","entities_to_exclude":"\u041E\u0431\u0435\u043A\u0442\u0438 \u0437\u0430 \u0438\u0437\u043A\u043B\u044E\u0447\u0432\u0430\u043D\u0435","styles":{"label":"\u0421\u0442\u0438\u043B\u043E\u0432\u0435","css_styles":"\u0412\u0430\u0448\u0438\u0442\u0435 CSS \u0441\u0442\u0438\u043B\u043E\u0432\u0435","card_styles":"\u0421\u0442\u0438\u043B\u043E\u0432\u0435 \u043D\u0430 \u043A\u0430\u0440\u0442\u0430\u0442\u0430","section_styles":"\u0421\u0442\u0438\u043B\u043E\u0432\u0435 \u043D\u0430 \u0441\u0435\u043A\u0446\u0438\u044F\u0442\u0430"},"switch_spacing":"\u0420\u0430\u0437\u0441\u0442\u043E\u044F\u043D\u0438\u0435 \u043C\u0435\u0436\u0434\u0443 \u043A\u043B\u044E\u0447\u043E\u0432\u0435\u0442\u0435","interactions":"\u0412\u0437\u0430\u0438\u043C\u043E\u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F","badge":"\u0417\u043D\u0430\u0447\u043A\u0430","status":"\u0421\u0442\u0430\u0442\u0443\u0441","information":"\u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F","adguard_device":"AdGuard \u0443\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432\u043E","entity_display_order":"\u0420\u0435\u0434 \u043D\u0430 \u043F\u043E\u043A\u0430\u0437\u0432\u0430\u043D\u0435 \u043D\u0430 \u043E\u0431\u0435\u043A\u0442\u0438\u0442\u0435 (\u043A\u043B\u0438\u043A\u0432\u0430\u043D\u0435 \u0432 \u0440\u0435\u0434)","flex_default":"Flex (\u043F\u043E \u043F\u043E\u0434\u0440\u0430\u0437\u0431\u0438\u0440\u0430\u043D\u0435)"}}');
 
 
 var $311afcb0e9c10c81$exports = {};
-$311afcb0e9c10c81$exports = JSON.parse('{"card":{"stats":{"total_queries":"DNS-Anfragen","safe_searches":"{number} safe searches","queries_blocked":"Von Filtern blockiert","list_blocked_queries":"Blockierte Anfragen anzeigen","percentage_blocked":"Prozentual blockiert","list_all_queries":"Alle Anfragen anzeigen","average_processing_speed":"Verarbeitungsgeschwindigkeit","processing_speed_info":"Verarbeitungszeit"},"sections":{"switches":"Schalter"},"units":{"seconds":"Sekunden","second":"Sekunde","minutes":"Minuten","minute":"Minute","hours":"Stunden","hour":"Stunde"},"ui":{"partial":"Teilweise"}},"editor":{"space_around":"Platz umher","space_between":"Platz dazwischen","header":"Kopfzeile","statistics":"Statistiken","sensors":"Sensoren","switches":"Schalter","tap_action":"Tipp-Aktion","hold_action":"Halte-Aktion","double_tap_action":"Doppel-Tipp-Aktion","content":"Inhalt","card_title":"Karten-Titel","card_icon":"Karten-Symbol","layout":"Layout","sections_to_exclude":"Auszuschlie\xdfende Abschnitte","sections_collapsed_by_default":"Standardm\xe4\xdfig eingeklappte Abschnitte","style_for_switches":"Stil f\xfcr Schalter","entities_to_exclude":"Auszuschlie\xdfende Entit\xe4ten","styles":{"label":"Stile","css_styles":"Ihre CSS-Stile","card_styles":"Karten-Stile","section_styles":"Abschnitts-Stile"},"switch_spacing":"Schalter-Abstand","interactions":"Interaktionen","badge":"Abzeichen","status":"Status","information":"Informationen","adguard_device":"AdGuard Ger\xe4t","entity_display_order":"Entit\xe4ts-Anzeigereihenfolge (in Reihenfolge klicken)","flex_default":"Flex (Standard)"}}');
+$311afcb0e9c10c81$exports = JSON.parse('{"card":{"stats":{"total_queries":"DNS-Anfragen","safe_searches":"{number} safe searches","queries_blocked":"Von Filtern blockiert","list_blocked_queries":"Blockierte Anfragen anzeigen","percentage_blocked":"Prozentual blockiert","list_all_queries":"Alle Anfragen anzeigen","average_processing_speed":"Verarbeitungsgeschwindigkeit","processing_speed_info":"Verarbeitungszeit"},"sections":{"switches":"Schalter"},"units":{"seconds":"Sekunden","second":"Sekunde","minutes":"Minuten","minute":"Minute","hours":"Stunden","hour":"Stunde"},"ui":{"partial":"Teilweise"}},"editor":{"space_around":"Platz umher","space_between":"Platz dazwischen","header":"Kopfzeile","footer":"Fu\xdfzeile","statistics":"Statistiken","sensors":"Sensoren","switches":"Schalter","tap_action":"Tipp-Aktion","hold_action":"Halte-Aktion","double_tap_action":"Doppel-Tipp-Aktion","content":"Inhalt","card_title":"Karten-Titel","card_icon":"Karten-Symbol","layout":"Layout","sections_to_exclude":"Auszuschlie\xdfende Abschnitte","sections_collapsed_by_default":"Standardm\xe4\xdfig eingeklappte Abschnitte","style_for_switches":"Stil f\xfcr Schalter","entities_to_exclude":"Auszuschlie\xdfende Entit\xe4ten","styles":{"label":"Stile","css_styles":"Ihre CSS-Stile","card_styles":"Karten-Stile","section_styles":"Abschnitts-Stile"},"switch_spacing":"Schalter-Abstand","interactions":"Interaktionen","badge":"Abzeichen","status":"Status","information":"Informationen","adguard_device":"AdGuard Ger\xe4t","entity_display_order":"Entit\xe4ts-Anzeigereihenfolge (in Reihenfolge klicken)","flex_default":"Flex (Standard)"}}');
 
 
-var $f112f750c9161502$exports = {};
-$f112f750c9161502$exports = JSON.parse('{"card":{"stats":{"total_queries":"Richieste DNS","safe_searches":"{number} safe searches","queries_blocked":"Bloccate dai filtri","list_blocked_queries":"Elenco richieste bloccate","percentage_blocked":"Percentuale bloccate","list_all_queries":"Elenca tutte le richieste","average_processing_speed":"Velocit\xe0 di Elaborazione","processing_speed_info":"Tempo di elaborazione"},"sections":{"switches":"Opzioni"},"units":{"seconds":"secondi","second":"secondo","minutes":"minuti","minute":"minuto","hours":"ore","hour":"ora"},"ui":{"partial":"Parziale"}},"editor":{"space_around":"Spazi prima e dopo","space_between":"Spazi in mezzo","header":"Intestazione","statistics":"Statistiche","sensors":"Sensori","switches":"Opzioni","tap_action":"Azione con Tap","hold_action":"Azione con Hold","double_tap_action":"Azione con Doppio Tap","content":"Contenunto","card_title":"Titolo della Card","card_icon":"Icona della Card","layout":"Layout","sections_to_exclude":"Sezioni da escludere","sections_collapsed_by_default":"Sezioni nascoste di default","style_for_switches":"Stile degli switch","entities_to_exclude":"Entit\xe0 da escludere","styles":{"label":"Stili","css_styles":"I Tuoi Stili CSS","card_styles":"Stili Card","section_styles":"Stili Sezione"},"switch_spacing":"Spaziatura Switch","interactions":"Interazioni","badge":"Badge","status":"Stato","information":"Informazioni","adguard_device":"Dispositivo AdGuard","entity_display_order":"Ordine delle Entit\xe0 (cliccare in ordine)","flex_default":"Flex (default)"}}');
+var $71f67b2c94b2fafe$exports = {};
+$71f67b2c94b2fafe$exports = JSON.parse('{"card":{"stats":{"total_queries":"DNS \u03B5\u03C1\u03C9\u03C4\u03AE\u03BC\u03B1\u03C4\u03B1","safe_searches":"{number} safe searches","queries_blocked":"\u0391\u03C0\u03BF\u03BA\u03BB\u03B5\u03B9\u03C3\u03BC\u03AD\u03BD\u03B1 \u03B1\u03C0\u03CC \u03C6\u03AF\u03BB\u03C4\u03C1\u03B1","list_blocked_queries":"\u039B\u03AF\u03C3\u03C4\u03B1 \u03B1\u03C0\u03BF\u03BA\u03BB\u03B5\u03B9\u03C3\u03BC\u03AD\u03BD\u03C9\u03BD \u03B5\u03C1\u03C9\u03C4\u03B7\u03BC\u03AC\u03C4\u03C9\u03BD","percentage_blocked":"\u03A0\u03BF\u03C3\u03BF\u03C3\u03C4\u03CC \u03C0\u03BF\u03C5 \u03B1\u03C0\u03BF\u03BA\u03BB\u03B5\u03AF\u03C3\u03C4\u03B7\u03BA\u03B5","list_all_queries":"\u039B\u03AF\u03C3\u03C4\u03B1 \u03CC\u03BB\u03C9\u03BD \u03C4\u03C9\u03BD \u03B5\u03C1\u03C9\u03C4\u03B7\u03BC\u03AC\u03C4\u03C9\u03BD","average_processing_speed":"\u03A4\u03B1\u03C7\u03CD\u03C4\u03B7\u03C4\u03B1 \u0395\u03C0\u03B5\u03BE\u03B5\u03C1\u03B3\u03B1\u03C3\u03AF\u03B1\u03C2","processing_speed_info":"\u03A7\u03C1\u03CC\u03BD\u03BF\u03C2 \u03B5\u03C0\u03B5\u03BE\u03B5\u03C1\u03B3\u03B1\u03C3\u03AF\u03B1\u03C2"},"sections":{"switches":"\u0394\u03B9\u03B1\u03BA\u03CC\u03C0\u03C4\u03B5\u03C2"},"units":{"seconds":"\u03B4\u03B5\u03C5\u03C4\u03B5\u03C1\u03CC\u03BB\u03B5\u03C0\u03C4\u03B1","second":"\u03B4\u03B5\u03C5\u03C4\u03B5\u03C1\u03CC\u03BB\u03B5\u03C0\u03C4\u03BF","minutes":"\u03BB\u03B5\u03C0\u03C4\u03AC","minute":"\u03BB\u03B5\u03C0\u03C4\u03CC","hours":"\u03CE\u03C1\u03B5\u03C2","hour":"\u03CE\u03C1\u03B1"},"ui":{"partial":"\u039C\u03B5\u03C1\u03B9\u03BA\u03CC"}},"editor":{"space_around":"\u03A7\u03CE\u03C1\u03BF\u03C2 \u0393\u03CD\u03C1\u03C9","space_between":"\u03A7\u03CE\u03C1\u03BF\u03C2 \u0391\u03BD\u03AC\u03BC\u03B5\u03C3\u03B1","header":"\u039A\u03B5\u03C6\u03B1\u03BB\u03AF\u03B4\u03B1","footer":"\u03A5\u03C0\u03BF\u03C3\u03AD\u03BB\u03B9\u03B4\u03BF","statistics":"\u03A3\u03C4\u03B1\u03C4\u03B9\u03C3\u03C4\u03B9\u03BA\u03AC","sensors":"\u0391\u03B9\u03C3\u03B8\u03B7\u03C4\u03AE\u03C1\u03B5\u03C2","switches":"\u0394\u03B9\u03B1\u03BA\u03CC\u03C0\u03C4\u03B5\u03C2","tap_action":"\u0395\u03BD\u03AD\u03C1\u03B3\u03B5\u03B9\u03B1 \u0391\u03C6\u03AE\u03C2","hold_action":"\u0395\u03BD\u03AD\u03C1\u03B3\u03B5\u03B9\u03B1 \u039A\u03C1\u03AC\u03C4\u03B7\u03C3\u03B7\u03C2","double_tap_action":"\u0395\u03BD\u03AD\u03C1\u03B3\u03B5\u03B9\u03B1 \u0394\u03B9\u03C0\u03BB\u03AE\u03C2 \u0391\u03C6\u03AE\u03C2","content":"\u03A0\u03B5\u03C1\u03B9\u03B5\u03C7\u03CC\u03BC\u03B5\u03BD\u03BF","card_title":"\u03A4\u03AF\u03C4\u03BB\u03BF\u03C2 \u039A\u03AC\u03C1\u03C4\u03B1\u03C2","card_icon":"\u0395\u03B9\u03BA\u03BF\u03BD\u03AF\u03B4\u03B9\u03BF \u039A\u03AC\u03C1\u03C4\u03B1\u03C2","layout":"\u0394\u03B9\u03AC\u03C4\u03B1\u03BE\u03B7","sections_to_exclude":"\u0395\u03BD\u03CC\u03C4\u03B7\u03C4\u03B5\u03C2 \u03C0\u03C1\u03BF\u03C2 \u03B5\u03BE\u03B1\u03AF\u03C1\u03B5\u03C3\u03B7","sections_collapsed_by_default":"\u0395\u03BD\u03CC\u03C4\u03B7\u03C4\u03B5\u03C2 \u03C0\u03BF\u03C5 \u03C3\u03C5\u03BC\u03C0\u03C4\u03CD\u03C3\u03C3\u03BF\u03BD\u03C4\u03B1\u03B9 \u03B1\u03C0\u03CC \u03C0\u03C1\u03BF\u03B5\u03C0\u03B9\u03BB\u03BF\u03B3\u03AE","style_for_switches":"\u03A3\u03C4\u03C5\u03BB \u03B3\u03B9\u03B1 \u03B4\u03B9\u03B1\u03BA\u03CC\u03C0\u03C4\u03B5\u03C2","entities_to_exclude":"\u039F\u03BD\u03C4\u03CC\u03C4\u03B7\u03C4\u03B5\u03C2 \u03C0\u03C1\u03BF\u03C2 \u03B5\u03BE\u03B1\u03AF\u03C1\u03B5\u03C3\u03B7","styles":{"label":"\u03A3\u03C4\u03C5\u03BB","css_styles":"\u03A4\u03B1 CSS \u03A3\u03C4\u03C5\u03BB \u03C3\u03B1\u03C2","card_styles":"\u03A3\u03C4\u03C5\u03BB \u039A\u03AC\u03C1\u03C4\u03B1\u03C2","section_styles":"\u03A3\u03C4\u03C5\u03BB \u0395\u03BD\u03CC\u03C4\u03B7\u03C4\u03B1\u03C2"},"switch_spacing":"\u0394\u03B9\u03AC\u03C3\u03C4\u03B7\u03BC\u03B1 \u0394\u03B9\u03B1\u03BA\u03BF\u03C0\u03C4\u03CE\u03BD","interactions":"\u0391\u03BB\u03BB\u03B7\u03BB\u03B5\u03C0\u03B9\u03B4\u03C1\u03AC\u03C3\u03B5\u03B9\u03C2","badge":"\u03A3\u03AE\u03BC\u03B1","status":"\u039A\u03B1\u03C4\u03AC\u03C3\u03C4\u03B1\u03C3\u03B7","information":"\u03A0\u03BB\u03B7\u03C1\u03BF\u03C6\u03BF\u03C1\u03AF\u03B5\u03C2","adguard_device":"\u03A3\u03C5\u03C3\u03BA\u03B5\u03C5\u03AE AdGuard","entity_display_order":"\u03A3\u03B5\u03B9\u03C1\u03AC \u03B5\u03BC\u03C6\u03AC\u03BD\u03B9\u03C3\u03B7\u03C2 \u03BF\u03BD\u03C4\u03BF\u03C4\u03AE\u03C4\u03C9\u03BD (\u03BA\u03AC\u03BD\u03C4\u03B5 \u03BA\u03BB\u03B9\u03BA \u03BC\u03B5 \u03C3\u03B5\u03B9\u03C1\u03AC)","flex_default":"Flex (\u03C0\u03C1\u03BF\u03B5\u03C0\u03B9\u03BB\u03BF\u03B3\u03AE)"}}');
+
+
+var $9a28a77a5af263d9$exports = {};
+$9a28a77a5af263d9$exports = JSON.parse("{\"card\":{\"stats\":{\"total_queries\":\"DNS Queries\",\"safe_searches\":\"{number} safe searches\",\"queries_blocked\":\"Blocked by Filters\",\"list_blocked_queries\":\"List blocked queries\",\"percentage_blocked\":\"Percentage Blocked\",\"list_all_queries\":\"List all queries\",\"average_processing_speed\":\"Processing Speed\",\"processing_speed_info\":\"Processing time\"},\"sections\":{\"switches\":\"Switches\"},\"units\":{\"seconds\":\"seconds\",\"second\":\"second\",\"minutes\":\"minutes\",\"minute\":\"minute\",\"hours\":\"hours\",\"hour\":\"hour\"},\"ui\":{\"partial\":\"Partial\"}},\"editor\":{\"space_around\":\"Space Around\",\"space_between\":\"Space Between\",\"header\":\"Header\",\"footer\":\"Footer\",\"statistics\":\"Statistics\",\"sensors\":\"Sensors\",\"switches\":\"Switches\",\"tap_action\":\"Tap Action\",\"hold_action\":\"Hold Action\",\"double_tap_action\":\"Double Tap Action\",\"content\":\"Content\",\"card_title\":\"Card Title\",\"card_icon\":\"Card Icon\",\"layout\":\"Layout\",\"sections_to_exclude\":\"Sections to exclude\",\"sections_collapsed_by_default\":\"Sections collapsed by default\",\"style_for_switches\":\"Style for switches\",\"entities_to_exclude\":\"Entities to exclude\",\"styles\":{\"label\":\"Styles\",\"css_styles\":\"Your CSS Styles\",\"card_styles\":\"Card Styles\",\"section_styles\":\"Section Styles\"},\"switch_spacing\":\"Switch Spacing\",\"interactions\":\"Interactions\",\"badge\":\"Badge\",\"status\":\"Status\",\"information\":\"Information\",\"adguard_device\":\"AdGuard Device\",\"entity_display_order\":\"Entity display order (click in order)\",\"flex_default\":\"Flex (default)\"}}");
+
+
+var $ac00f57d502abb29$exports = {};
+$ac00f57d502abb29$exports = JSON.parse('{"card":{"stats":{"total_queries":"Consultas DNS","safe_searches":"{number} safe searches","queries_blocked":"Bloqueadas por filtros","list_blocked_queries":"Listar peticiones bloqueadas","percentage_blocked":"Porcentaje bloqueos","list_all_queries":"Listar todas las peticiones","average_processing_speed":"Velocidad de Procesamiento","processing_speed_info":"Tiempo de procesamiento"},"sections":{"switches":"Interruptores"},"units":{"seconds":"segundos","second":"segundo","minutes":"minutos","minute":"minuto","hours":"horas","hour":"hora"},"ui":{"partial":"Parcial"}},"editor":{"space_around":"Espacio Alrededor","space_between":"Espacio Entre","header":"Encabezado","footer":"Pie de P\xe1gina","statistics":"Estad\xedsticas","sensors":"Sensores","switches":"Interruptores","tap_action":"Acci\xf3n de Toque","hold_action":"Acci\xf3n de Mantener","double_tap_action":"Acci\xf3n de Doble Toque","content":"Contenido","card_title":"T\xedtulo de la Tarjeta","card_icon":"Icono de la Tarjeta","layout":"Dise\xf1o","sections_to_exclude":"Secciones a excluir","sections_collapsed_by_default":"Secciones colapsadas por defecto","style_for_switches":"Estilo para interruptores","entities_to_exclude":"Entidades a excluir","styles":{"label":"Estilos","css_styles":"Tus Estilos CSS","card_styles":"Estilos de Tarjeta","section_styles":"Estilos de Secci\xf3n"},"switch_spacing":"Espaciado de Interruptores","interactions":"Interacciones","badge":"Insignia","status":"Estado","information":"Informaci\xf3n","adguard_device":"Dispositivo AdGuard","entity_display_order":"Orden de visualizaci\xf3n de entidades (hacer clic en orden)","flex_default":"Flex (predeterminado)"}}');
 
 
 var $a8bf67e13c48de4e$exports = {};
-$a8bf67e13c48de4e$exports = JSON.parse('{"card":{"stats":{"total_queries":"Requ\xeates DNS","safe_searches":"{number} safe searches","queries_blocked":"Bloqu\xe9es par les filtres","list_blocked_queries":"Liste des requ\xeates bloqu\xe9es","percentage_blocked":"Pourcentage bloqu\xe9","list_all_queries":"Liste de toutes les requ\xeates","average_processing_speed":"Vitesse de Traitement","processing_speed_info":"Temps de traitement"},"sections":{"switches":"Interrupteurs"},"units":{"seconds":"secondes","second":"seconde","minutes":"minutes","minute":"minute","hours":"heures","hour":"heure"},"ui":{"partial":"Partiel"}},"editor":{"space_around":"Espace autour","space_between":"Espace entre","header":"En-t\xeate","statistics":"Statistiques","sensors":"Capteurs","switches":"Interrupteurs","tap_action":"Action sur un appui court","hold_action":"Action sur un appui long","double_tap_action":"Action sur un double appui","content":"Contenu","card_title":"Titre de la carte","card_icon":"Ic\xf4ne de la carte","layout":"Disposition","sections_to_exclude":"Sections \xe0 exclure","sections_collapsed_by_default":"Sections repli\xe9es par d\xe9faut","style_for_switches":"Style des interrupteurs","entities_to_exclude":"Entit\xe9s \xe0 exclure","styles":{"label":"Styles","css_styles":"Vos Styles CSS","card_styles":"Styles de Carte","section_styles":"Styles de Section"},"switch_spacing":"Espacement des interrupteurs","interactions":"Interactions","badge":"Badge","status":"Statut","information":"Informations","adguard_device":"Appareil AdGuard","entity_display_order":"Ordre d\'affichage des entit\xe9s (cliquer dans l\'ordre)","flex_default":"Flexible (par d\xe9faut)"}}');
+$a8bf67e13c48de4e$exports = JSON.parse('{"card":{"stats":{"total_queries":"Requ\xeates DNS","safe_searches":"{number} safe searches","queries_blocked":"Bloqu\xe9es par les filtres","list_blocked_queries":"Liste des requ\xeates bloqu\xe9es","percentage_blocked":"Pourcentage bloqu\xe9","list_all_queries":"Liste de toutes les requ\xeates","average_processing_speed":"Vitesse de Traitement","processing_speed_info":"Temps de traitement"},"sections":{"switches":"Interrupteurs"},"units":{"seconds":"secondes","second":"seconde","minutes":"minutes","minute":"minute","hours":"heures","hour":"heure"},"ui":{"partial":"Partiel"}},"editor":{"space_around":"Espace autour","space_between":"Espace entre","header":"En-t\xeate","footer":"Pied de page","statistics":"Statistiques","sensors":"Capteurs","switches":"Interrupteurs","tap_action":"Action sur un appui court","hold_action":"Action sur un appui long","double_tap_action":"Action sur un double appui","content":"Contenu","card_title":"Titre de la carte","card_icon":"Ic\xf4ne de la carte","layout":"Disposition","sections_to_exclude":"Sections \xe0 exclure","sections_collapsed_by_default":"Sections repli\xe9es par d\xe9faut","style_for_switches":"Style des interrupteurs","entities_to_exclude":"Entit\xe9s \xe0 exclure","styles":{"label":"Styles","css_styles":"Vos Styles CSS","card_styles":"Styles de Carte","section_styles":"Styles de Section"},"switch_spacing":"Espacement des interrupteurs","interactions":"Interactions","badge":"Badge","status":"Statut","information":"Informations","adguard_device":"Appareil AdGuard","entity_display_order":"Ordre d\'affichage des entit\xe9s (cliquer dans l\'ordre)","flex_default":"Flexible (par d\xe9faut)"}}');
+
+
+var $f112f750c9161502$exports = {};
+$f112f750c9161502$exports = JSON.parse('{"card":{"stats":{"total_queries":"Richieste DNS","safe_searches":"{number} safe searches","queries_blocked":"Bloccate dai filtri","list_blocked_queries":"Elenco richieste bloccate","percentage_blocked":"Percentuale bloccate","list_all_queries":"Elenca tutte le richieste","average_processing_speed":"Velocit\xe0 di Elaborazione","processing_speed_info":"Tempo di elaborazione"},"sections":{"switches":"Opzioni"},"units":{"seconds":"secondi","second":"secondo","minutes":"minuti","minute":"minuto","hours":"ore","hour":"ora"},"ui":{"partial":"Parziale"}},"editor":{"space_around":"Spazi prima e dopo","space_between":"Spazi in mezzo","header":"Intestazione","footer":"Pi\xe8 di pagina","statistics":"Statistiche","sensors":"Sensori","switches":"Opzioni","tap_action":"Azione con Tap","hold_action":"Azione con Hold","double_tap_action":"Azione con Doppio Tap","content":"Contenunto","card_title":"Titolo della Card","card_icon":"Icona della Card","layout":"Layout","sections_to_exclude":"Sezioni da escludere","sections_collapsed_by_default":"Sezioni nascoste di default","style_for_switches":"Stile degli switch","entities_to_exclude":"Entit\xe0 da escludere","styles":{"label":"Stili","css_styles":"I Tuoi Stili CSS","card_styles":"Stili Card","section_styles":"Stili Sezione"},"switch_spacing":"Spaziatura Switch","interactions":"Interazioni","badge":"Badge","status":"Stato","information":"Informazioni","adguard_device":"Dispositivo AdGuard","entity_display_order":"Ordine delle Entit\xe0 (cliccare in ordine)","flex_default":"Flex (default)"}}');
 
 
 // Import other languages as needed above this line and in order
@@ -1559,7 +1599,7 @@ const $409574f4dbacb1f1$export$c18c768bbe3223b7 = (hass, entity, className = '')
 const $a2b1c365027138cb$export$dfb737c0873de058 = (element, setup, hass, config)=>{
     if (!(0, $81267a1185dd4399$export$57bf213be019eeb0)(config, 'header')) return 0, $f58f44579a4747ac$export$45b790e32b2810ee;
     const primary = setup.holes[0];
-    const activeCount = setup.holes.map((h)=>h.protection).filter((status)=>status !== undefined && (0, $043ab5348dd51237$export$c0e85c3982a3daa6)(status, status?.state)).length;
+    const activeCount = setup.holes.map((h)=>h.protection).filter((status)=>status !== undefined && (0, $46dabcff6df1e992$exports.stateActive)(status, status.state)).length;
     const mixedStatus = activeCount > 0 && activeCount < setup.holes.length;
     // Get status color based on active count and mixed status
     const getStatusColor = ()=>{
@@ -1598,8 +1638,8 @@ const $a2b1c365027138cb$export$dfb737c0873de058 = (element, setup, hass, config)
       <div class="name">
         ${(0, $0cafd9360b3c4d75$export$1ca1ec8b29a4ce27)(element, config, setup)}${config.title ?? 'AdGuard'}
         ${setup.holes.length > 1 ? (0, $f58f44579a4747ac$export$c0bb0b647f701bb5)`<span class="multi-status"
-              >(${activeCount}/${setup.holes.length})</span
-            >` : ''}
+                >(${activeCount}/${setup.holes.length})</span
+              >` : ''}
       </div>
       <div
         style="color: ${getStatusColor()}; cursor: pointer;"
@@ -1658,82 +1698,14 @@ const $313ad4784c1ca11f$export$7f14135d73b0f07a = (safeSearchesEnforced)=>[
 
 
 
-
 /**
- * https://github.com/home-assistant/frontend/blob/dev/src/common/number/format_number.ts
- */ /**
- * https://github.com/home-assistant/frontend/blob/dev/src/data/translation.ts
- */ var $5bb8a72e6271facd$export$27bce688931fdfcc = /*#__PURE__*/ function(NumberFormat) {
-    NumberFormat["language"] = "language";
-    NumberFormat["system"] = "system";
-    NumberFormat["comma_decimal"] = "comma_decimal";
-    NumberFormat["decimal_comma"] = "decimal_comma";
-    NumberFormat["space_comma"] = "space_comma";
-    NumberFormat["none"] = "none";
-    return NumberFormat;
-}({});
-
-
-/**
- * https://github.com/home-assistant/frontend/blob/dev/src/common/number/round.ts
- */ const $4531cfec1f90a7c8$export$2077e0241d6afd3c = (value, precision = 2)=>Math.round(value * 10 ** precision) / 10 ** precision;
-
-
-const $155ab9b902a30933$export$5e25e39d6a8c0c11 = (localeOptions)=>{
-    switch(localeOptions.number_format){
-        case (0, $5bb8a72e6271facd$export$27bce688931fdfcc).comma_decimal:
-            return [
-                'en-US',
-                'en'
-            ]; // Use United States with fallback to English formatting 1,234,567.89
-        case (0, $5bb8a72e6271facd$export$27bce688931fdfcc).decimal_comma:
-            return [
-                'de',
-                'es',
-                'it',
-                'bg'
-            ]; // Use German with fallback to Spanish then Italian formatting 1.234.567,89
-        case (0, $5bb8a72e6271facd$export$27bce688931fdfcc).space_comma:
-            return [
-                'fr',
-                'sv',
-                'cs'
-            ]; // Use French with fallback to Swedish and Czech formatting 1 234 567,89
-        case (0, $5bb8a72e6271facd$export$27bce688931fdfcc).system:
-            return undefined;
-        default:
-            return localeOptions.language;
-    }
+ * Formats a number for display using the user's language.
+ */ const $5d21a05749e1ce63$export$f5dd818bff069720 = (num, language, options)=>{
+    const value = Number(num);
+    if (Number.isNaN(value) || num === '') return typeof num === 'string' ? num : String(num);
+    return new Intl.NumberFormat(language, options).format(value);
 };
-const $155ab9b902a30933$export$f5dd818bff069720 = (num, localeOptions, options)=>{
-    const locale = localeOptions ? $155ab9b902a30933$export$5e25e39d6a8c0c11(localeOptions) : undefined;
-    // Polyfill for Number.isNaN, which is more reliable than the global isNaN()
-    Number.isNaN = Number.isNaN || function isNaN(input) {
-        return typeof input === 'number' && isNaN(input);
-    };
-    if (localeOptions?.number_format !== (0, $5bb8a72e6271facd$export$27bce688931fdfcc).none && !Number.isNaN(Number(num))) return new Intl.NumberFormat(locale, $155ab9b902a30933$export$d5b7427e28c21e7b(num, options)).format(Number(num));
-    if (!Number.isNaN(Number(num)) && num !== '' && localeOptions?.number_format === (0, $5bb8a72e6271facd$export$27bce688931fdfcc).none) // If NumberFormat is none, use en-US format without grouping.
-    return new Intl.NumberFormat('en-US', $155ab9b902a30933$export$d5b7427e28c21e7b(num, {
-        ...options,
-        useGrouping: false
-    })).format(Number(num));
-    if (typeof num === 'string') return num;
-    return `${(0, $4531cfec1f90a7c8$export$2077e0241d6afd3c)(num, options?.maximumFractionDigits).toString()}${options?.style === 'currency' ? ` ${options.currency}` : ''}`;
-};
-const $155ab9b902a30933$export$d5b7427e28c21e7b = (num, options)=>{
-    const defaultOptions = {
-        maximumFractionDigits: 2,
-        ...options
-    };
-    if (typeof num !== 'string') return defaultOptions;
-    // Keep decimal trailing zeros if they are present in a string numeric value
-    if (!options || options.minimumFractionDigits === undefined && options.maximumFractionDigits === undefined) {
-        const digits = num.indexOf('.') > -1 ? num.split('.')[1].length : 0;
-        defaultOptions.minimumFractionDigits = digits;
-        defaultOptions.maximumFractionDigits = digits;
-    }
-    return defaultOptions;
-};
+
 
 
 
@@ -1744,7 +1716,7 @@ const $1f2c0e8d95d0a59b$export$c26b385db31056a8 = (element, hass, entity, sectio
         '%',
         'ms'
     ].includes(entity.attributes?.unit_of_measurement ?? '') ? entity.attributes?.unit_of_measurement : '';
-    const value = (0, $155ab9b902a30933$export$f5dd818bff069720)(entity.state, hass.locale, {
+    const value = (0, $5d21a05749e1ce63$export$f5dd818bff069720)(entity.state, hass.language, {
         maximumFractionDigits: 1
     });
     const footer = typeof statBoxConfig.footer === 'string' ? (0, $623ffaa3e77fea87$export$b3bd0bc58e36cd63)(hass, statBoxConfig.footer) : (0, $623ffaa3e77fea87$export$b3bd0bc58e36cd63)(hass, statBoxConfig.footer.key, statBoxConfig.footer.search, statBoxConfig.footer.replace);
@@ -1831,38 +1803,73 @@ const $6cbf4e557bc1fbf1$export$535a09426ee2ea59 = (hass, entity, className)=>(0,
     const switchCollapsed = (0, $e67ba06cac005a46$export$9c903d35b97d0190)(config, 'switches');
     const sectionStyles = config.styles?.section || {};
     return (0, $f58f44579a4747ac$export$c0bb0b647f701bb5)`${(0, $81267a1185dd4399$export$57bf213be019eeb0)(config, 'switches') ? (0, $f58f44579a4747ac$export$c0bb0b647f701bb5)`<div class="collapsible-section" style=${(0, $19f464fcda7d2482$export$1e5b4ce2fa884e6a)(sectionStyles)}>
-        <div
-          class="section-header"
-          @click=${(e)=>(0, $993360189f76a862$export$b7c305685fc8cb26)(e, '.switches')}
-        >
-          <span>${(0, $623ffaa3e77fea87$export$b3bd0bc58e36cd63)(hass, 'card.sections.switches')}</span>
-          <ha-icon
-            class="caret-icon"
-            icon="mdi:chevron-${switchCollapsed ? 'right' : 'down'}"
-          ></ha-icon>
-        </div>
-        <div
-          class="${[
+          <div
+            class="section-header"
+            @click=${(e)=>(0, $993360189f76a862$export$b7c305685fc8cb26)(e, '.switches')}
+          >
+            <span>${(0, $623ffaa3e77fea87$export$b3bd0bc58e36cd63)(hass, 'card.sections.switches')}</span>
+            <ha-icon
+              class="caret-icon"
+              icon="mdi:chevron-${switchCollapsed ? 'right' : 'down'}"
+            ></ha-icon>
+          </div>
+          <div
+            class="${[
         'switches',
         switchCollapsed ? 'hidden' : undefined,
         config.switch_spacing
     ].filter((s)=>s).join(' ')}"
-        >
-          ${device.switches.map((piSwitch)=>{
+          >
+            ${device.switches.map((piSwitch)=>{
         const orderExists = config.entity_order?.includes(piSwitch.entity_id);
         if (orderExists) {
             const orderIndex = config.entity_order.indexOf(piSwitch.entity_id);
             const nextItem = config.entity_order[orderIndex + 1];
             if (nextItem === 'divider') return (0, $f58f44579a4747ac$export$c0bb0b647f701bb5)`${(0, $6cbf4e557bc1fbf1$export$535a09426ee2ea59)(hass, piSwitch)}
-                  <div class="divider"></div>`;
+                    <div class="divider"></div>`;
         }
         return (0, $6cbf4e557bc1fbf1$export$535a09426ee2ea59)(hass, piSwitch);
     })}
-        </div>
-      </div>` : (0, $f58f44579a4747ac$export$45b790e32b2810ee)}`;
+          </div>
+        </div>` : (0, $f58f44579a4747ac$export$45b790e32b2810ee)}`;
 };
 const $9369c7e3c6702a0b$export$85691f7dcbc38c10 = (element, hass, setup, device, config)=>{
     return (0, $f58f44579a4747ac$export$c0bb0b647f701bb5)` <div>${$9369c7e3c6702a0b$var$switches(element, hass, device, config)}</div> `;
+};
+
+
+
+
+
+
+const $4227987aac09cd77$export$efbe1467c55dee42 = (entity)=>{
+    // super hacky - but too lazy to hardcode the names
+    const label = (entity.attributes.friendly_name ?? '').replace(' update', '');
+    const hasUpdate = (0, $46dabcff6df1e992$exports.stateActive)(entity, entity.state);
+    const latestVersion = entity.attributes.latest_version;
+    const installedVersion = entity.attributes.installed_version;
+    return (0, $f58f44579a4747ac$export$c0bb0b647f701bb5)`
+    <div class="version-item ${hasUpdate ? 'update-available' : ''}">
+      <span class="version-label">${label}</span>
+      <a href="${entity.attributes.release_url}" target="_blank">
+        <span class="version-text">
+          ${installedVersion}
+          ${hasUpdate && latestVersion ? (0, $f58f44579a4747ac$export$c0bb0b647f701bb5)`<span class="version-separator"> → </span
+                  ><span class="version-latest">${latestVersion}</span>` : ''}
+        </span>
+      </a>
+    </div>
+  `;
+};
+
+
+const $49bfcbfa0b6e0050$export$7c88f7b87167f6 = (_element, _hass, config, device)=>{
+    if (!(0, $81267a1185dd4399$export$57bf213be019eeb0)(config, 'footer')) return 0, $f58f44579a4747ac$export$45b790e32b2810ee;
+    return (0, $f58f44579a4747ac$export$c0bb0b647f701bb5)`<div class="version-info">
+    ${device.updates.map((update)=>{
+        return (0, $4227987aac09cd77$export$efbe1467c55dee42)(update);
+    })}
+  </div>`;
 };
 
 
@@ -1909,6 +1916,7 @@ const $f5cecba293939c1a$export$b078560c105809a7 = (element, hass, setup, config)
         ${(0, $f72adbed169bb149$export$f7d6b8c683630484)(element, hass, primary, config)}
       </div>
       ${(0, $9369c7e3c6702a0b$export$85691f7dcbc38c10)(element, hass, setup, primary, config)}
+      ${(0, $49bfcbfa0b6e0050$export$7c88f7b87167f6)(element, hass, config, primary)}
     </ha-card>
   `;
 };
@@ -1945,27 +1953,27 @@ const $28ca676359267166$export$ce4e438906f3b684 = (config, entities)=>{
 };
 
 
+const $7aa94e0bc82e2c26$var$keyToPropertyMap = {
+    // stat boxes
+    dns_queries: 'dns_queries',
+    dns_queries_blocked: 'dns_queries_blocked',
+    dns_queries_blocked_ratio: 'dns_queries_blocked_ratio',
+    average_processing_speed: 'average_processing_speed',
+    safe_searches_enforced: 'safe_searches_enforced',
+    protection: 'protection',
+    // testing w/ pi-hole
+    dns_queries_today: 'dns_queries',
+    domains_blocked: 'dns_queries_blocked',
+    ads_percentage_blocked_today: 'dns_queries_blocked_ratio',
+    ftl_info_message_count: 'average_processing_speed',
+    dns_unique_clients: 'safe_searches_enforced',
+    status: 'protection'
+};
 const $7aa94e0bc82e2c26$export$51bb3e4a8dd2f2ff = (entity, device)=>{
-    const keyToPropertyMap = {
-        // stat boxes
-        dns_queries: 'dns_queries',
-        dns_queries_blocked: 'dns_queries_blocked',
-        dns_queries_blocked_ratio: 'dns_queries_blocked_ratio',
-        average_processing_speed: 'average_processing_speed',
-        safe_searches_enforced: 'safe_searches_enforced',
-        protection: 'protection',
-        // testing w/ pi-hole
-        dns_queries_today: 'dns_queries',
-        domains_blocked: 'dns_queries_blocked',
-        ads_percentage_blocked_today: 'dns_queries_blocked_ratio',
-        ftl_info_message_count: 'average_processing_speed',
-        dns_unique_clients: 'safe_searches_enforced',
-        status: 'protection'
-    };
     const key = entity.translation_key;
-    if (key && key in keyToPropertyMap) {
-        // @ts-ignore
-        device[keyToPropertyMap[key]] = entity;
+    if (key && key in $7aa94e0bc82e2c26$var$keyToPropertyMap) {
+        const prop = $7aa94e0bc82e2c26$var$keyToPropertyMap[key];
+        device[prop] = entity;
         return true;
     }
     return false;
@@ -2004,7 +2012,7 @@ const $093edc2594769ee5$export$c6a2d06cc40e579 = (hass, deviceId, deviceName)=>{
         const state = (0, $e24dedcf9e480b2d$export$50fdfeece43146fd)(hass, entity.entity_id);
         if (state === undefined) return;
         // convenience
-        const name = state.attributes.friendly_name === deviceName ? deviceName : state.attributes.friendly_name?.replace(deviceName, '').trim();
+        const name = state.attributes.friendly_name === deviceName ? deviceName : state.attributes.friendly_name?.replace(deviceName ?? '', '').trim();
         return {
             entity_id: entity.entity_id,
             translation_key: entity.translation_key,
@@ -2023,19 +2031,20 @@ const $284c781f33d4e276$export$e59f4de531f44b4e = (hass, config, deviceId)=>{
     const device = {
         device_id: deviceId,
         sensors: [],
-        switches: []
+        switches: [],
+        updates: []
     };
     const hassDevice = (0, $5bd3a7e1f19a6de3$export$30c823bc834d6ab4)(hass, device.device_id);
     if (!hassDevice) return undefined;
     // Get all entities for the device
-    let entities = (0, $093edc2594769ee5$export$c6a2d06cc40e579)(hass, hassDevice.id, hassDevice.name);
+    const entities = (0, $093edc2594769ee5$export$c6a2d06cc40e579)(hass, hassDevice.id, hassDevice.name);
     // Map entities to the device object
     (0, $28ca676359267166$export$ce4e438906f3b684)(config, entities).forEach((entity)=>{
         if ((0, $25a2e2943b63f930$export$2448ebcf2d0e9554)(entity, config)) return;
         // Skip already handled entities by translation key
         if ((0, $7aa94e0bc82e2c26$export$51bb3e4a8dd2f2ff)(entity, device)) return;
         // Handle other entities by domain
-        const domain = (0, $e7dc90bb09bfe22d$export$2044bdc9670769ab)(entity.entity_id);
+        const domain = (0, $9be1c046bd0bdc20$exports.computeDomain)(entity.entity_id);
         switch(domain){
             case 'sensor':
                 device.sensors.push(entity);
@@ -2043,7 +2052,16 @@ const $284c781f33d4e276$export$e59f4de531f44b4e = (hass, config, deviceId)=>{
             case 'switch':
                 device.switches.push(entity);
                 break;
+            case 'update':
+                device.updates.push(entity);
+                break;
         }
+    });
+    // Sort updates by title (using nullish coalescing for cleaner code)
+    device.updates.sort((a, b)=>{
+        const aTitle = a.attributes.title ?? 'z';
+        const bTitle = b.attributes.title ?? 'z';
+        return aTitle.localeCompare(bTitle);
     });
     return device;
 };
@@ -2057,7 +2075,7 @@ const $0544f6a0e4690d02$export$3e7625def91a5ba7 = (hass, config)=>{
     if (deviceIds.length === 0) return undefined;
     // keep track of switches that are not in the first device
     const spareSwitches = [];
-    const holes = deviceIds.map((deviceId, i)=>(0, $284c781f33d4e276$export$e59f4de531f44b4e)(hass, config, deviceId)).filter((hole)=>hole !== undefined).map((hole, i)=>{
+    const holes = deviceIds.map((deviceId)=>(0, $284c781f33d4e276$export$e59f4de531f44b4e)(hass, config, deviceId)).filter((hole)=>hole !== undefined).map((hole, i)=>{
         if (i > 0) {
             spareSwitches.push(...hole.switches);
             // don't track entites that are not in the first device
@@ -2067,7 +2085,8 @@ const $0544f6a0e4690d02$export$3e7625def91a5ba7 = (hass, config)=>{
                 protection: hole.protection,
                 controls: [],
                 sensors: [],
-                switches: []
+                switches: [],
+                updates: []
             };
         }
         return hole;
@@ -2085,6 +2104,38 @@ const $0544f6a0e4690d02$export$3e7625def91a5ba7 = (hass, config)=>{
     };
 };
 
+
+
+var $30856da572fd852b$exports = {};
+'use strict';
+// do not edit .js files directly - edit src/index.jst
+$30856da572fd852b$exports = function equal(a, b) {
+    if (a === b) return true;
+    if (a && b && typeof a == 'object' && typeof b == 'object') {
+        if (a.constructor !== b.constructor) return false;
+        var length, i, keys;
+        if (Array.isArray(a)) {
+            length = a.length;
+            if (length != b.length) return false;
+            for(i = length; i-- !== 0;)if (!equal(a[i], b[i])) return false;
+            return true;
+        }
+        if (a.constructor === RegExp) return a.source === b.source && a.flags === b.flags;
+        if (a.valueOf !== Object.prototype.valueOf) return a.valueOf() === b.valueOf();
+        if (a.toString !== Object.prototype.toString) return a.toString() === b.toString();
+        keys = Object.keys(a);
+        length = keys.length;
+        if (length !== Object.keys(b).length) return false;
+        for(i = length; i-- !== 0;)if (!Object.prototype.hasOwnProperty.call(b, keys[i])) return false;
+        for(i = length; i-- !== 0;){
+            var key = keys[i];
+            if (!equal(a[key], b[key])) return false;
+        }
+        return true;
+    }
+    // true if both NaN, false otherwise
+    return a !== a && b !== b;
+};
 
 
 
@@ -2481,6 +2532,50 @@ const $13632afec4749c69$export$9dd6ff9ea0189349 = (0, $def2de46b9306e8a$export$d
     justify-content: space-between;
   }
 
+  /* Version information styles */
+  .version-info {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 8px 16px 16px;
+    font-size: 0.85rem;
+    color: var(--secondary-text-color);
+    border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    gap: 12px;
+  }
+
+  .version-item {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .version-item.update-available {
+    border-left: 3px solid var(--warning-color, #ff9800);
+    padding-left: 8px;
+    margin-left: -8px;
+  }
+
+  .version-label {
+    margin-right: 4px;
+    font-weight: 700;
+  }
+
+  .version-text {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .version-separator {
+    margin: 0 4px;
+    color: var(--secondary-text-color);
+  }
+
+  .version-latest {
+    color: var(--warning-color, #ff9800);
+    font-weight: 600;
+  }
+
   /* Very small screen adjustments */
   @media (max-width: 400px) {
     .stat-group {
@@ -2577,38 +2672,6 @@ const $13632afec4749c69$export$9dd6ff9ea0189349 = (0, $def2de46b9306e8a$export$d
 `;
 
 
-var $30856da572fd852b$exports = {};
-'use strict';
-// do not edit .js files directly - edit src/index.jst
-$30856da572fd852b$exports = function equal(a, b) {
-    if (a === b) return true;
-    if (a && b && typeof a == 'object' && typeof b == 'object') {
-        if (a.constructor !== b.constructor) return false;
-        var length, i, keys;
-        if (Array.isArray(a)) {
-            length = a.length;
-            if (length != b.length) return false;
-            for(i = length; i-- !== 0;)if (!equal(a[i], b[i])) return false;
-            return true;
-        }
-        if (a.constructor === RegExp) return a.source === b.source && a.flags === b.flags;
-        if (a.valueOf !== Object.prototype.valueOf) return a.valueOf() === b.valueOf();
-        if (a.toString !== Object.prototype.toString) return a.toString() === b.toString();
-        keys = Object.keys(a);
-        length = keys.length;
-        if (length !== Object.keys(b).length) return false;
-        for(i = length; i-- !== 0;)if (!Object.prototype.hasOwnProperty.call(b, keys[i])) return false;
-        for(i = length; i-- !== 0;){
-            var key = keys[i];
-            if (!equal(a[key], b[key])) return false;
-        }
-        return true;
-    }
-    // true if both NaN, false otherwise
-    return a !== a && b !== b;
-};
-
-
 class $e4f1b26747081709$export$ffae0d3bf5bf7be4 extends (0, $ab210b2da7b39b9d$export$3f2f9f5909897157) {
     /**
    * Returns the component's styles
@@ -2619,7 +2682,7 @@ class $e4f1b26747081709$export$ffae0d3bf5bf7be4 extends (0, $ab210b2da7b39b9d$ex
    * Sets up the card configuration
    * @param {Config} config - The card configuration
    */ setConfig(config) {
-        if (!$30856da572fd852b$exports(config, this._config)) this._config = config;
+        if (!(0, (/*@__PURE__*/$parcel$interopDefault($30856da572fd852b$exports)))(config, this._config)) this._config = config;
     }
     /**
    * Updates the card's state when Home Assistant state changes
@@ -2627,9 +2690,9 @@ class $e4f1b26747081709$export$ffae0d3bf5bf7be4 extends (0, $ab210b2da7b39b9d$ex
    */ set hass(hass) {
         this._hass = hass;
         const setup = (0, $0544f6a0e4690d02$export$3e7625def91a5ba7)(hass, this._config);
-        if (setup && !$30856da572fd852b$exports(setup, this._setup)) this._setup = setup;
+        if (setup && !(0, (/*@__PURE__*/$parcel$interopDefault($30856da572fd852b$exports)))(setup, this._setup)) this._setup = setup;
         else // update children who are subscribed
-        (0, $9c83ab07519e6203$export$43835e9acf248a15)(this, 'hass-update', {
+        (0, $d8229c453ce2530e$exports.fireEvent)(this, 'hass-update', {
             hass: hass
         });
     }
@@ -2657,10 +2720,10 @@ class $e4f1b26747081709$export$ffae0d3bf5bf7be4 extends (0, $ab210b2da7b39b9d$ex
         return (0, $f5cecba293939c1a$export$b078560c105809a7)(this, this._hass, this._setup, this._config);
     }
 }
-(0, $24c52f343453d62d$export$29e00dfd3077644b)([
+(0, $e710f43c4558477c$export$29e00dfd3077644b)([
     (0, $04c21ea1ce1f6057$export$ca000e230c0caa3e)()
 ], $e4f1b26747081709$export$ffae0d3bf5bf7be4.prototype, "_config", void 0);
-(0, $24c52f343453d62d$export$29e00dfd3077644b)([
+(0, $e710f43c4558477c$export$29e00dfd3077644b)([
     (0, $04c21ea1ce1f6057$export$ca000e230c0caa3e)()
 ], $e4f1b26747081709$export$ffae0d3bf5bf7be4.prototype, "_setup", void 0);
 
@@ -2721,6 +2784,10 @@ const $b642db848cc622aa$var$getSectionExcludeOptions = (hass)=>{
         {
             label: l('editor.switches'),
             value: 'switches'
+        },
+        {
+            label: l('editor.footer'),
+            value: 'footer'
         }
     ];
 };
@@ -2757,7 +2824,6 @@ const $b642db848cc622aa$var$ACTION_SCHEMA = [
     }
 ];
 const $b642db848cc622aa$var$getSchema = (hass)=>{
-    const l = (label)=>(0, $623ffaa3e77fea87$export$b3bd0bc58e36cd63)(hass, label);
     return [
         {
             name: 'device_id',
@@ -2989,28 +3055,90 @@ class $b642db848cc622aa$export$5333a5daa144f6b5 extends (0, $ab210b2da7b39b9d$ex
         if (!config.exclude_sections?.length) delete config.exclude_sections;
         if (!config.entity_order?.length) delete config.entity_order;
         if (!config.collapsed_sections?.length) delete config.collapsed_sections;
-        // @ts-ignore
-        (0, $9c83ab07519e6203$export$43835e9acf248a15)(this, 'config-changed', {
+        // @ts-expect-error config-changed is a HA editor event not in the local fireEvent map
+        (0, $d8229c453ce2530e$exports.fireEvent)(this, 'config-changed', {
             config: config
         });
     }
 }
-(0, $24c52f343453d62d$export$29e00dfd3077644b)([
+(0, $e710f43c4558477c$export$29e00dfd3077644b)([
     (0, $04c21ea1ce1f6057$export$ca000e230c0caa3e)()
 ], $b642db848cc622aa$export$5333a5daa144f6b5.prototype, "_config", void 0);
 
 
+var $f14e78138687b521$exports = {};
+"use strict";
+Object.defineProperty($f14e78138687b521$exports, "__esModule", {
+    value: true
+});
+$f14e78138687b521$exports.getDevice = void 0;
+/**
+ * Retrieves a device from `hass.devices`.
+ */ const $f14e78138687b521$var$getDevice = (hass, deviceId)=>{
+    const device = hass.devices[deviceId];
+    if (!device) return undefined;
+    return {
+        id: device.id,
+        config_entries: device.config_entries,
+        identifiers: device.identifiers,
+        manufacturer: device.manufacturer,
+        model: device.model,
+        model_id: device.model_id,
+        name: device.name,
+        name_by_user: device.name_by_user,
+        serial_number: device.serial_number
+    };
+};
+$f14e78138687b521$exports.getDevice = $f14e78138687b521$var$getDevice;
+
+
+/** Integration that owns AdGuard Home devices. */ const $a1c3df4b1a664a1d$var$ADGUARD_INTEGRATION = 'adguard';
+/**
+ * Resolves an entity to its AdGuard device id, or `null` when the entity is
+ * missing or not owned by that integration.
+ */ const $a1c3df4b1a664a1d$var$adguardDeviceId = (hass, entityId)=>{
+    const entity = hass.entities[entityId];
+    if (!entity?.device_id) return null;
+    const device = (0, $f14e78138687b521$exports.getDevice)(hass, entity.device_id);
+    if (!device) return null;
+    const isAdGuard = device.identifiers.some(([integration])=>integration === $a1c3df4b1a664a1d$var$ADGUARD_INTEGRATION);
+    if (!isAdGuard) return null;
+    return device.id;
+};
+const $a1c3df4b1a664a1d$export$eef4717271055433 = (hass, entityId)=>{
+    const deviceId = $a1c3df4b1a664a1d$var$adguardDeviceId(hass, entityId);
+    if (!deviceId) return null;
+    return {
+        config: {
+            type: 'custom:adguard-card',
+            device_id: deviceId
+        }
+    };
+};
+
+
+var $d51373b66ef17fcb$exports = {};
+"use strict";
+/**
+ * https://github.com/home-assistant/frontend/blob/dev/src/data/lovelace_custom_cards.ts
+ */ Object.defineProperty($d51373b66ef17fcb$exports, "__esModule", {
+    value: true
+});
+$d51373b66ef17fcb$exports.customCards = void 0;
+const $d51373b66ef17fcb$var$customCardsWindow = globalThis;
+if (!('customCards' in $d51373b66ef17fcb$var$customCardsWindow)) $d51373b66ef17fcb$var$customCardsWindow.customCards = [];
+$d51373b66ef17fcb$exports.customCards = $d51373b66ef17fcb$var$customCardsWindow.customCards;
+
+
 var $b06602ab53bd58a3$exports = {};
-$b06602ab53bd58a3$exports = JSON.parse("{\"name\":\"adguard\",\"version\":\"0.9.0\",\"author\":\"Patrick Masters\",\"license\":\"ISC\",\"description\":\"Card to summarize information for, and to control your Adguard instance!\",\"source\":\"src/index.ts\",\"module\":\"dist/adguard-card.js\",\"targets\":{\"module\":{\"includeNodeModules\":true}},\"scripts\":{\"watch\":\"parcel watch\",\"build\":\"parcel build\",\"format\":\"prettier --write .\",\"test\":\"TS_NODE_PROJECT='./tsconfig.test.json' mocha\",\"test:coverage\":\"nyc npm run test\",\"test:watch\":\"TS_NODE_PROJECT='./tsconfig.test.json' mocha --watch\",\"update\":\"npx npm-check-updates -u && yarn install\"},\"devDependencies\":{\"@istanbuljs/nyc-config-typescript\":\"^1.0.2\",\"@open-wc/testing\":\"^4.0.0\",\"@parcel/transformer-inline-string\":\"^2.16.1\",\"@testing-library/dom\":\"^10.4.1\",\"@trivago/prettier-plugin-sort-imports\":\"^6.0.0\",\"@types/chai\":\"^5.2.3\",\"@types/jsdom\":\"^27.0.0\",\"@types/mocha\":\"^10.0.10\",\"@types/sinon\":\"^20.0.0\",\"chai\":\"^6.2.1\",\"jsdom\":\"^27.2.0\",\"mocha\":\"^11.7.5\",\"nyc\":\"^17.1.0\",\"parcel\":\"^2.16.1\",\"prettier\":\"3.6.2\",\"prettier-plugin-organize-imports\":\"^4.3.0\",\"proxyquire\":\"^2.1.3\",\"sinon\":\"^21.0.0\",\"ts-node\":\"^10.9.2\",\"tsconfig-paths\":\"^4.2.0\",\"typescript\":\"^5.9.3\"},\"dependencies\":{\"@lit/task\":\"^1.0.3\",\"fast-deep-equal\":\"^3.1.3\",\"lit\":\"^3.3.1\"}}");
+$b06602ab53bd58a3$exports = JSON.parse("{\"name\":\"adguard\",\"version\":\"0.9.0\",\"author\":{\"name\":\"Patrick Masters\",\"url\":\"https://curiouscat.consulting/projects/ha-adguard-card?utm_source=github-adguard-card&utm_medium=package-metadata&utm_campaign=oss-presence&utm_content=author-url\"},\"license\":\"ISC\",\"prettier\":\"@homeassistant-extras/config/prettier\",\"description\":\"Card to summarize information for, and to control your Adguard instance!\",\"repository\":{\"type\":\"git\",\"url\":\"https://github.com/homeassistant-extras/adguard-card.git\"},\"bugs\":{\"url\":\"https://github.com/homeassistant-extras/adguard-card/issues\"},\"source\":\"src/index.ts\",\"module\":\"dist/adguard-card.js\",\"targets\":{\"module\":{\"includeNodeModules\":true}},\"@parcel/resolver-default\":{\"packageExports\":true},\"scripts\":{\"watch\":\"parcel watch\",\"build\":\"parcel build\",\"lint\":\"eslint .\",\"lint:fix\":\"eslint . --fix\",\"format\":\"prettier --write .\",\"pass\":\"yarn format && yarn typecheck && yarn lint && yarn test\",\"typecheck\":\"tsc --noEmit && tsc -p tsconfig.test.json --noEmit\",\"test\":\"TS_NODE_PROJECT='./tsconfig.test.json' mocha\",\"test:coverage\":\"nyc yarn run test\",\"test:watch\":\"TS_NODE_PROJECT='./tsconfig.test.json' mocha --watch\",\"update\":\"npx npm-check-updates -u && yarn install\"},\"devDependencies\":{\"@eslint/js\":\"^10.0.1\",\"@homeassistant-extras/config\":\"^0.3.1\",\"@istanbuljs/nyc-config-typescript\":\"^1.0.2\",\"@open-wc/testing\":\"^5.0.0\",\"@parcel/transformer-inline-string\":\"^2.16.4\",\"@testing-library/dom\":\"^10.4.2\",\"@trivago/prettier-plugin-sort-imports\":\"^6.0.2\",\"@types/chai\":\"^5.2.3\",\"@types/jsdom\":\"^30.0.0\",\"@types/mocha\":\"^10.0.10\",\"@types/node\":\"^26.6.2\",\"@types/sinon\":\"^22.0.0\",\"chai\":\"^6.2.2\",\"eslint\":\"^10.11.0\",\"eslint-plugin-lit\":\"^2.3.1\",\"eslint-plugin-wc\":\"^3.1.0\",\"globals\":\"^17.12.0\",\"jsdom\":\"^30.1.0\",\"mocha\":\"^12.0.2\",\"nyc\":\"^18.0.0\",\"parcel\":\"^2.16.4\",\"prettier\":\"3.9.8\",\"prettier-plugin-organize-imports\":\"^4.3.0\",\"proxyquire\":\"^2.1.3\",\"sinon\":\"^22.1.0\",\"ts-node\":\"^10.9.2\",\"tsconfig-paths\":\"^4.2.0\",\"typescript\":\"^6.0.3\",\"typescript-eslint\":\"^8.70.0\"},\"dependencies\":{\"@homeassistant-extras/hass\":\"^0.6.0\",\"@lit/task\":\"^1.0.3\",\"fast-deep-equal\":\"^3.1.3\",\"lit\":\"^3.3.3\"}}");
 
 
 // Register the custom elements with the browser
 customElements.define('adguard-card', (0, $e4f1b26747081709$export$ffae0d3bf5bf7be4));
 customElements.define('adguard-editor', (0, $b642db848cc622aa$export$5333a5daa144f6b5));
-// Ensure the customCards array exists on the window object
-window.customCards = window.customCards || [];
 // Register the cards with Home Assistant's custom card registry
-window.customCards.push({
+(0, $d51373b66ef17fcb$exports.customCards)?.push({
     // Unique identifier for the card type
     type: 'adguard-card',
     // Display name in the UI
@@ -3020,7 +3148,9 @@ window.customCards.push({
     // Show a preview of the card in the UI
     preview: true,
     // URL for the card's documentation
-    documentationURL: 'https://github.com/homeassistant-extras/adguard-card'
+    documentationURL: 'https://github.com/homeassistant-extras/adguard-card',
+    getEntitySuggestion: // Suggest this card when picking an AdGuard entity (HA 2026.6+)
+    $a1c3df4b1a664a1d$export$eef4717271055433
 });
 console.info(`%c\u{1F431} Poat's Tools: adguard-card - ${(0, $b06602ab53bd58a3$exports.version)}`, 'color: #CFC493;');
 

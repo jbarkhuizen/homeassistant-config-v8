@@ -496,4 +496,5 @@ recorder:
 #    scan_interval: 60
 #    max_gps_accuracy: 200
      
+prometheus:
 # ==========
