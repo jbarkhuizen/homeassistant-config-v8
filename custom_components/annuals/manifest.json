@@ -1,6 +1,9 @@
 {
   "domain": "annuals",
   "name": "Annuals",
+  "after_dependencies": [
+    "lovelace"
+  ],
   "codeowners": [
     "@somansch"
   ],
@@ -18,5 +21,5 @@
     "icalendar>=5.0",
     "vobject>=0.9.6"
   ],
-  "version": "3.3.0"
+  "version": "3.3.1"
 }

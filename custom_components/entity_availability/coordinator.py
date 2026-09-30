@@ -208,29 +208,52 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
     def reliability_stats(self, entity_id: str, now: datetime) -> dict[str, Any]:
         """Return MTBF/MTTR reliability stats for an entity.
 
-        MTBF (hours) = observed uptime / number of offline events.
-        MTTR (minutes) = total offline time / number of offline events.
+        MTBF (hours) = observed uptime / number of COMPLETED offline events.
+        MTTR (minutes) = total offline time / number of COMPLETED offline events.
         Both None until at least one full offline→recovery event exists.
+
+        offline_event_count increments when an outage OPENS (see the offline
+        transition) but total_offline_seconds only books at RECOVERY, so a
+        currently-open outage would otherwise inflate the denominator with no
+        matching numerator — dragging MTTR low and (because its ongoing downtime
+        is still counted as uptime) MTBF high. We therefore divide by the
+        COMPLETED-outage count and fold the in-progress outage's elapsed downtime
+        into both the offline total and the uptime subtraction, keeping numerator
+        and denominator consistent. A device that has only ever had open outages
+        (no completed one) reports None, honoring the docstring.
         """
         device = self._device_states.get(entity_id)
-        if device is None or device.offline_event_count == 0:
+        if device is None:
+            return {"mtbf_hours": None, "mttr_minutes": None, "offline_events": 0}
+        # An open outage bumped the count at OPEN but has booked no seconds yet.
+        completed = device.offline_event_count - (1 if device.is_offline else 0)
+        in_progress = (
+            (now - device.offline_since).total_seconds()
+            if device.is_offline and device.offline_since
+            else 0.0
+        )
+        if completed <= 0:
             return {
                 "mtbf_hours": None,
                 "mttr_minutes": None,
-                "offline_events": device.offline_event_count if device else 0,
+                "offline_events": device.offline_event_count,
             }
         uptime = 0.0
         if device.monitored_since:
+            # Uptime subtracts ALL downtime including the in-progress outage, so
+            # ongoing downtime is never miscounted as uptime (MTBF not inflated).
             uptime = (
-                now - device.monitored_since
-            ).total_seconds() - device.total_offline_seconds
+                (now - device.monitored_since).total_seconds()
+                - device.total_offline_seconds
+                - in_progress
+            )
         return {
-            "mtbf_hours": round(
-                max(uptime, 0.0) / device.offline_event_count / 3600, 1
-            ),
-            "mttr_minutes": round(
-                device.total_offline_seconds / device.offline_event_count / 60, 1
-            ),
+            "mtbf_hours": round(max(uptime, 0.0) / completed / 3600, 1),
+            # MTTR = mean time to REPAIR = mean of COMPLETED repairs only. The
+            # open outage isn't repaired yet, so its elapsed time is NOT in the
+            # numerator (that would bias MTTR); only total_offline_seconds
+            # (recovery-booked) counts, divided by the completed count.
+            "mttr_minutes": round(device.total_offline_seconds / completed / 60, 1),
             "offline_events": device.offline_event_count,
         }
 
@@ -399,7 +422,19 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                         device.last_changed = None
                     device.offline_event_count = ds.get("offline_event_count", 0)
                     device.total_offline_seconds = ds.get("total_offline_seconds", 0.0)
-                    device.battery_level = ds.get("battery_level")
+                    # Enforce the "offline ⇒ no battery %" invariant on restore.
+                    # A device persisted offline can carry a stale battery_level
+                    # in storage written by <=0.5.5 (which cleared on is_bad, not
+                    # at the offline edge). On the first boot after upgrade such a
+                    # device never re-hits the offline transition (already offline
+                    # ⇒ no edge), so the edge-clear can't fire and a dead battery
+                    # would show a stale % forever. Dropping it here sanitizes old
+                    # storage; for new storage the edge already persists None, so
+                    # this is a no-op. A restored-online device keeps its level
+                    # (the #111 retention path is untouched).
+                    device.battery_level = (
+                        None if device.is_offline else ds.get("battery_level")
+                    )
                     device.is_low_battery = ds.get("is_low_battery", False)
                     if entity_id in self._entities:
                         self._device_states[entity_id] = device
@@ -663,7 +698,19 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
             # Determine if device is in a bad state
             is_bad = state is None or state.state in self._bad_states
 
-            # Battery check — retain last-known level when entity is unavailable
+            # Battery check — retain last-known level across single-poll sensor
+            # flaps while the entity is healthy (RTL-SDR/MQTT/Zigbee batteries
+            # report "unknown" for a poll while online). The stale level is
+            # cleared at the offline TRANSITION below (not here): the clear must
+            # ride the same coordinator write as the offline_count change, or the
+            # write-dedup drops it (battery_levels is unrecorded and stripped from
+            # the dedup comparison, so a poll that changes only battery_levels is
+            # skipped and the card shows a stale % indefinitely).
+            # NOT gated on is_bad here: after an HA restart, tracked entities are
+            # transiently unavailable/unknown before their first poll while the
+            # device is not yet offline (is_offline restored False, offline
+            # suppressed during startup grace) — clearing on is_bad wiped the
+            # restored battery_level on every restart until a manual reload (#111).
             fresh_level = (
                 self._get_battery_level(entity_id)
                 if self._battery_threshold > 0
@@ -687,7 +734,9 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
             ):
                 battery_low = True
 
-            # Signal check — clear level when sensor unavailable (same as battery: no stale value)
+            # Signal check — always clear level when sensor unavailable. Unlike
+            # battery (which retains last-known while the entity is healthy),
+            # signal has no retain-branch: no stale value is ever shown.
             if self._signal_enabled:
                 fresh_signal = self._get_signal_level(entity_id)
                 device.signal_level = fresh_signal
@@ -779,6 +828,29 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                         device.offline_since = device.cooldown_start
                         device.recently_offline_at = now
                         device.offline_event_count += 1
+                        # Clear a stale battery % on the same pass as the offline
+                        # transition, but ONLY when there is no fresh reading:
+                        # a dead-battery device reads its own sensor as "unknown"
+                        # (fresh_level None) and a "100%" next to a 23h-offline
+                        # row is misleading (#103). A device whose battery sensor
+                        # is still reporting while the tracked entity is offline
+                        # keeps its last-known level (the retain contract, EC59).
+                        # Doing it here (not in the battery block above) means the
+                        # clear rides the same coordinator write as
+                        # offline_event_count — battery_levels is unrecorded and
+                        # stripped from the write-dedup compare, so a clear on a
+                        # later quiet poll would be skipped and the stale % would
+                        # linger indefinitely (#111 follow-up).
+                        # ponytail: if a MAPPED/companion battery sensor outlives
+                        # the tracked entity and dies only after this edge, the
+                        # already-offline device never re-edges, so its last % is
+                        # kept until recovery→offline re-edges the clear or a
+                        # restart re-runs the restore guard. Cosmetic (device is
+                        # already offline) and narrow (divergent-sensor setups);
+                        # a dedup-safe clear on a quiet poll would reopen the
+                        # write-amp trap this whole change closes — not worth it.
+                        if fresh_level is None:
+                            device.battery_level = None
                         pending_events.append(
                             (
                                 EVENT_OFFLINE,
@@ -900,7 +972,11 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                         "low_battery",
                     )
                 )
-            elif not battery_low and device.is_low_battery:
+            elif (
+                not battery_low
+                and device.is_low_battery
+                and device.battery_level is not None
+            ):
                 device.is_low_battery = False
                 pending_events.append(
                     (
@@ -915,7 +991,12 @@ class EntityAvailabilityCoordinator(DataUpdateCoordinator[EntityAvailabilityData
                     )
                 )
             else:
-                device.is_low_battery = battery_low
+                # Freeze the flag when battery_level is None (unknown/dead): only a
+                # fresh numeric reading >= threshold clears low via the elif above.
+                # Without the `is not None` guard, clearing a dead low battery to
+                # None makes battery_low False and fires a spurious "battery
+                # recovered" event.
+                device.is_low_battery = battery_low or device.is_low_battery
             device.is_degraded = (not device.is_offline) and (battery_low or is_stale)
 
             # Signal quality transition events

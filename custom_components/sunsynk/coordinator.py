@@ -19,6 +19,7 @@ from .calibration import PerformanceRatioCalibrator
 from .const import (
     BATTERY_SETTING_KEYS,
     DOMAIN,
+    SLOT_SETTING_KEY_GROUPS,
     SOLAR_FORECAST_UPDATE_INTERVAL,
     SYSTEM_MODE_SETTING_KEYS,
 )
@@ -62,6 +63,40 @@ class SunsynkCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
         if self._session is None or self._session.closed:
             self._session = aiohttp.ClientSession()
         return self._session
+
+    @property
+    def write_target_serials(self) -> list[str]:
+        """`self.serials`, collapsing a parallel group's slave into its
+        master.
+
+        Callers that write the same setting to "every configured inverter"
+        (Tariff Manager, Virtual Slot Scheduler) used to do that literally —
+        fine for genuinely independent inverters, but for a parallel group
+        `async_write_setting` already redirects the slave's write to the
+        master (#21), so iterating both meant writing the same setting to
+        the master twice per tick. A second write landing right behind the
+        first was itself enough to make the master briefly reject/revert
+        one of them — the master's own repairs, not just the slave's, is
+        what gave this away. Use this instead of `self.serials` for any
+        write loop; keep using `self.serials` for reads (fetching data
+        still needs every configured serial).
+        """
+        def _info(serial: str) -> dict[str, Any]:
+            return (self.data or {}).get(serial, {}).get("inverter", {})
+
+        has_master = any(
+            _info(s).get("parallel") and _info(s).get("equipMode") == 1
+            for s in self.serials
+        )
+        if not has_master:
+            # No confirmed master anywhere (e.g. a momentary bad poll) —
+            # don't guess at dropping a serial with nothing left to cover it.
+            return list(self.serials)
+
+        return [
+            serial for serial in self.serials
+            if not (_info(serial).get("parallel") and _info(serial).get("equipMode") == 0)
+        ]
 
     async def _async_update_data(self) -> dict[str, dict[str, Any]]:
         """Fetch data from all inverter endpoints."""
@@ -124,29 +159,31 @@ class SunsynkCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
         return result
 
     def _resolve_parallel_write_target(self, serial: str, setting_key: str) -> str:
-        """For a parallel-group slave, battery settings should be written to
-        the master's serial instead.
+        """For a parallel-group slave, all settings should be written to the
+        master's serial instead.
 
         #21: a parallel/multi-inverter account showed chargeCurrent and
         dischargeCurrent corrupted on BOTH units (0 on the slave, a wildly
-        out-of-range 1040 on the master) after this integration wrote them
-        to each configured serial independently. The reporter confirmed the
-        Sunsynk portal itself only needs the master updated — it propagates
-        to the slave — so two independent writes likely raced against that
-        propagation and corrupted each other. `equipMode` (0 = slave,
+        out-of-range value on the master) after this integration wrote them
+        to each configured serial independently. `equipMode` (0 = slave,
         1 = master) and `parallel` are already present in the `inverter`
         data fetched every poll; non-parallel accounts don't have `parallel`
         set, so they're unaffected.
 
-        Scoped to battery settings only (chargeCurrent/dischargeCurrent and
-        the rest of BATTERY_SETTING_KEYS) — the same diagnostics showed
-        System Mode Timer slot settings verifying correctly when written to
-        each unit independently, so there's no evidence those need the same
-        redirect, and blanket-redirecting everything risked breaking that.
+        Originally scoped to battery settings only — an earlier diagnostics
+        dump showed System Mode Timer slot settings (time1on/sellTime1/etc.)
+        verifying correctly when written to each unit independently. That
+        turned out to be an artifact of the verification delay (2s) being
+        shorter than the actual sync window: the same reporter later wrote a
+        slot's start time directly to the slave *on the Sunsynk portal
+        itself* (bypassing this integration entirely) and watched the
+        portal silently revert it back to the master's value 10-15 seconds
+        later. So a 2-second verification read can land before that revert
+        and look successful, while the value doesn't actually stick. Since
+        the slave was never going to keep an independent value for *any*
+        setting, redirecting only some categories was an artificially
+        narrow fix — now applied to every setting.
         """
-        if setting_key not in BATTERY_SETTING_KEYS:
-            return serial
-
         inverter_info = (self.data or {}).get(serial, {}).get("inverter", {})
         if not inverter_info.get("parallel") or inverter_info.get("equipMode") == 1:
             return serial
@@ -181,8 +218,14 @@ class SunsynkCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
             except SunsynkApiError as err:
                 raise UpdateFailed(f"Cannot read settings for {serial}: {err}") from err
 
+        slot_keys = next(
+            (keys for keys in SLOT_SETTING_KEY_GROUPS.values() if setting_key in keys),
+            None,
+        )
         if setting_key in BATTERY_SETTING_KEYS:
             allowed_keys = BATTERY_SETTING_KEYS
+        elif slot_keys is not None:
+            allowed_keys = slot_keys
         elif setting_key in SYSTEM_MODE_SETTING_KEYS:
             allowed_keys = SYSTEM_MODE_SETTING_KEYS
         else:

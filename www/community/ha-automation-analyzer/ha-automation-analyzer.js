@@ -1,4 +1,4 @@
-/* HA Tools split — ha-automation-analyzer v4.2.0 (2026-09-01) — single-tool standalone repo */
+/* HA Tools split — ha-automation-analyzer v4.2.2 (2026-09-24) — single-tool standalone repo */
 (function() {
 'use strict';
 
@@ -1277,6 +1277,9 @@ function _bindLocalIntroDismiss(root) {
 }
 /* ============================================================ */
 
+const _AA_CONFIG_CONCURRENCY = 6;
+const _AA_CONFIG_CACHE_TTL_MS = 10 * 60 * 1000;
+
 class HAAutomationAnalyzer extends HTMLElement {
   constructor() {
     super();
@@ -1291,6 +1294,8 @@ class HAAutomationAnalyzer extends HTMLElement {
     this.triggerTypes = new Map();
     this.failedAutomations = new Map();
     this.disabledAutomations = [];
+    this.unavailableAutomations = [];
+    this._showOnlyUnavailable = false;
     this._charts = {};
     this._chartJsLoaded = false;
     this._isLoading = true;
@@ -1337,6 +1342,13 @@ class HAAutomationAnalyzer extends HTMLElement {
     this._lastHassConnection = null;
     this._lastTraceRole = 'unknown';
     this._lastAutomationSetSignature = '';
+    // Session generation changes only when the connection, the user role, or the set of
+    // automations changes. Ordinary state updates create new hass objects many times per
+    // second on real installations and must not cancel in-flight work (issue #2).
+    this._sessionGeneration = 0;
+    this._configCache = new Map();
+    this._configCacheAt = 0;
+    this._configAccess = 'unknown';
   }
 
   setConfig(config) {
@@ -1387,10 +1399,15 @@ class HAAutomationAnalyzer extends HTMLElement {
         .sort()
         .join('\u0001');
     } catch (_error) {}
-    const traceSnapshotChanged = hassChanged
+    const traceSnapshotChanged = !previousHass
       || this._lastHassConnection !== nextConnection
       || this._lastTraceRole !== nextRole
       || this._lastAutomationSetSignature !== nextAutomationSetSignature;
+    if (traceSnapshotChanged) {
+      this._sessionGeneration += 1;
+      this._configCache.clear();
+      this._configCacheAt = 0;
+    }
     const hasTimelineState = Boolean(
       this._activeTimelineToken || this._timelineLoading || this._timelineData
       || this._timelineError || this._selectedTimelineId
@@ -1413,7 +1430,7 @@ class HAAutomationAnalyzer extends HTMLElement {
     }
     if (!hass || !this.isConnected) return;
     if (timelineInvalidated || traceSnapshotChanged) this.render();
-    if (hassChanged && this._loadingInProgress) {
+    if (hassChanged && traceSnapshotChanged && this._loadingInProgress) {
       this._activeLoadToken = null;
       this._pendingLoad = true;
       return;
@@ -1496,6 +1513,9 @@ class HAAutomationAnalyzer extends HTMLElement {
         totalLabel: '\u0141\u0105cznie',
         active: 'Aktywnych',
         disabledLabel: 'Wy\u0142\u0105czonych',
+        unavailableBanner: 'automatyzacji jest niedostępnych — ich konfiguracja jest nieprawidłowa lub została usunięta, więc nie mogą się uruchomić. Sprawdź Ustawienia → Naprawy i log Home Assistanta.',
+        showUnavailable: 'Pokaż niedostępne',
+        showAllAutomations: 'Pokaż wszystkie',
         errorsLabel: 'B\u0142\u0119dy w trasach',
         searchPlaceholder: 'Szukaj automatyzacji\u2026',
         runsTodayOption: 'Zachowane dzi\u015B',
@@ -1623,6 +1643,9 @@ class HAAutomationAnalyzer extends HTMLElement {
         totalLabel: 'Total',
         active: 'Active',
         disabledLabel: 'Disabled',
+        unavailableBanner: 'automations are unavailable — their configuration is invalid or was removed, so they cannot run. Check Settings → Repairs and the Home Assistant log.',
+        showUnavailable: 'Show unavailable',
+        showAllAutomations: 'Show all',
         errorsLabel: 'Trace errors',
         searchPlaceholder: 'Search automations\u2026',
         runsTodayOption: 'Retained today',
@@ -1736,18 +1759,22 @@ class HAAutomationAnalyzer extends HTMLElement {
     return this.config?.auto_refresh !== false;
   }
 
-  _isLifecycleActive(epoch, hass) {
-    return this.isConnected && this._lifecycleEpoch === epoch && this._hass === hass;
+  _isLifecycleActive(epoch, hass, generation) {
+    if (!this.isConnected || this._lifecycleEpoch !== epoch || !hass || !this._hass) return false;
+    if (generation !== undefined && generation !== this._sessionGeneration) return false;
+    // A new hass object for the same connection and user is the same session.
+    return (hass.connection || null) === (this._hass.connection || null)
+      && (hass.user?.id ?? null) === (this._hass.user?.id ?? null);
   }
 
   _isLoadActive(token) {
     return Boolean(token) && this._activeLoadToken === token
-      && this._isLifecycleActive(token.epoch, token.hass);
+      && this._isLifecycleActive(token.epoch, token.hass, token.generation);
   }
 
   async _loadAndRender() {
     if (this._loadingInProgress || !this.isConnected || !this._hass) return;
-    const token = { epoch: this._lifecycleEpoch, hass: this._hass };
+    const token = { epoch: this._lifecycleEpoch, hass: this._hass, generation: this._sessionGeneration };
     this._activeLoadToken = token;
     this._pendingLoad = false;
     this._loadingInProgress = true;
@@ -1762,6 +1789,7 @@ class HAAutomationAnalyzer extends HTMLElement {
       if (token.epoch === this._lifecycleEpoch) {
         if (this._activeLoadToken === token) this._activeLoadToken = null;
         this._loadingInProgress = false;
+        if (!this._pendingLoad) this._loadingPhase = "";
         if (this._pendingLoad && this.isConnected) {
           this._pendingLoad = false;
           queueMicrotask(() => this._loadAndRender());
@@ -1788,63 +1816,52 @@ class HAAutomationAnalyzer extends HTMLElement {
     return null;
   }
 
-  async _callAPI(method, path, loadToken = null) {
-    try {
-      const hass = loadToken?.hass || this._hass;
-      const response = await hass.callApi(method, path);
-      if (loadToken && !this._isLoadActive(loadToken)) return null;
-      return response;
-    } catch (_error) {
-      if (loadToken && !this._isLoadActive(loadToken)) return null;
-      console.warn('[ha-automation-analyzer] api_unavailable');
-      return null;
-    }
-  }
-
   async _getAllAutomationConfigs(automations, loadToken = null) {
     const hass = loadToken?.hass || this._hass;
-    // Prefer the bulk WebSocket endpoint to minimize requests.
-    try {
-      if (hass && hass.callWS) {
-        const configs = await hass.callWS({ type: "config/automation/list" });
-        if (loadToken && !this._isLoadActive(loadToken)) return [];
-        if (configs && Array.isArray(configs) && configs.length > 0) return configs;
-      }
-    } catch (_error) {
-      if (loadToken && !this._isLoadActive(loadToken)) return [];
-      /* WS not available in this context */
+    const inactive = () => loadToken && !this._isLoadActive(loadToken);
+    if (!hass || typeof hass.callWS !== 'function' || !Array.isArray(automations)) return [];
+    // automation/config is an admin-only Home Assistant command. Non-admin users keep the
+    // state-based statistics and see trigger details as unavailable instead of an error.
+    if (hass.user && hass.user.is_admin === false) {
+      this._configAccess = 'admin_required';
+      return [];
     }
-
-    // Fall back to bounded per-automation reads when bulk listing is unavailable.
-    // Only fetch enabled automations to limit backend load and retained data.
-    if (automations && automations.length > 0) {
-      const configs = [];
-      const enabled = automations.filter(([, e]) => e.state === "on");
-      const toFetch = enabled.slice(0, 60); // Limit to 60 to avoid overload
-      const batchSize = 10;
-      for (let i = 0; i < toFetch.length; i += batchSize) {
-        const batch = toFetch.slice(i, i + batchSize);
-        const results = await Promise.allSettled(
-          batch.map(([, entity]) => {
-            const attrId = entity.attributes?.id;
-            if (!attrId) return Promise.reject("no id");
-            return this._callAPI(
-              "GET",
-              `config/automation/config/${encodeURIComponent(attrId)}`,
-              loadToken
-            );
-          })
-        );
-        if (loadToken && !this._isLoadActive(loadToken)) return [];
-        for (const r of results) {
-          if (r.status === "fulfilled" && r.value && r.value.id) configs.push(r.value);
+    const now = Date.now();
+    if (now - this._configCacheAt > _AA_CONFIG_CACHE_TTL_MS) this._configCache.clear();
+    const pending = automations
+      .map(([entityId]) => entityId)
+      .filter(entityId => !this._configCache.has(entityId));
+    let failures = 0;
+    let cursor = 0;
+    const worker = async () => {
+      while (cursor < pending.length) {
+        const entityId = pending[cursor++];
+        if (inactive()) return;
+        try {
+          const result = await hass.callWS({ type: 'automation/config', entity_id: entityId });
+          if (inactive()) return;
+          const config = result && typeof result === 'object' ? result.config : null;
+          this._configCache.set(entityId, config && typeof config === 'object' ? config : null);
+        } catch (_error) {
+          if (inactive()) return;
+          failures += 1;
+          this._configCache.set(entityId, null);
         }
       }
-      if (configs.length > 0) return configs;
+    };
+    const workers = [];
+    for (let i = 0; i < Math.min(_AA_CONFIG_CONCURRENCY, pending.length); i += 1) workers.push(worker());
+    await Promise.all(workers);
+    if (inactive()) return [];
+    if (pending.length > 0) this._configCacheAt = now;
+    this._configAccess = failures > 0 && failures === pending.length && pending.length > 0 ? 'unavailable' : 'available';
+    if (failures > 0) console.warn('[ha-automation-analyzer] automation_config_partial', failures);
+    const configs = [];
+    for (const [entityId] of automations) {
+      const config = this._configCache.get(entityId);
+      if (config) configs.push({ ...config, __entityId: entityId });
     }
-
-    console.warn('[ha-automation-analyzer] automation_config_unavailable');
-    return [];
+    return configs;
   }
 
   _parseAutomationConfig(configObj) {
@@ -1873,6 +1890,7 @@ class HAAutomationAnalyzer extends HTMLElement {
     if (this.automationStats.size === 0) return 0;
     const total = this.automationStats.size;
     const disabled = this.disabledAutomations.length;
+    const unavailable = this.unavailableAutomations.length;
     const failed = this.failedAutomations.size;
     const slow = Array.from(this.automationStats.values()).filter(a => typeof a.avgExecutionTime === "number" && a.avgExecutionTime > 800).length;
     const stale = Array.from(this.automationStats.values()).filter(a => {
@@ -1882,6 +1900,8 @@ class HAAutomationAnalyzer extends HTMLElement {
     }).length;
     let score = 100;
     score -= (disabled / total) * 15;
+    // Unavailable automations cannot run at all; any of them caps the score below "Excellent".
+    if (unavailable > 0) score = Math.min(score - (unavailable / total) * 40, 74);
     score -= (failed / total) * 25;
     score -= (slow / total) * 10;
     score -= (stale / total) * 5;
@@ -1906,6 +1926,7 @@ class HAAutomationAnalyzer extends HTMLElement {
       this.triggerTypes.clear();
       this.failedAutomations.clear();
       this.disabledAutomations = [];
+      this.unavailableAutomations = [];
       this.executionTimes = [];
 
       // --- Phase 1: Instant pass using hass states only (ZERO API calls) ---
@@ -1914,6 +1935,12 @@ class HAAutomationAnalyzer extends HTMLElement {
         const name = this._sanitize(entity.attributes?.friendly_name || id.replace("automation.", ""));
         const isDisabled = entity.state === "off";
         if (isDisabled && !this.config.show_disabled) continue;
+        // Home Assistant keeps an unavailable automation entity when its configuration
+        // is invalid or was removed; it can never run, so it is a problem, not "unknown".
+        const isUnavailable = entity.state === "unavailable" || entity.state === "unknown";
+        if (isUnavailable) {
+          this.unavailableAutomations.push({ id, name, automationId: entity.attributes?.id || id.replace("automation.", "") });
+        }
 
         const internalId = entity.attributes?.id || id.replace("automation.", "");
 
@@ -1946,10 +1973,15 @@ class HAAutomationAnalyzer extends HTMLElement {
       // --- Phase 2: Fetch automation configs (enriches trigger types) ---
       this._loadingPhase = this._lang === 'pl' ? "Pobieranie konfiguracji automatyzacji..." : "Fetching automation configuration...";
       this.render();
-      const allConfigs = await this._getAllAutomationConfigs(automations, loadToken);
+      const allConfigs = await this._getAllAutomationConfigs(
+        automations.filter(([, entity]) => entity.state !== "unavailable" && entity.state !== "unknown"),
+        loadToken
+      );
       if (inactive()) return;
       const configByEntityId = new Map();
       for (const [entityId, entity] of automations) {
+        const direct = allConfigs.find(c => c.__entityId === entityId);
+        if (direct) { configByEntityId.set(entityId, direct); continue; }
         const attrId = entity.attributes?.id;
         if (attrId) {
           const found = allConfigs.find(c => c.id === attrId);
@@ -2165,7 +2197,7 @@ class HAAutomationAnalyzer extends HTMLElement {
 
   _isTimelineActive(token) {
     return Boolean(token) && this._activeTimelineToken === token
-      && this._isLifecycleActive(token.epoch, token.hass);
+      && this._isLifecycleActive(token.epoch, token.hass, token.generation);
   }
 
   _resetTimelineRunState() {
@@ -2204,6 +2236,7 @@ class HAAutomationAnalyzer extends HTMLElement {
     const token = {
       epoch: this._lifecycleEpoch,
       hass: this._hass,
+      generation: this._sessionGeneration,
       controller: new AbortController()
     };
     if (!this._isLifecycleActive(token.epoch, token.hass)) return null;
@@ -2351,7 +2384,7 @@ class HAAutomationAnalyzer extends HTMLElement {
 
   _isTraceStatsActive(token) {
     return Boolean(token) && this._activeTraceStatsToken === token
-      && this._isLifecycleActive(token.epoch, token.hass);
+      && this._isLifecycleActive(token.epoch, token.hass, token.generation);
   }
 
   _invalidateTraceStatistics() {
@@ -2449,7 +2482,7 @@ class HAAutomationAnalyzer extends HTMLElement {
     const signature = this._traceStatsSignature();
     const now = Date.now();
     const cached = this._traceStatsCache;
-    if (options.force !== true && cached && cached.hass === this._hass && cached.connection === this._hass.connection
+    if (options.force !== true && cached && cached.generation === this._sessionGeneration && cached.connection === this._hass.connection
       && cached.epoch === this._lifecycleEpoch && cached.signature === signature
       && now < cached.expiresAt) {
       this._traceStatsCapability = cached.capability;
@@ -2464,6 +2497,7 @@ class HAAutomationAnalyzer extends HTMLElement {
     const token = {
       epoch: this._lifecycleEpoch,
       hass: this._hass,
+      generation: this._sessionGeneration,
       connection: this._hass.connection,
       signature,
       controller: new AbortController()
@@ -2485,6 +2519,7 @@ class HAAutomationAnalyzer extends HTMLElement {
           hass: token.hass,
           connection: token.connection,
           epoch: token.epoch,
+          generation: token.generation,
           signature: token.signature,
           expiresAt: Date.now() + 60000,
           capability
@@ -2750,6 +2785,17 @@ class HAAutomationAnalyzer extends HTMLElement {
       }
       .stat-value { font-size: 22px; font-weight: 700; color: var(--bento-primary); }
       .stat-label { font-size: 11px; color: var(--bento-text-secondary); margin-top: 2px; }
+      .unavailable-banner {
+        display: flex; align-items: center; justify-content: space-between; gap: var(--aa-space-3, 12px);
+        flex-wrap: wrap; margin: var(--aa-space-3, 12px) 0; padding: 10px 12px; border-radius: 8px;
+        border: 1px solid var(--warning-color, #f59e0b); color: var(--primary-text-color);
+        background: color-mix(in srgb, var(--warning-color, #f59e0b) 12%, transparent); font-size: 13px;
+      }
+      .unavailable-toggle {
+        min-height: 36px; padding: 6px 12px; border-radius: 6px; cursor: pointer; font: inherit;
+        border: 1px solid var(--warning-color, #f59e0b); background: transparent; color: var(--primary-text-color);
+      }
+      .unavailable-toggle:focus-visible { outline: 2px solid var(--primary-color, #3b82f6); outline-offset: 2px; }
       .health-row {
         display: flex; align-items: center; gap: var(--aa-space-3);
         margin-bottom: var(--aa-space-4);
@@ -3095,6 +3141,7 @@ class HAAutomationAnalyzer extends HTMLElement {
       total: this.automationStats.size,
       active: totalActive,
       disabled: this.disabledAutomations.length,
+      unavailable: this.unavailableAutomations.length,
       failed: hasTraceStatistics ? this.failedAutomations.size : null,
       avgTime: this.executionTimes.length > 0
         ? Math.round(this.executionTimes.reduce((a, b) => a + b, 0) / this.executionTimes.length)
@@ -3108,6 +3155,12 @@ class HAAutomationAnalyzer extends HTMLElement {
     // --- Filter and sort the full automation list ---
     const allAutos = Array.from(this.automationStats.values());
     let filteredAutos = allAutos;
+    if (this._showOnlyUnavailable && this.unavailableAutomations.length > 0) {
+      const unavailableIds = new Set(this.unavailableAutomations.map(item => item.id));
+      filteredAutos = filteredAutos.filter(a => unavailableIds.has(a.id));
+    } else {
+      this._showOnlyUnavailable = false;
+    }
 
     // Text filter
     if (this._filterText) {
@@ -3172,6 +3225,10 @@ class HAAutomationAnalyzer extends HTMLElement {
             <div class="health-label">${this._t.systemHealthScope}</div>
           </div>
         </div>
+        ${stats.unavailable > 0 ? `<div class="unavailable-banner" role="status">
+          <span><b>${stats.unavailable}</b> ${this._t.unavailableBanner}</span>
+          <button type="button" class="unavailable-toggle" id="aa-unavailable-toggle" aria-pressed="${this._showOnlyUnavailable}">${this._showOnlyUnavailable ? this._t.showAllAutomations : this._t.showUnavailable}</button>
+        </div>` : ''}
         <div class="stats">
           <div class="stat">
             <div class="stat-value">${stats.total}</div>
@@ -3723,6 +3780,13 @@ ${styles}
         this._traceNoticeDismissed = true;
         const notice = this.shadowRoot.getElementById("trace-storage-notice");
         if (notice) notice.remove();
+      });
+    }
+    const unavailableToggle = this.shadowRoot.getElementById("aa-unavailable-toggle");
+    if (unavailableToggle) {
+      unavailableToggle.addEventListener("click", () => {
+        this._showOnlyUnavailable = !this._showOnlyUnavailable;
+        this.render();
       });
     }
     // Filter, sort, time range controls
