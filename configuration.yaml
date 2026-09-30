@@ -296,7 +296,7 @@ shell_command:
     cp /config/home-assistant_v2.db /backup/home-assistant_v2-$(date +%Y%m%d)_monthly.sqlite && echo "/backup/home-assistant_v2-$(date +%Y%m%d)_monthly.sqlite" > /backup/db-monthly-latest.txt
   db_monthly_checksum: >
     md5sum /backup/home-assistant_v2-$(date +%Y%m%d)_monthly.sqlite | awk '{print $1}' > /backup/home-assistant_v2-$(date +%Y%m%d)_monthly.md5
-
+  expose_all_entities: "python3 /config/scripts/expose_all_entities.py"
 # ==============================================================================
 # Other Integrations
 # ==============================================================================

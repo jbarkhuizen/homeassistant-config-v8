@@ -17,15 +17,3 @@ update_and_restart:
   - action: homeassistant.restart
   description: ''
 #-------------------------------------------------------------------------------
-expose_all_entities_to_assist:
-  alias: "Expose All Entities to Assist"
-  sequence:
-    - repeat:
-        for_each: "{{ states | map(attribute='entity_id') | list }}"
-        sequence:
-          - service: homeassistant.expose_entity
-            data:
-              entity_id: "{{ repeat.item }}"
-              assistants:
-                - conversation
-              should_expose: true

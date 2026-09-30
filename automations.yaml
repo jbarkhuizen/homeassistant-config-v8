@@ -164,11 +164,19 @@
     - service: ai_automation_suggester.request_suggestions
       data: {}
 
-- alias: "Daily - Expose New Entities to Assist"
-  description: "Catches any newly added entity and exposes it to Assist so external tools (Claude) can see it."
-  trigger:
-      - platform: time
-        at: "03:00:00"
-  action:
-      - service: script.expose_all_entities_to_assist
+- id: daily_expose_all_entities
+  alias: "Daily - Expose All Entities to Assist"
+  description: "Backfills any entity not yet exposed to Assist, so Claude can see it."
+  triggers:
+    - trigger: time
+      at: "03:00:00"
+    - trigger: homeassistant
+      event: start
+  actions:
+    - action: shell_command.expose_all_entities
+      response_variable: result
+    - action: persistent_notification.create
+      data:
+        title: "Expose entities"
+        message: "{{ result.stdout }} {{ result.stderr }}"
   mode: single
