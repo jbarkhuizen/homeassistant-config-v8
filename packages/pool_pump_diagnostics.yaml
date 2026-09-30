@@ -1,3 +1,8 @@
+#===============================================================================
+# Pool Pump Diagnostics — mirrors automations/pool_pump_solar_management.yaml
+# Updated: 2026-09-30 (battery-first rules, 09:00–16:00 window)
+# Keep thresholds here in sync with the automation file.
+#===============================================================================
 template:
   - binary_sensor:
       - name: "Pool Pump Diagnostics Maintenance Mode Clear"
@@ -21,19 +26,19 @@ template:
       - name: "Pool Pump Diagnostics Time Window Active"
         unique_id: pool_pump_diag_time_window_active
         state: >
-          {{ now().strftime('%H:%M:%S') >= '09:30:00' and now().strftime('%H:%M:%S') < '12:00:00' }}
+          {{ today_at('09:00') <= now() and now() < today_at('16:00') }}
         icon: >
-          {% if now().strftime('%H:%M:%S') >= '09:30:00' and now().strftime('%H:%M:%S') < '12:00:00' %}
+          {% if today_at('09:00') <= now() and now() < today_at('16:00') %}
             mdi:clock-check
           {% else %}
             mdi:clock-alert
           {% endif %}
         attributes:
           detail: >
-            {% if now().strftime('%H:%M:%S') >= '09:30:00' and now().strftime('%H:%M:%S') < '12:00:00' %}
-              Current time is inside the 09:30 to 12:00 window
+            {% if today_at('09:00') <= now() and now() < today_at('16:00') %}
+              Current time is inside the 09:00 to 16:00 window
             {% else %}
-              Current time is outside the 09:30 to 12:00 window
+              Current time is outside the 09:00 to 16:00 window
             {% endif %}
 
       - name: "Pool Pump Diagnostics Sonoff Ready For Start"
@@ -54,27 +59,54 @@ template:
               Sonoff pump switch is already ON, so ON automation will not run
             {% endif %}
 
-      - name: "Pool Pump Diagnostics PV Above ON Threshold"
-        unique_id: pool_pump_diag_pv_above_on_threshold
+      - name: "Pool Pump Diagnostics Battery SOC Ready"
+        unique_id: pool_pump_diag_battery_soc_ready
         state: >
-          {{ states('sensor.deyeinvertercombined_pv_power') | float(0) > 3000 }}
+          {{ states('sensor.deyeinvertermaster_battery_soc') | float(0) >= 90 }}
         icon: >
-          {% if states('sensor.deyeinvertercombined_pv_power') | float(0) > 3000 %}
-            mdi:solar-power
+          {% if states('sensor.deyeinvertermaster_battery_soc') | float(0) >= 90 %}
+            mdi:battery-check
           {% else %}
-            mdi:solar-power-variant-outline
+            mdi:battery-charging-50
           {% endif %}
         attributes:
           detail: >
-            {% set pv = states('sensor.deyeinvertercombined_pv_power') | float(0) %}
-            {% if pv > 3000 %}
-              PV is above ON threshold at {{ pv | round(0) }} W
+            {% set soc = states('sensor.deyeinvertermaster_battery_soc') | float(0) %}
+            {% if soc >= 90 %}
+              Battery is at {{ soc | round(0) }}%, at or above the 90% ON threshold
             {% else %}
-              PV is below ON threshold at {{ pv | round(0) }} W
+              Battery is at {{ soc | round(0) }}%, below the 90% ON threshold
             {% endif %}
-          pv_now_w: >
-            {{ states('sensor.deyeinvertercombined_pv_power') | float(0) | round(0) }}
-          on_threshold_w: 3000
+          battery_soc_pct: >
+            {{ states('sensor.deyeinvertermaster_battery_soc') | float(0) | round(0) }}
+          soc_threshold_pct: 90
+
+      - name: "Pool Pump Diagnostics Grid Import Clear"
+        unique_id: pool_pump_diag_grid_import_clear
+        state: >
+          {% set grid = 'sensor.deyeinvertercombined_grid_power_ct_clamp' %}
+          {{ has_value(grid) and (states(grid) | float) < 100 }}
+        icon: >
+          {% set grid = 'sensor.deyeinvertercombined_grid_power_ct_clamp' %}
+          {% if has_value(grid) and (states(grid) | float) < 100 %}
+            mdi:transmission-tower-off
+          {% else %}
+            mdi:transmission-tower-import
+          {% endif %}
+        attributes:
+          detail: >
+            {% set grid = 'sensor.deyeinvertercombined_grid_power_ct_clamp' %}
+            {% if not has_value(grid) %}
+              Grid sensor unavailable, pump will not start
+            {% elif (states(grid) | float) < 100 %}
+              Grid import is {{ states(grid) | float | round(0) }} W, below the 100 W ON limit
+            {% else %}
+              Grid import is {{ states(grid) | float | round(0) }} W, at or above the 100 W ON limit
+            {% endif %}
+          grid_import_w: >
+            {{ states('sensor.deyeinvertercombined_grid_power_ct_clamp') | float(0) | round(0) }}
+          on_limit_w: 100
+          off_limit_w: 200
 
       - name: "Pool Pump Diagnostics Cooldown Clear"
         unique_id: pool_pump_diag_cooldown_clear
@@ -118,50 +150,41 @@ template:
       - name: "Pool Pump Diagnostics Ready To Start"
         unique_id: pool_pump_diag_ready_to_start
         state: >
-          {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
-          {{
-            is_state('input_boolean.maintenance_mode', 'off')
-            and now().strftime('%H:%M:%S') >= '09:30:00'
-            and now().strftime('%H:%M:%S') < '12:00:00'
-            and is_state('switch.sonoff_10009ce3f9', 'off')
-            and (states('sensor.deyeinvertercombined_pv_power') | float(0) > 3000)
-            and (
-              last_off_ts in [none, 'unknown', 'unavailable', '']
-              or (as_timestamp(now()) - (last_off_ts | float(0))) > 600
-            )
-          }}
+          {% set grid = 'sensor.deyeinvertercombined_grid_power_ct_clamp' %}
+          {% set soc = 'sensor.deyeinvertermaster_battery_soc' %}
+          {% set last_off = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') | float(0) %}
+          {{ is_state('input_boolean.maintenance_mode', 'off')
+             and today_at('09:00') <= now() and now() < today_at('16:00')
+             and is_state('switch.sonoff_10009ce3f9', 'off')
+             and has_value(grid) and (states(grid) | float) < 100
+             and has_value(soc) and (states(soc) | float) >= 90
+             and (now().timestamp() - last_off) > 600 }}
         icon: >
-          {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
-          {% if
-            is_state('input_boolean.maintenance_mode', 'off')
-            and now().strftime('%H:%M:%S') >= '09:30:00'
-            and now().strftime('%H:%M:%S') < '12:00:00'
-            and is_state('switch.sonoff_10009ce3f9', 'off')
-            and (states('sensor.deyeinvertercombined_pv_power') | float(0) > 3000)
-            and (
-              last_off_ts in [none, 'unknown', 'unavailable', '']
-              or (as_timestamp(now()) - (last_off_ts | float(0))) > 600
-            )
-          %}
+          {% set grid = 'sensor.deyeinvertercombined_grid_power_ct_clamp' %}
+          {% set soc = 'sensor.deyeinvertermaster_battery_soc' %}
+          {% set last_off = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') | float(0) %}
+          {% if is_state('input_boolean.maintenance_mode', 'off')
+             and today_at('09:00') <= now() and now() < today_at('16:00')
+             and is_state('switch.sonoff_10009ce3f9', 'off')
+             and has_value(grid) and (states(grid) | float) < 100
+             and has_value(soc) and (states(soc) | float) >= 90
+             and (now().timestamp() - last_off) > 600 %}
             mdi:check-decagram
           {% else %}
             mdi:close-octagon
           {% endif %}
         attributes:
           detail: >
-            {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
-            {% if
-              is_state('input_boolean.maintenance_mode', 'off')
-              and now().strftime('%H:%M:%S') >= '09:30:00'
-              and now().strftime('%H:%M:%S') < '12:00:00'
-              and is_state('switch.sonoff_10009ce3f9', 'off')
-              and (states('sensor.deyeinvertercombined_pv_power') | float(0) > 3000)
-              and (
-                last_off_ts in [none, 'unknown', 'unavailable', '']
-                or (as_timestamp(now()) - (last_off_ts | float(0))) > 600
-              )
-            %}
-              All current ON conditions are passing
+            {% set grid = 'sensor.deyeinvertercombined_grid_power_ct_clamp' %}
+            {% set soc = 'sensor.deyeinvertermaster_battery_soc' %}
+            {% set last_off = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') | float(0) %}
+            {% if is_state('input_boolean.maintenance_mode', 'off')
+               and today_at('09:00') <= now() and now() < today_at('16:00')
+               and is_state('switch.sonoff_10009ce3f9', 'off')
+               and has_value(grid) and (states(grid) | float) < 100
+               and has_value(soc) and (states(soc) | float) >= 90
+               and (now().timestamp() - last_off) > 600 %}
+              All current ON conditions are passing (pump starts after 5 minutes)
             {% else %}
               One or more ON conditions are failing
             {% endif %}
@@ -170,50 +193,50 @@ template:
       - name: "Pool Pump Diagnostics Current Status"
         unique_id: pool_pump_diag_current_status
         state: >
-          {% set maintenance_ok = is_state('input_boolean.maintenance_mode', 'off') %}
-          {% set time_ok = now().strftime('%H:%M:%S') >= '09:30:00' and now().strftime('%H:%M:%S') < '12:00:00' %}
-          {% set switch_ok = is_state('switch.sonoff_10009ce3f9', 'off') %}
-          {% set pv = states('sensor.deyeinvertercombined_pv_power') | float(0) %}
-          {% set pv_ok = pv > 3000 %}
-          {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
-          {% set cooldown_ok = last_off_ts in [none, 'unknown', 'unavailable', ''] or (as_timestamp(now()) - (last_off_ts | float(0))) > 600 %}
-
-          {% if not maintenance_ok %}
+          {% set grid = 'sensor.deyeinvertercombined_grid_power_ct_clamp' %}
+          {% set soc = 'sensor.deyeinvertermaster_battery_soc' %}
+          {% set last_off = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') | float(0) %}
+          {% if is_state('input_boolean.maintenance_mode', 'on') %}
             Blocked: Maintenance Mode ON
-          {% elif not time_ok %}
-            Blocked: Outside 09:30–12:00 window
-          {% elif not switch_ok %}
-            Blocked: Sonoff switch already ON
-          {% elif not pv_ok %}
-            Blocked: PV below 3000 W
-          {% elif not cooldown_ok %}
+          {% elif not (today_at('09:00') <= now() and now() < today_at('16:00')) %}
+            Blocked: Outside 09:00–16:00 window
+          {% elif is_state('switch.sonoff_10009ce3f9', 'on') %}
+            Running: stops if grid import > 200 W for 2 min
+          {% elif not has_value(soc) or (states(soc) | float) < 90 %}
+            Blocked: Battery below 90%
+          {% elif not has_value(grid) %}
+            Blocked: Grid sensor unavailable
+          {% elif (states(grid) | float) >= 100 %}
+            Blocked: Grid import 100 W or more
+          {% elif (now().timestamp() - last_off) <= 600 %}
             Blocked: 10 minute cooldown active
           {% else %}
-            Ready: ON conditions satisfied
+            Ready: ON conditions satisfied, starting after 5 minutes
           {% endif %}
         icon: >
-          {% set maintenance_ok = is_state('input_boolean.maintenance_mode', 'off') %}
-          {% set time_ok = now().strftime('%H:%M:%S') >= '09:30:00' and now().strftime('%H:%M:%S') < '12:00:00' %}
-          {% set switch_ok = is_state('switch.sonoff_10009ce3f9', 'off') %}
-          {% set pv = states('sensor.deyeinvertercombined_pv_power') | float(0) %}
-          {% set pv_ok = pv > 3000 %}
-          {% set last_off_ts = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') %}
-          {% set cooldown_ok = last_off_ts in [none, 'unknown', 'unavailable', ''] or (as_timestamp(now()) - (last_off_ts | float(0))) > 600 %}
-
-          {% if maintenance_ok and time_ok and switch_ok and pv_ok and cooldown_ok %}
+          {% set grid = 'sensor.deyeinvertercombined_grid_power_ct_clamp' %}
+          {% set soc = 'sensor.deyeinvertermaster_battery_soc' %}
+          {% set last_off = state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') | float(0) %}
+          {% set in_window = today_at('09:00') <= now() and now() < today_at('16:00') %}
+          {% set running = is_state('switch.sonoff_10009ce3f9', 'on') %}
+          {% set ready = has_value(soc) and (states(soc) | float) >= 90
+                         and has_value(grid) and (states(grid) | float) < 100
+                         and (now().timestamp() - last_off) > 600 %}
+          {% if is_state('input_boolean.maintenance_mode', 'off') and in_window and (running or ready) %}
             mdi:check-decagram
           {% else %}
             mdi:alert-circle
           {% endif %}
         attributes:
-          pv_now_w: >
-            {{ states('sensor.deyeinvertercombined_pv_power') | float(0) | round(0) }}
-          on_threshold_w: 3000
-          off_threshold_w: 2500
+          grid_import_w: >
+            {{ states('sensor.deyeinvertercombined_grid_power_ct_clamp') | float(0) | round(0) }}
+          battery_soc_pct: >
+            {{ states('sensor.deyeinvertermaster_battery_soc') | float(0) | round(0) }}
+          soc_threshold_pct: 90
+          grid_on_limit_w: 100
+          grid_off_limit_w: 200
           last_off_time: >
             {{ states('input_datetime.pool_pump_last_off_time') }}
-          last_off_timestamp: >
-            {{ state_attr('input_datetime.pool_pump_last_off_time', 'timestamp') }}
           maintenance_mode: >
             {{ states('input_boolean.maintenance_mode') }}
           sonoff_switch_state: >
